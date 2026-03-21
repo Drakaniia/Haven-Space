@@ -1,2 +1,11 @@
 node_modules/
 package-lock.json
+bunlock.json
+dist/
+build/
+*.log
+*.tmp
+.DS_Store
+.env
+.idea/
+.vscode/   

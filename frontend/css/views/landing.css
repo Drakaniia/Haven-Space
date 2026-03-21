@@ -1,0 +1,178 @@
+/* ========================================
+   LANDING VIEW STYLES
+   Specific styles for landing page
+   ======================================== */
+
+/* Hero Section */
+.hero {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 80vh;
+  padding: var(--spacing-16) var(--spacing-6);
+  text-align: center;
+  background: linear-gradient(135deg, var(--color-bg-secondary) 0%, var(--color-bg) 100%);
+}
+
+.hero h1 {
+  font-size: clamp(var(--font-size-3xl), 5vw, var(--font-size-4xl));
+  max-width: 800px;
+  margin-bottom: var(--spacing-6);
+  background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-info) 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.hero p {
+  font-size: var(--font-size-lg);
+  max-width: 600px;
+  margin-bottom: var(--spacing-8);
+  color: var(--color-text-muted);
+}
+
+.hero-actions {
+  display: flex;
+  gap: var(--spacing-4);
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+/* Features Section */
+.features {
+  padding: var(--spacing-16) var(--spacing-6);
+  background-color: var(--color-bg);
+}
+
+.features h2 {
+  text-align: center;
+  margin-bottom: var(--spacing-12);
+}
+
+.features-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: var(--spacing-8);
+  max-width: var(--container-max);
+  margin: 0 auto;
+}
+
+/* CTA Section */
+.cta-section {
+  padding: var(--spacing-16) var(--spacing-6);
+  text-align: center;
+  background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-info) 100%);
+  color: white;
+}
+
+.cta-section h2 {
+  color: white;
+  margin-bottom: var(--spacing-8);
+}
+
+.cta-section .cta-button.secondary {
+  border-color: white;
+  color: white;
+}
+
+.cta-section .cta-button.secondary:hover {
+  background-color: white;
+  color: var(--color-primary);
+}
+
+/* Testimonials Section */
+.testimonials {
+  padding: var(--spacing-16) var(--spacing-6);
+  background-color: var(--color-bg-secondary);
+}
+
+.testimonials h2 {
+  text-align: center;
+  margin-bottom: var(--spacing-12);
+}
+
+.testimonials-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: var(--spacing-8);
+  max-width: var(--container-max);
+  margin: 0 auto;
+}
+
+.testimonial-card {
+  background-color: var(--color-bg);
+  padding: var(--spacing-8);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow);
+}
+
+.testimonial-text {
+  font-style: italic;
+  color: var(--color-text);
+  margin-bottom: var(--spacing-4);
+}
+
+.testimonial-author {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-3);
+}
+
+.testimonial-avatar {
+  width: 48px;
+  height: 48px;
+  border-radius: var(--radius-full);
+  background-color: var(--color-primary);
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 600;
+}
+
+.testimonial-name {
+  font-weight: 600;
+  color: var(--color-text);
+}
+
+.testimonial-role {
+  font-size: var(--font-size-sm);
+  color: var(--color-text-muted);
+}
+
+/* Stats Section */
+.stats-section {
+  padding: var(--spacing-16) var(--spacing-6);
+  background-color: var(--color-bg);
+}
+
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: var(--spacing-8);
+  max-width: var(--container-max);
+  margin: 0 auto;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .hero {
+    min-height: 60vh;
+    padding: var(--spacing-12) var(--spacing-4);
+  }
+
+  .hero-actions {
+    flex-direction: column;
+    width: 100%;
+  }
+
+  .hero-actions .cta-button {
+    width: 100%;
+  }
+
+  .features-grid,
+  .testimonials-grid {
+    grid-template-columns: 1fr;
+  }
+}
