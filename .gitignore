@@ -9,3 +9,6 @@ build/
 .env
 .idea/
 .vscode/   
+
+.qwen/
+gha-creds-*.json
