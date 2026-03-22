@@ -25,5 +25,10 @@ body {
   inset: 0;
   z-index: -1;
   min-height: 100vh;
-  background: linear-gradient(135deg, var(--primary-blue) 0%, var(--secondary-blue) 50%, #42a5f5 100%);
+  background: linear-gradient(
+    135deg,
+    var(--primary-blue) 0%,
+    var(--secondary-blue) 50%,
+    #42a5f5 100%
+  );
 }
