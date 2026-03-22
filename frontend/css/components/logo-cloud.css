@@ -1,0 +1,92 @@
+/* Logo Cloud Component Styles */
+
+.logo-cloud-section {
+  position: relative;
+  max-width: 89rem; /* max-w-7xl */
+  margin: 0 auto;
+  padding: 3rem 1rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+.logo-cloud-title {
+  text-align: center;
+  font-size: 1.25rem;
+  line-height: 1.75rem;
+  font-weight: 500;
+  letter-spacing: -0.025em;
+  margin-bottom: 1.25rem;
+  color: var(--text-dark);
+}
+
+@media (min-width: 768px) {
+  .logo-cloud-title {
+    font-size: 1.875rem;
+    line-height: 2.25rem;
+  }
+}
+
+.logo-cloud-title .text-muted {
+  color: var(--text-gray);
+}
+
+.logo-cloud-title .font-semibold {
+  font-weight: 600;
+}
+
+/* Dividers with gradient masks */
+.divider-top,
+.divider-bottom {
+  width: 100%;
+  max-width: 90.5rem; /* max-w-sm */
+  height: 1px;
+  margin: 1.25rem auto;
+  background-color: #e5e5e5; /* border color */
+  -webkit-mask-image: linear-gradient(to right, transparent, black, transparent);
+  mask-image: linear-gradient(to right, transparent, black, transparent);
+}
+
+.divider-bottom {
+  margin-top: 1.25rem;
+  margin-bottom: 0;
+}
+
+/* Logo container with gradient masks */
+.logo-cloud-container {
+  width: 100%;
+  padding: 1rem 0;
+  overflow: hidden;
+  -webkit-mask-image: linear-gradient(to right, transparent, black, transparent);
+  mask-image: linear-gradient(to right, transparent, black, transparent);
+}
+
+/* Infinite slider track */
+.infinite-slider {
+  display: flex;
+  gap: 42px;
+  width: max-content;
+  will-change: transform;
+}
+
+.logo-track {
+  display: flex;
+  gap: 42px;
+  align-items: center;
+}
+
+.logo-track img {
+  height: 1rem; /* h-4 */
+  width: auto;
+  max-width: 120px;
+  object-fit: contain;
+  pointer-events: none;
+  user-select: none;
+}
+
+@media (min-width: 768px) {
+  .logo-track img {
+    height: 1.25rem; /* md:h-5 */
+  }
+}
