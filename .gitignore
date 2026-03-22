@@ -8,7 +8,4 @@ build/
 .DS_Store
 .env
 .idea/
-.vscode/   
-
-.qwen/
-gha-creds-*.json
+.vscode/
