@@ -3,87 +3,181 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Haven Space - Find Your Perfect Boarding House</title>
+    <title>Haven Space - Find Your Haven</title>
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
-      href="https://fonts.googleapis.com/css2?family=Parisienne&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap"
+      href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap"
       rel="stylesheet"
     />
     <link rel="stylesheet" href="/frontend/css/global.css" />
     <link rel="stylesheet" href="/frontend/css/views/public.css" />
+    <link rel="stylesheet" href="/frontend/css/components/logo-cloud.css" />
   </head>
   <body>
-    <div class="background-grid"></div>
-
     <!-- Navigation -->
     <nav class="navbar">
       <div class="nav-container">
         <div class="nav-logo">
-          <span class="logo-icon">H</span>
           <span class="logo-text">Haven Space</span>
         </div>
         <ul class="nav-links">
-          <li><a href="#property">Property</a></li>
-          <li><a href="#services">Services</a></li>
-          <li><a href="#support">Support</a></li>
+          <li><a href="#home" class="active">Home</a></li>
+          <li><a href="#properties">Properties</a></li>
+          <li><a href="#app">App</a></li>
+          <li><a href="#about">About</a></li>
           <li><a href="#contact">Contact</a></li>
         </ul>
         <div class="nav-actions">
-          <a href="#signin" class="btn-signin">Sign in</a>
-          <a href="#download" class="btn-download">Download App</a>
+          <a href="auth/login.html" class="btn-login">Log in</a>
+          <a href="auth/signup.html" class="btn-join">Join now</a>
         </div>
       </div>
     </nav>
 
     <!-- Hero Section -->
-    <main class="hero">
+    <main class="hero hero-background">
       <div class="hero-container">
         <div class="hero-content">
-          <div class="hero-tag">Smart Living Solutions</div>
-          <h1 class="hero-title">
-            <span class="title-brand">Haven Space:</span>
-            <span class="title-script">Find Your Perfect Boarding House Near You.</span>
-          </h1>
-          <div class="hero-description">
-            <p>
-              <strong>For Boarders:</strong> Explore verified near-boarding house listings with ease
-              using our intuitive app.
-            </p>
-            <p>
-              <strong>For Landlords:</strong> Seamlessly manage your properties and connect directly
-              with tenants. Your home, simplified.
-            </p>
-          </div>
+          <h1 class="hero-title">Find your haven,<br />right next door.</h1>
+          <p class="hero-description">
+            Haven Space connects you with verified boarding houses near your location, managed by
+            trusted landlords. Use our mobile app to search, book, and settle in.
+          </p>
           <div class="hero-buttons">
-            <a href="#landlords" class="btn-primary">For Landlords</a>
-            <a href="#boarders" class="btn-secondary">Download Boarder App</a>
-          </div>
-          <div class="hero-stats">
-            <div class="stat">
-              <span class="stat-number">10K+</span>
-              <span class="stat-label">Verified Rooms</span>
-            </div>
-            <div class="stat">
-              <span class="stat-number">500+</span>
-              <span class="stat-label">Active Landlords</span>
-            </div>
-            <div class="stat">
-              <span class="stat-number">100+</span>
-              <span class="stat-label">Neighborhoods Covered</span>
-            </div>
+            <a href="#landlords" class="btn-landlords">For Landlords</a>
+            <a href="#download" class="btn-download">Download Our App</a>
           </div>
         </div>
         <div class="hero-image">
           <img
-            src="/frontend/assets/images/public/right_img.png"
-            alt="Haven Space Community Illustration"
+            src="/frontend/assets/images/public/PrimeRealEstate.png"
+            alt="City skyline illustration"
           />
         </div>
       </div>
     </main>
 
+    <!-- Logo Cloud Section -->
+    <section class="logo-cloud-section">
+      <h2 class="logo-cloud-title">
+        <span class="text-muted">Trusted by experts.</span>
+        <br />
+        <span class="font-semibold">Used by the leaders.</span>
+      </h2>
+      <div class="divider-top"></div>
+
+      <div class="logo-cloud-container">
+        <div class="infinite-slider" id="logoSlider">
+          <!-- First set of logos -->
+          <div class="logo-track">
+            <img
+              src="https://storage.efferd.com/logo/nvidia-wordmark.svg"
+              alt="Nvidia"
+              loading="lazy"
+              onerror="this.style.display='none'"
+            />
+            <img
+              src="https://storage.efferd.com/logo/supabase-wordmark.svg"
+              alt="Supabase"
+              loading="lazy"
+              onerror="this.style.display='none'"
+            />
+            <img
+              src="https://storage.efferd.com/logo/openai-wordmark.svg"
+              alt="OpenAI"
+              loading="lazy"
+              onerror="this.style.display='none'"
+            />
+            <img
+              src="https://storage.efferd.com/logo/turso-wordmark.svg"
+              alt="Turso"
+              loading="lazy"
+              onerror="this.style.display='none'"
+            />
+            <img
+              src="https://storage.efferd.com/logo/vercel-wordmark.svg"
+              alt="Vercel"
+              loading="lazy"
+              onerror="this.style.display='none'"
+            />
+            <img
+              src="https://storage.efferd.com/logo/github-wordmark.svg"
+              alt="GitHub"
+              loading="lazy"
+              onerror="this.style.display='none'"
+            />
+            <img
+              src="https://storage.efferd.com/logo/claude-wordmark.svg"
+              alt="Claude AI"
+              loading="lazy"
+              onerror="this.style.display='none'"
+            />
+            <img
+              src="https://storage.efferd.com/logo/clerk-wordmark.svg"
+              alt="Clerk"
+              loading="lazy"
+              onerror="this.style.display='none'"
+            />
+          </div>
+          <!-- Second set of logos (duplicate for seamless loop) -->
+          <div class="logo-track">
+            <img
+              src="https://storage.efferd.com/logo/nvidia-wordmark.svg"
+              alt="Nvidia"
+              loading="lazy"
+              onerror="this.style.display='none'"
+            />
+            <img
+              src="https://storage.efferd.com/logo/supabase-wordmark.svg"
+              alt="Supabase"
+              loading="lazy"
+              onerror="this.style.display='none'"
+            />
+            <img
+              src="https://storage.efferd.com/logo/openai-wordmark.svg"
+              alt="OpenAI"
+              loading="lazy"
+              onerror="this.style.display='none'"
+            />
+            <img
+              src="https://storage.efferd.com/logo/turso-wordmark.svg"
+              alt="Turso"
+              loading="lazy"
+              onerror="this.style.display='none'"
+            />
+            <img
+              src="https://storage.efferd.com/logo/vercel-wordmark.svg"
+              alt="Vercel"
+              loading="lazy"
+              onerror="this.style.display='none'"
+            />
+            <img
+              src="https://storage.efferd.com/logo/github-wordmark.svg"
+              alt="GitHub"
+              loading="lazy"
+              onerror="this.style.display='none'"
+            />
+            <img
+              src="https://storage.efferd.com/logo/claude-wordmark.svg"
+              alt="Claude AI"
+              loading="lazy"
+              onerror="this.style.display='none'"
+            />
+            <img
+              src="https://storage.efferd.com/logo/clerk-wordmark.svg"
+              alt="Clerk"
+              loading="lazy"
+              onerror="this.style.display='none'"
+            />
+          </div>
+        </div>
+      </div>
+
+      <div class="divider-bottom"></div>
+    </section>
+
     <!-- ES Module Entry Point -->
-    <script type="module" src="/js/main.js"></script>
+    <script type="module" src="/frontend/js/main.js"></script>
   </body>
 </html>
