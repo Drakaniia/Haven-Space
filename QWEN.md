@@ -11,14 +11,14 @@ The application provides property listings, booking management, and a mobile-fri
 
 ## Technology Stack
 
-| Category | Technology |
-|----------|------------|
-| **Frontend** | HTML5, CSS3, Vanilla JavaScript (ES6+) |
-| **Fonts** | Plus Jakarta Sans (Google Fonts) |
-| **Styling** | Custom CSS with CSS custom properties (variables) |
-| **Code Formatting** | Prettier |
-| **Deployment** | GitHub Pages |
-| **CI/CD** | GitHub Actions |
+| Category            | Technology                                        |
+| ------------------- | ------------------------------------------------- |
+| **Frontend**        | HTML5, CSS3, Vanilla JavaScript (ES6+)            |
+| **Fonts**           | Plus Jakarta Sans (Google Fonts)                  |
+| **Styling**         | Custom CSS with CSS custom properties (variables) |
+| **Code Formatting** | Prettier                                          |
+| **Deployment**      | GitHub Pages                                      |
+| **CI/CD**           | GitHub Actions                                    |
 
 ## Project Structure
 
@@ -142,6 +142,7 @@ Navigate to `http://localhost:3000/frontend/views/public/index.html` to view the
 The application deploys automatically to **GitHub Pages** when changes are pushed to the `main` branch via the GitHub Actions workflow (`.github/workflows/github-pages.yml`).
 
 Manual deployment trigger:
+
 - Go to Actions → "Deploy to GitHub Pages" → Run workflow
 
 ## Development Conventions
@@ -149,6 +150,7 @@ Manual deployment trigger:
 ### Code Formatting (Prettier)
 
 Configuration (`.prettierrc`):
+
 ```json
 {
   "semi": true,
@@ -190,6 +192,7 @@ Follow **Conventional Commits** specification:
 | `ci` | CI/CD workflows |
 
 **Examples:**
+
 ```bash
 git commit -m "feat: add user authentication system"
 git commit -m "fix(css): resolve navigation overflow on mobile"
@@ -214,6 +217,7 @@ git checkout -b docs/update-readme
 - **Import Order**: `global.css` imports component and view styles
 
 **Color Palette:**
+
 ```css
 --primary-green: #4a7c23;
 --dark-green: #2d4a14;
@@ -244,6 +248,7 @@ document.addEventListener('DOMContentLoaded', () => {
 ## Key Features
 
 ### Authentication System
+
 - Login page with email/password and social sign-in (Google, Apple)
 - Signup flow with role selection (landlord/boarder)
 - Forgot password with email recovery
@@ -251,12 +256,14 @@ document.addEventListener('DOMContentLoaded', () => {
 - Form validation
 
 ### Homepage
+
 - Hero section with modern design
 - Logo cloud with infinite horizontal slider
 - Responsive navigation
 - Call-to-action buttons
 
 ### User Dashboards (Planned/In Progress)
+
 - **Admin**: System administration
 - **Landlord**: Property management, tenant connections
 - **Boarder**: Property search, booking management
