@@ -1,57 +1,79 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Landing - Boarding House Management</title>
-  <link rel="stylesheet" href="/css/global.css">
-  <link rel="stylesheet" href="/css/components/nav.css">
-  <link rel="stylesheet" href="/css/components/buttons.css">
-  <link rel="stylesheet" href="/css/components/cards.css">
-  <link rel="stylesheet" href="/css/views/landing.css">
-</head>
-<body>
-  <!-- Navigation -->
-  <nav id="nav-container"></nav>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Landing - Boarding House Management</title>
+    <link rel="stylesheet" href="/css/global.css" />
+    <link rel="stylesheet" href="/css/components/nav.css" />
+    <link rel="stylesheet" href="/css/components/buttons.css" />
+    <link rel="stylesheet" href="/css/components/cards.css" />
+    <link rel="stylesheet" href="/css/views/landing.css" />
+  </head>
+  <body>
+    <!-- Dashed Top Fade Grid Background -->
+    <div class="landing-container">
+      <div
+        class="landing-grid-bg"
+        style="
+          background-image:
+            linear-gradient(to right, #e7e5e4 1px, transparent 1px),
+            linear-gradient(to bottom, #e7e5e4 1px, transparent 1px);
+          background-size: 20px 20px;
+          background-position:
+            0 0,
+            0 0;
+          -webkit-mask-image:
+            repeating-linear-gradient(
+              to right,
+              black 0px,
+              black 3px,
+              transparent 3px,
+              transparent 8px
+            ),
+            repeating-linear-gradient(
+              to bottom,
+              black 0px,
+              black 3px,
+              transparent 3px,
+              transparent 8px
+            ),
+            radial-gradient(ellipse 70% 60% at 50% 0%, #000 60%, transparent 100%);
+          mask-image:
+            repeating-linear-gradient(
+              to right,
+              black 0px,
+              black 3px,
+              transparent 3px,
+              transparent 8px
+            ),
+            repeating-linear-gradient(
+              to bottom,
+              black 0px,
+              black 3px,
+              transparent 3px,
+              transparent 8px
+            ),
+            radial-gradient(ellipse 70% 60% at 50% 0%, #000 60%, transparent 100%);
+          -webkit-mask-composite: source-in;
+          mask-composite: intersect;
+        "
+      ></div>
+      <div class="landing-content">
+        <!-- Navigation -->
+        <nav id="nav-container"></nav>
 
-  <!-- Header -->
-  <header id="header-container"></header>
+        <!-- Header -->
+        <header id="header-container"></header>
 
-  <main>
-    <!-- Hero Section -->
-    <section class="hero">
-      <h1>Welcome to Boarding House Management</h1>
-      <p>Your one-stop platform for managing boarding house rentals</p>
-      <div class="hero-actions">
-        <button class="cta-button primary" data-action="register">Become a Landlord</button>
-        <button class="cta-button secondary" data-action="login">Login</button>
+        <main></main>
       </div>
-    </section>
+    </div>
 
-    <!-- Features Section -->
-    <section class="features">
-      <h2>Our Features</h2>
-      <div class="features-grid">
-        <div class="feature-card">
-          <h3>🏠 Property Management</h3>
-          <p>Easily manage your rental properties</p>
-        </div>
-        <div class="feature-card">
-          <h3>👥 Tenant Management</h3>
-          <p>Keep track of your tenants and bookings</p>
-        </div>
-        <div class="feature-card">
-          <h3>💰 Payment Tracking</h3>
-          <p>Monitor payments and financial reports</p>
-        </div>
-      </div>
-    </section>
-  </main>
+    <!-- Footer -->
+    <footer id="footer-container"></footer>
 
-  <!-- Footer -->
-  <footer id="footer-container"></footer>
-
-  <!-- ES Module Entry Point -->
-  <script type="module" src="/js/main.js"></script>
-</body>
+    <!-- ES Module Entry Point -->
+    <script type="module" src="/js/main.js"></script>
+  </body>
 </html>

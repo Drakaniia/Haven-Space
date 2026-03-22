@@ -1,113 +1,113 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Admin Dashboard - Boarding House Management</title>
-  <link rel="stylesheet" href="/css/global.css">
-  <link rel="stylesheet" href="/css/components/nav.css">
-  <link rel="stylesheet" href="/css/components/buttons.css">
-  <link rel="stylesheet" href="/css/components/cards.css">
-  <link rel="stylesheet" href="/css/components/forms.css">
-  <link rel="stylesheet" href="/css/views/admin.css">
-</head>
-<body>
-  <!-- Navigation -->
-  <nav id="nav-container"></nav>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Admin Dashboard - Boarding House Management</title>
+    <link rel="stylesheet" href="/css/global.css" />
+    <link rel="stylesheet" href="/css/components/nav.css" />
+    <link rel="stylesheet" href="/css/components/buttons.css" />
+    <link rel="stylesheet" href="/css/components/cards.css" />
+    <link rel="stylesheet" href="/css/components/forms.css" />
+    <link rel="stylesheet" href="/css/views/admin.css" />
+  </head>
+  <body>
+    <!-- Navigation -->
+    <nav id="nav-container"></nav>
 
-  <!-- Header -->
-  <header id="header-container"></header>
+    <!-- Header -->
+    <header id="header-container"></header>
 
-  <main class="dashboard">
-    <aside class="dashboard-sidebar">
-      <nav class="dashboard-nav">
-        <a href="#overview" class="dashboard-tab active">Overview</a>
-        <a href="#users" class="dashboard-tab">Users</a>
-        <a href="#properties" class="dashboard-tab">Properties</a>
-        <a href="#bookings" class="dashboard-tab">Bookings</a>
-        <a href="#analytics" class="dashboard-tab">Analytics</a>
-        <a href="#settings" class="dashboard-tab">Settings</a>
-      </nav>
-    </aside>
+    <main class="dashboard">
+      <aside class="dashboard-sidebar">
+        <nav class="dashboard-nav">
+          <a href="#overview" class="dashboard-tab active">Overview</a>
+          <a href="#users" class="dashboard-tab">Users</a>
+          <a href="#properties" class="dashboard-tab">Properties</a>
+          <a href="#bookings" class="dashboard-tab">Bookings</a>
+          <a href="#analytics" class="dashboard-tab">Analytics</a>
+          <a href="#settings" class="dashboard-tab">Settings</a>
+        </nav>
+      </aside>
 
-    <section class="dashboard-content">
-      <div class="dashboard-header">
-        <h1>Admin Dashboard</h1>
-      </div>
-
-      <!-- Overview Section -->
-      <section id="overview" class="dashboard-section">
-        <h2>Overview</h2>
-        <div class="stats-grid">
-          <div class="stat-card">
-            <h3>Total Users</h3>
-            <p id="total-users" class="stat-value">0</p>
-          </div>
-          <div class="stat-card">
-            <h3>Total Properties</h3>
-            <p id="total-properties" class="stat-value">0</p>
-          </div>
-          <div class="stat-card">
-            <h3>Active Bookings</h3>
-            <p id="active-bookings" class="stat-value">0</p>
-          </div>
-          <div class="stat-card">
-            <h3>Revenue</h3>
-            <p id="revenue" class="stat-value">$0</p>
-          </div>
+      <section class="dashboard-content">
+        <div class="dashboard-header">
+          <h1>Admin Dashboard</h1>
         </div>
+
+        <!-- Overview Section -->
+        <section id="overview" class="dashboard-section">
+          <h2>Overview</h2>
+          <div class="stats-grid">
+            <div class="stat-card">
+              <h3>Total Users</h3>
+              <p id="total-users" class="stat-value">0</p>
+            </div>
+            <div class="stat-card">
+              <h3>Total Properties</h3>
+              <p id="total-properties" class="stat-value">0</p>
+            </div>
+            <div class="stat-card">
+              <h3>Active Bookings</h3>
+              <p id="active-bookings" class="stat-value">0</p>
+            </div>
+            <div class="stat-card">
+              <h3>Revenue</h3>
+              <p id="revenue" class="stat-value">$0</p>
+            </div>
+          </div>
+        </section>
+
+        <!-- Users Management Section -->
+        <section id="users" class="dashboard-section hidden">
+          <h2>User Management</h2>
+          <div class="user-tabs">
+            <button class="user-tab active" data-type="all">All</button>
+            <button class="user-tab" data-type="landlords">Landlords</button>
+            <button class="user-tab" data-type="boarders">Boarders</button>
+            <button class="user-tab" data-type="admins">Admins</button>
+          </div>
+          <table class="data-table" id="users-table">
+            <thead>
+              <tr>
+                <th>Name</th>
+                <th>Email</th>
+                <th>Role</th>
+                <th>Status</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              <!-- Users loaded dynamically -->
+            </tbody>
+          </table>
+        </section>
+
+        <!-- Pending Properties Section -->
+        <section id="properties" class="dashboard-section hidden">
+          <h2>Pending Property Approvals</h2>
+          <div id="pending-properties">
+            <!-- Properties loaded dynamically -->
+          </div>
+        </section>
+
+        <!-- Analytics Section -->
+        <section id="analytics" class="dashboard-section hidden">
+          <h2>Analytics</h2>
+          <div id="analytics-charts">
+            <!-- Charts rendered dynamically -->
+          </div>
+        </section>
       </section>
+    </main>
 
-      <!-- Users Management Section -->
-      <section id="users" class="dashboard-section hidden">
-        <h2>User Management</h2>
-        <div class="user-tabs">
-          <button class="user-tab active" data-type="all">All</button>
-          <button class="user-tab" data-type="landlords">Landlords</button>
-          <button class="user-tab" data-type="boarders">Boarders</button>
-          <button class="user-tab" data-type="admins">Admins</button>
-        </div>
-        <table class="data-table" id="users-table">
-          <thead>
-            <tr>
-              <th>Name</th>
-              <th>Email</th>
-              <th>Role</th>
-              <th>Status</th>
-              <th>Actions</th>
-            </tr>
-          </thead>
-          <tbody>
-            <!-- Users loaded dynamically -->
-          </tbody>
-        </table>
-      </section>
+    <!-- Footer -->
+    <footer id="footer-container"></footer>
 
-      <!-- Pending Properties Section -->
-      <section id="properties" class="dashboard-section hidden">
-        <h2>Pending Property Approvals</h2>
-        <div id="pending-properties">
-          <!-- Properties loaded dynamically -->
-        </div>
-      </section>
+    <!-- Theme Toggle -->
+    <button id="theme-toggle" class="theme-toggle">🌓</button>
 
-      <!-- Analytics Section -->
-      <section id="analytics" class="dashboard-section hidden">
-        <h2>Analytics</h2>
-        <div id="analytics-charts">
-          <!-- Charts rendered dynamically -->
-        </div>
-      </section>
-    </section>
-  </main>
-
-  <!-- Footer -->
-  <footer id="footer-container"></footer>
-
-  <!-- Theme Toggle -->
-  <button id="theme-toggle" class="theme-toggle">🌓</button>
-
-  <!-- ES Module Entry Point -->
-  <script type="module" src="/js/main.js"></script>
-</body>
+    <!-- ES Module Entry Point -->
+    <script type="module" src="/js/main.js"></script>
+  </body>
 </html>
