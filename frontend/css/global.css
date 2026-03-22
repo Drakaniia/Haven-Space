@@ -1,3 +1,6 @@
+@import './components/logo-cloud.css';
+@import './views/auth.css';
+
 * {
   margin: 0;
   padding: 0;
@@ -5,30 +8,20 @@
 }
 
 :root {
-  --primary-blue: #0d47a1;
-  --secondary-blue: #1976d2;
-  --accent-teal: #26a69a;
-  --text-white: #ffffff;
-  --text-light: #e3f2fd;
-  --text-muted: #bbdefb;
+  --primary-green: #4a7c23;
+  --dark-green: #2d4a14;
+  --light-green: #7cb342;
+  --bg-cream: #fef9f0;
+  --bg-green: #e8f5e9;
+  --text-dark: #1a1a1a;
+  --text-gray: #555555;
+  --white: #ffffff;
   --font-main: 'Plus Jakarta Sans', sans-serif;
+  --border-color: #e5e5e5;
 }
 
 body {
   font-family: var(--font-main);
   min-height: 100vh;
   overflow-x: hidden;
-}
-
-.background-grid {
-  position: fixed;
-  inset: 0;
-  z-index: -1;
-  min-height: 100vh;
-  background: linear-gradient(
-    135deg,
-    var(--primary-blue) 0%,
-    var(--secondary-blue) 50%,
-    #42a5f5 100%
-  );
 }
