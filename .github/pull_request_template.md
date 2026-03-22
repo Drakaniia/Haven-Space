@@ -1,18 +1,22 @@
 ## What was done
+
 <!-- Briefly describe the changes made in this PR -->
 
-- 
-- 
-- 
+-
+-
+-
 
 ## Changes
+
 <!-- Provide more details about specific changes -->
 
 ### Feature/Area
+
 - Specific change 1
 - Specific change 2
 
 ## Testing
+
 <!-- Describe how to test these changes -->
 
 ```bash
@@ -22,9 +26,11 @@ npm run dev
 ```
 
 ## Screenshots (if applicable)
+
 <!-- Add screenshots for UI changes -->
 
 ## Related Issue
+
 <!-- Link to related issue(s) -->
 
 Closes #

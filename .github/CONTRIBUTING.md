@@ -29,13 +29,13 @@ We follow the **Conventional Commits** specification:
 
 ### Structure
 
-| Part | Description | Required |
-|------|-------------|----------|
-| `type` | The type of change (see below) | ✅ Yes |
-| `scope` | The section of the codebase affected | ❌ Optional |
-| `description` | Short summary of the change | ✅ Yes |
-| `body` | Detailed explanation | ❌ Optional |
-| `footer` | Related issues, breaking changes | ❌ Optional |
+| Part          | Description                          | Required    |
+| ------------- | ------------------------------------ | ----------- |
+| `type`        | The type of change (see below)       | ✅ Yes      |
+| `scope`       | The section of the codebase affected | ❌ Optional |
+| `description` | Short summary of the change          | ✅ Yes      |
+| `body`        | Detailed explanation                 | ❌ Optional |
+| `footer`      | Related issues, breaking changes     | ❌ Optional |
 
 ### Examples
 
@@ -64,19 +64,19 @@ Closes #42"
 
 ## Commit Types
 
-| Type | Description | When to Use |
-|------|-------------|-------------|
-| `feat` | New feature | Adding new functionality |
-| `fix` | Bug fix | Fixing a bug or error |
-| `docs` | Documentation | Updating docs, README, comments |
-| `style` | Formatting | Code style changes (whitespace, semicolons) |
-| `refactor` | Code refactoring | Restructuring without changing behavior |
-| `test` | Tests | Adding or updating tests |
-| `chore` | Maintenance | Build process, dependencies, config |
-| `perf` | Performance | Improving performance |
-| `ci` | CI/CD | GitHub Actions, workflows |
-| `build` | Build system | Webpack, Vite, bundler changes |
-| `setup` | Initial setup | Project scaffolding, architecture |
+| Type       | Description      | When to Use                                 |
+| ---------- | ---------------- | ------------------------------------------- |
+| `feat`     | New feature      | Adding new functionality                    |
+| `fix`      | Bug fix          | Fixing a bug or error                       |
+| `docs`     | Documentation    | Updating docs, README, comments             |
+| `style`    | Formatting       | Code style changes (whitespace, semicolons) |
+| `refactor` | Code refactoring | Restructuring without changing behavior     |
+| `test`     | Tests            | Adding or updating tests                    |
+| `chore`    | Maintenance      | Build process, dependencies, config         |
+| `perf`     | Performance      | Improving performance                       |
+| `ci`       | CI/CD            | GitHub Actions, workflows                   |
+| `build`    | Build system     | Webpack, Vite, bundler changes              |
+| `setup`    | Initial setup    | Project scaffolding, architecture           |
 
 ---
 
@@ -84,14 +84,14 @@ Closes #42"
 
 Format: `<type>/<description>`
 
-| Type | Description |
-|------|-------------|
-| `feat` | New feature |
-| `fix` | Bug fix |
-| `docs` | Documentation |
-| `refactor` | Refactoring |
-| `chore` | Maintenance |
-| `hotfix` | Urgent production fix |
+| Type       | Description           |
+| ---------- | --------------------- |
+| `feat`     | New feature           |
+| `fix`      | Bug fix               |
+| `docs`     | Documentation         |
+| `refactor` | Refactoring           |
+| `chore`    | Maintenance           |
+| `hotfix`   | Urgent production fix |
 
 ### Examples
 
@@ -117,24 +117,32 @@ Use the same format as commit messages:
 
 ### PR Description Template
 
-```markdown
+````markdown
 ## What was done
+
 - Brief list of changes made
 
 ## Changes
+
 ### Feature/Area
+
 - Specific change 1
 - Specific change 2
 
 ## Testing
+
 How to test these changes:
+
 ```bash
 # Commands to run
 ```
+````
 
 ## Related Issue
+
 Closes #<issue-number>
-```
+
+````
 
 ### Before Submitting
 
@@ -177,7 +185,7 @@ async function fetchUser(id) {
 // ❌ Avoid
 var x = 10;
 function getData(i) { ... }
-```
+````
 
 ### CSS
 
@@ -187,14 +195,20 @@ function getData(i) { ... }
 
 ```css
 /* ✅ Good */
-.card { }
-.card-header { }
-.card-body { }
-.card--featured { }
+.card {
+}
+.card-header {
+}
+.card-body {
+}
+.card--featured {
+}
 
 /* ❌ Avoid */
-.crd { }
-.cardHeader { }
+.crd {
+}
+.cardHeader {
+}
 ```
 
 ### HTML
@@ -206,13 +220,13 @@ function getData(i) { ... }
 ```html
 <!-- ✅ Good -->
 <article class="property-card">
-  <img src="..." alt="Property exterior view">
+  <img src="..." alt="Property exterior view" />
   <h3>Property Name</h3>
 </article>
 
 <!-- ❌ Avoid -->
 <div class="card">
-  <img src="...">
+  <img src="..." />
   <div>Property Name</div>
 </div>
 ```
