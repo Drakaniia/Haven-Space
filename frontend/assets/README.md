@@ -16,5 +16,5 @@ assets/
 Reference assets with absolute paths from the root:
 
 ```html
-<img src="/assets/images/logo.png" alt="Logo">
+<img src="/assets/images/logo.png" alt="Logo" />
 ```

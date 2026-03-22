@@ -27,18 +27,22 @@ Include in HTML as a module:
 ## Modules
 
 ### `main.js`
+
 - Auto-detects current view from URL path
 - Initializes appropriate view controller
 - Handles global events (theme toggle, navigation)
 
 ### `shared/state.js`
+
 - Application state management
 - Authentication helpers
 - API fetch wrapper with auth
 - Utility functions (date formatting)
 
 ### View Controllers
+
 Each view module exports an `init` function:
+
 - `initLandingView()`
 - `initLandlordView()`
 - `initBoarderView()`

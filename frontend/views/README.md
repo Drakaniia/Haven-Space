@@ -18,16 +18,17 @@ views/
 
 ## Routes
 
-| View | URL Path | Description |
-|------|----------|-------------|
-| landing | `/` or `/views/landing/` | Public homepage |
-| landlord | `/views/landlord/` | Landlord property management |
-| boarder | `/views/boarder/` | Boarder property browsing |
-| admin | `/views/admin/` | Admin system management |
+| View     | URL Path                 | Description                  |
+| -------- | ------------------------ | ---------------------------- |
+| landing  | `/` or `/views/landing/` | Public homepage              |
+| landlord | `/views/landlord/`       | Landlord property management |
+| boarder  | `/views/boarder/`        | Boarder property browsing    |
+| admin    | `/views/admin/`          | Admin system management      |
 
 ## Features
 
 Each view includes:
+
 - Navigation (loaded from `/partials/nav.html`)
 - Header (loaded from `/partials/header.html`)
 - Footer (loaded from `/partials/footer.html`)
