@@ -1,5 +1,6 @@
 @import './components/logo-cloud.css';
-@import './views/auth.css';
+@import './views/public/auth.css';
+@import './views/boarder/boarder.css';
 
 * {
   margin: 0;

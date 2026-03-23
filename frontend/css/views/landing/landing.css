@@ -1,0 +1,17 @@
+/* Landing page layout styles */
+.landing-container {
+  min-height: 100vh;
+  width: 100%;
+  position: relative;
+}
+
+.landing-grid-bg {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+}
+
+.landing-content {
+  position: relative;
+  z-index: 10;
+}

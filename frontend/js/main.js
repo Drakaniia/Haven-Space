@@ -1,9 +1,18 @@
 import { initLogoCloud } from './components/logo-cloud.js';
+import { initSidebar } from './components/sidebar.js';
 
 // Initialize components
 document.addEventListener('DOMContentLoaded', () => {
   initLogoCloud();
   initFloatingHeader();
+  initSidebar({
+    role: 'boarder',
+    user: {
+      name: 'Juan Dela Cruz',
+      initials: 'JD',
+      role: 'Boarder',
+    },
+  });
 });
 
 /**
