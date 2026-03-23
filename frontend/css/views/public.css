@@ -5,19 +5,36 @@
   left: 0;
   right: 0;
   z-index: 100;
-  padding: 1rem 2rem;
+  padding: 0;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-.nav-container {
-  max-width: 1200px;
+/* Initial state - full width at top */
+.navbar .nav-container {
+  max-width: 100%;
   margin: 0 auto;
   display: flex;
   justify-content: space-between;
   align-items: center;
   background: var(--white);
   padding: 0.75rem 1.5rem;
+  border-radius: 0;
+  box-shadow: none;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Scrolled state - floating pill */
+.navbar.scrolled {
+  padding: 0;
+}
+
+.navbar.scrolled .nav-container {
+  max-width: 64rem; /* max-w-5xl equivalent */
+  margin: 1rem auto;
   border-radius: 50px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+  backdrop-filter: blur(16px) saturate(180%);
+  background: rgba(255, 255, 255, 0.7);
 }
 
 .nav-logo {
@@ -188,11 +205,21 @@
 /* Responsive Design */
 @media (max-width: 768px) {
   .navbar {
-    padding: 1rem;
+    padding: 0;
   }
 
-  .nav-container {
+  .navbar.scrolled {
+    padding: 0;
+  }
+
+  .navbar .nav-container {
     padding: 0.75rem 1rem;
+  }
+
+  .navbar.scrolled .nav-container {
+    max-width: 100%;
+    margin: 0.5rem 0;
+    border-radius: 25px;
   }
 
   .nav-links {
