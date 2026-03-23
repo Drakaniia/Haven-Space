@@ -116,8 +116,9 @@
 .hero-background {
   inset: 0;
   z-index: 0;
-  min-height: 100vh;
-  background: linear-gradient(180deg, #f5f8e8 0%, #ffffff 40%, #ffffff 100%);
+  background-image:
+    radial-gradient(at 25% -12%, rgba(255, 226, 178, 0.8) 0%, transparent 50%),
+    radial-gradient(at 75% -1%, rgba(78, 237, 80, 0.39) 0%, transparent 50%);
 }
 
 .hero-container {
@@ -130,7 +131,7 @@
 .hero-content {
   text-align: center;
   max-width: 800px;
-  padding: 8rem 0;
+  padding: 6rem 0;
 }
 
 .hero-title {
@@ -200,6 +201,7 @@
   height: auto;
   display: block;
   margin: 0% auto;
+  z-index: -1;
 }
 
 /* Responsive Design */
