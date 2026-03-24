@@ -30,28 +30,49 @@ Final/
 │   └── workflows/
 │       ├── github-pages.yml     # Deployment workflow
 │       └── prettier-check.yml   # Code formatting check
-├── backend/                     # Backend (placeholder - .gitkeep)
+├── backend/                     # Backend API
+│   ├── api/
+│   │   ├── config/              # Database configuration
+│   │   ├── controllers/         # Request handlers
+│   │   ├── middleware/          # Auth, validation middleware
+│   │   ├── models/              # Database models
+│   │   └── routes.php           # API route definitions
+│   └── Readme.md
 ├── frontend/
 │   ├── assets/
 │   │   ├── images/              # Image assets (logos, illustrations)
-│   │   ├── maps_sample.html
+│   │   │   └── public/          # Public-facing images
+│   │   │       ├── login.png
+│   │   │       └── PrimeRealEstate.png
+│   │   ├── nvidia.svg
 │   │   └── README.md
 │   ├── components/              # Reusable HTML components
-│   │   └── logo-cloud.html
+│   │   ├── logo-cloud.html      # Infinite logo slider
+│   │   └── sidebar.html         # Dashboard sidebar navigation
 │   ├── css/
 │   │   ├── components/          # Component-specific styles
-│   │   │   ├── buttons.css
-│   │   │   ├── cards.css
-│   │   │   ├── forms.css
-│   │   │   ├── logo-cloud.css
-│   │   │   └── nav.css
-│   │   ├── views/               # Page-specific styles
-│   │   │   ├── admin.css
-│   │   │   ├── auth.css
-│   │   │   ├── boarder.css
-│   │   │   ├── landing.css
-│   │   │   ├── landlord.css
-│   │   │   └── public.css
+│   │   │   ├── logo-cloud.css   # Logo cloud slider styles
+│   │   │   └── sidebar.css      # Sidebar navigation styles
+│   │   ├── views/               # Page-specific styles (nested by view type)
+│   │   │   ├── admin/
+│   │   │   │   └── admin.css
+│   │   │   ├── boarder/
+│   │   │   │   ├── boarder.css
+│   │   │   │   ├── boarder-applications.css
+│   │   │   │   ├── boarder-maintenance.css
+│   │   │   │   ├── boarder-payments.css
+│   │   │   │   └── boarder-rooms.css
+│   │   │   ├── landing/
+│   │   │   │   └── landing.css
+│   │   │   ├── landlord/
+│   │   │   │   ├── landlord.css
+│   │   │   │   ├── landlord-applications.css
+│   │   │   │   ├── landlord-listings.css
+│   │   │   │   ├── landlord-maintenance.css
+│   │   │   │   └── landlord-payments.css
+│   │   │   └── public/
+│   │   │       ├── auth.css
+│   │   │       └── public.css
 │   │   ├── global.css           # Global styles & CSS variables
 │   │   └── README.md
 │   ├── js/
@@ -60,32 +81,86 @@ Final/
 │   │   │   ├── login.js
 │   │   │   └── signup.js
 │   │   ├── components/          # Component logic
-│   │   │   └── logo-cloud.js
+│   │   │   ├── logo-cloud.js
+│   │   │   └── sidebar.js
 │   │   ├── shared/              # Shared utilities
 │   │   │   └── state.js
-│   │   ├── views/               # Page-specific logic
-│   │   │   ├── admin.js
-│   │   │   ├── boarder.js
-│   │   │   ├── landing.js
-│   │   │   └── landlord.js
+│   │   ├── views/               # Page-specific logic (nested by view type)
+│   │   │   ├── admin/
+│   │   │   │   └── admin.js
+│   │   │   ├── boarder/
+│   │   │   │   ├── boarder.js
+│   │   │   │   ├── boarder-applications.js
+│   │   │   │   ├── boarder-maintenance.js
+│   │   │   │   ├── boarder-payments.js
+│   │   │   │   └── boarder-rooms.js
+│   │   │   ├── landing/
+│   │   │   │   └── landing.js
+│   │   │   ├── landlord/
+│   │   │   │   ├── landlord.js
+│   │   │   │   ├── landlord-applications.js
+│   │   │   │   ├── landlord-listings.js
+│   │   │   │   ├── landlord-maintenance.js
+│   │   │   │   └── landlord-payments.js
+│   │   │   └── public/          # Reserved for public view logic
 │   │   ├── main.js              # Entry point
 │   │   └── README.md
-│   ├── partials/                # Reusable HTML partials
-│   │   ├── footer.html
-│   │   ├── header.html
-│   │   └── nav.html
 │   ├── views/
 │   │   ├── admin/               # Admin dashboard views
+│   │   │   └── index.html
 │   │   ├── boarder/             # Boarder dashboard views
-│   │   ├── landing/             # Landing page views
+│   │   │   ├── applications/    # Rental applications
+│   │   │   │   ├── index.html
+│   │   │   │   └── detail.html
+│   │   │   ├── index.html       # Boarder dashboard home
+│   │   │   ├── maintenance/     # Maintenance requests
+│   │   │   │   ├── index.html
+│   │   │   │   └── create.html
+│   │   │   ├── messages/        # Messaging system
+│   │   │   │   └── index.html
+│   │   │   ├── notices/         # Notices/announcements
+│   │   │   │   └── index.html
+│   │   │   ├── payments/        # Payment management
+│   │   │   │   ├── index.html
+│   │   │   │   └── pay.html
+│   │   │   ├── profile/         # User profile
+│   │   │   │   └── index.html
+│   │   │   └── rooms/           # Room browsing
+│   │   │       ├── index.html
+│   │   │       └── detail.html
 │   │   ├── landlord/            # Landlord dashboard views
+│   │   │   ├── applications/    # Application management
+│   │   │   │   ├── index.html
+│   │   │   │   └── detail.html
+│   │   │   ├── boarders/        # Boarder management
+│   │   │   │   ├── index.html
+│   │   │   │   └── detail.html
+│   │   │   ├── index.html       # Landlord dashboard home
+│   │   │   ├── listings/        # Property listings
+│   │   │   │   ├── index.html
+│   │   │   │   ├── create.html
+│   │   │   │   └── edit.html
+│   │   │   ├── maintenance/     # Maintenance tracking
+│   │   │   │   ├── index.html
+│   │   │   │   └── detail.html
+│   │   │   ├── messages/        # Messaging system
+│   │   │   │   └── index.html
+│   │   │   ├── payments/        # Payment tracking
+│   │   │   │   ├── index.html
+│   │   │   │   └── record.html
+│   │   │   ├── profile/         # User profile
+│   │   │   │   └── index.html
+│   │   │   └── reports/         # Reports & analytics
+│   │   │       └── index.html
 │   │   └── public/              # Public-facing views
-│   │       ├── auth/
+│   │       ├── auth/            # Authentication pages
 │   │       │   ├── login.html
 │   │       │   ├── signup.html
 │   │       │   └── forgot-password.html
-│   │       └── index.html       # Public homepage
-│   └── index.html               # Root redirect
+│   │       ├── index.html       # Public homepage
+│   │       └── maps.html        # Map view
+│   ├── index.html               # Root redirect to views/public/index.html
+│   └── README.md
 ├── .prettierrc                  # Prettier configuration
 ├── .prettierignore
 ├── package.json
@@ -239,11 +314,27 @@ git checkout -b docs/update-readme
 ```javascript
 // Entry point pattern (main.js)
 import { initLogoCloud } from './components/logo-cloud.js';
+import { initSidebar } from './components/sidebar.js';
 
 document.addEventListener('DOMContentLoaded', () => {
   initLogoCloud();
+  initFloatingHeader();
+  initSidebar({
+    role: 'boarder',
+    user: {
+      name: 'Juan Dela Cruz',
+      initials: 'JD',
+      role: 'Boarder',
+    },
+  });
 });
 ```
+
+**Main.js Functions:**
+
+- `initLogoCloud()` - Initializes infinite logo slider
+- `initSidebar(config)` - Initializes dashboard sidebar with user config
+- `initFloatingHeader()` - Handles scroll-triggered header transitions
 
 ## Key Features
 
@@ -259,14 +350,35 @@ document.addEventListener('DOMContentLoaded', () => {
 
 - Hero section with modern design
 - Logo cloud with infinite horizontal slider
-- Responsive navigation
+- Responsive navigation with floating header effect
 - Call-to-action buttons
 
-### User Dashboards (Planned/In Progress)
+### Dashboard Views
 
-- **Admin**: System administration
-- **Landlord**: Property management, tenant connections
-- **Boarder**: Property search, booking management
+**Boarder Dashboard:**
+
+- Rooms - Browse and view room details
+- Applications - Submit and track rental applications
+- Payments - View and make payments
+- Maintenance - Submit and track maintenance requests
+- Messages - Communication with landlords
+- Notices - View announcements
+- Profile - Manage user profile
+
+**Landlord Dashboard:**
+
+- Listings - Manage property listings (create, edit, view)
+- Boarders - Manage current boarders
+- Applications - Review and manage rental applications
+- Payments - Track and record payments
+- Maintenance - View and manage maintenance requests
+- Messages - Communication with boarders
+- Reports - View analytics and reports
+- Profile - Manage user profile
+
+**Admin Dashboard:**
+
+- System administration and oversight
 
 ## Current Branch Status
 
