@@ -1,0 +1,54 @@
+{
+  "extends": ["stylelint-config-standard"],
+  "plugins": ["stylelint-order"],
+  "rules": {
+    "at-rule-no-unknown": [
+      true,
+      {
+        "ignoreAtRules": ["tailwind", "apply", "variants", "responsive", "screen"]
+      }
+    ],
+    "no-descending-specificity": null,
+    "function-no-unknown": [
+      true,
+      {
+        "ignoreFunctions": ["theme"]
+      }
+    ],
+    "order/properties-alphabetical-order": true,
+    "property-no-vendor-prefix": true,
+    "value-no-vendor-prefix": true,
+    "number-max-precision": 5,
+    "color-hex-length": "short",
+    "color-hex-case": "lower",
+    "string-quotes": "single",
+    "unit-case": "lower",
+    "length-zero-no-unit": true,
+    "declaration-no-important": true,
+    "declaration-block-no-duplicate-properties": [
+      true,
+      {
+        "ignore": ["consecutive-duplicates-with-different-values"]
+      }
+    ],
+    "declaration-block-trailing-semicolon": "always",
+    "block-no-empty": true,
+    "selector-max-id": 0,
+    "selector-pseudo-element-colon-notation": "double",
+    "selector-pseudo-class-parentheses-space-inside": "never",
+    "media-feature-range-notation": "context",
+    "comment-empty-line-before": [
+      "always",
+      {
+        "ignore": ["stylelint-commands", "inside-block"]
+      }
+    ],
+    "custom-property-pattern": [
+      "^([a-z][a-z0-9]*)(-[a-z0-9]+)*$",
+      {
+        "message": "Custom property names must be lowercase and kebab-case"
+      }
+    ]
+  },
+  "ignoreFiles": ["**/*.js", "**/*.jsx", "**/*.ts", "**/*.tsx", "**/*.md"]
+}

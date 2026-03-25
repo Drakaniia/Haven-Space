@@ -1,0 +1,8 @@
+node_modules/**
+vendor/**
+dist/**
+build/**
+.github/**
+backend/**
+*.min.css
+coverage/**

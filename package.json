@@ -3,9 +3,25 @@
   "version": "1.0.0",
   "scripts": {
     "format": "prettier --write .",
-    "format:check": "prettier --check ."
+    "format:check": "prettier --check .",
+    "lint": "eslint frontend/js/**/*.js",
+    "lint:ci": "eslint frontend/js/**/*.js --max-warnings=0",
+    "lint:css": "stylelint \"frontend/css/**/*.css\"",
+    "lint:css:ci": "stylelint \"frontend/css/**/*.css\" --max-warnings=0",
+    "serve": "npx http-server ./frontend -p 3000 -c-1 --silent",
+    "lint:a11y": "npm run serve & sleep 2 && axe http://localhost:3000/views/public/index.html http://localhost:3000/views/public/auth/login.html http://localhost:3000/views/public/auth/signup.html --load-delay=500",
+    "lint:a11y:ci": "npm run serve & sleep 2 && axe http://localhost:3000/views/public/index.html --load-delay=500 --exit"
   },
   "devDependencies": {
-    "prettier": "^2.8.8"
+    "@axe-core/cli": "^4.11.0",
+    "@eslint/js": "^9.20.0",
+    "axe-core": "^4.11.0",
+    "eslint": "^9.20.0",
+    "globals": "^15.14.0",
+    "http-server": "^14.1.1",
+    "prettier": "^2.8.8",
+    "stylelint": "^16.14.0",
+    "stylelint-config-standard": "^37.0.0",
+    "stylelint-order": "^6.0.4"
   }
 }
