@@ -116,7 +116,8 @@
 .hero-background {
   inset: 0;
   z-index: 0;
-  background-image: radial-gradient(at 25% -12%, rgba(255, 226, 178, 0.8) 0%, transparent 50%),
+  background-image:
+    radial-gradient(at 25% -12%, rgba(255, 226, 178, 0.8) 0%, transparent 50%),
     radial-gradient(at 75% -1%, rgba(78, 237, 80, 0.39) 0%, transparent 50%);
 }
 
