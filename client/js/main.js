@@ -1,5 +1,6 @@
 import { initLogoCloud } from './components/logo-cloud.js';
 import { initSidebar } from './components/sidebar.js';
+import { initNavbar } from './components/navbar.js';
 
 // Initialize components
 document.addEventListener('DOMContentLoaded', () => {
@@ -19,6 +20,18 @@ document.addEventListener('DOMContentLoaded', () => {
         initials: 'JD',
         role: 'Boarder',
       },
+    });
+  }
+
+  // Only init navbar if container exists (dashboard pages only)
+  if (document.getElementById('navbar-container')) {
+    initNavbar({
+      user: {
+        name: 'Juan Dela Cruz',
+        initials: 'JD',
+        avatarUrl: '', // Will use default sample.png
+      },
+      notificationCount: 3,
     });
   }
 });

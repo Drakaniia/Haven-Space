@@ -28,8 +28,20 @@
 .boarder-main {
   flex: 1;
   margin-left: 280px;
-  padding: 24px 32px;
+  padding: 0;
   min-height: 100vh;
+}
+
+/* Navbar wrapper inside main */
+#navbar-container {
+  position: sticky;
+  top: 0;
+  z-index: 50;
+}
+
+/* Content wrapper for padding below navbar */
+.boarder-content {
+  padding: 24px 32px;
 }
 
 /* ===== Top Bar ===== */
