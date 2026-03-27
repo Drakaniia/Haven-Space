@@ -20,7 +20,9 @@ if (existsSync(DIST)) {
   try {
     rmSync(DIST, { recursive: true, force: true });
   } catch (error) {
-    console.warn(`⚠️  Warning: Could not delete ${DIST}, will attempt to overwrite: ${error.message}`);
+    console.warn(
+      `⚠️  Warning: Could not delete ${DIST}, will attempt to overwrite: ${error.message}`
+    );
   }
 }
 mkdirSync(DIST, { recursive: true });
