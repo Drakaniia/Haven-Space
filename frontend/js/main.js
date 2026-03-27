@@ -7,9 +7,9 @@ document.addEventListener('DOMContentLoaded', () => {
   if (document.getElementById('logoSlider')) {
     initLogoCloud();
   }
-  
+
   initFloatingHeader();
-  
+
   // Only init sidebar if container exists (dashboard pages only)
   if (document.getElementById('sidebar-container')) {
     initSidebar({
