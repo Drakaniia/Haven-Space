@@ -6,7 +6,7 @@
 
 ---
 
-## Core Problems (From Pitch)
+## Core Problems
 
 ### Student/Boarder Problems
 
@@ -52,7 +52,15 @@
 1. **Advanced Search & Filtering**
 
    - Filter by: price range, distance from university, amenities (WiFi, AC, kitchen)
-   - Map view with distance calculator
+   - **Interactive Map View** (Google Maps-inspired)
+     - See all available boarding houses pinned on map
+     - Distance calculator from current location/university
+     - Cluster markers for dense areas
+     - Custom map pins with property preview cards on hover
+     - Draw radius to search within specific distance
+     - Street view integration for neighborhood exploration
+     - Traffic layer to assess commute times
+     - Save favorite locations on map
    - Virtual tours (photo galleries, floor plans)
    - Comparison tool (side-by-side property comparison)
 
@@ -84,6 +92,22 @@
    - Automatic late fee calculation
    - Digital receipt generation
    - Payment reconciliation dashboard
+   - **Payment Status Indicators** (Traffic Light System)
+     - 🟢 **Green Status** - Payment deadline is 30+ days away (e.g., month away pa)
+       - Visual indicator: Green badge/icon on payment dashboard
+       - No action needed, normal status
+     - 🟡 **Yellow Status** (Warning) - Payment due date is near (7-14 days before due date)
+       - Visual indicator: Yellow/orange badge with warning icon
+       - **Auto-trigger email notification** to boarder with payment reminder
+       - Appears in "Upcoming Payments" section with highlighted status
+       - Optional SMS notification
+     - 🔴 **Red Status** (Overdue) - Payment is late (past due date)
+       - Visual indicator: Red badge with alert icon
+       - **Auto-trigger email notification** to boarder with overdue notice
+       - Automatic late fee calculation applied
+       - Appears in "Overdue Payments" section at top of dashboard
+       - Escalation notifications (SMS, in-app alert)
+       - Track days overdue
 
 2. **Tenant Screening System**
 
@@ -100,10 +124,20 @@
    - Tax document generation
 
 4. **Communication Hub**
+
    - Bulk announcements to all boarders
    - Automated payment reminders
    - Maintenance update notifications
    - Meeting scheduler
+
+5. **Property Location Management** (Google Maps-inspired)
+   - **Auto-detect location** - Use device GPS to pin property location automatically
+   - **Custom pin placement** - Manually adjust pin on interactive map for accuracy
+   - **Property boundary drawing** - Draw property lines on map for clear boundaries
+   - **Location verification badge** - Verified location increases trust
+   - **Nearby landmarks** - Tag nearby universities, transport, shopping for visibility
+   - **Catchment area analysis** - Show recommended boarding house radius based on demand
+   - **Street view integration** - Add street-level photos of property exterior
 
 ### Phase 2: Operational Efficiency (Medium Priority)
 
@@ -196,10 +230,24 @@
 
 - [ ] Payment gateway integration (GCash, PayMaya APIs)
 - [ ] Email/SMS notification system
+  - [ ] Email service integration (SendGrid, Mailgun, or AWS SES)
+  - [ ] SMS service integration (Twilio or local Philippines provider)
+  - [ ] **Automated payment reminder triggers**
+    - [ ] Yellow status reminder (7-14 days before due date)
+    - [ ] Red status overdue notice (immediate when past due)
+    - [ ] Escalation reminders (3 days, 7 days, 14 days overdue)
+  - [ ] Email template system for payment notifications
+  - [ ] Configurable notification schedules
 - [ ] Document storage (AWS S3 or equivalent)
 - [ ] E-signature integration (DocuSign or HelloSign API)
 - [ ] Background check API (if available in Philippines)
-- [ ] Map integration (Google Maps API)
+- [ ] **Map integration (Google Maps API / Leaflet / Mapbox)**
+  - [ ] Geocoding service for address-to-coordinates conversion
+  - [ ] Geolocation API for auto-detecting user location
+  - [ ] Map tiles and rendering
+  - [ ] Distance calculation service
+  - [ ] Places API for nearby landmarks (universities, transport, shopping)
+  - [ ] Street View API integration
 
 ### 3. Data Model Updates (Sprint 1)
 
@@ -210,6 +258,41 @@
 - [ ] Add `announcements` table (landlord to boarder)
 - [ ] Add `documents` table (contracts, receipts, IDs)
 - [ ] Add `maintenance_tickets` table with vendor assignment
+- [ ] **Add `property_locations` table**
+  - [ ] `property_id` (FK to properties)
+  - [ ] `latitude` (decimal)
+  - [ ] `longitude` (decimal)
+  - [ ] `accuracy` (GPS accuracy in meters)
+  - [ ] `verified` (boolean - location verified by admin)
+  - [ ] `property_boundaries` (JSON polygon coordinates)
+  - [ ] `nearby_landmarks` (JSON array of nearby places)
+- [ ] **Add `map_searches` table** (for analytics)
+  - [ ] `user_id` (FK to users)
+  - [ ] `center_lat` (map center latitude)
+  - [ ] `center_lng` (map center longitude)
+  - [ ] `radius_km` (search radius)
+  - [ ] `filters_applied` (JSON of applied filters)
+  - [ ] `results_count` (number of properties shown)
+- [ ] **Add `payment_status_indicators` table** (traffic light system)
+  - [ ] `payment_id` (FK to payment_transactions)
+  - [ ] `status` (enum: 'green', 'yellow', 'red')
+  - [ ] `due_date` (date)
+  - [ ] `days_until_due` (integer, calculated)
+  - [ ] `days_overdue` (integer, calculated)
+  - [ ] `late_fee_applied` (boolean)
+  - [ ] `late_fee_amount` (decimal)
+  - [ ] `last_reminder_sent` (timestamp)
+  - [ ] `reminder_count` (integer)
+- [ ] **Add `payment_notifications` table** (email/SMS log)
+  - [ ] `payment_id` (FK to payment_transactions)
+  - [ ] `user_id` (FK to users - boarder)
+  - [ ] `notification_type` (enum: 'yellow_warning', 'red_overdue', 'escalation')
+  - [ ] `channel` (enum: 'email', 'sms', 'in_app')
+  - [ ] `sent_at` (timestamp)
+  - [ ] `status` (enum: 'pending', 'sent', 'delivered', 'failed')
+  - [ ] `message_content` (text)
+  - [ ] `opened` (boolean)
+  - [ ] `opened_at` (timestamp)
 
 ### 4. API Endpoints Needed (Sprint 2-3)
 
@@ -222,6 +305,17 @@
 - [ ] `GET /api/payments/history` - Payment history
 - [ ] `POST /api/reviews` - Submit landlord/property review
 - [ ] `GET /api/documents` - Access contracts/receipts
+- [ ] **`GET /api/payments/status` - Get payment status with traffic light indicator**
+- [ ] **`GET /api/payments/upcoming` - Get upcoming payments with yellow status warnings**
+- [ ] **`GET /api/payments/overdue` - Get overdue payments with red status**
+- [ ] **`POST /api/notifications/preferences` - Set notification preferences (email/SMS)**
+- [ ] **`GET /api/notifications/history` - View payment reminder history**
+- [ ] **`GET /api/map/properties` - Get all properties within map bounds**
+- [ ] **`GET /api/map/properties/nearby` - Get properties near user location (radius search)**
+- [ ] **`GET /api/map/distance` - Calculate distance between two points**
+- [ ] **`GET /api/map/landmarks` - Get nearby landmarks (universities, transport, shopping)**
+- [ ] **`POST /api/map/favorites` - Save favorite map locations**
+- [ ] **`GET /api/map/streetview` - Get street view image for property**
 
 **Landlord-facing:**
 
@@ -232,6 +326,15 @@
 - [ ] `GET /api/payments/reconcile` - Reconcile payments
 - [ ] `POST /api/reminders` - Send payment reminder
 - [ ] `GET /api/reports/financial` - Generate financial report
+- [ ] **`POST /api/map/property-location` - Set property location (auto-detect or custom pin)**
+- [ ] **`PUT /api/map/property-location/:id` - Update property location/boundaries**
+- [ ] **`POST /api/map/geocode` - Convert address to coordinates**
+- [ ] **`GET /api/map/verification-status` - Check location verification status**
+- [ ] **`POST /api/map/boundaries` - Draw and save property boundaries**
+- [ ] **`GET /api/payments/status/all` - Get all payment statuses with traffic light indicators**
+- [ ] **`POST /api/payments/calculate-late-fee` - Calculate automatic late fees**
+- [ ] **`POST /api/notifications/send-batch` - Send batch notifications (yellow/red status)**
+- [ ] **`GET /api/dashboard/payment-alerts` - Get count of yellow/red status payments**
 
 ---
 
@@ -243,6 +346,7 @@
 - 📊 **Information completeness**: 100% of listings show price, rules, amenities
 - 💳 **Payment security**: 100% of payments processed through secure system
 - ⭐ **Transparency**: Rating system for all properties
+- 🗺️ **Map discovery**: 80% of boarders use map view to find boarding houses near their university/location
 
 ### For Landlords
 
@@ -250,6 +354,8 @@
 - 💰 **Payment collection time**: Reduce from 5-7 days to instant
 - 📝 **Record accuracy**: 100% digital records, zero paper loss
 - ⚡ **Process efficiency**: 50% reduction in administrative time
+- 🚦 **Payment tracking**: 90% of rent collected on time with automated traffic light alerts
+- 📧 **Notification effectiveness**: 70% reduction in late payments through yellow/red warnings
 
 ---
 
@@ -287,6 +393,12 @@
 - [ ] Build application workflow
 - [ ] Implement notification system
 - [ ] Add search and filtering
+- [ ] **Implement map view (Google Maps-inspired)**
+  - [ ] Boarder: Interactive map with property pins
+  - [ ] Boarder: Location auto-detect and radius search
+  - [ ] Landlord: Auto-detect property location via GPS
+  - [ ] Landlord: Custom pin placement and boundary drawing
+  - [ ] Both: Distance calculator and nearby landmarks
 
 ### Week 5-6: Polish
 
@@ -294,6 +406,98 @@
 - [ ] Implement document management
 - [ ] Build financial reports
 - [ ] Mobile responsiveness testing
+- [ ] **Implement payment status indicator system (traffic light)**
+  - [ ] Backend: Payment status calculation logic (green/yellow/red)
+  - [ ] Backend: Automated email notification triggers
+  - [ ] Backend: Late fee auto-calculation
+  - [ ] Frontend: Landlord dashboard payment status badges
+  - [ ] Frontend: Boarder payment status view
+  - [ ] Email templates for yellow/red notifications
+  - [ ] SMS notification integration (optional)
+
+---
+
+## Map View Implementation Guide (Google Maps-Style Vertical Card)
+
+### Overview
+
+Implement a **split-screen map view** with:
+
+- **Left side (60-70%)**: Interactive full-height map with property markers
+- **Right side (30-40%)**: Scrollable vertical card panel (Google Maps-style) with property details, photos, reviews, and actions
+
+### Visual Design Reference
+
+**See `reference1.png` and `reference2.png`** for the Google Maps-style vertical card design to replicate:
+
+**Key UI Elements (from references):**
+
+- Photo gallery at top of card
+- Property name, rating stars, review count, property type
+- Action buttons row (Directions, Saved, Nearby, Share)
+- Tab navigation (Overview / Reviews)
+- Overview section: address, contact info, amenities
+- Reviews section: rating distribution bars, overall rating, individual reviews with avatars
+- "Write a review" button (for eligible boarders)
+- "Suggest an edit" button (for owners)
+
+### Role-Based Functionality
+
+#### Landlord/Owner View
+
+- Display **Edit Property** button to modify listing details
+- Display **Update Location** button to adjust map pin
+- Display **Manage Photos** button for photo gallery
+
+#### Boarder View
+
+- Display **Write a review** button (only if user has previously stayed at the property)
+- View reviews with filtering options (by rating, keywords)
+- Sort reviews (newest, highest rating, lowest rating)
+
+### Implementation Checklist
+
+#### Frontend (Sprint 4)
+
+- [ ] Create map view container with split layout
+- [ ] Implement vertical card panel with scrollable content
+- [ ] Build photo gallery with overlay
+- [ ] Create property header with rating display
+- [ ] Implement action buttons (Directions, Save, Nearby, Share)
+- [ ] Build tab system (Overview / Reviews)
+- [ ] Create overview tab content (info sections, amenities)
+- [ ] Build review summary with rating bars
+- [ ] Implement reviews list with filtering
+- [ ] Add role-based conditional rendering (owner vs boarder)
+- [ ] Create edit property modal/form (landlord only)
+- [ ] Implement review submission modal (boarder only)
+- [ ] Add map marker click to open card
+- [ ] Implement card close/minimize functionality
+- [ ] Add responsive design for mobile
+- [ ] Implement photo carousel/lightbox
+- [ ] Add review sorting (newest, highest, lowest)
+- [ ] Add review filtering by category
+
+#### Backend (Sprint 3-4)
+
+- [ ] Create `reviews` table schema
+- [ ] Implement GET /api/properties/:id with reviews
+- [ ] Implement POST /api/reviews with validation
+- [ ] Implement review eligibility check (only after stay)
+- [ ] Implement PUT /api/properties/:id (owner only)
+- [ ] Implement PUT /api/properties/:id/location (owner only)
+- [ ] Add owner verification middleware
+- [ ] Implement review aggregation (average rating, count)
+- [ ] Add review category ratings (cleanliness, location, value)
+- [ ] Implement photo management endpoints
+- [ ] Add review moderation (admin flag/review)
+
+#### Data Model
+
+- [ ] `reviews` table: id, property_id, user_id, rating, title, text, category ratings, stay_date, timestamps
+- [ ] `property_photos` table: id, property_id, url, category, is_primary, display_order
+
+---
 
 ### Week 7-8: Launch Prep
 
