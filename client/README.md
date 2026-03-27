@@ -5,7 +5,7 @@ The frontend for Haven Space is built with vanilla HTML5, CSS3, and JavaScript (
 ## Directory Structure
 
 ```
-frontend/
+client/
 ├── assets/           # Static assets (images, SVGs)
 ├── components/       # Reusable HTML components
 ├── css/              # Stylesheets
@@ -43,7 +43,7 @@ python -m http.server 3000
 bun run --hot
 ```
 
-Navigate to `http://localhost:3000/frontend/views/public/index.html`
+Navigate to `http://localhost:3000/client/views/public/index.html`
 
 ### Entry Point
 

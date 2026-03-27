@@ -25,7 +25,7 @@ assets/
 
 ## Usage
 
-Reference assets with relative paths from the frontend directory:
+Reference assets with relative paths from the client directory:
 
 ```html
 <!-- Logo in logo cloud -->
@@ -38,7 +38,7 @@ Reference assets with relative paths from the frontend directory:
 Or with absolute paths from the root:
 
 ```html
-<img src="/frontend/assets/images/public/login.png" alt="Login" />
+<img src="/client/assets/images/public/login.png" alt="Login" />
 ```
 
 ## Adding New Assets

@@ -63,45 +63,45 @@ views/
 
 ## View Routes
 
-| View                   | URL Path                                            | Description                |
-| ---------------------- | --------------------------------------------------- | -------------------------- |
+| View                   | URL Path                                          | Description                |
+| ---------------------- | ------------------------------------------------- | -------------------------- |
 | **Public**             |
-| Homepage               | `/frontend/views/public/`                           | Public landing page        |
-| Maps                   | `/frontend/views/public/maps.html`                  | Property map view          |
-| Login                  | `/frontend/views/public/auth/login.html`            | User login                 |
-| Signup                 | `/frontend/views/public/auth/signup.html`           | User registration          |
-| Forgot Password        | `/frontend/views/public/auth/forgot-password.html`  | Password recovery          |
+| Homepage               | `/client/views/public/`                           | Public landing page        |
+| Maps                   | `/client/views/public/maps.html`                  | Property map view          |
+| Login                  | `/client/views/public/auth/login.html`            | User login                 |
+| Signup                 | `/client/views/public/auth/signup.html`           | User registration          |
+| Forgot Password        | `/client/views/public/auth/forgot-password.html`  | Password recovery          |
 | **Boarder Dashboard**  |
-| Dashboard Home         | `/frontend/views/boarder/`                          | Boarder dashboard          |
-| Rooms                  | `/frontend/views/boarder/rooms/`                    | Browse rooms               |
-| Room Detail            | `/frontend/views/boarder/rooms/detail.html`         | View room details          |
-| Applications           | `/frontend/views/boarder/applications/`             | Manage applications        |
-| Application Detail     | `/frontend/views/boarder/applications/detail.html`  | View application status    |
-| Payments               | `/frontend/views/boarder/payments/`                 | Payment management         |
-| Make Payment           | `/frontend/views/boarder/payments/pay.html`         | Process payment            |
-| Maintenance            | `/frontend/views/boarder/maintenance/`              | Maintenance requests       |
-| Create Request         | `/frontend/views/boarder/maintenance/create.html`   | Submit maintenance request |
-| Messages               | `/frontend/views/boarder/messages/`                 | Messaging inbox            |
-| Notices                | `/frontend/views/boarder/notices/`                  | View announcements         |
-| Profile                | `/frontend/views/boarder/profile/`                  | User profile settings      |
+| Dashboard Home         | `/client/views/boarder/`                          | Boarder dashboard          |
+| Rooms                  | `/client/views/boarder/rooms/`                    | Browse rooms               |
+| Room Detail            | `/client/views/boarder/rooms/detail.html`         | View room details          |
+| Applications           | `/client/views/boarder/applications/`             | Manage applications        |
+| Application Detail     | `/client/views/boarder/applications/detail.html`  | View application status    |
+| Payments               | `/client/views/boarder/payments/`                 | Payment management         |
+| Make Payment           | `/client/views/boarder/payments/pay.html`         | Process payment            |
+| Maintenance            | `/client/views/boarder/maintenance/`              | Maintenance requests       |
+| Create Request         | `/client/views/boarder/maintenance/create.html`   | Submit maintenance request |
+| Messages               | `/client/views/boarder/messages/`                 | Messaging inbox            |
+| Notices                | `/client/views/boarder/notices/`                  | View announcements         |
+| Profile                | `/client/views/boarder/profile/`                  | User profile settings      |
 | **Landlord Dashboard** |
-| Dashboard Home         | `/frontend/views/landlord/`                         | Landlord dashboard         |
-| Listings               | `/frontend/views/landlord/listings/`                | Manage properties          |
-| Create Listing         | `/frontend/views/landlord/listings/create.html`     | Add new property           |
-| Edit Listing           | `/frontend/views/landlord/listings/edit.html`       | Modify property            |
-| Boarders               | `/frontend/views/landlord/boarders/`                | Manage boarders            |
-| Boarder Detail         | `/frontend/views/landlord/boarders/detail.html`     | View boarder info          |
-| Applications           | `/frontend/views/landlord/applications/`            | Review applications        |
-| Application Detail     | `/frontend/views/landlord/applications/detail.html` | Review application         |
-| Payments               | `/frontend/views/landlord/payments/`                | Track payments             |
-| Record Payment         | `/frontend/views/landlord/payments/record.html`     | Record received payment    |
-| Maintenance            | `/frontend/views/landlord/maintenance/`             | View maintenance requests  |
-| Maintenance Detail     | `/frontend/views/landlord/maintenance/detail.html`  | Request details            |
-| Messages               | `/frontend/views/landlord/messages/`                | Messaging inbox            |
-| Reports                | `/frontend/views/landlord/reports/`                 | Analytics and reports      |
-| Profile                | `/frontend/views/landlord/profile/`                 | User profile settings      |
+| Dashboard Home         | `/client/views/landlord/`                         | Landlord dashboard         |
+| Listings               | `/client/views/landlord/listings/`                | Manage properties          |
+| Create Listing         | `/client/views/landlord/listings/create.html`     | Add new property           |
+| Edit Listing           | `/client/views/landlord/listings/edit.html`       | Modify property            |
+| Boarders               | `/client/views/landlord/boarders/`                | Manage boarders            |
+| Boarder Detail         | `/client/views/landlord/boarders/detail.html`     | View boarder info          |
+| Applications           | `/client/views/landlord/applications/`            | Review applications        |
+| Application Detail     | `/client/views/landlord/applications/detail.html` | Review application         |
+| Payments               | `/client/views/landlord/payments/`                | Track payments             |
+| Record Payment         | `/client/views/landlord/payments/record.html`     | Record received payment    |
+| Maintenance            | `/client/views/landlord/maintenance/`             | View maintenance requests  |
+| Maintenance Detail     | `/client/views/landlord/maintenance/detail.html`  | Request details            |
+| Messages               | `/client/views/landlord/messages/`                | Messaging inbox            |
+| Reports                | `/client/views/landlord/reports/`                 | Analytics and reports      |
+| Profile                | `/client/views/landlord/profile/`                 | User profile settings      |
 | **Admin**              |
-| Dashboard              | `/frontend/views/admin/`                            | Admin dashboard            |
+| Dashboard              | `/client/views/admin/`                            | Admin dashboard            |
 
 ## Component Usage
 

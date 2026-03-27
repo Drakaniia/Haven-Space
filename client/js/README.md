@@ -156,7 +156,7 @@ export function initBoarderRooms() {
 Run with a local server (ES modules require HTTP):
 
 ```bash
-npx http-server frontend
+npx http-server client
 # or
 python -m http.server 3000
 # or
