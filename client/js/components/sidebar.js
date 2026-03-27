@@ -153,6 +153,7 @@ export function initSidebar(options = {}) {
  */
 function resolveBasePath() {
   const path = window.location.pathname;
+  if (path.includes('/client/views/')) return '/client';
   if (path.includes('/frontend/views/')) return '/frontend';
   if (path.includes('/views/')) return '';
   return '';
