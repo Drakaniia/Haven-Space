@@ -1,6 +1,7 @@
 import { initLogoCloud } from './components/logo-cloud.js';
 import { initSidebar } from './components/sidebar.js';
 import { initNavbar } from './components/navbar.js';
+import { loadDashboardData } from './views/boarder/dashboard.js';
 
 // Initialize components
 document.addEventListener('DOMContentLoaded', () => {
@@ -33,6 +34,11 @@ document.addEventListener('DOMContentLoaded', () => {
       },
       notificationCount: 3,
     });
+  }
+
+  // Initialize boarder dashboard if on boarder dashboard page
+  if (document.querySelector('.boarder-dashboard')) {
+    loadDashboardData();
   }
 });
 
