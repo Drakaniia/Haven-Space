@@ -14,6 +14,7 @@ The application provides property listings, booking management, and a mobile-fri
 | Category            | Technology                                        |
 | ------------------- | ------------------------------------------------- |
 | **Frontend**        | HTML5, CSS3, Vanilla JavaScript (ES6+)            |
+| **Backend**         | PHP 8.0+ with MySQL/MariaDB                       |
 | **Fonts**           | Plus Jakarta Sans (Google Fonts)                  |
 | **Styling**         | Custom CSS with CSS custom properties (variables) |
 | **Code Formatting** | Prettier                                          |
@@ -30,46 +31,24 @@ Final/
 │   └── workflows/
 │       ├── github-pages.yml     # Deployment workflow
 │       └── prettier-check.yml   # Code formatting check
-├── backend/                     # Backend API
-│   ├── api/
-│   │   ├── config/              # Database configuration
-│   │   ├── controllers/         # Request handlers
-│   │   ├── middleware/          # Auth, validation middleware
-│   │   ├── models/              # Database models
-│   │   └── routes.php           # API route definitions
-│   └── Readme.md
-├── frontend/
+├── client/                      # Frontend source files (renamed from frontend/)
 │   ├── assets/
 │   │   ├── images/              # Image assets (logos, illustrations)
-│   │   │   └── public/          # Public-facing images
-│   │   │       ├── login.png
-│   │   │       └── PrimeRealEstate.png
-│   │   ├── nvidia.svg
+│   │   ├── svg/                 # SVG icons
 │   │   └── README.md
 │   ├── components/              # Reusable HTML components
 │   │   ├── logo-cloud.html      # Infinite logo slider
-│   │   └── sidebar.html         # Dashboard sidebar navigation
+│   │   ├── sidebar.html         # Dashboard sidebar navigation
+│   │   └── navbar.html          # Top navigation bar
 │   ├── css/
 │   │   ├── components/          # Component-specific styles
 │   │   │   ├── logo-cloud.css   # Logo cloud slider styles
-│   │   │   └── sidebar.css      # Sidebar navigation styles
+│   │   │   ├── sidebar.css      # Sidebar navigation styles
+│   │   │   └── navbar.css       # Navbar styles
 │   │   ├── views/               # Page-specific styles (nested by view type)
 │   │   │   ├── admin/
-│   │   │   │   └── admin.css
 │   │   │   ├── boarder/
-│   │   │   │   ├── boarder.css
-│   │   │   │   ├── boarder-applications.css
-│   │   │   │   ├── boarder-maintenance.css
-│   │   │   │   ├── boarder-payments.css
-│   │   │   │   └── boarder-rooms.css
-│   │   │   ├── landing/
-│   │   │   │   └── landing.css
 │   │   │   ├── landlord/
-│   │   │   │   ├── landlord.css
-│   │   │   │   ├── landlord-applications.css
-│   │   │   │   ├── landlord-listings.css
-│   │   │   │   ├── landlord-maintenance.css
-│   │   │   │   └── landlord-payments.css
 │   │   │   └── public/
 │   │   │       ├── auth.css
 │   │   │       └── public.css
@@ -82,27 +61,15 @@ Final/
 │   │   │   └── signup.js
 │   │   ├── components/          # Component logic
 │   │   │   ├── logo-cloud.js
-│   │   │   └── sidebar.js
+│   │   │   ├── sidebar.js
+│   │   │   └── navbar.js
 │   │   ├── shared/              # Shared utilities
 │   │   │   └── state.js
 │   │   ├── views/               # Page-specific logic (nested by view type)
 │   │   │   ├── admin/
-│   │   │   │   └── admin.js
 │   │   │   ├── boarder/
-│   │   │   │   ├── boarder.js
-│   │   │   │   ├── boarder-applications.js
-│   │   │   │   ├── boarder-maintenance.js
-│   │   │   │   ├── boarder-payments.js
-│   │   │   │   └── boarder-rooms.js
-│   │   │   ├── landing/
-│   │   │   │   └── landing.js
 │   │   │   ├── landlord/
-│   │   │   │   ├── landlord.js
-│   │   │   │   ├── landlord-applications.js
-│   │   │   │   ├── landlord-listings.js
-│   │   │   │   ├── landlord-maintenance.js
-│   │   │   │   └── landlord-payments.js
-│   │   │   └── public/          # Reserved for public view logic
+│   │   │   └── public/
 │   │   ├── main.js              # Entry point
 │   │   └── README.md
 │   ├── views/
@@ -110,48 +77,23 @@ Final/
 │   │   │   └── index.html
 │   │   ├── boarder/             # Boarder dashboard views
 │   │   │   ├── applications/    # Rental applications
-│   │   │   │   ├── index.html
-│   │   │   │   └── detail.html
 │   │   │   ├── index.html       # Boarder dashboard home
 │   │   │   ├── maintenance/     # Maintenance requests
-│   │   │   │   ├── index.html
-│   │   │   │   └── create.html
 │   │   │   ├── messages/        # Messaging system
-│   │   │   │   └── index.html
 │   │   │   ├── notices/         # Notices/announcements
-│   │   │   │   └── index.html
 │   │   │   ├── payments/        # Payment management
-│   │   │   │   ├── index.html
-│   │   │   │   └── pay.html
 │   │   │   ├── profile/         # User profile
-│   │   │   │   └── index.html
 │   │   │   └── rooms/           # Room browsing
-│   │   │       ├── index.html
-│   │   │       └── detail.html
 │   │   ├── landlord/            # Landlord dashboard views
 │   │   │   ├── applications/    # Application management
-│   │   │   │   ├── index.html
-│   │   │   │   └── detail.html
 │   │   │   ├── boarders/        # Boarder management
-│   │   │   │   ├── index.html
-│   │   │   │   └── detail.html
 │   │   │   ├── index.html       # Landlord dashboard home
 │   │   │   ├── listings/        # Property listings
-│   │   │   │   ├── index.html
-│   │   │   │   ├── create.html
-│   │   │   │   └── edit.html
 │   │   │   ├── maintenance/     # Maintenance tracking
-│   │   │   │   ├── index.html
-│   │   │   │   └── detail.html
 │   │   │   ├── messages/        # Messaging system
-│   │   │   │   └── index.html
 │   │   │   ├── payments/        # Payment tracking
-│   │   │   │   ├── index.html
-│   │   │   │   └── record.html
 │   │   │   ├── profile/         # User profile
-│   │   │   │   └── index.html
 │   │   │   └── reports/         # Reports & analytics
-│   │   │       └── index.html
 │   │   └── public/              # Public-facing views
 │   │       ├── auth/            # Authentication pages
 │   │       │   ├── login.html
@@ -161,6 +103,29 @@ Final/
 │   │       └── maps.html        # Map view
 │   ├── index.html               # Root redirect to views/public/index.html
 │   └── README.md
+├── server/                      # Backend API (PHP)
+│   ├── api/
+│   │   ├── config/              # Database configuration
+│   │   ├── controllers/         # Request handlers
+│   │   ├── middleware/          # Auth, validation middleware
+│   │   ├── models/              # Database models
+│   │   └── routes.php           # API route definitions
+│   ├── src/                     # Source files
+│   ├── public/                  # Public assets
+│   ├── config/                  # Configuration files
+│   ├── database/                # Database migrations
+│   ├── storage/                 # File storage
+│   ├── tests/                   # PHPUnit tests
+│   ├── vendor/                  # Composer dependencies
+│   ├── .env.example
+│   ├── composer.json
+│   ├── phpunit.xml
+│   └── Readme.md
+├── scripts/
+│   └── build.js                 # Production build script
+├── dist/                        # Production build output (auto-generated)
+├── docs/
+│   └── plan.md                  # Project planning documentation
 ├── .prettierrc                  # Prettier configuration
 ├── .prettierignore
 ├── package.json
@@ -171,10 +136,13 @@ Final/
 
 ### Prerequisites
 
-- Node.js 20+ (required for Prettier)
+- Node.js 20+ (required for Prettier and build scripts)
 - npm or bun package manager
+- PHP 8.0+ (for backend development)
+- MySQL or MariaDB (for backend database)
+- Composer (for PHP dependencies)
 
-### Installation
+### Frontend Installation
 
 ```bash
 # Clone the repository
@@ -193,32 +161,66 @@ npm run format
 
 # Check formatting (CI check)
 npm run format:check
+
+# Build for production
+npm run build
+
+# Serve locally (opens browser)
+npm start
+
+# Serve locally (no browser open)
+npm run serve
+```
+
+### Backend Installation
+
+```bash
+cd server
+composer install
+cp .env.example .env
+# Configure database in .env
+php migrate
 ```
 
 ### Running Locally
 
-Since this is a static frontend application, you can serve it with any static file server:
+**Frontend:**
 
 ```bash
-# Using Node.js http-server
+# Using the built-in start script (opens browser)
+npm start
+
+# Or serve without opening browser
+npm run serve
+
+# Or using any static file server
 npx http-server -p 3000
-
-# Using Python
 python -m http.server 3000
-
-# Using bun
-bun run --hot
 ```
 
-Navigate to `http://localhost:3000/frontend/views/public/index.html` to view the application.
+Navigate to `http://localhost:3000/client/views/public/index.html` to view the application.
+
+**Backend:**
+
+```bash
+cd server
+php -S localhost:8000 -t api
+```
 
 ### Deployment
 
-The application deploys automatically to **GitHub Pages** when changes are pushed to the `main` branch via the GitHub Actions workflow (`.github/workflows/github-pages.yml`).
+The application deploys automatically to **GitHub Pages** when changes are pushed to the `main` branch via the GitHub Actions workflow.
 
 Manual deployment trigger:
 
 - Go to Actions → "Deploy to GitHub Pages" → Run workflow
+
+Production URLs after deployment:
+
+- **Homepage**: `https://havenspace.com/` (or `https://<username>.github.io/haven-space/`)
+- **Map View**: `https://havenspace.com/maps.html`
+- **Login**: `https://havenspace.com/auth/login.html`
+- **Signup**: `https://havenspace.com/auth/signup.html`
 
 ## Development Conventions
 
@@ -255,22 +257,27 @@ Follow **Conventional Commits** specification:
 ```
 
 **Commit Types:**
-| Type | Description |
-|------|-------------|
-| `feat` | New feature |
-| `fix` | Bug fix |
-| `docs` | Documentation |
-| `style` | Formatting (Prettier, whitespace) |
-| `refactor` | Code refactoring |
-| `test` | Tests |
-| `chore` | Maintenance, dependencies |
-| `ci` | CI/CD workflows |
+
+| Type       | Description                       |
+| ---------- | --------------------------------- |
+| `feat`     | New feature                       |
+| `fix`      | Bug fix                           |
+| `docs`     | Documentation                     |
+| `style`    | Formatting (Prettier, whitespace) |
+| `refactor` | Code refactoring                  |
+| `test`     | Tests                             |
+| `chore`    | Maintenance, dependencies         |
+| `ci`       | CI/CD workflows                   |
+| `perf`     | Performance improvements          |
+| `build`    | Build system changes              |
+| `setup`    | Initial setup, scaffolding        |
 
 **Examples:**
 
 ```bash
 git commit -m "feat: add user authentication system"
 git commit -m "fix(css): resolve navigation overflow on mobile"
+git commit -m "docs: update README with setup instructions"
 git commit -m "style: fix line endings for GitHub Actions"
 ```
 
@@ -282,6 +289,8 @@ Format: `<type>/<description>`
 git checkout -b feat/user-authentication
 git checkout -b fix/navigation-mobile-overflow
 git checkout -b docs/update-readme
+git checkout -b refactor/api-error-handling
+git checkout -b hotfix/critical-security-patch
 ```
 
 ### CSS Architecture
@@ -294,14 +303,18 @@ git checkout -b docs/update-readme
 **Color Palette:**
 
 ```css
---primary-green: #4a7c23;
---dark-green: #2d4a14;
---light-green: #7cb342;
---bg-cream: #fef9f0;
---bg-green: #e8f5e9;
---text-dark: #1a1a1a;
---text-gray: #555555;
---white: #ffffff;
+:root {
+  --primary-green: #4a7c23;
+  --dark-green: #2d4a14;
+  --light-green: #7cb342;
+  --bg-cream: #fef9f0;
+  --bg-green: #e8f5e9;
+  --text-dark: #1a1a1a;
+  --text-gray: #555555;
+  --white: #ffffff;
+  --font-main: 'Plus Jakarta Sans', sans-serif;
+  --border-color: #e5e5e5;
+}
 ```
 
 ### JavaScript Patterns
@@ -315,18 +328,39 @@ git checkout -b docs/update-readme
 // Entry point pattern (main.js)
 import { initLogoCloud } from './components/logo-cloud.js';
 import { initSidebar } from './components/sidebar.js';
+import { initNavbar } from './components/navbar.js';
 
 document.addEventListener('DOMContentLoaded', () => {
-  initLogoCloud();
+  // Only init logo cloud if element exists (homepage only)
+  if (document.getElementById('logoSlider')) {
+    initLogoCloud();
+  }
+
   initFloatingHeader();
-  initSidebar({
-    role: 'boarder',
-    user: {
-      name: 'Juan Dela Cruz',
-      initials: 'JD',
-      role: 'Boarder',
-    },
-  });
+
+  // Only init sidebar if container exists (dashboard pages only)
+  if (document.getElementById('sidebar-container')) {
+    initSidebar({
+      role: 'boarder',
+      user: {
+        name: 'Juan Dela Cruz',
+        initials: 'JD',
+        role: 'Boarder',
+      },
+    });
+  }
+
+  // Only init navbar if container exists (dashboard pages only)
+  if (document.getElementById('navbar-container')) {
+    initNavbar({
+      user: {
+        name: 'Juan Dela Cruz',
+        initials: 'JD',
+        avatarUrl: '',
+      },
+      notificationCount: 3,
+    });
+  }
 });
 ```
 
@@ -334,7 +368,77 @@ document.addEventListener('DOMContentLoaded', () => {
 
 - `initLogoCloud()` - Initializes infinite logo slider
 - `initSidebar(config)` - Initializes dashboard sidebar with user config
+- `initNavbar(config)` - Initializes top navigation bar with user config
 - `initFloatingHeader()` - Handles scroll-triggered header transitions
+
+### PHP Backend Patterns
+
+**Keep it simple:**
+
+```php
+// Good: Simple and clear
+public function show($id) {
+    $room = Room::find($id);
+
+    if (!$room) {
+        return json_response(404, ['error' => 'Room not found']);
+    }
+
+    return json_response(200, ['data' => $room]);
+}
+```
+
+**Guidelines:**
+
+- Write straightforward, readable code
+- Keep functions short and focused (ideally under 30 lines)
+- Avoid nested logic deeper than 2-3 levels
+- Use prepared statements for security
+- Return consistent JSON response format
+
+## Key Features
+
+### Authentication System
+
+- Login page with email/password and social sign-in (Google, Apple)
+- Signup flow with role selection (landlord/boarder)
+- Forgot password with email recovery
+- Password visibility toggle
+- Form validation
+
+### Homepage
+
+- Hero section with modern design
+- Logo cloud with infinite horizontal slider
+- Responsive navigation with floating header effect
+- Call-to-action buttons
+
+### Dashboard Views
+
+**Boarder Dashboard:**
+
+- Rooms - Browse and view room details
+- Applications - Submit and track rental applications
+- Payments - View and make payments
+- Maintenance - Submit and track maintenance requests
+- Messages - Communication with landlords
+- Notices - View announcements
+- Profile - Manage user profile
+
+**Landlord Dashboard:**
+
+- Listings - Manage property listings (create, edit, view)
+- Boarders - Manage current boarders
+- Applications - Review and manage rental applications
+- Payments - Track and record payments
+- Maintenance - View and manage maintenance requests
+- Messages - Communication with boarders
+- Reports - View analytics and reports
+- Profile - Manage user profile
+
+**Admin Dashboard:**
+
+- System administration and oversight
 
 ## Code Generation Philosophy
 
@@ -389,58 +493,10 @@ function createRoomCard(room) {
 }
 ```
 
-## Key Features
-
-### Authentication System
-
-- Login page with email/password and social sign-in (Google, Apple)
-- Signup flow with role selection (landlord/boarder)
-- Forgot password with email recovery
-- Password visibility toggle
-- Form validation
-
-### Homepage
-
-- Hero section with modern design
-- Logo cloud with infinite horizontal slider
-- Responsive navigation with floating header effect
-- Call-to-action buttons
-
-### Dashboard Views
-
-**Boarder Dashboard:**
-
-- Rooms - Browse and view room details
-- Applications - Submit and track rental applications
-- Payments - View and make payments
-- Maintenance - Submit and track maintenance requests
-- Messages - Communication with landlords
-- Notices - View announcements
-- Profile - Manage user profile
-
-**Landlord Dashboard:**
-
-- Listings - Manage property listings (create, edit, view)
-- Boarders - Manage current boarders
-- Applications - Review and manage rental applications
-- Payments - Track and record payments
-- Maintenance - View and manage maintenance requests
-- Messages - Communication with boarders
-- Reports - View analytics and reports
-- Profile - Manage user profile
-
-**Admin Dashboard:**
-
-- System administration and oversight
-
-## Current Branch Status
-
-- **Active Branch**: `feature/auth-and-homepage-redesign`
-- **Base Branch**: `main`
-- **Open PR**: #7 - "Feature: Authentication pages and homepage redesign"
-
 ## Related Documentation
 
 - [Contributing Guidelines](.github/CONTRIBUTING.md)
 - [Pull Request Template](.github/pull_request_template.md)
-- [Main README](Readme.md)
+- [Frontend README](client/README.md)
+- [Backend README](server/Readme.md)
+- [Views Documentation](client/views/README.md)
