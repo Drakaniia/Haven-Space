@@ -40,11 +40,9 @@ export function initNavbar(options = {}) {
       updateNotificationCount(notificationCount);
 
       // Setup event handlers
-      setupSearchHandler();
       setupThemeToggle();
       setupNotificationHandler();
       setupUserMenu();
-      setupKeyboardShortcuts();
     })
     .catch(err => {
       console.error('Failed to load navbar template:', err);
@@ -91,36 +89,6 @@ function updateNotificationCount(count) {
     } else {
       badge.style.display = 'none';
     }
-  }
-}
-
-/**
- * Setup search input handler
- */
-function setupSearchHandler() {
-  const searchInput = document.getElementById('navbar-search-input');
-  if (searchInput) {
-    searchInput.addEventListener('input', e => {
-      const query = e.target.value.trim();
-      // Emit custom event for search
-      window.dispatchEvent(
-        new CustomEvent('navbar:search', {
-          detail: { query },
-        })
-      );
-    });
-
-    searchInput.addEventListener('keydown', e => {
-      if (e.key === 'Enter') {
-        const query = e.target.value.trim();
-        // Emit custom event for search submit
-        window.dispatchEvent(
-          new CustomEvent('navbar:search:submit', {
-            detail: { query },
-          })
-        );
-      }
-    });
   }
 }
 
@@ -177,23 +145,5 @@ function setupUserMenu() {
  * Setup keyboard shortcuts
  */
 function setupKeyboardShortcuts() {
-  document.addEventListener('keydown', e => {
-    // Cmd+K or Ctrl+K to focus search
-    if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
-      e.preventDefault();
-      const searchInput = document.getElementById('navbar-search-input');
-      if (searchInput) {
-        searchInput.focus();
-        searchInput.select();
-      }
-    }
-
-    // Escape to blur search
-    if (e.key === 'Escape') {
-      const searchInput = document.getElementById('navbar-search-input');
-      if (searchInput && document.activeElement === searchInput) {
-        searchInput.blur();
-      }
-    }
-  });
+  // Keyboard shortcuts removed - search bar no longer in navbar
 }

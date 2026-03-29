@@ -10,9 +10,22 @@ const NAV_CONFIG = {
       group: 'Main',
       items: [
         { label: 'Dashboard', href: '../boarder/index.html', icon: 'home' },
-        { label: 'Browse Listings', href: '../rooms/index.html', icon: 'search' },
-        { label: 'Saved Listings', href: '#', icon: 'bookmark' },
-        { label: 'My Bookings', href: '#', icon: 'calendar' },
+        {
+          label: 'Applications',
+          href: '../applications/index.html',
+          icon: 'application',
+          badge: '1',
+        },
+        {
+          label: 'Find a Room',
+          icon: 'search',
+          dropdown: true,
+          children: [
+            { label: 'All Available Rooms', href: '../rooms/index.html', icon: 'list' },
+            { label: 'My Favorites', href: '#', icon: 'bookmark' },
+            { label: 'Map View', href: '../maps/index.html', icon: 'analytics' },
+          ],
+        },
         { label: 'Messages', href: '../messages/index.html', icon: 'chat', badge: '3' },
         { label: 'Payments', href: '../payments/index.html', icon: 'payment' },
       ],
@@ -30,9 +43,20 @@ const NAV_CONFIG = {
       group: 'Main',
       items: [
         { label: 'Dashboard', href: '../landlord/index.html', icon: 'home' },
-        { label: 'My Listings', href: '../landlord/listings/index.html', icon: 'list' },
-        { label: 'Applications', href: '../landlord/applications/index.html', icon: 'application' },
-        { label: 'Boarders', href: '../landlord/boarders/index.html', icon: 'users' },
+        {
+          label: 'Properties',
+          icon: 'list',
+          dropdown: true,
+          children: [
+            { label: 'My Listings', href: '../landlord/listings/index.html', icon: 'list' },
+            {
+              label: 'Applications',
+              href: '../landlord/applications/index.html',
+              icon: 'application',
+            },
+            { label: 'Boarders', href: '../landlord/boarders/index.html', icon: 'users' },
+          ],
+        },
         { label: 'Messages', href: '../landlord/messages/index.html', icon: 'chat', badge: '5' },
         { label: 'Payments', href: '../landlord/payments/index.html', icon: 'payment' },
       ],
@@ -50,9 +74,16 @@ const NAV_CONFIG = {
       group: 'Main',
       items: [
         { label: 'Dashboard', href: '../admin/index.html', icon: 'home' },
-        { label: 'Users', href: '../admin/users/index.html', icon: 'users' },
-        { label: 'Properties', href: '../admin/properties/index.html', icon: 'list' },
-        { label: 'Bookings', href: '../admin/bookings/index.html', icon: 'calendar' },
+        {
+          label: 'Management',
+          icon: 'list',
+          dropdown: true,
+          children: [
+            { label: 'Users', href: '../admin/users/index.html', icon: 'users' },
+            { label: 'Properties', href: '../admin/properties/index.html', icon: 'list' },
+            { label: 'Bookings', href: '../admin/bookings/index.html', icon: 'calendar' },
+          ],
+        },
         { label: 'Analytics', href: '../admin/analytics/index.html', icon: 'analytics' },
       ],
     },
@@ -176,6 +207,9 @@ function renderNavigation(role) {
 </div>`
     )
     .join('');
+
+  // Add click handlers for dropdown toggles
+  setupDropdownHandlers();
 }
 
 /**
@@ -183,6 +217,31 @@ function renderNavigation(role) {
  */
 function renderNavItem(item) {
   const icon = getHeroicon(item.icon);
+
+  // Check if this is a dropdown item
+  if (item.dropdown && item.children) {
+    const childrenHtml = item.children.map(child => renderNavChildItem(child)).join('');
+
+    return `
+<div class="sidebar-nav-dropdown">
+  <div class="sidebar-nav-item sidebar-nav-dropdown-toggle" data-dropdown="${item.label
+    .toLowerCase()
+    .replace(/\s+/g, '-')}">
+    ${icon}
+    ${item.label}
+    <svg class="sidebar-dropdown-icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+    </svg>
+  </div>
+  <div class="sidebar-nav-dropdown-content" id="dropdown-${item.label
+    .toLowerCase()
+    .replace(/\s+/g, '-')}" style="display: none;">
+    ${childrenHtml}
+  </div>
+</div>`;
+  }
+
+  // Regular nav item (no dropdown)
   const badge = item.badge ? `<span class="sidebar-nav-badge">${item.badge}</span>` : '';
 
   return `<a href="${item.href}" class="sidebar-nav-item" data-href="${item.href}">
@@ -190,6 +249,46 @@ function renderNavItem(item) {
   ${item.label}
   ${badge}
 </a>`;
+}
+
+/**
+ * Render a child item within a dropdown
+ */
+function renderNavChildItem(child) {
+  const icon = getHeroicon(child.icon);
+  return `<a href="${child.href}" class="sidebar-nav-child-item" data-href="${child.href}">
+  ${icon}
+  ${child.label}
+</a>`;
+}
+
+/**
+ * Setup dropdown toggle handlers
+ */
+function setupDropdownHandlers() {
+  const dropdownToggles = document.querySelectorAll('.sidebar-nav-dropdown-toggle');
+
+  dropdownToggles.forEach(toggle => {
+    toggle.addEventListener('click', () => {
+      const dropdown = toggle.parentElement;
+      const content = dropdown.querySelector('.sidebar-nav-dropdown-content');
+      const icon = toggle.querySelector('.sidebar-dropdown-icon');
+
+      if (content) {
+        const isExpanded = content.style.display === 'block';
+        content.style.display = isExpanded ? 'none' : 'block';
+
+        // Rotate chevron icon
+        if (icon) {
+          icon.style.transform = isExpanded ? 'rotate(0deg)' : 'rotate(180deg)';
+          icon.style.transition = 'transform 0.2s ease';
+        }
+
+        // Toggle active class on dropdown container
+        dropdown.classList.toggle('sidebar-nav-dropdown-open');
+      }
+    });
+  });
 }
 
 /**
@@ -211,10 +310,39 @@ function updateUserInfo(user) {
 function setActiveState() {
   const currentPath = window.location.pathname;
   const navItems = document.querySelectorAll('.sidebar-nav-item');
+  const navChildItems = document.querySelectorAll('.sidebar-nav-child-item');
 
+  // Handle regular nav items
   navItems.forEach(item => {
     const href = item.dataset.href || item.getAttribute('href');
-    item.classList.toggle('active', currentPath.includes(href) || currentPath.endsWith(href));
+    if (href && currentPath.includes(href)) {
+      item.classList.add('active');
+
+      // If this item is inside a dropdown, expand the dropdown
+      const dropdownContent = item.closest('.sidebar-nav-dropdown-content');
+      if (dropdownContent) {
+        dropdownContent.style.display = 'block';
+        const dropdown = dropdownContent.closest('.sidebar-nav-dropdown');
+        if (dropdown) {
+          dropdown.classList.add('sidebar-nav-dropdown-open');
+          const toggle = dropdown.querySelector('.sidebar-nav-dropdown-toggle');
+          const icon = dropdown.querySelector('.sidebar-dropdown-icon');
+          if (toggle) toggle.classList.add('active');
+          if (icon) {
+            icon.style.transform = 'rotate(180deg)';
+            icon.style.transition = 'transform 0.2s ease';
+          }
+        }
+      }
+    }
+  });
+
+  // Handle child items in dropdowns
+  navChildItems.forEach(item => {
+    const href = item.dataset.href || item.getAttribute('href');
+    if (href && (currentPath.includes(href) || currentPath.endsWith(href))) {
+      item.classList.add('active');
+    }
   });
 }
 
