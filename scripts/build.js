@@ -34,6 +34,8 @@ const publicFiles = [
   'views/public/auth/login.html',
   'views/public/auth/signup.html',
   'views/public/auth/forgot-password.html',
+  'views/boarder/index.html',
+  'views/boarder/maps/index.html',
 ];
 
 // Copy CSS files
@@ -41,6 +43,9 @@ const cssFiles = [
   'css/global.css',
   'css/views/public/public.css',
   'css/views/public/auth.css',
+  'css/views/public/maps.css',
+  'css/views/boarder/boarder.css',
+  'css/views/boarder/maps.css',
   'css/components/logo-cloud.css',
   'css/components/sidebar.css',
 ];
@@ -49,9 +54,11 @@ const cssFiles = [
 const jsFiles = [
   'js/main.js',
   'js/components/logo-cloud.js',
+  'js/components/navbar.js',
   'js/components/sidebar.js',
   'js/shared/state.js',
   'js/views/landing/landing.js',
+  'js/views/boarder/dashboard.js',
   'js/auth/login.js',
   'js/auth/signup.js',
   'js/auth/forgot-password.js',
@@ -112,14 +119,34 @@ function fixPaths(htmlContent, depth) {
 
 // Copy public HTML files to root with path fixes
 publicFiles.forEach(file => {
-  // Extract only the last two parts: auth/login.html or index.html (from views/public/...)
+  // Extract only the last parts: auth/login.html, boarder/index.html, or index.html (from views/public/...)
   const parts = file.split('/');
   const fileName = parts.pop(); // login.html, index.html, etc.
-  const subfolder = parts.pop(); // 'auth' or 'public'
+  const subfolder = parts.pop(); // 'auth', 'boarder', 'public', or 'maps'
 
   const srcPath = join(SRC, file);
-  // Keep auth files in auth/ subfolder, put others at root
-  const destPath = subfolder === 'auth' ? join(DIST, 'auth', fileName) : join(DIST, fileName);
+
+  // Determine destination path based on folder structure
+  let destPath;
+  let depth = 0;
+
+  if (subfolder === 'auth') {
+    // Keep auth files in auth/ subfolder
+    destPath = join(DIST, 'auth', fileName);
+    depth = 1;
+  } else if (subfolder === 'boarder') {
+    // Keep boarder files in boarder/ subfolder
+    destPath = join(DIST, 'boarder', fileName);
+    depth = 1;
+  } else if (subfolder === 'maps' && parts[parts.length - 1] === 'boarder') {
+    // Keep boarder maps files in boarder/maps/ subfolder
+    destPath = join(DIST, 'boarder', 'maps', fileName);
+    depth = 2;
+  } else {
+    // Put other files at root
+    destPath = join(DIST, fileName);
+    depth = 0;
+  }
 
   if (!existsSync(srcPath)) {
     console.warn(`⚠️  Warning: ${srcPath} not found, skipping...`);
@@ -129,14 +156,16 @@ publicFiles.forEach(file => {
   // Read and fix paths
   let content = readFileSync(srcPath, 'utf8');
 
-  // Determine depth based on file location (auth pages are 1 level deep)
-  const depth = subfolder === 'auth' ? 1 : 0;
-
   content = fixPaths(content, depth);
 
   mkdirSync(dirname(destPath), { recursive: true });
   writeFileSync(destPath, content);
-  console.log(`✓ Processed ${file} → ${subfolder === 'auth' ? 'auth/' : ''}${fileName}`);
+
+  // Determine relative path for console output
+  const relativePath = subfolder === 'auth' ? 'auth/' :
+                       subfolder === 'boarder' ? 'boarder/' :
+                       subfolder === 'maps' ? 'boarder/maps/' : '';
+  console.log(`✓ Processed ${file} → ${relativePath}${fileName}`);
 });
 
 // Copy CSS to css/ folder
@@ -160,3 +189,5 @@ console.log('  havenspace.com/ → Homepage');
 console.log('  havenspace.com/maps.html → Map view');
 console.log('  havenspace.com/auth/login.html → Login page');
 console.log('  havenspace.com/auth/signup.html → Signup page');
+console.log('  havenspace.com/boarder/ → Boarder dashboard');
+console.log('  havenspace.com/boarder/maps/ → Boarder map view');
