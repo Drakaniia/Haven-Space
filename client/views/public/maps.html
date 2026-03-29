@@ -3,7 +3,7 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>OpenStreetMap Example</title>
+    <title>Find a Room - Map View - Haven Space</title>
     <!-- Leaflet CSS -->
     <link
       rel="stylesheet"
@@ -11,20 +11,252 @@
       integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY="
       crossorigin=""
     />
-    <style>
-      #map {
-        height: 100vh;
-        width: 100%;
-      }
-
-      /* Hide Leaflet attribution watermark */
-      .leaflet-control-attribution {
-        display: none;
-      }
-    </style>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="../../css/global.css" />
+    <link rel="stylesheet" href="../../css/views/public/maps.css" />
   </head>
   <body>
-    <div id="map"></div>
+    <div class="maps-container">
+      <!-- Map Section (Left) -->
+      <div class="map-section">
+        <div id="map"></div>
+
+        <!-- Map Controls -->
+        <div class="map-controls">
+          <button class="map-control-btn" id="locate-me" title="Use my location">
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"
+              />
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"
+              />
+            </svg>
+          </button>
+          <button class="map-control-btn" id="zoom-in" title="Zoom in">
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M12 4v16m8-8H4"
+              />
+            </svg>
+          </button>
+          <button class="map-control-btn" id="zoom-out" title="Zoom out">
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+            >
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 12H4" />
+            </svg>
+          </button>
+        </div>
+
+        <!-- Login CTA Overlay -->
+        <div class="login-cta-overlay">
+          <div class="login-cta-content">
+            <div class="login-cta-icon">
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"
+                />
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"
+                />
+              </svg>
+            </div>
+            <h3 class="login-cta-title">Want to see rooms near your university?</h3>
+            <p class="login-cta-description">
+              Sign in to personalize your search, save favorites, and track applications.
+            </p>
+            <div class="login-cta-actions">
+              <a href="../auth/login.html" class="login-cta-btn login-cta-btn-primary">Sign In</a>
+              <a href="../auth/signup.html" class="login-cta-btn login-cta-btn-outline">Sign Up</a>
+            </div>
+            <button class="login-cta-dismiss" id="dismiss-cta">
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M6 18L18 6M6 6l12 12"
+                />
+              </svg>
+              Continue browsing
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Search Panel (Right) -->
+      <div class="search-panel">
+        <div class="search-panel-header">
+          <h1 class="search-panel-title">Find a Room</h1>
+          <p class="search-panel-subtitle">Browse available boarding houses</p>
+
+          <!-- Search Input -->
+          <div class="search-input-wrapper">
+            <svg
+              class="search-icon"
+              xmlns="http://www.w3.org/2000/svg"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
+              />
+            </svg>
+            <input
+              type="text"
+              class="search-panel-input"
+              id="search-input"
+              placeholder="Search by location, university, or landmark..."
+            />
+          </div>
+
+          <!-- Active Filter Tags -->
+          <div class="filter-tags" id="filter-tags">
+            <!-- Dynamically added when filters are selected -->
+          </div>
+        </div>
+
+        <div class="search-panel-body">
+          <!-- Filters -->
+          <div class="filter-section">
+            <label class="filter-label">Price Range</label>
+            <select class="filter-select" id="price-filter">
+              <option value="">Any Price</option>
+              <option value="0-3000">₱0 - ₱3,000</option>
+              <option value="3000-5000">₱3,000 - ₱5,000</option>
+              <option value="5000-8000">₱5,000 - ₱8,000</option>
+              <option value="8000+">₱8,000+</option>
+            </select>
+
+            <label class="filter-label">Property Type</label>
+            <select class="filter-select" id="type-filter">
+              <option value="">Any Type</option>
+              <option value="dorm">Dorm</option>
+              <option value="boarding-house">Boarding House</option>
+              <option value="apartment">Apartment</option>
+            </select>
+
+            <label class="filter-label">Amenities</label>
+            <div class="amenities-grid">
+              <label class="amenity-checkbox">
+                <input type="checkbox" value="wifi" />
+                <span>WiFi</span>
+              </label>
+              <label class="amenity-checkbox">
+                <input type="checkbox" value="ac" />
+                <span>Air Conditioning</span>
+              </label>
+              <label class="amenity-checkbox">
+                <input type="checkbox" value="kitchen" />
+                <span>Kitchen</span>
+              </label>
+              <label class="amenity-checkbox">
+                <input type="checkbox" value="laundry" />
+                <span>Laundry</span>
+              </label>
+              <label class="amenity-checkbox">
+                <input type="checkbox" value="parking" />
+                <span>Parking</span>
+              </label>
+              <label class="amenity-checkbox">
+                <input type="checkbox" value="security" />
+                <span>Security</span>
+              </label>
+            </div>
+
+            <button class="search-panel-btn" id="search-btn">Search</button>
+          </div>
+
+          <!-- Results -->
+          <div class="filter-section">
+            <div class="results-header">
+              <span class="results-count"
+                ><strong id="results-count">0</strong> properties found</span
+              >
+              <select class="sort-select" id="sort-select">
+                <option value="distance">Nearest</option>
+                <option value="price-low">Price: Low to High</option>
+                <option value="price-high">Price: High to Low</option>
+                <option value="rating">Top Rated</option>
+              </select>
+            </div>
+
+            <!-- Premium Feature Notice -->
+            <div class="premium-notice">
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"
+                />
+              </svg>
+              <div>
+                <strong>Sign in to unlock features</strong><br />
+                Save favorites, track applications, and see distances from your school
+              </div>
+            </div>
+
+            <div class="properties-list" id="properties-list">
+              <!-- Property cards will be dynamically loaded here -->
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
 
     <!-- Leaflet JS -->
     <script
@@ -36,6 +268,44 @@
     <script>
       let map;
       let markers = [];
+      let userLocation = null;
+
+      // Sample property data (replace with API call)
+      const sampleProperties = [
+        {
+          id: 1,
+          title: 'Sunrise Dormitory',
+          location: 'Sampaloc, Manila',
+          price: 5500,
+          lat: 8.15,
+          lng: 125.126,
+          rating: 4.5,
+          amenities: ['wifi', 'ac', 'laundry'],
+          type: 'dorm',
+        },
+        {
+          id: 2,
+          title: 'Green Valley Boarding House',
+          location: 'Diliman, Quezon City',
+          price: 4500,
+          lat: 8.148,
+          lng: 125.124,
+          rating: 4.3,
+          amenities: ['wifi', 'kitchen', 'parking'],
+          type: 'boarding-house',
+        },
+        {
+          id: 3,
+          title: 'Cozy Student Dorm',
+          location: 'Near University Ave',
+          price: 6000,
+          lat: 8.151,
+          lng: 125.127,
+          rating: 4.7,
+          amenities: ['wifi', 'ac', 'laundry', 'security'],
+          type: 'dorm',
+        },
+      ];
 
       // Initialize the map
       function initMap() {
@@ -47,10 +317,329 @@
 
         // Add OpenStreetMap tiles
         L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {}).addTo(map);
+
+        // Add property markers
+        addPropertyMarkers(sampleProperties);
+
+        // Setup event listeners
+        setupEventListeners();
+      }
+
+      // Add property markers to map
+      function addPropertyMarkers(properties) {
+        // Clear existing markers
+        markers.forEach(marker => map.removeLayer(marker));
+        markers = [];
+
+        properties.forEach(property => {
+          // Create custom popup content
+          const popupContent = `
+            <div class="property-popup">
+              <div class="property-popup-image"></div>
+              <div class="property-popup-content">
+                <h3 class="property-popup-title">${property.title}</h3>
+                <div class="property-popup-location">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/>
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/>
+                  </svg>
+                  ${property.location}
+                </div>
+                <div class="property-popup-price">₱${property.price.toLocaleString()}/month</div>
+                <div class="property-popup-amenities">
+                  ${property.amenities
+                    .slice(0, 3)
+                    .map(a => `<span class="amenity-badge">${a}</span>`)
+                    .join('')}
+                </div>
+              </div>
+            </div>
+          `;
+
+          // Create marker
+          const marker = L.marker([property.lat, property.lng]).addTo(map).bindPopup(popupContent);
+
+          markers.push(marker);
+        });
+      }
+
+      // Setup event listeners
+      function setupEventListeners() {
+        // Search button
+        document.getElementById('search-btn').addEventListener('click', performSearch);
+
+        // Search input enter key
+        document.getElementById('search-input').addEventListener('keypress', e => {
+          if (e.key === 'Enter') performSearch();
+        });
+
+        // Locate me button
+        document.getElementById('locate-me').addEventListener('click', getUserLocation);
+
+        // Zoom controls
+        document.getElementById('zoom-in').addEventListener('click', () => map.zoomIn());
+        document.getElementById('zoom-out').addEventListener('click', () => map.zoomOut());
+
+        // Filter changes
+        document.getElementById('price-filter').addEventListener('change', updateFilterTags);
+        document.getElementById('type-filter').addEventListener('change', updateFilterTags);
+        document.querySelectorAll('.amenity-checkbox input').forEach(cb => {
+          cb.addEventListener('change', updateFilterTags);
+        });
+
+        // Sort change
+        document.getElementById('sort-select').addEventListener('change', sortProperties);
+      }
+
+      // Perform search with filters
+      function performSearch() {
+        const searchTerm = document.getElementById('search-input').value;
+        const priceRange = document.getElementById('price-filter').value;
+        const propertyType = document.getElementById('type-filter').value;
+        const amenities = Array.from(
+          document.querySelectorAll('.amenity-checkbox input:checked')
+        ).map(cb => cb.value);
+
+        // Filter properties (replace with API call)
+        let filtered = sampleProperties;
+
+        if (searchTerm) {
+          filtered = filtered.filter(
+            p =>
+              p.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+              p.location.toLowerCase().includes(searchTerm.toLowerCase())
+          );
+        }
+
+        if (priceRange) {
+          const [min, max] = priceRange.split('-').map(v => (v === '+' ? Infinity : parseInt(v)));
+          filtered = filtered.filter(p => p.price >= min && p.price <= (max || Infinity));
+        }
+
+        if (propertyType) {
+          filtered = filtered.filter(p => p.type === propertyType);
+        }
+
+        if (amenities.length > 0) {
+          filtered = filtered.filter(p => amenities.every(a => p.amenities.includes(a)));
+        }
+
+        // Update results
+        updatePropertiesList(filtered);
+        addPropertyMarkers(filtered);
+      }
+
+      // Update filter tags display
+      function updateFilterTags() {
+        const tagsContainer = document.getElementById('filter-tags');
+        const tags = [];
+
+        const priceFilter = document.getElementById('price-filter').value;
+        if (priceFilter) {
+          tags.push({ label: `Price: ${priceFilter}`, type: 'price', value: priceFilter });
+        }
+
+        const typeFilter = document.getElementById('type-filter').value;
+        if (typeFilter) {
+          tags.push({ label: `Type: ${typeFilter}`, type: 'type', value: typeFilter });
+        }
+
+        document.querySelectorAll('.amenity-checkbox input:checked').forEach(cb => {
+          tags.push({
+            label: cb.parentElement.querySelector('span').textContent,
+            type: 'amenity',
+            value: cb.value,
+          });
+        });
+
+        tagsContainer.innerHTML = tags
+          .map(
+            tag => `
+          <div class="filter-tag active" data-type="${tag.type}" data-value="${tag.value}">
+            ${tag.label}
+            <svg class="remove-icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+            </svg>
+          </div>
+        `
+          )
+          .join('');
+
+        // Add remove handlers
+        tagsContainer.querySelectorAll('.filter-tag').forEach(tag => {
+          tag
+            .querySelector('.remove-icon')
+            .addEventListener('click', () => removeFilter(tag.dataset.type, tag.dataset.value));
+        });
+      }
+
+      // Remove a filter
+      function removeFilter(type, value) {
+        if (type === 'price') {
+          document.getElementById('price-filter').value = '';
+        } else if (type === 'type') {
+          document.getElementById('type-filter').value = '';
+        } else if (type === 'amenity') {
+          const cb = document.querySelector(`.amenity-checkbox input[value="${value}"]`);
+          if (cb) cb.checked = false;
+        }
+        updateFilterTags();
+      }
+
+      // Update properties list
+      function updatePropertiesList(properties) {
+        const container = document.getElementById('properties-list');
+        const countEl = document.getElementById('results-count');
+
+        countEl.textContent = properties.length;
+
+        if (properties.length === 0) {
+          container.innerHTML = `
+            <div class="empty-state">
+              <svg class="empty-state-icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"/>
+              </svg>
+              <h3 class="empty-state-title">No properties found</h3>
+              <p class="empty-state-description">Try adjusting your filters or search area</p>
+            </div>
+          `;
+          return;
+        }
+
+        container.innerHTML = properties
+          .map(
+            property => `
+          <div class="property-card" data-id="${property.id}">
+            <div class="property-card-image"></div>
+            <div class="property-card-content">
+              <div class="property-card-header">
+                <h3 class="property-card-title">${property.title}</h3>
+                <div class="property-card-rating">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="currentColor" viewBox="0 0 24 24">
+                    <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
+                  </svg>
+                  ${property.rating}
+                </div>
+              </div>
+              <div class="property-card-location">
+                <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/>
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/>
+                </svg>
+                ${property.location}
+              </div>
+              <div class="property-card-footer">
+                <div class="property-card-price">₱${property.price.toLocaleString()}<span>/month</span></div>
+                <button class="property-card-btn" onclick="viewProperty(${
+                  property.id
+                })">View</button>
+              </div>
+            </div>
+          </div>
+        `
+          )
+          .join('');
+      }
+
+      // Sort properties
+      function sortProperties() {
+        const sortBy = document.getElementById('sort-select').value;
+        let sorted = [...sampleProperties];
+
+        switch (sortBy) {
+          case 'price-low':
+            sorted.sort((a, b) => a.price - b.price);
+            break;
+          case 'price-high':
+            sorted.sort((a, b) => b.price - a.price);
+            break;
+          case 'rating':
+            sorted.sort((a, b) => b.rating - a.rating);
+            break;
+          case 'distance':
+          default:
+            if (userLocation) {
+              sorted.sort((a, b) => {
+                const distA = Math.sqrt(
+                  Math.pow(a.lat - userLocation.lat, 2) + Math.pow(a.lng - userLocation.lng, 2)
+                );
+                const distB = Math.sqrt(
+                  Math.pow(b.lat - userLocation.lat, 2) + Math.pow(b.lng - userLocation.lng, 2)
+                );
+                return distA - distB;
+              });
+            }
+            break;
+        }
+
+        updatePropertiesList(sorted);
+        addPropertyMarkers(sorted);
+      }
+
+      // Get user location
+      function getUserLocation() {
+        if (navigator.geolocation) {
+          navigator.geolocation.getCurrentPosition(
+            position => {
+              userLocation = {
+                lat: position.coords.latitude,
+                lng: position.coords.longitude,
+              };
+
+              // Center map on user location
+              map.setView([userLocation.lat, userLocation.lng], 16);
+
+              // Add user location marker
+              L.marker([userLocation.lat, userLocation.lng])
+                .addTo(map)
+                .bindPopup('You are here')
+                .openPopup();
+
+              // Re-sort by distance
+              sortProperties();
+            },
+            error => {
+              alert('Unable to get your location. Please enable location permissions.');
+            }
+          );
+        } else {
+          alert('Geolocation is not supported by your browser.');
+        }
+      }
+
+      // View property (placeholder)
+      function viewProperty(id) {
+        console.log('View property:', id);
+        // Navigate to property detail page or open modal
+        // window.location.href = `../rooms/detail.html?id=${id}`;
+      }
+
+      // Dismiss login CTA
+      function dismissLoginCta() {
+        const cta = document.querySelector('.login-cta-overlay');
+        if (cta) {
+          cta.style.display = 'none';
+          localStorage.setItem('loginCtaDismissed', 'true');
+        }
+      }
+
+      // Check if login CTA should be shown
+      function checkLoginCta() {
+        const dismissed = localStorage.getItem('loginCtaDismissed');
+        if (dismissed === 'true') {
+          const cta = document.querySelector('.login-cta-overlay');
+          if (cta) cta.style.display = 'none';
+        }
       }
 
       // Initialize when page loads
-      window.addEventListener('load', initMap);
+      window.addEventListener('load', () => {
+        initMap();
+        checkLoginCta();
+
+        // Add dismiss handler
+        document.getElementById('dismiss-cta')?.addEventListener('click', dismissLoginCta);
+      });
     </script>
   </body>
 </html>
