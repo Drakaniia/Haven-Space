@@ -162,9 +162,14 @@ publicFiles.forEach(file => {
   writeFileSync(destPath, content);
 
   // Determine relative path for console output
-  const relativePath = subfolder === 'auth' ? 'auth/' :
-                       subfolder === 'boarder' ? 'boarder/' :
-                       subfolder === 'maps' ? 'boarder/maps/' : '';
+  const relativePath =
+    subfolder === 'auth'
+      ? 'auth/'
+      : subfolder === 'boarder'
+      ? 'boarder/'
+      : subfolder === 'maps'
+      ? 'boarder/maps/'
+      : '';
   console.log(`✓ Processed ${file} → ${relativePath}${fileName}`);
 });
 
