@@ -49,6 +49,7 @@ const NAV_CONFIG = {
           dropdown: true,
           children: [
             { label: 'My Listings', href: '../landlord/listings/index.html', icon: 'list' },
+            { label: 'My Properties', href: '../landlord/myproperties/index.html', icon: 'list' },
             { label: 'Map View', href: '../landlord/maps/index.html', icon: 'map' },
             {
               label: 'Applications',
@@ -388,7 +389,11 @@ function setupLogoutHandler() {
 function setupToggleHandler() {
   const toggleBtn = document.getElementById('sidebar-toggle');
   const sidebar = document.querySelector('.sidebar');
-  const dashboardContainer = document.querySelector('.boarder-dashboard');
+  // Support both boarder and landlord dashboard containers
+  const dashboardContainer =
+    document.querySelector('.boarder-dashboard') ||
+    document.querySelector('.landlord-dashboard') ||
+    document.querySelector('.admin-dashboard');
 
   if (toggleBtn && sidebar) {
     toggleBtn.addEventListener('click', () => {
@@ -425,7 +430,11 @@ function restoreCollapsedState() {
   try {
     const isCollapsed = localStorage.getItem('sidebar-collapsed') === 'true';
     const sidebar = document.querySelector('.sidebar');
-    const dashboardContainer = document.querySelector('.boarder-dashboard');
+    // Support both boarder and landlord dashboard containers
+    const dashboardContainer =
+      document.querySelector('.boarder-dashboard') ||
+      document.querySelector('.landlord-dashboard') ||
+      document.querySelector('.admin-dashboard');
 
     if (sidebar && isCollapsed) {
       sidebar.classList.add('collapsed');

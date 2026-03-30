@@ -1,0 +1,526 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Edit Property - Haven Space</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="../../../css/global.css" />
+    <link rel="stylesheet" href="../../../css/components/sidebar.css" />
+    <link rel="stylesheet" href="../../../css/components/navbar.css" />
+    <link rel="stylesheet" href="../../../css/views/landlord/create-listing.css" />
+    <link rel="stylesheet" href="../../../css/views/landlord/edit-property.css" />
+  </head>
+  <body>
+    <div class="edit-property-page">
+      <!-- Sidebar Container -->
+      <div id="sidebar-container"></div>
+
+      <!-- Main Content -->
+      <main class="edit-property-main">
+        <!-- Navbar Container -->
+        <div id="navbar-container"></div>
+
+        <!-- Content -->
+        <div class="edit-property-content">
+          <div class="edit-property-header">
+            <a href="../myproperties/index.html" class="back-btn">
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M10 19l-7-7m0 0l7-7m-7 7h18"
+                />
+              </svg>
+              Back to Properties
+            </a>
+            <h1>Edit Property</h1>
+            <p>Update your property details and manage photos.</p>
+          </div>
+
+          <form id="edit-property-form" class="edit-property-form">
+            <!-- Basic Information Section -->
+            <section class="form-section">
+              <h2 class="section-title">Basic Information</h2>
+
+              <div class="form-row">
+                <div class="form-group">
+                  <label for="property-name">Property Name *</label>
+                  <input
+                    type="text"
+                    id="property-name"
+                    name="propertyName"
+                    placeholder="e.g. Sunrise Boarding House"
+                    required
+                  />
+                </div>
+                <div class="form-group">
+                  <label for="property-type">Property Type *</label>
+                  <select id="property-type" name="propertyType" required>
+                    <option value="">Select type</option>
+                    <option value="boarding-house">Boarding House</option>
+                    <option value="dormitory">Dormitory</option>
+                    <option value="apartment">Apartment</option>
+                    <option value="studio">Studio Unit</option>
+                    <option value="others">Others</option>
+                  </select>
+                </div>
+              </div>
+
+              <div class="form-group" id="property-type-other-group" style="display: none">
+                <label for="property-type-other">Specify Property Type *</label>
+                <input
+                  type="text"
+                  id="property-type-other"
+                  name="propertyTypeOther"
+                  placeholder="e.g. Townhouse, Condominium, etc."
+                />
+              </div>
+
+              <div class="form-group">
+                <label for="property-description">Description *</label>
+                <textarea
+                  id="property-description"
+                  name="propertyDescription"
+                  rows="4"
+                  placeholder="Describe your property, its features, and what makes it special..."
+                  required
+                ></textarea>
+              </div>
+
+              <div class="form-row">
+                <div class="form-group">
+                  <label for="property-price">Monthly Rent (₱) *</label>
+                  <input
+                    type="number"
+                    id="property-price"
+                    name="propertyPrice"
+                    placeholder="5000"
+                    min="0"
+                    required
+                  />
+                </div>
+                <div class="form-group">
+                  <label for="property-deposit">Security Deposit (₱) *</label>
+                  <input
+                    type="number"
+                    id="property-deposit"
+                    name="propertyDeposit"
+                    placeholder="5000"
+                    min="0"
+                    required
+                  />
+                </div>
+              </div>
+
+              <div class="form-row">
+                <div class="form-group">
+                  <label for="property-rooms">Number of Rooms Available *</label>
+                  <input
+                    type="number"
+                    id="property-rooms"
+                    name="propertyRooms"
+                    placeholder="5"
+                    min="1"
+                    required
+                  />
+                </div>
+                <div class="form-group">
+                  <label for="property-capacity">Capacity per Room *</label>
+                  <select id="property-capacity" name="propertyCapacity" required>
+                    <option value="">Select capacity</option>
+                    <option value="1">1 person</option>
+                    <option value="2">2 persons</option>
+                    <option value="3">3 persons</option>
+                    <option value="4">4+ persons</option>
+                    <option value="custom">Custom</option>
+                  </select>
+                </div>
+              </div>
+
+              <div class="form-group" id="property-capacity-custom-group" style="display: none">
+                <label for="property-capacity-custom">Specify Capacity (number of persons) *</label>
+                <input
+                  type="number"
+                  id="property-capacity-custom"
+                  name="propertyCapacityCustom"
+                  placeholder="e.g. 5, 6, 8"
+                  min="1"
+                />
+              </div>
+
+              <div class="form-group">
+                <label for="property-status">Property Status *</label>
+                <select id="property-status" name="propertyStatus" required>
+                  <option value="active">Active</option>
+                  <option value="inactive">Inactive</option>
+                  <option value="full">Fully Occupied</option>
+                </select>
+              </div>
+            </section>
+
+            <!-- Location Section -->
+            <section class="form-section">
+              <h2 class="section-title">Location</h2>
+
+              <div class="form-group">
+                <label for="property-address">Complete Address *</label>
+                <textarea
+                  id="property-address"
+                  name="propertyAddress"
+                  rows="2"
+                  placeholder="Street, Barangay, City, Province"
+                  required
+                ></textarea>
+              </div>
+
+              <div class="form-row">
+                <div class="form-group">
+                  <label for="property-city">City *</label>
+                  <input
+                    type="text"
+                    id="property-city"
+                    name="propertyCity"
+                    placeholder="e.g. Manila"
+                    required
+                  />
+                </div>
+                <div class="form-group">
+                  <label for="property-province">Province *</label>
+                  <input
+                    type="text"
+                    id="property-province"
+                    name="propertyProvince"
+                    placeholder="e.g. Metro Manila"
+                    required
+                  />
+                </div>
+              </div>
+
+              <div class="form-group">
+                <button type="button" id="set-location-btn" class="btn-set-location">
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                  >
+                    <path
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      stroke-width="2"
+                      d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"
+                    />
+                    <path
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      stroke-width="2"
+                      d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"
+                    />
+                  </svg>
+                  Set Location on Map
+                </button>
+                <input type="hidden" id="property-latitude" name="propertyLatitude" />
+                <input type="hidden" id="property-longitude" name="propertyLongitude" />
+              </div>
+            </section>
+
+            <!-- Amenities Section -->
+            <section class="form-section">
+              <h2 class="section-title">Amenities & Features</h2>
+              <p class="section-description">Select all amenities that your property offers.</p>
+
+              <div class="amenities-grid">
+                <label class="amenity-checkbox">
+                  <input type="checkbox" name="amenities" value="wifi" />
+                  <span class="amenity-label">
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      stroke="currentColor"
+                    >
+                      <path
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        stroke-width="2"
+                        d="M8.111 16.404a5.5 5.5 0 017.778 0M12 20h.01m-7.08-7.071c3.904-3.905 10.236-3.905 14.141 0M1.394 9.393c5.857-5.857 15.355-5.857 21.213 0"
+                      />
+                    </svg>
+                    WiFi
+                  </span>
+                </label>
+                <label class="amenity-checkbox">
+                  <input type="checkbox" name="amenities" value="aircon" />
+                  <span class="amenity-label">
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      stroke="currentColor"
+                    >
+                      <path
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        stroke-width="2"
+                        d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"
+                      />
+                    </svg>
+                    Air Conditioning
+                  </span>
+                </label>
+                <label class="amenity-checkbox">
+                  <input type="checkbox" name="amenities" value="furnished" />
+                  <span class="amenity-label">
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      stroke="currentColor"
+                    >
+                      <path
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        stroke-width="2"
+                        d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z"
+                      />
+                    </svg>
+                    Fully Furnished
+                  </span>
+                </label>
+                <label class="amenity-checkbox">
+                  <input type="checkbox" name="amenities" value="parking" />
+                  <span class="amenity-label">
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      stroke="currentColor"
+                    >
+                      <path
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        stroke-width="2"
+                        d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4"
+                      />
+                    </svg>
+                    Parking
+                  </span>
+                </label>
+                <label class="amenity-checkbox">
+                  <input type="checkbox" name="amenities" value="laundry" />
+                  <span class="amenity-label">
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      stroke="currentColor"
+                    >
+                      <path
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        stroke-width="2"
+                        d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"
+                      />
+                    </svg>
+                    Laundry
+                  </span>
+                </label>
+                <label class="amenity-checkbox">
+                  <input type="checkbox" name="amenities" value="kitchen" />
+                  <span class="amenity-label">
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      stroke="currentColor"
+                    >
+                      <path
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        stroke-width="2"
+                        d="M17.657 18.657A8 8 0 016.343 7.343S7 9 9 10c0-2 .5-5 2.986-7C14 5 16.09 5.777 17.656 7.343A7.975 7.975 0 0120 13a7.975 7.975 0 01-2.343 5.657z"
+                      />
+                    </svg>
+                    Kitchen Access
+                  </span>
+                </label>
+                <label class="amenity-checkbox">
+                  <input type="checkbox" name="amenities" value="cr" />
+                  <span class="amenity-label">
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      stroke="currentColor"
+                    >
+                      <path
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        stroke-width="2"
+                        d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"
+                      />
+                    </svg>
+                    CR Inside Room
+                  </span>
+                </label>
+                <label class="amenity-checkbox">
+                  <input type="checkbox" name="amenities" value="cctv" />
+                  <span class="amenity-label">
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      stroke="currentColor"
+                    >
+                      <path
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        stroke-width="2"
+                        d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z"
+                      />
+                    </svg>
+                    CCTV Security
+                  </span>
+                </label>
+              </div>
+
+              <!-- Custom Amenities Section -->
+              <div class="custom-amenities-section" style="margin-top: 1.5rem">
+                <h4
+                  style="
+                    margin-bottom: 0.75rem;
+                    font-size: 0.95rem;
+                    font-weight: 600;
+                    color: var(--text-dark);
+                  "
+                >
+                  Add Custom Amenity
+                </h4>
+                <div
+                  class="custom-amenities-input-group"
+                  style="display: flex; gap: 0.5rem; align-items: flex-start"
+                >
+                  <input
+                    type="text"
+                    id="custom-amenity-input"
+                    placeholder="e.g. Swimming Pool, Gym, 24/7 Security, etc."
+                    style="
+                      flex: 1;
+                      padding: 0.75rem 1rem;
+                      border: 1px solid var(--border-color);
+                      border-radius: 8px;
+                      font-size: 0.95rem;
+                      font-family: var(--font-main);
+                    "
+                  />
+                  <button
+                    type="button"
+                    id="add-custom-amenity-btn"
+                    class="btn-add-amenity"
+                    style="
+                      padding: 0.75rem 1.25rem;
+                      background-color: var(--primary-green);
+                      color: var(--white);
+                      border: none;
+                      border-radius: 8px;
+                      font-weight: 500;
+                      cursor: pointer;
+                      transition: all 0.2s ease;
+                    "
+                  >
+                    Add
+                  </button>
+                </div>
+                <div
+                  id="custom-amenities-list"
+                  class="custom-amenities-list"
+                  style="display: flex; flex-wrap: wrap; gap: 0.5rem; margin-top: 1rem"
+                ></div>
+              </div>
+            </section>
+
+            <!-- Photo Management Section -->
+            <section class="form-section">
+              <h2 class="section-title">Property Photos</h2>
+              <p class="section-description">
+                Manage your property photos. Drag to reorder. First photo will be the cover image.
+              </p>
+
+              <div class="photo-upload-container">
+                <!-- Photo Preview Grid -->
+                <div id="photo-preview-grid" class="photo-preview-grid"></div>
+
+                <!-- Upload Area -->
+                <div class="photo-upload-area" id="photo-upload-area">
+                  <input
+                    type="file"
+                    id="property-photos"
+                    name="propertyPhotos"
+                    accept="image/*"
+                    multiple
+                    hidden
+                  />
+                  <div class="upload-placeholder">
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      stroke="currentColor"
+                    >
+                      <path
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        stroke-width="2"
+                        d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"
+                      />
+                    </svg>
+                    <p><strong>Click to upload</strong> or drag and drop</p>
+                    <p class="upload-hint">PNG, JPG, JPEG up to 5MB each (Max 10 photos)</p>
+                  </div>
+                </div>
+              </div>
+
+              <div id="photo-error" class="photo-error"></div>
+            </section>
+
+            <!-- Form Actions -->
+            <div class="form-actions">
+              <button type="button" id="cancel-btn" class="btn-cancel">Cancel</button>
+              <button type="button" id="save-draft-btn" class="btn-save-draft">Save Draft</button>
+              <button type="submit" class="btn-submit">
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                >
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="2"
+                    d="M5 13l4 4L19 7"
+                  />
+                </svg>
+                Save Changes
+              </button>
+            </div>
+          </form>
+        </div>
+      </main>
+    </div>
+
+    <script type="module" src="../../../js/views/landlord/edit-property.js"></script>
+  </body>
+</html>

@@ -1,0 +1,284 @@
+/* Edit Property Page - Additional Styles */
+
+.edit-property-page {
+  display: flex;
+  min-height: 100vh;
+  background-color: var(--bg-cream);
+}
+
+.edit-property-main {
+  flex: 1;
+  margin-left: 260px;
+  display: flex;
+  flex-direction: column;
+}
+
+.edit-property-content {
+  flex: 1;
+  padding: 2rem;
+  max-width: 900px;
+  margin: 0 auto;
+  width: 100%;
+}
+
+/* Header */
+.edit-property-header {
+  margin-bottom: 2rem;
+}
+
+.edit-property-header .back-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  color: var(--text-gray);
+  text-decoration: none;
+  font-size: 0.875rem;
+  font-weight: 500;
+  margin-bottom: 1rem;
+  transition: color 0.2s ease;
+}
+
+.edit-property-header .back-btn:hover {
+  color: var(--primary-green);
+}
+
+.edit-property-header .back-btn svg {
+  width: 20px;
+  height: 20px;
+}
+
+.edit-property-header h1 {
+  font-size: 1.75rem;
+  font-weight: 700;
+  color: var(--text-dark);
+  margin-bottom: 0.5rem;
+}
+
+.edit-property-header p {
+  color: var(--text-gray);
+  font-size: 0.95rem;
+}
+
+/* Photo Grid with Drag Handles */
+.photo-preview-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+  gap: 1rem;
+}
+
+.photo-preview-item {
+  position: relative;
+  aspect-ratio: 1;
+  border-radius: 8px;
+  overflow: hidden;
+  background-color: var(--bg-cream);
+  border: 1px solid var(--border-color);
+  cursor: move;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.photo-preview-item:hover {
+  transform: scale(1.02);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.photo-preview-item.dragging {
+  opacity: 0.5;
+  transform: scale(1.05);
+}
+
+.photo-preview-item.drag-over {
+  border-color: var(--primary-green);
+  border-style: dashed;
+}
+
+.photo-preview-item img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.photo-preview-item .photo-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(to bottom, rgba(0, 0, 0, 0.6), transparent);
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  padding: 0.5rem;
+  opacity: 0;
+  transition: opacity 0.2s ease;
+}
+
+.photo-preview-item:hover .photo-overlay {
+  opacity: 1;
+}
+
+.photo-badge {
+  background-color: var(--primary-green);
+  color: var(--white);
+  font-size: 0.7rem;
+  font-weight: 600;
+  padding: 0.25rem 0.5rem;
+  border-radius: 4px;
+  text-transform: uppercase;
+}
+
+.photo-drag-handle {
+  background-color: rgba(255, 255, 255, 0.9);
+  border: none;
+  border-radius: 50%;
+  width: 28px;
+  height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: grab;
+  transition: all 0.2s ease;
+}
+
+.photo-drag-handle:hover {
+  background-color: var(--primary-green);
+  color: var(--white);
+}
+
+.photo-drag-handle svg {
+  width: 16px;
+  height: 16px;
+}
+
+.photo-drag-handle:active {
+  cursor: grabbing;
+}
+
+.photo-remove-btn {
+  background-color: rgba(255, 255, 255, 0.9);
+  border: none;
+  border-radius: 50%;
+  width: 28px;
+  height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.photo-remove-btn:hover {
+  background-color: #ef4444;
+  color: var(--white);
+}
+
+.photo-remove-btn svg {
+  width: 16px;
+  height: 16px;
+}
+
+.photo-preview-item .cover-indicator {
+  position: absolute;
+  bottom: 0.5rem;
+  left: 0.5rem;
+  right: 0.5rem;
+  background-color: rgba(74, 124, 35, 0.9);
+  color: var(--white);
+  font-size: 0.7rem;
+  font-weight: 600;
+  padding: 0.25rem 0.5rem;
+  border-radius: 4px;
+  text-align: center;
+}
+
+/* Form Actions with Save Draft */
+.form-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 1rem;
+  padding-top: 1rem;
+}
+
+.btn-cancel,
+.btn-save-draft,
+.btn-submit {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.875rem 1.5rem;
+  border-radius: 8px;
+  font-size: 0.95rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  border: none;
+}
+
+.btn-cancel {
+  background-color: var(--white);
+  color: var(--text-gray);
+  border: 1px solid var(--border-color);
+}
+
+.btn-cancel:hover {
+  background-color: var(--bg-cream);
+  border-color: var(--text-gray);
+}
+
+.btn-save-draft {
+  background-color: var(--white);
+  color: var(--primary-green);
+  border: 1px solid var(--primary-green);
+}
+
+.btn-save-draft:hover {
+  background-color: var(--bg-green);
+}
+
+.btn-submit {
+  background-color: var(--primary-green);
+  color: var(--white);
+}
+
+.btn-submit:hover {
+  background-color: var(--dark-green);
+}
+
+.btn-submit svg {
+  width: 18px;
+  height: 18px;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .edit-property-main {
+    margin-left: 0;
+  }
+
+  .edit-property-content {
+    padding: 1rem;
+  }
+
+  .form-row {
+    grid-template-columns: 1fr;
+  }
+
+  .amenities-grid {
+    grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+  }
+
+  .photo-preview-grid {
+    grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+  }
+
+  .form-actions {
+    flex-direction: column;
+  }
+
+  .btn-cancel,
+  .btn-save-draft,
+  .btn-submit {
+    width: 100%;
+    justify-content: center;
+  }
+}
