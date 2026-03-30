@@ -8,9 +8,10 @@
 
 .edit-property-main {
   flex: 1;
-  margin-left: 260px;
+  margin-left: 280px;
   display: flex;
   flex-direction: column;
+  min-height: 100vh;
 }
 
 .edit-property-content {
@@ -281,4 +282,296 @@
     width: 100%;
     justify-content: center;
   }
+}
+
+/* Room Availability Management Styles */
+.room-capacity-section,
+.rooms-list-section {
+  margin-top: 1.5rem;
+}
+
+.room-capacity-section {
+  background: var(--bg-cream);
+  padding: 1.5rem;
+  border-radius: 12px;
+}
+
+.capacity-input-wrapper {
+  display: flex;
+  gap: 1rem;
+  align-items: center;
+}
+
+.capacity-input-wrapper input {
+  flex: 1;
+  max-width: 200px;
+  padding: 0.75rem 1rem;
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  font-size: 1rem;
+  font-family: var(--font-main);
+  color: var(--text-dark);
+  transition: border-color 0.2s ease;
+}
+
+.capacity-input-wrapper input:focus {
+  outline: none;
+  border-color: var(--primary-green);
+  box-shadow: 0 0 0 3px rgba(74, 124, 35, 0.1);
+}
+
+.capacity-input-wrapper .btn-primary {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.75rem 1.25rem;
+}
+
+.capacity-input-wrapper .btn-primary svg {
+  width: 18px;
+  height: 18px;
+}
+
+.capacity-help-text {
+  margin-top: 0.75rem;
+  font-size: 0.85rem;
+  color: var(--text-gray);
+  line-height: 1.5;
+}
+
+/* Rooms List */
+.rooms-list {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.empty-rooms-message {
+  text-align: center;
+  padding: 2rem;
+  color: var(--text-gray);
+  font-size: 0.95rem;
+  background: var(--bg-cream);
+  border-radius: 12px;
+}
+
+.room-item {
+  background: var(--white);
+  border: 1px solid var(--border-color);
+  border-radius: 12px;
+  padding: 1.25rem;
+  transition: all 0.2s ease;
+}
+
+.room-item.available {
+  border-left: 4px solid var(--primary-green);
+}
+
+.room-item.occupied {
+  border-left: 4px solid var(--dashboard-red);
+}
+
+.room-item:hover {
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+}
+
+.room-item-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+
+.room-info {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.room-number {
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--text-dark);
+}
+
+.room-status-badge {
+  padding: 0.25rem 0.75rem;
+  border-radius: 20px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+}
+
+.room-status-badge.available {
+  background-color: var(--dashboard-green-light);
+  color: var(--dashboard-success);
+}
+
+.room-status-badge.occupied {
+  background-color: var(--dashboard-red-light);
+  color: var(--dashboard-red);
+}
+
+.room-actions {
+  display: flex;
+  gap: 0.75rem;
+  align-items: center;
+}
+
+.room-status-select {
+  padding: 0.5rem 1rem;
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  font-size: 0.85rem;
+  font-family: var(--font-main);
+  color: var(--text-dark);
+  background-color: var(--white);
+  cursor: pointer;
+  transition: border-color 0.2s ease;
+}
+
+.room-status-select:focus {
+  outline: none;
+  border-color: var(--primary-green);
+}
+
+.btn-upload-image {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 1rem;
+  background-color: var(--primary-green);
+  color: var(--white);
+  border: none;
+  border-radius: 8px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.btn-upload-image:hover {
+  background-color: var(--dark-green);
+}
+
+.btn-upload-image svg {
+  width: 16px;
+  height: 16px;
+}
+
+/* Room Image Preview */
+.room-image-preview {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.room-image-preview img {
+  width: 80px;
+  height: 80px;
+  object-fit: cover;
+  border-radius: 8px;
+  cursor: pointer;
+  border: 2px solid transparent;
+  transition: border-color 0.2s ease;
+}
+
+.room-image-preview img:hover {
+  border-color: var(--primary-green);
+}
+
+.room-image-preview .more-images {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 80px;
+  height: 80px;
+  background-color: var(--bg-cream);
+  border-radius: 8px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--text-gray);
+}
+
+/* Image Preview Modal */
+.image-preview-modal,
+.room-modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 1000;
+  display: none;
+  align-items: center;
+  justify-content: center;
+}
+
+.image-preview-modal.active,
+.room-modal.active {
+  display: flex;
+}
+
+.image-preview-content {
+  position: relative;
+  background: var(--white);
+  border-radius: 16px;
+  width: 90%;
+  max-width: 900px;
+  max-height: 90vh;
+  padding: 1rem;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
+  animation: modalSlideIn 0.3s ease;
+}
+
+.image-preview-content img {
+  width: 100%;
+  max-height: 70vh;
+  object-fit: contain;
+  border-radius: 8px;
+}
+
+.image-modal-close {
+  position: absolute;
+  top: 1rem;
+  right: 1rem;
+  background: rgba(0, 0, 0, 0.7);
+  border: none;
+  border-radius: 50%;
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  z-index: 10;
+}
+
+.image-modal-close:hover {
+  background: rgba(0, 0, 0, 0.9);
+}
+
+.image-modal-close svg {
+  width: 24px;
+  height: 24px;
+  color: var(--white);
+}
+
+.image-preview-actions {
+  display: flex;
+  justify-content: center;
+  margin-top: 1rem;
+}
+
+.image-preview-actions .btn-danger {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.image-preview-actions .btn-danger svg {
+  width: 18px;
+  height: 18px;
 }

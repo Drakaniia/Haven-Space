@@ -126,17 +126,6 @@
 
               <div class="form-row">
                 <div class="form-group">
-                  <label for="property-rooms">Number of Rooms Available *</label>
-                  <input
-                    type="number"
-                    id="property-rooms"
-                    name="propertyRooms"
-                    placeholder="5"
-                    min="1"
-                    required
-                  />
-                </div>
-                <div class="form-group">
                   <label for="property-capacity">Capacity per Room *</label>
                   <select id="property-capacity" name="propertyCapacity" required>
                     <option value="">Select capacity</option>
@@ -145,6 +134,14 @@
                     <option value="3">3 persons</option>
                     <option value="4">4+ persons</option>
                     <option value="custom">Custom</option>
+                  </select>
+                </div>
+                <div class="form-group">
+                  <label for="property-status">Property Status *</label>
+                  <select id="property-status" name="propertyStatus" required>
+                    <option value="active">Active</option>
+                    <option value="inactive">Inactive</option>
+                    <option value="full">Fully Occupied</option>
                   </select>
                 </div>
               </div>
@@ -158,15 +155,6 @@
                   placeholder="e.g. 5, 6, 8"
                   min="1"
                 />
-              </div>
-
-              <div class="form-group">
-                <label for="property-status">Property Status *</label>
-                <select id="property-status" name="propertyStatus" required>
-                  <option value="active">Active</option>
-                  <option value="inactive">Inactive</option>
-                  <option value="full">Fully Occupied</option>
-                </select>
               </div>
             </section>
 
@@ -495,6 +483,67 @@
               <div id="photo-error" class="photo-error"></div>
             </section>
 
+            <!-- Room Availability Management Section -->
+            <section class="form-section">
+              <h2 class="section-title">Room Availability Management</h2>
+              <p class="section-description">
+                Manage room capacity, availability status, and upload photos for available rooms.
+              </p>
+
+              <!-- Room Capacity -->
+              <div class="room-capacity-section">
+                <div class="form-group">
+                  <label for="room-capacity-input">Total Number of Rooms *</label>
+                  <div class="capacity-input-wrapper">
+                    <input
+                      type="number"
+                      id="room-capacity-input"
+                      name="roomCapacity"
+                      min="1"
+                      max="100"
+                      value="10"
+                      required
+                    />
+                    <button type="button" class="btn-primary" id="update-capacity-btn">
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        stroke="currentColor"
+                      >
+                        <path
+                          stroke-linecap="round"
+                          stroke-linejoin="round"
+                          stroke-width="2"
+                          d="M5 13l4 4L19 7"
+                        />
+                      </svg>
+                      Update
+                    </button>
+                  </div>
+                  <p class="capacity-help-text">
+                    Adjust the total number of rooms. Reducing capacity will remove available rooms
+                    first (occupied rooms are preserved).
+                  </p>
+                </div>
+              </div>
+
+              <!-- Rooms List -->
+              <div class="rooms-list-section">
+                <h3 style="font-size: 1rem; margin-bottom: 1rem">Individual Rooms</h3>
+                <div id="rooms-list" class="rooms-list"></div>
+              </div>
+
+              <!-- Hidden file input for room image upload -->
+              <input
+                type="file"
+                id="room-image-upload"
+                accept="image/*"
+                multiple
+                style="display: none"
+              />
+            </section>
+
             <!-- Form Actions -->
             <div class="form-actions">
               <button type="button" id="cancel-btn" class="btn-cancel">Cancel</button>
@@ -519,6 +568,47 @@
           </form>
         </div>
       </main>
+    </div>
+
+    <!-- Image Preview Modal -->
+    <div id="image-preview-modal" class="image-preview-modal">
+      <div class="modal-overlay"></div>
+      <div class="image-preview-content">
+        <button class="image-modal-close" id="image-modal-close">
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke="currentColor"
+          >
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              d="M6 18L18 6M6 6l12 12"
+            />
+          </svg>
+        </button>
+        <img id="image-preview-source" src="" alt="Room preview" />
+        <div class="image-preview-actions">
+          <button class="btn-danger" id="delete-room-image">
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
+              />
+            </svg>
+            Delete Image
+          </button>
+        </div>
+      </div>
     </div>
 
     <script type="module" src="../../../js/views/landlord/edit-property.js"></script>

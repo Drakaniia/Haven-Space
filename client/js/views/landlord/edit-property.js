@@ -111,7 +111,6 @@ function loadPropertyData(id) {
   document.getElementById('property-description').value = property.description;
   document.getElementById('property-price').value = property.price;
   document.getElementById('property-deposit').value = property.deposit;
-  document.getElementById('property-rooms').value = property.rooms;
   document.getElementById('property-capacity').value = property.capacity;
   document.getElementById('property-status').value = property.status;
   document.getElementById('property-address').value = property.address;
@@ -119,6 +118,12 @@ function loadPropertyData(id) {
   document.getElementById('property-province').value = property.province;
   document.getElementById('property-latitude').value = property.latitude || '';
   document.getElementById('property-longitude').value = property.longitude || '';
+
+  // Set room capacity from property.rooms
+  const roomCapacityInput = document.getElementById('room-capacity-input');
+  if (roomCapacityInput) {
+    roomCapacityInput.value = property.rooms;
+  }
 
   // Set amenities
   const amenityCheckboxes = document.querySelectorAll('input[name="amenities"]');
@@ -149,6 +154,9 @@ function setupFormHandlers() {
 
   // Initialize photo upload handlers
   initPhotoUpload(uploadArea, fileInput);
+
+  // Initialize room management
+  initRoomManagement();
 
   // Form submission
   form.addEventListener('submit', handleFormSubmit);
@@ -503,6 +511,10 @@ async function handleFormSubmit(e) {
   // Get custom amenities
   const customAmenities = getCustomAmenities();
 
+  // Get room capacity from the room management section
+  const roomCapacityInput = document.getElementById('room-capacity-input');
+  const propertyRooms = roomCapacityInput ? parseInt(roomCapacityInput.value) : 0;
+
   const data = {
     id: propertyId,
     propertyName: formData.get('propertyName'),
@@ -510,7 +522,7 @@ async function handleFormSubmit(e) {
     propertyDescription: formData.get('propertyDescription'),
     propertyPrice: parseFloat(formData.get('propertyPrice')),
     propertyDeposit: parseFloat(formData.get('propertyDeposit')),
-    propertyRooms: parseInt(formData.get('propertyRooms')),
+    propertyRooms: propertyRooms,
     propertyCapacity: propertyCapacity,
     propertyStatus: formData.get('propertyStatus'),
     propertyAddress: formData.get('propertyAddress'),
@@ -672,6 +684,328 @@ function removeCustomAmenity(value) {
  */
 function getCustomAmenities() {
   return customAmenitiesList;
+}
+
+/* ============================================
+   Room Availability Management
+   ============================================ */
+
+// Store room data
+let roomCapacity = 10;
+let roomsData = [];
+let currentRoomForUpload = null;
+
+/**
+ * Initialize room management
+ */
+function initRoomManagement() {
+  const capacityInput = document.getElementById('room-capacity-input');
+  const updateCapacityBtn = document.getElementById('update-capacity-btn');
+  const imageUploadInput = document.getElementById('room-image-upload');
+
+  if (!capacityInput || !updateCapacityBtn) return;
+
+  // Initialize with sample rooms based on property
+  initializeRoomsData();
+
+  // Update capacity button
+  updateCapacityBtn.addEventListener('click', handleUpdateRoomCapacity);
+
+  // Room status change handler (delegated)
+  document.getElementById('rooms-list').addEventListener('change', e => {
+    if (e.target.classList.contains('room-status-select')) {
+      const roomId = e.target.dataset.roomId;
+      const newStatus = e.target.value;
+      updateRoomStatus(roomId, newStatus);
+    }
+  });
+
+  // Upload image button handler (delegated)
+  document.getElementById('rooms-list').addEventListener('click', e => {
+    const uploadBtn = e.target.closest('.btn-upload-image');
+    if (uploadBtn) {
+      const roomId = uploadBtn.dataset.roomId;
+      triggerRoomImageUpload(roomId);
+    }
+  });
+
+  // Room image click handler (delegated)
+  document.getElementById('rooms-list').addEventListener('click', e => {
+    const img = e.target.closest('.room-image-preview img');
+    if (img) {
+      const roomId = img.dataset.roomId;
+      const imageUrl = img.src;
+      openImagePreview(imageUrl, roomId);
+    }
+  });
+
+  // Image upload handler
+  if (imageUploadInput) {
+    imageUploadInput.addEventListener('change', handleRoomImageUpload);
+  }
+
+  // Render rooms
+  renderRoomsList();
+}
+
+/**
+ * Initialize rooms data based on property
+ */
+function initializeRoomsData() {
+  const roomsInput = document.getElementById('room-capacity-input');
+  if (!roomsInput) return;
+
+  roomCapacity = parseInt(roomsInput.value) || 10;
+
+  // Check if we have existing room data (from property)
+  // For demo, create sample rooms
+  if (roomsData.length === 0) {
+    roomsData = Array.from({ length: roomCapacity }, (_, i) => ({
+      id: `r${i + 1}`,
+      number: `Room ${101 + i}`,
+      status: i < 8 ? 'occupied' : 'available',
+      images: [],
+    }));
+
+    // Add some sample images to a few rooms
+    if (roomsData[8]) {
+      roomsData[8].images = ['https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?w=800'];
+    }
+  }
+
+  // Update capacity input
+  const capacityInput = document.getElementById('room-capacity-input');
+  if (capacityInput) {
+    capacityInput.value = roomCapacity;
+  }
+}
+
+/**
+ * Handle update room capacity
+ */
+function handleUpdateRoomCapacity() {
+  const capacityInput = document.getElementById('room-capacity-input');
+  const newCapacity = parseInt(capacityInput.value, 10);
+
+  if (!newCapacity || newCapacity < 1) {
+    alert('Please enter a valid number of rooms (minimum 1)');
+    return;
+  }
+
+  const currentLength = roomsData.length;
+
+  if (newCapacity > currentLength) {
+    // Add new rooms
+    const newRooms = Array.from({ length: newCapacity - currentLength }, (_, i) => ({
+      id: `r${Date.now()}-${i}`,
+      number: `Room ${currentLength + i + 1}`,
+      status: 'available',
+      images: [],
+    }));
+    roomsData = [...roomsData, ...newRooms];
+  } else if (newCapacity < currentLength) {
+    // Remove excess rooms (keep occupied ones first)
+    const occupiedRooms = roomsData.filter(r => r.status === 'occupied');
+    const availableRooms = roomsData.filter(r => r.status === 'available');
+
+    if (occupiedRooms.length > newCapacity) {
+      // Keep only the first N occupied rooms
+      roomsData = occupiedRooms.slice(0, newCapacity);
+    } else {
+      // Keep all occupied rooms and fill remaining with available
+      const remainingSlots = newCapacity - occupiedRooms.length;
+      roomsData = [...occupiedRooms, ...availableRooms.slice(0, remainingSlots)];
+    }
+  }
+
+  roomCapacity = newCapacity;
+
+  // Update the property rooms input
+  const roomsInput = document.getElementById('property-rooms');
+  if (roomsInput) {
+    roomsInput.value = newCapacity;
+  }
+
+  // Re-render rooms list
+  renderRoomsList();
+
+  // Show success feedback
+  alert(`Room capacity updated to ${newCapacity} rooms.`);
+}
+
+/**
+ * Render rooms list
+ */
+function renderRoomsList() {
+  const roomsList = document.getElementById('rooms-list');
+  if (!roomsList) return;
+
+  roomsList.innerHTML = '';
+
+  if (roomsData.length === 0) {
+    roomsList.innerHTML =
+      '<p class="empty-rooms-message">No rooms configured yet. Set room capacity to get started.</p>';
+    return;
+  }
+
+  roomsData.forEach(room => {
+    const roomEl = document.createElement('div');
+    roomEl.className = `room-item ${room.status}`;
+    roomEl.dataset.roomId = room.id;
+
+    const statusLabel = room.status === 'available' ? 'Available' : 'Occupied';
+    const imageCount = room.images ? room.images.length : 0;
+
+    roomEl.innerHTML = `
+      <div class="room-item-header">
+        <div class="room-info">
+          <span class="room-number">${room.number}</span>
+          <span class="room-status-badge ${room.status}">${statusLabel}</span>
+        </div>
+        <div class="room-actions">
+          <select class="room-status-select" data-room-id="${room.id}">
+            <option value="available" ${
+              room.status === 'available' ? 'selected' : ''
+            }>Available</option>
+            <option value="occupied" ${
+              room.status === 'occupied' ? 'selected' : ''
+            }>Occupied</option>
+          </select>
+          ${
+            room.status === 'available'
+              ? `
+            <button type="button" class="btn-upload-image" data-room-id="${
+              room.id
+            }" title="Upload images">
+              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+              </svg>
+              ${imageCount > 0 ? imageCount : 'Add'}
+            </button>
+          `
+              : ''
+          }
+        </div>
+      </div>
+      ${
+        imageCount > 0
+          ? `
+        <div class="room-image-preview">
+          ${room.images
+            .slice(0, 3)
+            .map(img => `<img src="${img}" alt="${room.number}" data-room-id="${room.id}" />`)
+            .join('')}
+          ${imageCount > 3 ? `<span class="more-images">+${imageCount - 3}</span>` : ''}
+        </div>
+      `
+          : ''
+      }
+    `;
+
+    roomsList.appendChild(roomEl);
+  });
+}
+
+/**
+ * Update room status
+ */
+function updateRoomStatus(roomId, newStatus) {
+  const room = roomsData.find(r => r.id === roomId);
+  if (!room) return;
+
+  room.status = newStatus;
+
+  // Re-render to update UI
+  renderRoomsList();
+}
+
+/**
+ * Trigger room image upload
+ */
+function triggerRoomImageUpload(roomId) {
+  const room = roomsData.find(r => r.id === roomId);
+  if (!room) return;
+
+  currentRoomForUpload = room;
+
+  const imageUploadInput = document.getElementById('room-image-upload');
+  if (imageUploadInput) {
+    imageUploadInput.dataset.roomId = roomId;
+    imageUploadInput.click();
+  }
+}
+
+/**
+ * Handle room image upload
+ */
+function handleRoomImageUpload(e) {
+  const files = e.target.files;
+  if (!files || files.length === 0) return;
+
+  if (!currentRoomForUpload) return;
+
+  // Process uploaded files
+  Array.from(files).forEach(file => {
+    // Create object URL for preview
+    const imageUrl = URL.createObjectURL(file);
+    if (!currentRoomForUpload.images) {
+      currentRoomForUpload.images = [];
+    }
+    currentRoomForUpload.images.push(imageUrl);
+  });
+
+  // Re-render rooms list
+  renderRoomsList();
+
+  // Reset input
+  e.target.value = '';
+}
+
+/**
+ * Open image preview modal
+ */
+function openImagePreview(imageUrl, roomId) {
+  const modal = document.getElementById('image-preview-modal');
+  if (!modal) return;
+
+  const previewImage = document.getElementById('image-preview-source');
+  if (previewImage) {
+    previewImage.src = imageUrl;
+  }
+
+  // Store room info for delete action
+  const deleteBtn = document.getElementById('delete-room-image');
+  if (deleteBtn) {
+    deleteBtn.onclick = () => {
+      deleteRoomImage(roomId, imageUrl);
+      closeModal(modal);
+    };
+  }
+
+  modal.classList.add('active');
+  document.body.style.overflow = 'hidden';
+}
+
+/**
+ * Close modal
+ */
+function closeModal(modal) {
+  if (!modal) return;
+  modal.classList.remove('active');
+  document.body.style.overflow = '';
+}
+
+/**
+ * Delete room image
+ */
+function deleteRoomImage(roomId, imageUrl) {
+  const room = roomsData.find(r => r.id === roomId);
+  if (!room || !room.images) return;
+
+  room.images = room.images.filter(img => img !== imageUrl);
+
+  // Re-render rooms list
+  renderRoomsList();
 }
 
 // Initialize on page load

@@ -408,7 +408,7 @@ function setupModalHandlers() {
 
     [closeBtn, cancelBtn, overlay].forEach(el => {
       if (el) {
-        el.addEventListener('click', () => closeModal(modal));
+        el.addEventListener('click', () => closeModal(propertyModal));
       }
     });
   }

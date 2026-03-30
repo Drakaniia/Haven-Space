@@ -8,15 +8,20 @@
 
 .your-properties-main {
   flex: 1;
-  margin-left: 260px;
+  margin-left: 280px;
   display: flex;
   flex-direction: column;
   min-height: 100vh;
+  transition: margin-left 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.your-properties-main.sidebar-collapsed {
+  margin-left: 80px;
 }
 
 .your-properties-content {
   flex: 1;
-  padding: 1.5rem 2rem;
+  padding: 1.5rem;
   width: 100%;
   max-width: 100%;
 }

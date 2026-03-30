@@ -394,6 +394,8 @@ function setupToggleHandler() {
     document.querySelector('.boarder-dashboard') ||
     document.querySelector('.landlord-dashboard') ||
     document.querySelector('.admin-dashboard');
+  // Support properties page layout
+  const propertiesMain = document.querySelector('.your-properties-main');
 
   if (toggleBtn && sidebar) {
     toggleBtn.addEventListener('click', () => {
@@ -403,6 +405,11 @@ function setupToggleHandler() {
       // Add/remove collapsed class on dashboard container for layout adjustments
       if (dashboardContainer) {
         dashboardContainer.classList.toggle('sidebar-collapsed', isCollapsed);
+      }
+
+      // Add/remove collapsed class on properties main for layout adjustments
+      if (propertiesMain) {
+        propertiesMain.classList.toggle('sidebar-collapsed', isCollapsed);
       }
 
       saveCollapsedState(isCollapsed);
@@ -435,12 +442,18 @@ function restoreCollapsedState() {
       document.querySelector('.boarder-dashboard') ||
       document.querySelector('.landlord-dashboard') ||
       document.querySelector('.admin-dashboard');
+    // Support properties page layout
+    const propertiesMain = document.querySelector('.your-properties-main');
 
     if (sidebar && isCollapsed) {
       sidebar.classList.add('collapsed');
       // Also add collapsed class to dashboard container for layout adjustments
       if (dashboardContainer) {
         dashboardContainer.classList.add('sidebar-collapsed');
+      }
+      // Also add collapsed class to properties main for layout adjustments
+      if (propertiesMain) {
+        propertiesMain.classList.add('sidebar-collapsed');
       }
     }
   } catch (e) {
