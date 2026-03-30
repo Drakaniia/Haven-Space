@@ -2,6 +2,12 @@
 
 A web application that connects boarders with verified boarding houses near their location.
 
+## CI/CD
+
+This project uses GitHub Actions for automated deployments:
+- **Pull Requests**: Verifies build succeeds
+- **Main Branch**: Auto-deploys to GitHub Pages
+
 ## 🌐 Production URLs
 
 After deployment, public pages will be accessible at clean URLs:
