@@ -34,7 +34,23 @@
               <p>Manage your boarding houses and track your business performance.</p>
             </div>
             <div class="landlord-topbar-actions">
-              <a href="../listings/create.html" class="landlord-btn landlord-btn-primary">
+              <a href="maps/index.html" class="landlord-btn landlord-btn-outline">
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                >
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="2"
+                    d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7"
+                  />
+                </svg>
+                Map View
+              </a>
+              <a href="maps/index.html" class="landlord-btn landlord-btn-primary">
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
                   fill="none"
@@ -49,22 +65,6 @@
                   />
                 </svg>
                 Create Listing
-              </a>
-              <a href="../reports/index.html" class="landlord-btn landlord-btn-outline">
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
-                >
-                  <path
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                    stroke-width="2"
-                    d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"
-                  />
-                </svg>
-                View Reports
               </a>
             </div>
           </div>
@@ -200,7 +200,7 @@
                   </svg>
                   Payment Status Overview
                 </h2>
-                <a href="../payments/index.html" class="landlord-view-all">
+                <a href="payments/index.html" class="landlord-view-all">
                   View all
                   <svg
                     xmlns="http://www.w3.org/2000/svg"
@@ -307,8 +307,7 @@
                         />
                       </svg>
                       <div>
-                        <strong>Late fee applied:</strong> ₱250 |
-                        <strong>Total due:</strong> ₱5,250
+                        <strong>Late fee applied:</strong> ₱250 | <strong>Total due:</strong> ₱5,250
                       </div>
                     </div>
                     <div class="landlord-payment-actions">
@@ -343,7 +342,7 @@
                   </svg>
                   Application Review Queue
                 </h2>
-                <a href="../applications/index.html" class="landlord-view-all">
+                <a href="applications/index.html" class="landlord-view-all">
                   View all
                   <svg
                     xmlns="http://www.w3.org/2000/svg"
@@ -426,9 +425,7 @@
                     <button class="landlord-btn landlord-btn-success landlord-btn-sm">
                       Approve
                     </button>
-                    <button class="landlord-btn landlord-btn-danger landlord-btn-sm">
-                      Reject
-                    </button>
+                    <button class="landlord-btn landlord-btn-danger landlord-btn-sm">Reject</button>
                   </div>
                 </div>
 
@@ -497,9 +494,7 @@
                     <button class="landlord-btn landlord-btn-success landlord-btn-sm">
                       Approve
                     </button>
-                    <button class="landlord-btn landlord-btn-danger landlord-btn-sm">
-                      Reject
-                    </button>
+                    <button class="landlord-btn landlord-btn-danger landlord-btn-sm">Reject</button>
                   </div>
                 </div>
               </div>
@@ -514,7 +509,7 @@
                 <h2 class="landlord-section-title">Quick Actions</h2>
               </div>
               <div class="landlord-quick-actions">
-                <a href="../listings/create.html" class="landlord-action-btn">
+                <a href="maps/index.html" class="landlord-action-btn">
                   <div class="landlord-action-icon green">
                     <svg
                       xmlns="http://www.w3.org/2000/svg"
@@ -532,7 +527,7 @@
                   </div>
                   <span class="landlord-action-label">Create Listing</span>
                 </a>
-                <a href="../payments/record.html" class="landlord-action-btn">
+                <a href="payments/record.html" class="landlord-action-btn">
                   <div class="landlord-action-icon blue">
                     <svg
                       xmlns="http://www.w3.org/2000/svg"
@@ -568,7 +563,7 @@
                   </div>
                   <span class="landlord-action-label">Send Announcement</span>
                 </a>
-                <a href="../maintenance/index.html" class="landlord-action-btn">
+                <a href="maintenance/index.html" class="landlord-action-btn">
                   <div class="landlord-action-icon orange">
                     <svg
                       xmlns="http://www.w3.org/2000/svg"
@@ -766,7 +761,7 @@
                 </svg>
                 Your Properties
               </h2>
-              <a href="../listings/index.html" class="landlord-view-all">
+              <a href="listings/index.html" class="landlord-view-all">
                 Manage all
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
@@ -836,10 +831,16 @@
                     </div>
                   </div>
                   <div class="landlord-property-actions">
-                    <a href="../listings/edit.html" class="landlord-btn landlord-btn-outline landlord-btn-sm">
+                    <a
+                      href="listings/edit.html"
+                      class="landlord-btn landlord-btn-outline landlord-btn-sm"
+                    >
                       Edit
                     </a>
-                    <a href="../boarders/index.html" class="landlord-btn landlord-btn-outline landlord-btn-sm">
+                    <a
+                      href="boarders/index.html"
+                      class="landlord-btn landlord-btn-outline landlord-btn-sm"
+                    >
                       View Boarders
                     </a>
                   </div>
@@ -898,10 +899,16 @@
                     </div>
                   </div>
                   <div class="landlord-property-actions">
-                    <a href="../listings/edit.html" class="landlord-btn landlord-btn-outline landlord-btn-sm">
+                    <a
+                      href="listings/edit.html"
+                      class="landlord-btn landlord-btn-outline landlord-btn-sm"
+                    >
                       Edit
                     </a>
-                    <a href="../boarders/index.html" class="landlord-btn landlord-btn-outline landlord-btn-sm">
+                    <a
+                      href="boarders/index.html"
+                      class="landlord-btn landlord-btn-outline landlord-btn-sm"
+                    >
                       View Boarders
                     </a>
                   </div>
