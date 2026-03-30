@@ -278,12 +278,14 @@ function setupDropdownHandlers() {
 
       if (content) {
         const isExpanded = content.style.display === 'block';
-        
+
         // Close all other dropdowns first
         const allDropdowns = document.querySelectorAll('.sidebar-nav-dropdown-content');
         const allDropdownContainers = document.querySelectorAll('.sidebar-nav-dropdown');
-        const allIcons = document.querySelectorAll('.sidebar-nav-dropdown-toggle .sidebar-dropdown-icon');
-        
+        const allIcons = document.querySelectorAll(
+          '.sidebar-nav-dropdown-toggle .sidebar-dropdown-icon'
+        );
+
         allDropdowns.forEach(d => {
           if (d !== content) d.style.display = 'none';
         });
@@ -384,11 +386,19 @@ function setupLogoutHandler() {
 function setupToggleHandler() {
   const toggleBtn = document.getElementById('sidebar-toggle');
   const sidebar = document.querySelector('.sidebar');
+  const dashboardContainer = document.querySelector('.boarder-dashboard');
 
   if (toggleBtn && sidebar) {
     toggleBtn.addEventListener('click', () => {
+      const isCollapsed = !sidebar.classList.contains('collapsed');
       sidebar.classList.toggle('collapsed');
-      saveCollapsedState(sidebar.classList.contains('collapsed'));
+
+      // Add/remove collapsed class on dashboard container for layout adjustments
+      if (dashboardContainer) {
+        dashboardContainer.classList.toggle('sidebar-collapsed', isCollapsed);
+      }
+
+      saveCollapsedState(isCollapsed);
     });
   }
 }
@@ -413,8 +423,14 @@ function restoreCollapsedState() {
   try {
     const isCollapsed = localStorage.getItem('sidebar-collapsed') === 'true';
     const sidebar = document.querySelector('.sidebar');
+    const dashboardContainer = document.querySelector('.boarder-dashboard');
+
     if (sidebar && isCollapsed) {
       sidebar.classList.add('collapsed');
+      // Also add collapsed class to dashboard container for layout adjustments
+      if (dashboardContainer) {
+        dashboardContainer.classList.add('sidebar-collapsed');
+      }
     }
   } catch (e) {
     // localStorage may not be available in some environments
