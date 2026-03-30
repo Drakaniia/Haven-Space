@@ -54,7 +54,6 @@ async function loadDashboardData() {
   // - Recent applications
   // - Recent activity feed
   // - Property listings
-
   // Example structure for API integration:
   // try {
   //   const response = await fetch('/api/landlord/dashboard');
@@ -189,11 +188,9 @@ function showNotification(message, type = 'info') {
  * Initialize payment reminder buttons
  */
 function initPaymentReminderButtons() {
-  const reminderButtons = document.querySelectorAll(
-    '[data-action="send-reminder"]'
-  );
+  const reminderButtons = document.querySelectorAll('[data-action="send-reminder"]');
 
-  reminderButtons.forEach((button) => {
+  reminderButtons.forEach(button => {
     button.addEventListener('click', async () => {
       const paymentId = button.dataset.paymentId;
       const tenantName = button.dataset.tenantName;
@@ -212,7 +209,7 @@ function initApplicationActionButtons() {
   const approveButtons = document.querySelectorAll('[data-action="approve"]');
   const rejectButtons = document.querySelectorAll('[data-action="reject"]');
 
-  approveButtons.forEach((button) => {
+  approveButtons.forEach(button => {
     button.addEventListener('click', async () => {
       const applicationId = button.dataset.applicationId;
       if (applicationId) {
@@ -224,7 +221,7 @@ function initApplicationActionButtons() {
     });
   });
 
-  rejectButtons.forEach((button) => {
+  rejectButtons.forEach(button => {
     button.addEventListener('click', async () => {
       const applicationId = button.dataset.applicationId;
       if (applicationId) {

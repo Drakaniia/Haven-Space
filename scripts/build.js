@@ -36,6 +36,8 @@ const publicFiles = [
   'views/public/auth/forgot-password.html',
   'views/boarder/index.html',
   'views/boarder/maps/index.html',
+  'views/landlord/index.html',
+  'views/landlord/maps/index.html',
 ];
 
 // Copy CSS files
@@ -46,6 +48,8 @@ const cssFiles = [
   'css/views/public/maps.css',
   'css/views/boarder/boarder.css',
   'css/views/boarder/maps.css',
+  'css/views/landlord/landlord.css',
+  'css/views/landlord/maps.css',
   'css/components/logo-cloud.css',
   'css/components/sidebar.css',
 ];
@@ -59,6 +63,8 @@ const jsFiles = [
   'js/shared/state.js',
   'js/views/landing/landing.js',
   'js/views/boarder/dashboard.js',
+  'js/views/landlord/landlord.js',
+  'js/views/landlord/maps.js',
   'js/auth/login.js',
   'js/auth/signup.js',
   'js/auth/forgot-password.js',
@@ -142,6 +148,14 @@ publicFiles.forEach(file => {
     // Keep boarder maps files in boarder/maps/ subfolder
     destPath = join(DIST, 'boarder', 'maps', fileName);
     depth = 2;
+  } else if (subfolder === 'maps' && parts[parts.length - 1] === 'landlord') {
+    // Keep landlord maps files in landlord/maps/ subfolder
+    destPath = join(DIST, 'landlord', 'maps', fileName);
+    depth = 2;
+  } else if (subfolder === 'landlord') {
+    // Keep landlord files in landlord/ subfolder
+    destPath = join(DIST, 'landlord', fileName);
+    depth = 1;
   } else {
     // Put other files at root
     destPath = join(DIST, fileName);
@@ -167,8 +181,12 @@ publicFiles.forEach(file => {
       ? 'auth/'
       : subfolder === 'boarder'
       ? 'boarder/'
-      : subfolder === 'maps'
+      : subfolder === 'maps' && parts[parts.length - 1] === 'boarder'
       ? 'boarder/maps/'
+      : subfolder === 'maps' && parts[parts.length - 1] === 'landlord'
+      ? 'landlord/maps/'
+      : subfolder === 'landlord'
+      ? 'landlord/'
       : '';
   console.log(`✓ Processed ${file} → ${relativePath}${fileName}`);
 });
@@ -196,3 +214,5 @@ console.log('  havenspace.com/auth/login.html → Login page');
 console.log('  havenspace.com/auth/signup.html → Signup page');
 console.log('  havenspace.com/boarder/ → Boarder dashboard');
 console.log('  havenspace.com/boarder/maps/ → Boarder map view');
+console.log('  havenspace.com/landlord/ → Landlord dashboard');
+console.log('  havenspace.com/landlord/maps/ → Landlord map view');
