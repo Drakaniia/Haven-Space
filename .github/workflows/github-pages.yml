@@ -5,16 +5,14 @@ on:
     branches:
       - main
   pull_request:
-    types: [opened, reopened, synchronize, closed]
     branches:
       - main
   workflow_dispatch:
 
 permissions:
-  contents: write
+  contents: read
   pages: write
   id-token: write
-  pull-requests: write
 
 concurrency:
   group: 'pages-${{ github.head_ref || github.ref }}'
@@ -38,27 +36,12 @@ jobs:
       - name: Build for production
         run: bun run build
 
-      - name: Verify build output
-        run: |
-          echo "=== Checking build output ==="
-          ls -la ./dist
-          echo ""
-          if [ ! -f "./dist/index.html" ]; then
-            echo "::error::index.html not found in dist folder!"
-            exit 1
-          fi
-          echo "✓ index.html found at dist root"
-          echo ""
-          echo "=== Build structure ==="
-          find ./dist -type f -name "*.html" | head -20
-
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
         with:
-          name: github-pages
           path: ./dist
 
-  deploy-production:
+  deploy:
     needs: build
     runs-on: ubuntu-latest
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
@@ -69,123 +52,3 @@ jobs:
       - name: Deploy to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v4
-
-  deploy-preview:
-    needs: build
-    runs-on: ubuntu-latest
-    if: github.event_name == 'pull_request'
-    permissions:
-      contents: write
-      pull-requests: write
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v6
-
-      - name: Download build artifact
-        uses: actions/download-artifact@v4
-        with:
-          name: github-pages
-          path: ./dist
-
-      - name: Verify preview build
-        run: |
-          echo "=== Verifying preview build ==="
-          ls -la ./dist
-          if [ ! -f "./dist/index.html" ]; then
-            echo "::error::Preview build failed: index.html not found"
-            exit 1
-          fi
-          echo "✓ Preview build verified"
-
-      - name: Deploy PR Preview
-        id: preview
-        uses: rossjrw/pr-preview-action@v1
-        with:
-          source-dir: ./dist
-          preview-branch: gh-pages
-          umbrella-dir: pr-preview
-          action: deploy
-
-      - name: Comment PR with Preview Link
-        uses: actions/github-script@v7
-        if: ${{ steps.preview.outputs.preview-url != '' }}
-        with:
-          script: |
-            const previewUrl = '${{ steps.preview.outputs.preview-url }}';
-            const prNumber = context.issue.number;
-
-            if (!previewUrl || previewUrl === 'undefined') {
-              console.log('No preview URL available, skipping comment');
-              return;
-            }
-
-            const commentBody = `## 🚀 Preview Deployment
-
-            Your changes have been deployed to the preview environment.
-
-            **Preview URL:** ${previewUrl}
-
-            <details>
-            <summary>ℹ️ Preview Information</summary>
-
-            - **PR:** #${prNumber}
-            - **Commit:** ${context.sha}
-            - **Deployed at:** ${new Date().toISOString()}
-
-            </details>`;
-
-            // Check if we already commented
-            const { data: comments } = await github.rest.issues.listComments({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              issue_number: prNumber,
-            });
-
-            const existingComment = comments.find(c =>
-              c.user.type === 'Bot' &&
-              c.body.includes('🚀 Preview Deployment')
-            );
-
-            if (existingComment) {
-              // Update existing comment
-              await github.rest.issues.updateComment({
-                owner: context.repo.owner,
-                repo: context.repo.repo,
-                comment_id: existingComment.id,
-                body: commentBody,
-              });
-              console.log(`Updated comment on PR #${prNumber}`);
-            } else {
-              // Create new comment
-              await github.rest.issues.createComment({
-                owner: context.repo.owner,
-                repo: context.repo.repo,
-                issue_number: prNumber,
-                body: commentBody,
-              });
-              console.log(`Created comment on PR #${prNumber}`);
-            }
-
-      - name: Handle Preview Failure
-        if: failure()
-        uses: actions/github-script@v7
-        with:
-          script: |
-            const prNumber = context.issue.number;
-
-            const errorComment = `## ❌ Preview Deployment Failed
-
-            Unfortunately, the preview deployment for this PR has failed.
-
-            **PR:** #${prNumber}
-            **Commit:** ${context.sha}
-            **Failed at:** ${new Date().toISOString()}
-
-            Please check the [workflow logs](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.runId }}) for more details.`;
-
-            await github.rest.issues.createComment({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              issue_number: prNumber,
-              body: errorComment,
-            });
