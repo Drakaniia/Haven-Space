@@ -236,7 +236,14 @@ function setupUserMenuHandlers(user) {
       localStorage.removeItem('user');
 
       const basePath = resolveBasePath();
-      window.location.href = `${basePath}/views/public/auth/login.html`;
+      // Use correct path for production vs development mode
+      if (basePath === '') {
+        // Production mode (dist): auth folder is at root
+        window.location.href = '/auth/login.html';
+      } else {
+        // Development mode (client): auth folder is in views/public
+        window.location.href = `${basePath}/views/public/auth/login.html`;
+      }
     });
   }
 }

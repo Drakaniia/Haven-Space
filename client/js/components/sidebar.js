@@ -17,21 +17,20 @@ const NAV_CONFIG = {
           href: '../boarder/lease/index.html',
           icon: 'application',
         },
-        { label: 'Messages', href: '../messages/index.html', icon: 'chat', badge: '3' },
-        { label: 'Payments', href: '../payments/index.html', icon: 'payment' },
+        { label: 'Messages', href: '../boarder/messages/index.html', icon: 'chat', badge: '3' },
+        { label: 'Payments', href: '../boarder/payments/index.html', icon: 'payment' },
       ],
     },
     {
       group: 'Support',
       items: [
-        { label: 'Maintenance', href: '../maintenance/index.html', icon: 'settings' },
-        { label: 'Notices', href: '../notices/index.html', icon: 'announcement' },
-        { label: 'Find a Room', href: '../rooms/index.html', icon: 'search' },
+        { label: 'Maintenance', href: '../boarder/maintenance/index.html', icon: 'settings' },
+        { label: 'Notices', href: '../boarder/notices/index.html', icon: 'announcement' },
+        { label: 'Find a Room', href: '../boarder/find-a-room/index.html', icon: 'search' },
         {
           label: 'Room History',
-          href: '#',
+          href: '../boarder/room-history/index.html',
           icon: 'history',
-          // TODO: Create room history page for utility and maintenance logs
         },
       ],
     },
