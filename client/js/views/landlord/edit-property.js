@@ -3,6 +3,8 @@
  * Handles editing property details and managing photos with drag-to-reorder
  */
 
+import { getIcon } from '../../shared/icons.js';
+
 // Maximum number of photos allowed
 const MAX_PHOTOS = 10;
 // Maximum file size in MB
@@ -313,24 +315,20 @@ function renderPhotoGrid() {
       <div class="photo-overlay">
         ${index === 0 ? '<span class="photo-badge">Cover</span>' : '<span></span>'}
         <div style="display: flex; gap: 0.25rem;">
-          <button 
-            type="button" 
-            class="photo-drag-handle" 
+          <button
+            type="button"
+            class="photo-drag-handle"
             title="Drag to reorder"
           >
-            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 8h16M4 16h16" />
-            </svg>
+            ${getIcon('list')}
           </button>
-          <button 
-            type="button" 
-            class="photo-remove-btn" 
+          <button
+            type="button"
+            class="photo-remove-btn"
             data-photo-id="${photo.id}"
             title="Remove photo"
           >
-            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
-            </svg>
+            ${getIcon('xMark')}
           </button>
         </div>
       </div>
@@ -635,9 +633,7 @@ function handleAddCustomAmenity() {
       /'/g,
       "\\'"
     )}')" style="background: none; border: none; cursor: pointer; padding: 0; display: flex; align-items: center; color: var(--primary-green);">
-      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" style="width: 16px; height: 16px;">
-        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
-      </svg>
+      ${getIcon('xMark', { width: 16, height: 16 })}
     </button>
   `;
 
@@ -669,9 +665,7 @@ function removeCustomAmenity(value) {
           /'/g,
           "\\'"
         )}')" style="background: none; border: none; cursor: pointer; padding: 0; display: flex; align-items: center; color: var(--primary-green);">
-          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" style="width: 16px; height: 16px;">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
-          </svg>
+          ${getIcon('xMark', { width: 16, height: 16 })}
         </button>
       `;
       listContainer.appendChild(tag);
@@ -877,9 +871,7 @@ function renderRoomsList() {
             <button type="button" class="btn-upload-image" data-room-id="${
               room.id
             }" title="Upload images">
-              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
-              </svg>
+              ${getIcon('photo')}
               ${imageCount > 0 ? imageCount : 'Add'}
             </button>
           `

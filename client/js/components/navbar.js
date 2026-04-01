@@ -3,6 +3,8 @@
  * Reusable top navigation bar with search, theme toggle, notifications, and user avatar
  */
 
+import { getIcon } from '../shared/icons.js';
+
 /**
  * Initialize navbar component
  * @param {Object} options - Configuration options
@@ -34,6 +36,9 @@ export function initNavbar(options = {}) {
     .then(html => {
       container.innerHTML = html;
 
+      // Inject icons
+      injectIcons();
+
       // Update user info
       updateUserInfo(user, basePath);
 
@@ -62,6 +67,24 @@ function resolveBasePath() {
   if (path.includes('/frontend/views/')) return '/frontend';
   if (path.includes('/views/')) return '';
   return '';
+}
+
+/**
+ * Inject icons into placeholder elements
+ */
+function injectIcons() {
+  const placeholders = document.querySelectorAll('.navbar-icon-placeholder');
+
+  placeholders.forEach(placeholder => {
+    const iconName = placeholder.dataset.icon;
+    if (iconName) {
+      placeholder.outerHTML = getIcon(iconName, {
+        className: 'navbar-icon',
+        width: 24,
+        height: 24,
+      });
+    }
+  });
 }
 
 /**

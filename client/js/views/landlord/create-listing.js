@@ -3,6 +3,8 @@
  * Handles property form submission and photo upload functionality
  */
 
+import { getIcon } from '../../shared/icons.js';
+
 // Maximum number of photos allowed
 const MAX_PHOTOS = 10;
 // Maximum file size in MB
@@ -153,14 +155,12 @@ function renderPhotoGrid() {
       <div class="photo-overlay">
         ${index === 0 ? '<span class="photo-badge">Cover</span>' : '<span></span>'}
         <button 
-          type="button" 
-          class="photo-remove-btn" 
+          type="button"
+          class="photo-remove-btn"
           data-photo-id="${photo.id}"
           title="Remove photo"
         >
-          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
-          </svg>
+          ${getIcon('xMark')}
         </button>
       </div>
       ${index === 0 ? '<div class="cover-indicator">Cover Photo</div>' : ''}
@@ -351,9 +351,7 @@ function handleAddCustomAmenity() {
       /'/g,
       "\\'"
     )}')" style="background: none; border: none; cursor: pointer; padding: 0; display: flex; align-items: center; color: var(--primary-green);">
-      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" style="width: 16px; height: 16px;">
-        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
-      </svg>
+      ${getIcon('xMark', { width: 16, height: 16 })}
     </button>
   `;
 
@@ -385,9 +383,7 @@ function removeCustomAmenity(value) {
           /'/g,
           "\\'"
         )}')" style="background: none; border: none; cursor: pointer; padding: 0; display: flex; align-items: center; color: var(--primary-green);">
-          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" style="width: 16px; height: 16px;">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
-          </svg>
+          ${getIcon('xMark', { width: 16, height: 16 })}
         </button>
       `;
       listContainer.appendChild(tag);
