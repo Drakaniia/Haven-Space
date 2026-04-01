@@ -76,5 +76,3 @@ jobs:
           preview-branch: gh-pages
           umbrella-dir: pr-preview
           action: auto
-          enable-commit-comment: false
-          enable-pr-comment: true
