@@ -9,10 +9,23 @@
     "boarder": "node scripts/serve-boarder.js",
     "landlord": "node scripts/serve-landlord.js",
     "format": "prettier --write .",
-    "format:check": "prettier --check ."
+    "format:check": "prettier --check .",
+    "prepare": "husky"
+  },
+  "lint-staged": {
+    "*.{js,jsx,ts,tsx}": [
+      "prettier --write"
+    ],
+    "*.{html,css,scss,md,json,yaml}": [
+      "prettier --write"
+    ]
   },
   "devDependencies": {
-    "prettier": "^2.8.8",
-    "http-server": "^14.1.1"
+    "@commitlint/cli": "^20.5.0",
+    "@commitlint/config-conventional": "^20.5.0",
+    "http-server": "^14.1.1",
+    "husky": "^9.1.7",
+    "lint-staged": "^16.4.0",
+    "prettier": "^2.8.8"
   }
 }
