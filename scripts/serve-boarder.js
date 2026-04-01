@@ -8,6 +8,7 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const PROJECT_ROOT = path.join(__dirname, '..');
 const PORT = 3000;
+const HOST = 'localhost';
 
 const MIME_TYPES = {
   '.html': 'text/html',
@@ -51,12 +52,12 @@ const server = http.createServer((req, res) => {
   });
 });
 
-server.listen(PORT, () => {
+server.listen(PORT, HOST, () => {
   const url = `http://localhost:${PORT}/client/views/boarder/index.html`;
   console.log(`\n🏠 Haven Space - Boarder Dashboard`);
   console.log(`   Server running at: ${url}`);
   console.log(`   Press Ctrl+C to stop\n`);
 
-  // Open browser
-  exec(`start ${url}`);
+  // Open browser with explicit localhost
+  exec(`start "" "${url}"`);
 });

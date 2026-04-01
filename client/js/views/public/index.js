@@ -19,22 +19,29 @@ function initFloatingHeader() {
     return;
   }
 
-  const handleScroll = () => {
-    const scrollY = window.scrollY || window.pageYOffset;
-    const isScrolled = scrollY > scrollThreshold;
-    const wasScrolled = navbar.classList.contains('navbar-scrolled');
+  let ticking = false;
 
-    if (isScrolled !== wasScrolled) {
-      if (isScrolled) {
-        navbar.classList.add('navbar-scrolled');
-      } else {
-        navbar.classList.remove('navbar-scrolled');
-      }
+  const handleScroll = () => {
+    if (!ticking) {
+      window.requestAnimationFrame(() => {
+        const scrollY = window.scrollY || window.pageYOffset;
+        const isScrolled = scrollY > scrollThreshold;
+        const wasScrolled = navbar.classList.contains('navbar-scrolled');
+
+        if (isScrolled !== wasScrolled) {
+          if (isScrolled) {
+            navbar.classList.add('navbar-scrolled');
+          } else {
+            navbar.classList.remove('navbar-scrolled');
+          }
+        }
+        ticking = false;
+      });
+      ticking = true;
     }
   };
 
   window.addEventListener('scroll', handleScroll, { passive: true });
-  window.addEventListener('wheel', handleScroll, { passive: true });
   handleScroll();
 }
 
@@ -57,6 +64,9 @@ export function initPublicViews() {
  * Initialize public components after DOM is ready
  */
 function initPublicComponents() {
+  // Initialize floating header (homepage only)
+  initFloatingHeader();
+
   // Initialize logo cloud (homepage only)
   const logoSlider = document.getElementById('logoSlider');
   if (logoSlider) {
@@ -67,7 +77,9 @@ function initPublicComponents() {
     const checkAllLoaded = () => {
       loadedCount++;
       if (loadedCount === images.length) {
-        initLogoCloud();
+        setTimeout(() => {
+          initLogoCloud();
+        }, 100);
       }
     };
 
@@ -84,7 +96,4 @@ function initPublicComponents() {
       initLogoCloud();
     }
   }
-
-  // Initialize floating header (homepage only)
-  initFloatingHeader();
 }

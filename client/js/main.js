@@ -41,7 +41,14 @@ function detectAndInitialize() {
 }
 
 // Initialize on DOM ready
-document.addEventListener('DOMContentLoaded', () => {
+function initialize() {
   console.log('Main: DOMContentLoaded');
   detectAndInitialize();
-});
+}
+
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', initialize);
+} else {
+  // DOM already loaded, initialize immediately
+  initialize();
+}
