@@ -5,6 +5,7 @@ on:
     branches:
       - main
   pull_request:
+    types: [opened, reopened, synchronize, closed]
     branches:
       - main
   workflow_dispatch:
@@ -62,9 +63,6 @@ jobs:
       pages: write
       id-token: write
       pull-requests: write
-    environment:
-      name: preview
-      url: ${{ steps.deployment.outputs.page_url }}
     steps:
       - name: Checkout
         uses: actions/checkout@v6
@@ -82,4 +80,4 @@ jobs:
           source-dir: ./dist
           preview-branch: gh-pages
           umbrella-dir: pr-preview
-          action: deploy
+          action: auto
