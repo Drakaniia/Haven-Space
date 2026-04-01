@@ -63,6 +63,9 @@ jobs:
       pages: write
       id-token: write
       pull-requests: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
     steps:
       - name: Checkout
         uses: actions/checkout@v6
@@ -75,9 +78,18 @@ jobs:
 
       - name: Deploy PR Preview
         id: deployment
-        uses: rossjrw/pr-preview-action@v1
+        uses: actions/deploy-pages@v4
         with:
-          source-dir: ./dist
-          preview-branch: gh-pages
-          umbrella-dir: pr-preview
-          action: auto
+          preview: true
+
+      - name: Comment PR with Preview URL
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const previewUrl = '${{ steps.deployment.outputs.page_url }}';
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: `🚀 Preview deployed: ${previewUrl}`
+            });
