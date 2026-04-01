@@ -74,9 +74,65 @@ jobs:
           path: ./dist
 
       - name: Deploy PR Preview
+        id: preview
         uses: rossjrw/pr-preview-action@v1
         with:
           source-dir: ./dist
           preview-branch: gh-pages
           umbrella-dir: pr-preview
           action: deploy
+
+      - name: Comment PR with Preview Link
+        uses: actions/github-script@v7
+        if: always()
+        with:
+          script: |
+            const previewUrl = '${{ steps.preview.outputs.preview-url }}';
+            const prNumber = context.issue.number;
+
+            const commentBody = `## 🚀 Preview Deployment
+
+            Your changes have been deployed to the preview environment.
+
+            **Preview URL:** ${previewUrl}
+
+            <details>
+            <summary>ℹ️ Preview Information</summary>
+
+            - **PR:** #${prNumber}
+            - **Commit:** ${context.sha}
+            - **Deployed at:** ${new Date().toISOString()}
+
+            </details>`;
+
+            // Check if we already commented
+            const { data: comments } = await github.rest.issues.listComments({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: prNumber,
+            });
+
+            const existingComment = comments.find(c => 
+              c.user.type === 'Bot' && 
+              c.body.includes('🚀 Preview Deployment')
+            );
+
+            if (existingComment) {
+              // Update existing comment
+              await github.rest.issues.updateComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                comment_id: existingComment.id,
+                body: commentBody,
+              });
+              console.log(`Updated comment on PR #${prNumber}`);
+            } else {
+              // Create new comment
+              await github.rest.issues.createComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: prNumber,
+                body: commentBody,
+              });
+              console.log(`Created comment on PR #${prNumber}`);
+            }
