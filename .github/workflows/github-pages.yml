@@ -64,6 +64,11 @@ jobs:
       contents: write
       pull-requests: write
     steps:
+      - name: Checkout repository
+        uses: actions/checkout@v6
+        with:
+          persist-credentials: false
+
       - name: Download build artifact
         uses: actions/download-artifact@v4
         with:
