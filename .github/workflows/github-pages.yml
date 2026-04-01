@@ -79,4 +79,4 @@ jobs:
           source-dir: ./dist
           preview-branch: gh-pages
           umbrella-dir: pr-preview
-          action: auto
+          action: deploy
