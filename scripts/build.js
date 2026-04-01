@@ -42,6 +42,7 @@ const publicFiles = [
   'views/boarder/maps/index.html',
   'views/boarder/applications/index.html',
   'views/boarder/applications/detail.html',
+  'views/boarder/lease/index.html',
   'views/boarder/maintenance/index.html',
   'views/boarder/maintenance/create.html',
   'views/boarder/messages/index.html',
@@ -51,6 +52,8 @@ const publicFiles = [
   'views/boarder/profile/index.html',
   'views/boarder/rooms/index.html',
   'views/boarder/rooms/detail.html',
+  'views/boarder/find-a-room/index.html',
+  'views/boarder/room-history/index.html',
   // Landlord pages
   'views/landlord/index.html',
   'views/landlord/maps/index.html',
@@ -84,9 +87,14 @@ const cssFiles = [
   'css/views/boarder/boarder.css',
   'css/views/boarder/maps.css',
   'css/views/boarder/boarder-applications.css',
+  'css/views/boarder/boarder-lease.css',
   'css/views/boarder/boarder-maintenance.css',
   'css/views/boarder/boarder-payments.css',
   'css/views/boarder/boarder-rooms.css',
+  'css/views/boarder/boarder-messages.css',
+  'css/views/boarder/boarder-notices.css',
+  'css/views/boarder/boarder-find-a-room.css',
+  'css/views/boarder/boarder-room-history.css',
   // Landlord CSS
   'css/views/landlord/landlord.css',
   'css/views/landlord/maps.css',
@@ -124,9 +132,14 @@ const jsFiles = [
   'js/views/boarder/dashboard.js',
   'js/views/boarder/boarder.js',
   'js/views/boarder/boarder-applications.js',
+  'js/views/boarder/lease.js',
   'js/views/boarder/boarder-maintenance.js',
   'js/views/boarder/boarder-payments.js',
   'js/views/boarder/boarder-rooms.js',
+  'js/views/boarder/messages.js',
+  'js/views/boarder/notices.js',
+  'js/views/boarder/boarder-find-a-room.js',
+  'js/views/boarder/room-history.js',
   // Landlord
   'js/views/landlord/landlord.js',
   'js/views/landlord/maps.js',
@@ -343,6 +356,8 @@ console.log('    havenspace.com/boarder/notices/ → Notices');
 console.log('    havenspace.com/boarder/payments/ → Payments');
 console.log('    havenspace.com/boarder/profile/ → Profile');
 console.log('    havenspace.com/boarder/rooms/ → Rooms');
+console.log('    havenspace.com/boarder/find-a-room/ → Find a Room');
+console.log('    havenspace.com/boarder/room-history/ → Room History');
 console.log('\n  Landlord:');
 console.log('    havenspace.com/landlord/ → Dashboard');
 console.log('    havenspace.com/landlord/maps/ → Map view');
