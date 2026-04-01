@@ -11,20 +11,9 @@ const NAV_CONFIG = {
       items: [
         { label: 'Dashboard', href: '../boarder/index.html', icon: 'home' },
         {
-          label: 'Applications',
+          label: 'My Lease',
           href: '../applications/index.html',
           icon: 'application',
-          badge: '1',
-        },
-        {
-          label: 'Find a Room',
-          icon: 'search',
-          dropdown: true,
-          children: [
-            { label: 'All Available Rooms', href: '../rooms/index.html', icon: 'list' },
-            { label: 'My Favorites', href: '#', icon: 'bookmark' },
-            { label: 'Map View', href: '../maps/index.html', icon: 'analytics' },
-          ],
         },
         { label: 'Messages', href: '../messages/index.html', icon: 'chat', badge: '3' },
         { label: 'Payments', href: '../payments/index.html', icon: 'payment' },
@@ -35,6 +24,13 @@ const NAV_CONFIG = {
       items: [
         { label: 'Maintenance', href: '../maintenance/index.html', icon: 'settings' },
         { label: 'Notices', href: '../notices/index.html', icon: 'announcement' },
+        { label: 'Find a Room', href: '../rooms/index.html', icon: 'search' },
+        {
+          label: 'Room History',
+          href: '#',
+          icon: 'history',
+          // TODO: Create room history page for utility and maintenance logs
+        },
       ],
     },
   ],
@@ -121,6 +117,7 @@ const ICON_PATHS = {
     'M15 19.128a9.38 9.38 0 0 0 2.625.372 9.337 9.337 0 0 0 4.121-.952 4.125 4.125 0 0 0-7.533-2.493M15 19.128v-.003c0-1.113-.285-2.16-.786-3.07M15 19.128v.106A12.318 12.318 0 0 1 8.624 21c-2.331 0-4.512-.645-6.374-1.766l-.001-.109a6.375 6.375 0 0 1 11.964-3.07M12 6.375a3.375 3.375 0 1 1-6.75 0 3.375 3.375 0 0 1 6.75 0Zm8.25 2.25a2.625 2.625 0 1 1-5.25 0 2.625 2.625 0 0 1 5.25 0Z',
   analytics: 'M10.5 6a7.5 7.5 0 1 0 7.5 7.5H10.5V6ZM13.5 10.5H21A7.5 7.5 0 0 0 13.5 3v7.5Z',
   map: 'M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7',
+  history: 'M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0Z',
 };
 
 /**

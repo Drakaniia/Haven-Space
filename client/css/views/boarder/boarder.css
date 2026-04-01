@@ -1464,6 +1464,245 @@
   height: 16px;
 }
 
+/* ===== Resident Mode - Room Announcements ===== */
+.boarder-announcements-list {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  margin-bottom: 24px;
+}
+
+.boarder-announcement-item {
+  display: flex;
+  gap: 16px;
+  padding: 16px;
+  background-color: var(--bg-cream);
+  border-radius: 10px;
+  transition: box-shadow 0.2s ease;
+}
+
+.boarder-announcement-item:hover {
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+
+.boarder-announcement-icon {
+  width: 40px;
+  height: 40px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.boarder-announcement-icon svg {
+  width: 20px;
+  height: 20px;
+}
+
+.boarder-announcement-icon.blue {
+  background-color: rgba(59, 130, 246, 0.1);
+  color: var(--dashboard-info);
+}
+
+.boarder-announcement-icon.green {
+  background-color: rgba(34, 197, 94, 0.1);
+  color: var(--dashboard-success);
+}
+
+.boarder-announcement-icon.orange {
+  background-color: rgba(245, 158, 11, 0.1);
+  color: var(--dashboard-warning);
+}
+
+.boarder-announcement-content {
+  flex: 1;
+}
+
+.boarder-announcement-title {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--dashboard-text-primary);
+  margin: 0 0 6px 0;
+}
+
+.boarder-announcement-text {
+  font-size: 13px;
+  color: var(--dashboard-text-secondary);
+  line-height: 1.5;
+  margin: 0 0 8px 0;
+}
+
+.boarder-announcement-date {
+  font-size: 11px;
+  color: var(--dashboard-text-secondary);
+}
+
+/* ===== Resident Mode - Quick Actions Section ===== */
+.boarder-quick-actions-section {
+  margin-top: 24px;
+}
+
+.boarder-quick-actions-title {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--dashboard-text-primary);
+  margin: 0 0 16px 0;
+}
+
+.boarder-quick-actions-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 16px;
+}
+
+.boarder-action-btn {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  padding: 20px 16px;
+  background-color: var(--dashboard-surface);
+  border: 1px solid var(--dashboard-border);
+  border-radius: 12px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  text-decoration: none;
+}
+
+.boarder-action-btn:hover {
+  border-color: var(--primary-green);
+  background-color: var(--bg-green);
+  transform: translateY(-2px);
+}
+
+.boarder-action-icon {
+  width: 48px;
+  height: 48px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.boarder-action-icon svg {
+  width: 24px;
+  height: 24px;
+}
+
+.boarder-action-icon.blue {
+  background-color: rgba(59, 130, 246, 0.1);
+  color: var(--dashboard-info);
+}
+
+.boarder-action-icon.green {
+  background-color: rgba(34, 197, 94, 0.1);
+  color: var(--dashboard-success);
+}
+
+.boarder-action-icon.purple {
+  background-color: rgba(139, 92, 246, 0.1);
+  color: var(--dashboard-purple);
+}
+
+.boarder-action-icon.pink {
+  background-color: rgba(236, 72, 153, 0.1);
+  color: var(--dashboard-pink);
+}
+
+.boarder-action-label {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--dashboard-text-primary);
+  text-align: center;
+}
+
+/* ===== Resident Mode - Simple Payment List ===== */
+.boarder-payment-simple-list {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.boarder-payment-simple-card {
+  background-color: var(--dashboard-surface);
+  border: 1px solid var(--dashboard-border);
+  border-radius: 12px;
+  padding: 16px;
+  transition: all 0.2s ease;
+}
+
+.boarder-payment-simple-card.current {
+  border-color: var(--dashboard-warning);
+  background-color: rgba(245, 158, 11, 0.05);
+}
+
+.boarder-payment-simple-card.history {
+  background-color: var(--bg-cream);
+}
+
+.boarder-payment-simple-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid var(--dashboard-border);
+}
+
+.boarder-payment-period {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--dashboard-text-primary);
+}
+
+.boarder-payment-status-badge {
+  display: inline-block;
+  padding: 4px 12px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.boarder-payment-status-badge.paid {
+  background-color: rgba(34, 197, 94, 0.1);
+  color: var(--dashboard-success);
+}
+
+.boarder-payment-status-badge.unpaid {
+  background-color: rgba(245, 158, 11, 0.1);
+  color: var(--dashboard-warning);
+}
+
+.boarder-payment-simple-body {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.boarder-payment-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.boarder-payment-label {
+  font-size: 13px;
+  color: var(--dashboard-text-secondary);
+}
+
+.boarder-payment-value {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--dashboard-text-primary);
+}
+
+.boarder-payment-value.highlight {
+  color: var(--dashboard-warning);
+  font-weight: 700;
+}
+
 /* ===== Responsive Design ===== */
 @media (max-width: 1200px) {
   .boarder-stats-grid {
@@ -1507,6 +1746,10 @@
   }
 
   .boarder-quick-actions {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .boarder-quick-actions-grid {
     grid-template-columns: repeat(2, 1fr);
   }
 
