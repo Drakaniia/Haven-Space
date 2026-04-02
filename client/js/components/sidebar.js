@@ -164,6 +164,11 @@ function resolveBasePath() {
  * @returns {string} Resolved href
  */
 function resolveNavHref(href, basePath) {
+  // Handle undefined or null href (e.g., dropdown parent items without links)
+  if (!href) {
+    return '#';
+  }
+
   // If href is already absolute or starts with http/https, return as-is
   if (href.startsWith('/') || href.startsWith('http') || href === '#') {
     return href;

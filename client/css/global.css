@@ -1,6 +1,9 @@
 @import './components/logo-cloud.css';
 @import './views/public/auth.css';
 @import './views/boarder/boarder.css';
+@import './views/boarder/boarder-payments.css';
+@import './views/boarder/boarder-payment-process.css';
+@import './views/landlord/landlord-payments.css';
 
 * {
   margin: 0;
