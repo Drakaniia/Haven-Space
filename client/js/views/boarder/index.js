@@ -9,6 +9,7 @@ import { initNavbar } from '../../components/navbar.js';
 import { loadDashboardData } from './dashboard.js';
 import { initFindARoom } from './boarder-find-a-room.js';
 import { initLeasePage } from './lease.js';
+import { initPaymentPage } from './boarder-payment-process.js';
 
 /**
  * Initialize Boarder Dashboard
@@ -57,6 +58,11 @@ export function initBoarderDashboard() {
 
   if (currentPath.includes('lease')) {
     initLeasePage();
+  }
+
+  // Initialize payment page
+  if (currentPath.includes('pay.html')) {
+    initPaymentPage();
   }
 
   console.log('BoarderDashboard: Initialized');
