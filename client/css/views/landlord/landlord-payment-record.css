@@ -1,0 +1,952 @@
+/* Landlord Payment Record Page Styles */
+
+/* ===== CSS Variables ===== */
+:root {
+  --payment-record-bg: var(--bg-cream);
+  --payment-record-surface: var(--white);
+  --payment-record-border: var(--border-color);
+  --payment-record-text-primary: var(--text-dark);
+  --payment-record-text-secondary: var(--text-gray);
+  --payment-record-accent: var(--primary-green);
+  --payment-record-accent-hover: var(--dark-green);
+  --payment-record-blue: #3b82f6;
+  --payment-record-cyan: #06b6d4;
+  --payment-record-green: #22c55e;
+  --payment-record-orange: #f59e0b;
+  --payment-record-purple: #8b5cf6;
+  --payment-record-pink: #ec4899;
+  --payment-record-red: #ef4444;
+  --payment-record-gcash-blue: #007bff;
+}
+
+/* ===== Dashboard Layout ===== */
+.landlord-dashboard {
+  display: flex;
+  min-height: 100vh;
+  background-color: var(--payment-record-bg);
+}
+
+/* Main content area */
+.landlord-main {
+  flex: 1;
+  margin-left: 280px;
+  padding: 0;
+  min-height: 100vh;
+  transition: margin-left 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Adjust main content when sidebar is collapsed */
+.landlord-dashboard.sidebar-collapsed .landlord-main {
+  margin-left: 80px;
+}
+
+/* Content wrapper */
+.landlord-content {
+  padding: 24px 32px;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+/* ===== Progress Bar ===== */
+.payment-progress-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 40px;
+  padding: 24px;
+  background-color: var(--payment-record-surface);
+  border-radius: 16px;
+  border: 1px solid var(--payment-record-border);
+}
+
+.payment-progress-step {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  position: relative;
+  z-index: 1;
+}
+
+.payment-progress-indicator {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background-color: var(--payment-record-surface);
+  border: 2px solid var(--payment-record-border);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--payment-record-text-secondary);
+  transition: all 0.3s ease;
+}
+
+.payment-progress-step.completed .payment-progress-indicator {
+  background-color: var(--payment-record-green);
+  border-color: var(--payment-record-green);
+  color: var(--white);
+}
+
+.payment-progress-step.active .payment-progress-indicator {
+  background-color: var(--payment-record-accent);
+  border-color: var(--payment-record-accent);
+  color: var(--white);
+  box-shadow: 0 0 0 4px rgba(74, 124, 35, 0.2);
+}
+
+.payment-progress-indicator svg {
+  width: 20px;
+  height: 20px;
+}
+
+.payment-progress-line {
+  flex: 1;
+  height: 2px;
+  background-color: var(--payment-record-border);
+  margin: 0 16px;
+  position: relative;
+  top: -20px;
+}
+
+.payment-progress-line.completed {
+  background-color: var(--payment-record-green);
+}
+
+.payment-progress-label {
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--payment-record-text-secondary);
+  text-align: center;
+}
+
+.payment-progress-step.completed .payment-progress-label,
+.payment-progress-step.active .payment-progress-label {
+  color: var(--payment-record-text-primary);
+  font-weight: 600;
+}
+
+/* ===== Payment Record Section ===== */
+.payment-record-section {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.payment-record-header {
+  margin-bottom: 8px;
+}
+
+.payment-record-title {
+  font-size: 24px;
+  font-weight: 700;
+  color: var(--payment-record-text-primary);
+  margin-bottom: 4px;
+}
+
+.payment-record-subtitle {
+  font-size: 14px;
+  color: var(--payment-record-text-secondary);
+}
+
+/* ===== Payment Summary Card ===== */
+.payment-summary-card {
+  background: linear-gradient(135deg, var(--primary-green) 0%, var(--dark-green) 100%);
+  border-radius: 16px;
+  padding: 24px;
+  color: var(--white);
+  box-shadow: 0 4px 20px rgba(74, 124, 35, 0.3);
+}
+
+.payment-summary-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.payment-summary-title {
+  font-size: 16px;
+  font-weight: 600;
+}
+
+.payment-summary-period {
+  font-size: 13px;
+  opacity: 0.9;
+  background-color: rgba(255, 255, 255, 0.2);
+  padding: 6px 12px;
+  border-radius: 20px;
+}
+
+.payment-summary-breakdown {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.payment-summary-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 14px;
+}
+
+.payment-summary-label {
+  opacity: 0.9;
+}
+
+.payment-summary-value {
+  font-weight: 600;
+}
+
+.payment-summary-divider {
+  height: 1px;
+  background-color: rgba(255, 255, 255, 0.3);
+  margin: 8px 0;
+}
+
+.payment-summary-row.payment-summary-total {
+  font-size: 18px;
+  margin-top: 8px;
+  padding-top: 12px;
+  border-top: 2px solid rgba(255, 255, 255, 0.3);
+}
+
+.payment-summary-row.payment-summary-total .payment-summary-value {
+  font-size: 24px;
+  font-weight: 700;
+}
+
+/* ===== Payment Form Card ===== */
+.payment-form-card {
+  background-color: var(--payment-record-surface);
+  border: 1px solid var(--payment-record-border);
+  border-radius: 16px;
+  padding: 24px;
+}
+
+.payment-form-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.payment-form-card-title {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.payment-form-card-title svg {
+  width: 24px;
+  height: 24px;
+  color: var(--primary-green);
+}
+
+.payment-form-card-name {
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--payment-record-text-primary);
+}
+
+.payment-form-card-badge {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--white);
+  background-color: var(--primary-green);
+  padding: 4px 10px;
+  border-radius: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+/* Payment Form Groups */
+.payment-form-group {
+  margin-bottom: 20px;
+}
+
+.payment-form-label {
+  display: block;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--payment-record-text-primary);
+  margin-bottom: 8px;
+}
+
+.payment-form-required {
+  color: var(--payment-record-red);
+}
+
+.payment-form-input,
+.payment-form-select,
+.payment-form-textarea {
+  width: 100%;
+  padding: 12px 16px;
+  border: 1px solid var(--payment-record-border);
+  border-radius: 8px;
+  font-size: 14px;
+  font-family: var(--font-main);
+  color: var(--payment-record-text-primary);
+  background-color: var(--payment-record-surface);
+  transition: all 0.2s ease;
+}
+
+.payment-form-input:hover,
+.payment-form-select:hover,
+.payment-form-textarea:hover {
+  border-color: var(--primary-green);
+}
+
+.payment-form-input:focus,
+.payment-form-select:focus,
+.payment-form-textarea:focus {
+  outline: none;
+  border-color: var(--primary-green);
+  box-shadow: 0 0 0 3px rgba(74, 124, 35, 0.1);
+}
+
+.payment-form-textarea {
+  resize: vertical;
+  min-height: 100px;
+}
+
+.payment-form-hint {
+  font-size: 12px;
+  color: var(--payment-record-text-secondary);
+  margin-top: 6px;
+}
+
+/* Input with prefix */
+.payment-input-with-prefix {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.payment-input-prefix {
+  position: absolute;
+  left: 16px;
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--payment-record-text-secondary);
+  pointer-events: none;
+}
+
+.payment-input-with-prefix .payment-form-input {
+  padding-left: 40px;
+}
+
+/* Selected Payment Info */
+.selected-payment-info {
+  background-color: var(--bg-green);
+  border: 1px solid var(--primary-green);
+  border-radius: 12px;
+  padding: 16px;
+  margin-top: 16px;
+}
+
+.selected-payment-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 0;
+  border-bottom: 1px solid rgba(74, 124, 35, 0.1);
+}
+
+.selected-payment-row:last-child {
+  border-bottom: none;
+}
+
+.selected-payment-label {
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--payment-record-text-secondary);
+}
+
+.selected-payment-value {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--payment-record-text-primary);
+}
+
+/* ===== Payment Method Grid ===== */
+.payment-method-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 16px;
+}
+
+.payment-method-option {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 20px;
+  border: 2px solid var(--payment-record-border);
+  border-radius: 12px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  position: relative;
+}
+
+.payment-method-option:hover {
+  border-color: var(--primary-green);
+  background-color: rgba(74, 124, 35, 0.05);
+}
+
+.payment-method-option.selected {
+  border-color: var(--primary-green);
+  background-color: rgba(74, 124, 35, 0.1);
+}
+
+.payment-method-option-icon {
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 12px;
+}
+
+.payment-method-option-icon svg {
+  width: 28px;
+  height: 28px;
+}
+
+.payment-method-option-icon.gcash {
+  background-color: rgba(0, 123, 255, 0.1);
+  color: var(--payment-record-gcash-blue);
+}
+
+.payment-method-option-icon.bank {
+  background-color: rgba(59, 130, 246, 0.1);
+  color: var(--payment-record-blue);
+}
+
+.payment-method-option-icon.card {
+  background-color: rgba(139, 92, 246, 0.1);
+  color: var(--payment-record-purple);
+}
+
+.payment-method-option-icon.cash {
+  background-color: rgba(34, 197, 94, 0.1);
+  color: var(--payment-record-green);
+}
+
+.payment-method-option-info {
+  text-align: center;
+}
+
+.payment-method-option-name {
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--payment-record-text-primary);
+  margin-bottom: 4px;
+}
+
+.payment-method-option-desc {
+  font-size: 12px;
+  color: var(--payment-record-text-secondary);
+}
+
+.payment-method-option-check {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background-color: var(--primary-green);
+  color: var(--white);
+  display: none;
+  align-items: center;
+  justify-content: center;
+}
+
+.payment-method-option-check svg {
+  width: 14px;
+  height: 14px;
+}
+
+.payment-method-option.selected .payment-method-option-check {
+  display: flex;
+}
+
+/* ===== Payment Details Card ===== */
+.payment-details-card {
+  background-color: var(--payment-record-surface);
+  border: 1px solid var(--payment-record-border);
+  border-radius: 16px;
+  padding: 24px;
+}
+
+.payment-method-icon-small {
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.payment-method-icon-small svg {
+  width: 18px;
+  height: 18px;
+}
+
+.payment-method-icon-small.gcash {
+  background-color: rgba(0, 123, 255, 0.1);
+  color: var(--payment-record-gcash-blue);
+}
+
+.payment-method-icon-small.bank {
+  background-color: rgba(59, 130, 246, 0.1);
+  color: var(--payment-record-blue);
+}
+
+.payment-method-icon-small.card {
+  background-color: rgba(139, 92, 246, 0.1);
+  color: var(--payment-record-purple);
+}
+
+.payment-method-icon-small.cash {
+  background-color: rgba(34, 197, 94, 0.1);
+  color: var(--payment-record-green);
+}
+
+/* GCash QR Section */
+.gcash-qr-section {
+  background-color: var(--bg-green);
+  border: 1px solid rgba(74, 124, 35, 0.2);
+  border-radius: 12px;
+  padding: 20px;
+  margin-bottom: 24px;
+}
+
+.gcash-qr-header {
+  text-align: center;
+  margin-bottom: 16px;
+}
+
+.gcash-qr-title {
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--payment-record-text-primary);
+  margin-bottom: 4px;
+}
+
+.gcash-qr-desc {
+  font-size: 13px;
+  color: var(--payment-record-text-secondary);
+}
+
+.gcash-qr-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+}
+
+.gcash-qr-code {
+  background-color: var(--white);
+  padding: 20px;
+  border-radius: 12px;
+  border: 2px dashed var(--primary-green);
+}
+
+.qr-code-placeholder {
+  width: 200px;
+  height: 200px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  color: var(--payment-record-text-secondary);
+}
+
+.qr-code-placeholder svg {
+  width: 64px;
+  height: 64px;
+  opacity: 0.5;
+}
+
+.qr-code-placeholder span {
+  font-size: 13px;
+  font-weight: 500;
+}
+
+.gcash-qr-actions {
+  display: flex;
+  gap: 12px;
+  margin-top: 16px;
+}
+
+/* Payment Confirm Section */
+.payment-confirm-section {
+  margin-top: 24px;
+}
+
+.payment-confirm-title {
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--payment-record-text-primary);
+  margin-bottom: 20px;
+}
+
+/* File Upload */
+.payment-file-upload {
+  margin-top: 8px;
+}
+
+.payment-file-input {
+  display: none;
+}
+
+.payment-file-label {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 32px;
+  border: 2px dashed var(--payment-record-border);
+  border-radius: 12px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  text-align: center;
+}
+
+.payment-file-label:hover {
+  border-color: var(--primary-green);
+  background-color: rgba(74, 124, 35, 0.05);
+}
+
+.payment-file-label svg {
+  width: 48px;
+  height: 48px;
+  color: var(--payment-record-text-secondary);
+  margin-bottom: 12px;
+}
+
+.payment-file-label span {
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--payment-record-text-primary);
+  margin-bottom: 4px;
+}
+
+.payment-file-hint {
+  font-size: 12px;
+  color: var(--payment-record-text-secondary);
+}
+
+.payment-file-preview {
+  margin-top: 16px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.payment-file-preview-item {
+  position: relative;
+  width: 100px;
+  height: 100px;
+  border-radius: 8px;
+  overflow: hidden;
+  border: 1px solid var(--payment-record-border);
+}
+
+.payment-file-preview-item img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.payment-file-preview-item .remove-file {
+  position: absolute;
+  top: 4px;
+  right: 4px;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background-color: var(--payment-record-red);
+  color: var(--white);
+  border: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 16px;
+  line-height: 1;
+}
+
+/* Checkbox */
+.payment-checkbox-group {
+  margin-top: 24px;
+}
+
+.payment-checkbox {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  cursor: pointer;
+}
+
+.payment-checkbox input {
+  display: none;
+}
+
+.payment-checkbox-mark {
+  width: 20px;
+  height: 20px;
+  border: 2px solid var(--payment-record-border);
+  border-radius: 4px;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+}
+
+.payment-checkbox input:checked + .payment-checkbox-mark {
+  background-color: var(--primary-green);
+  border-color: var(--primary-green);
+}
+
+.payment-checkbox input:checked + .payment-checkbox-mark::after {
+  content: '✓';
+  color: var(--white);
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.payment-checkbox-label {
+  font-size: 13px;
+  color: var(--payment-record-text-secondary);
+  line-height: 1.5;
+}
+
+/* Payment Form Actions */
+.payment-form-actions {
+  display: flex;
+  gap: 12px;
+  justify-content: flex-end;
+  margin-top: 32px;
+  padding-top: 24px;
+  border-top: 1px solid var(--payment-record-border);
+}
+
+/* ===== Modal Styles ===== */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: none;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+
+.modal-overlay.active {
+  display: flex;
+}
+
+.modal-content {
+  background-color: var(--payment-record-surface);
+  border-radius: 16px;
+  width: 100%;
+  max-width: 500px;
+  max-height: 90vh;
+  overflow-y: auto;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+}
+
+.modal-content.modal-success {
+  text-align: center;
+}
+
+.modal-header {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 32px 24px 20px;
+  border-bottom: 1px solid var(--payment-record-border);
+}
+
+.modal-success-icon {
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
+  background-color: rgba(34, 197, 94, 0.1);
+  color: var(--payment-record-green);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 16px;
+}
+
+.modal-success-icon svg {
+  width: 48px;
+  height: 48px;
+}
+
+.modal-title {
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--payment-record-text-primary);
+}
+
+.modal-body {
+  padding: 24px;
+}
+
+.modal-footer {
+  display: flex;
+  gap: 12px;
+  justify-content: center;
+  padding: 20px;
+  border-top: 1px solid var(--payment-record-border);
+}
+
+/* Payment Confirmation Details */
+.payment-confirmation-details {
+  text-align: left;
+  background-color: var(--bg-cream);
+  border-radius: 12px;
+  padding: 20px;
+}
+
+.confirmation-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 0;
+  border-bottom: 1px solid var(--payment-record-border);
+}
+
+.confirmation-row:last-child {
+  border-bottom: none;
+}
+
+.confirmation-label {
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--payment-record-text-secondary);
+}
+
+.confirmation-value {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--payment-record-text-primary);
+  text-align: right;
+}
+
+.confirmation-value.highlight {
+  color: var(--primary-green);
+  font-size: 20px;
+  font-weight: 700;
+}
+
+/* ===== Responsive Design ===== */
+@media (max-width: 1024px) {
+  .landlord-content {
+    padding: 20px;
+  }
+
+  .payment-method-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 768px) {
+  .landlord-main {
+    margin-left: 0;
+  }
+
+  .landlord-dashboard.sidebar-collapsed .landlord-main {
+    margin-left: 0;
+  }
+
+  .landlord-content {
+    padding: 16px;
+  }
+
+  .payment-progress-bar {
+    flex-wrap: wrap;
+    gap: 16px;
+  }
+
+  .payment-progress-line {
+    display: none;
+  }
+
+  .payment-progress-step {
+    flex: 1;
+    min-width: 80px;
+  }
+
+  .payment-record-title {
+    font-size: 20px;
+  }
+
+  .payment-method-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .payment-form-actions {
+    flex-direction: column;
+  }
+
+  .payment-form-actions .landlord-btn {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .gcash-qr-actions {
+    flex-direction: column;
+  }
+
+  .gcash-qr-actions .landlord-btn {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .modal-footer {
+    flex-direction: column;
+  }
+
+  .modal-footer .landlord-btn {
+    width: 100%;
+    justify-content: center;
+  }
+}
+
+@media (max-width: 480px) {
+  .payment-summary-card {
+    padding: 16px;
+  }
+
+  .payment-summary-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+  }
+
+  .payment-summary-row.payment-summary-total {
+    font-size: 16px;
+  }
+
+  .payment-summary-row.payment-summary-total .payment-summary-value {
+    font-size: 20px;
+  }
+
+  .payment-form-card,
+  .payment-details-card {
+    padding: 16px;
+  }
+}

@@ -1,0 +1,1242 @@
+/* Boarder Payment Process Page Styles */
+
+/* ===== CSS Variables ===== */
+:root {
+  --payment-process-bg: var(--bg-cream);
+  --payment-process-surface: var(--white);
+  --payment-process-border: var(--border-color);
+  --payment-process-text-primary: var(--text-dark);
+  --payment-process-text-secondary: var(--text-gray);
+  --payment-process-accent: var(--primary-green);
+  --payment-process-accent-hover: var(--dark-green);
+  --payment-process-blue: #3b82f6;
+  --payment-process-cyan: #06b6d4;
+  --payment-process-green: #22c55e;
+  --payment-process-orange: #f59e0b;
+  --payment-process-purple: #8b5cf6;
+  --payment-process-pink: #ec4899;
+  --payment-process-red: #ef4444;
+  --payment-process-gcash-blue: #007bff;
+}
+
+/* ===== Dashboard Layout ===== */
+.payment-process-dashboard {
+  display: flex;
+  min-height: 100vh;
+  background-color: var(--payment-process-bg);
+}
+
+/* Main content area */
+.payment-process-main {
+  flex: 1;
+  margin-left: 280px;
+  padding: 0;
+  min-height: 100vh;
+  transition: margin-left 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Adjust main content when sidebar is collapsed */
+.payment-process-dashboard.sidebar-collapsed .payment-process-main {
+  margin-left: 80px;
+}
+
+/* Content wrapper */
+.payment-process-content {
+  padding: 24px 32px;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+/* ===== Progress Bar ===== */
+.payment-progress-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 40px;
+  padding: 24px;
+  background-color: var(--payment-process-surface);
+  border-radius: 16px;
+  border: 1px solid var(--payment-process-border);
+}
+
+.payment-progress-step {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  position: relative;
+  z-index: 1;
+}
+
+.payment-progress-indicator {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background-color: var(--payment-process-surface);
+  border: 2px solid var(--payment-process-border);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--payment-process-text-secondary);
+  transition: all 0.3s ease;
+}
+
+.payment-progress-step.completed .payment-progress-indicator {
+  background-color: var(--payment-process-green);
+  border-color: var(--payment-process-green);
+  color: var(--white);
+}
+
+.payment-progress-step.active .payment-progress-indicator {
+  background-color: var(--payment-process-accent);
+  border-color: var(--payment-process-accent);
+  color: var(--white);
+  box-shadow: 0 0 0 4px rgba(74, 124, 35, 0.2);
+}
+
+.payment-progress-indicator svg {
+  width: 20px;
+  height: 20px;
+}
+
+.payment-progress-label {
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--payment-process-text-secondary);
+  transition: color 0.3s ease;
+}
+
+.payment-progress-step.completed .payment-progress-label,
+.payment-progress-step.active .payment-progress-label {
+  color: var(--payment-process-accent);
+}
+
+.payment-progress-line {
+  flex: 1;
+  height: 2px;
+  background-color: var(--payment-process-border);
+  margin: 0 8px;
+  transition: background-color 0.3s ease;
+}
+
+.payment-progress-line.completed {
+  background-color: var(--payment-process-green);
+}
+
+/* ===== Payment Form Section ===== */
+.payment-form-section {
+  display: flex;
+  flex-direction: column;
+  gap: 32px;
+}
+
+.payment-form-header {
+  text-align: center;
+  margin-bottom: 16px;
+}
+
+.payment-form-title {
+  font-size: 28px;
+  font-weight: 700;
+  color: var(--payment-process-text-primary);
+  margin-bottom: 8px;
+}
+
+.payment-form-subtitle {
+  font-size: 15px;
+  color: var(--payment-process-text-secondary);
+}
+
+/* ===== Payment Summary Card ===== */
+.payment-summary-card {
+  background-color: var(--payment-process-surface);
+  border: 1px solid var(--payment-process-border);
+  border-radius: 16px;
+  padding: 24px;
+}
+
+.payment-summary-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+  padding-bottom: 16px;
+  border-bottom: 1px solid var(--payment-process-border);
+}
+
+.payment-summary-title {
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--payment-process-text-primary);
+}
+
+.payment-summary-period {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--payment-process-text-secondary);
+  background-color: var(--bg-cream);
+  padding: 6px 12px;
+  border-radius: 8px;
+}
+
+.payment-summary-breakdown {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.payment-summary-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 14px;
+}
+
+.payment-summary-label {
+  color: var(--payment-process-text-secondary);
+}
+
+.payment-summary-value {
+  font-weight: 600;
+  color: var(--payment-process-text-primary);
+}
+
+.payment-summary-divider {
+  height: 1px;
+  background-color: var(--payment-process-border);
+  margin: 8px 0;
+}
+
+.payment-summary-row.payment-summary-total {
+  font-size: 16px;
+  padding-top: 12px;
+}
+
+.payment-summary-row.payment-summary-total .payment-summary-label {
+  font-weight: 700;
+  color: var(--payment-process-text-primary);
+}
+
+.payment-summary-row.payment-summary-total .payment-summary-value {
+  font-size: 24px;
+  font-weight: 700;
+  color: var(--payment-process-accent);
+}
+
+/* ===== Payment Method Section ===== */
+.payment-method-section {
+  background-color: var(--payment-process-surface);
+  border: 1px solid var(--payment-process-border);
+  border-radius: 16px;
+  padding: 24px;
+}
+
+.payment-section-title {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--payment-process-text-primary);
+  margin-bottom: 20px;
+}
+
+.payment-section-title svg {
+  width: 22px;
+  height: 22px;
+  color: var(--payment-process-accent);
+}
+
+.payment-method-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 16px;
+}
+
+.payment-method-option {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 20px;
+  background-color: var(--bg-cream);
+  border: 2px solid var(--payment-process-border);
+  border-radius: 12px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  position: relative;
+}
+
+.payment-method-option:hover {
+  border-color: var(--payment-process-accent);
+  box-shadow: 0 4px 12px rgba(74, 124, 35, 0.08);
+}
+
+.payment-method-option.selected {
+  border-color: var(--payment-process-accent);
+  background: linear-gradient(135deg, rgba(74, 124, 35, 0.05) 0%, rgba(74, 124, 35, 0.02) 100%);
+}
+
+.payment-method-option-icon {
+  width: 48px;
+  height: 48px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.payment-method-option-icon svg {
+  width: 24px;
+  height: 24px;
+}
+
+.payment-method-option-icon.gcash {
+  background-color: rgba(59, 130, 246, 0.1);
+  color: var(--payment-process-gcash-blue);
+}
+
+.payment-method-option-icon.bank {
+  background-color: rgba(139, 92, 246, 0.1);
+  color: var(--payment-process-purple);
+}
+
+.payment-method-option-icon.card {
+  background-color: rgba(236, 72, 153, 0.1);
+  color: var(--payment-process-pink);
+}
+
+.payment-method-option-info {
+  flex: 1;
+}
+
+.payment-method-option-name {
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--payment-process-text-primary);
+  margin-bottom: 4px;
+}
+
+.payment-method-option-desc {
+  font-size: 13px;
+  color: var(--payment-process-text-secondary);
+}
+
+.payment-method-option-check {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background-color: var(--payment-process-border);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  transition: all 0.2s ease;
+}
+
+.payment-method-option-check svg {
+  width: 16px;
+  height: 16px;
+  color: var(--white);
+}
+
+.payment-method-option.selected .payment-method-option-check {
+  background-color: var(--payment-process-accent);
+  opacity: 1;
+}
+
+/* ===== Payment Form Card ===== */
+.payment-form-card {
+  background-color: var(--payment-process-surface);
+  border: 1px solid var(--payment-process-border);
+  border-radius: 16px;
+  padding: 24px;
+}
+
+.payment-form-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 24px;
+  padding-bottom: 20px;
+  border-bottom: 1px solid var(--payment-process-border);
+}
+
+.payment-form-card-title {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.payment-method-icon-small {
+  width: 40px;
+  height: 40px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.payment-method-icon-small svg {
+  width: 20px;
+  height: 20px;
+}
+
+.payment-method-icon-small.gcash {
+  background-color: rgba(59, 130, 246, 0.1);
+  color: var(--payment-process-gcash-blue);
+}
+
+.payment-method-icon-small.bank {
+  background-color: rgba(139, 92, 246, 0.1);
+  color: var(--payment-process-purple);
+}
+
+.payment-method-icon-small.card {
+  background-color: rgba(236, 72, 153, 0.1);
+  color: var(--payment-process-pink);
+}
+
+.payment-form-card-name {
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--payment-process-text-primary);
+}
+
+.payment-form-card-badge {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--payment-process-accent);
+  background-color: rgba(74, 124, 35, 0.1);
+  padding: 4px 10px;
+  border-radius: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+/* ===== GCash QR Section ===== */
+.gcash-qr-section {
+  background-color: var(--bg-cream);
+  border-radius: 12px;
+  padding: 24px;
+  margin-bottom: 24px;
+}
+
+.gcash-qr-header {
+  text-align: center;
+  margin-bottom: 20px;
+}
+
+.gcash-qr-title {
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--payment-process-text-primary);
+  margin-bottom: 8px;
+}
+
+.gcash-qr-desc {
+  font-size: 14px;
+  color: var(--payment-process-text-secondary);
+}
+
+.gcash-qr-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 20px;
+  margin-bottom: 20px;
+}
+
+.gcash-qr-code {
+  width: 240px;
+  height: 240px;
+  background-color: var(--white);
+  border: 2px solid var(--payment-process-border);
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+}
+
+.qr-code-placeholder {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  color: var(--payment-process-text-secondary);
+}
+
+.qr-code-placeholder svg {
+  width: 64px;
+  height: 64px;
+  opacity: 0.5;
+}
+
+.qr-code-placeholder span {
+  font-size: 14px;
+  font-weight: 500;
+}
+
+#gcashQRCode {
+  width: 100%;
+  height: 100%;
+}
+
+.gcash-qr-timer {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 20px;
+  background-color: rgba(245, 158, 11, 0.1);
+  border: 1px solid rgba(245, 158, 11, 0.2);
+  border-radius: 10px;
+}
+
+.timer-icon svg {
+  width: 20px;
+  height: 20px;
+  color: var(--payment-process-orange);
+}
+
+.timer-info {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.timer-label {
+  font-size: 12px;
+  color: var(--payment-process-text-secondary);
+}
+
+.timer-value {
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--payment-process-orange);
+}
+
+.gcash-qr-actions {
+  display: flex;
+  gap: 12px;
+  justify-content: center;
+}
+
+/* ===== GCash Manual Section ===== */
+.gcash-manual-section {
+  margin-bottom: 24px;
+}
+
+.gcash-manual-divider {
+  display: flex;
+  align-items: center;
+  margin: 24px 0;
+}
+
+.gcash-manual-divider::before,
+.gcash-manual-divider::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background-color: var(--payment-process-border);
+}
+
+.gcash-manual-divider-text {
+  padding: 0 16px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--payment-process-text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.gcash-manual-details {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.gcash-manual-step {
+  display: flex;
+  gap: 16px;
+  align-items: flex-start;
+}
+
+.gcash-manual-step-number {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background-color: var(--payment-process-accent);
+  color: var(--white);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+  font-weight: 700;
+  flex-shrink: 0;
+}
+
+.gcash-manual-step-content {
+  flex: 1;
+}
+
+.gcash-manual-step-title {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--payment-process-text-primary);
+  margin-bottom: 8px;
+}
+
+.gcash-manual-value {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 16px;
+  background-color: var(--white);
+  border: 1px solid var(--payment-process-border);
+  border-radius: 8px;
+}
+
+.gcash-phone-number {
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--payment-process-text-primary);
+  font-family: 'Courier New', monospace;
+}
+
+.gcash-amount {
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--payment-process-accent);
+}
+
+.gcash-reference-hint {
+  font-size: 14px;
+  color: var(--payment-process-text-secondary);
+}
+
+.gcash-copy-btn {
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  border: 1px solid var(--payment-process-border);
+  background-color: var(--white);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  margin-left: auto;
+}
+
+.gcash-copy-btn svg {
+  width: 18px;
+  height: 18px;
+  color: var(--payment-process-text-secondary);
+}
+
+.gcash-copy-btn:hover {
+  border-color: var(--payment-process-accent);
+  color: var(--payment-process-accent);
+  background-color: rgba(74, 124, 35, 0.05);
+}
+
+/* ===== Payment Confirm Section ===== */
+.payment-confirm-section {
+  padding-top: 24px;
+  border-top: 1px solid var(--payment-process-border);
+}
+
+.payment-confirm-title {
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--payment-process-text-primary);
+  margin-bottom: 20px;
+}
+
+.payment-form-group {
+  margin-bottom: 20px;
+}
+
+.payment-form-label {
+  display: block;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--payment-process-text-primary);
+  margin-bottom: 8px;
+}
+
+.payment-form-required {
+  color: var(--payment-process-red);
+}
+
+.payment-form-input {
+  width: 100%;
+  padding: 12px 16px;
+  border: 1px solid var(--payment-process-border);
+  border-radius: 10px;
+  font-size: 14px;
+  font-family: var(--font-main);
+  color: var(--payment-process-text-primary);
+  background-color: var(--white);
+  transition: all 0.2s ease;
+}
+
+.payment-form-input:focus {
+  outline: none;
+  border-color: var(--payment-process-accent);
+  box-shadow: 0 0 0 3px rgba(74, 124, 35, 0.1);
+}
+
+.payment-form-input::placeholder {
+  color: var(--payment-process-text-secondary);
+}
+
+.payment-form-hint {
+  font-size: 12px;
+  color: var(--payment-process-text-secondary);
+  margin-top: 6px;
+}
+
+.payment-input-with-prefix {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.payment-input-prefix {
+  position: absolute;
+  left: 16px;
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--payment-process-text-secondary);
+  pointer-events: none;
+}
+
+.payment-input-with-prefix .payment-form-input {
+  padding-left: 36px;
+}
+
+/* File Upload */
+.payment-file-upload {
+  position: relative;
+}
+
+.payment-file-input {
+  position: absolute;
+  width: 0.1px;
+  height: 0.1px;
+  opacity: 0;
+  overflow: hidden;
+  z-index: -1;
+}
+
+.payment-file-label {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  padding: 32px;
+  border: 2px dashed var(--payment-process-border);
+  border-radius: 12px;
+  background-color: var(--bg-cream);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  text-align: center;
+}
+
+.payment-file-label:hover {
+  border-color: var(--payment-process-accent);
+  background-color: rgba(74, 124, 35, 0.05);
+}
+
+.payment-file-label svg {
+  width: 40px;
+  height: 40px;
+  color: var(--payment-process-text-secondary);
+}
+
+.payment-file-label span {
+  font-size: 14px;
+  color: var(--payment-process-text-primary);
+  font-weight: 600;
+}
+
+.payment-file-hint {
+  font-size: 12px;
+  color: var(--payment-process-text-secondary);
+}
+
+.payment-file-preview {
+  margin-top: 12px;
+  padding: 12px;
+  background-color: var(--white);
+  border: 1px solid var(--payment-process-border);
+  border-radius: 8px;
+  display: none;
+}
+
+.payment-file-preview.has-file {
+  display: block;
+}
+
+/* Checkbox */
+.payment-form-checkbox-group {
+  margin-top: 24px;
+}
+
+.payment-checkbox {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  cursor: pointer;
+  user-select: none;
+}
+
+.payment-checkbox input {
+  position: absolute;
+  opacity: 0;
+  cursor: pointer;
+}
+
+.payment-checkbox-mark {
+  width: 20px;
+  height: 20px;
+  border: 2px solid var(--payment-process-border);
+  border-radius: 6px;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+}
+
+.payment-checkbox input:checked ~ .payment-checkbox-mark {
+  background-color: var(--payment-process-accent);
+  border-color: var(--payment-process-accent);
+}
+
+.payment-checkbox-mark::after {
+  content: '';
+  width: 5px;
+  height: 10px;
+  border: solid var(--white);
+  border-width: 0 2px 2px 0;
+  transform: rotate(45deg) translateY(-1px);
+  opacity: 0;
+  transition: opacity 0.2s ease;
+}
+
+.payment-checkbox input:checked ~ .payment-checkbox-mark::after {
+  opacity: 1;
+}
+
+.payment-checkbox-label {
+  font-size: 13px;
+  color: var(--payment-process-text-secondary);
+  line-height: 1.5;
+}
+
+/* ===== Payment Form Actions ===== */
+.payment-form-actions {
+  display: flex;
+  gap: 12px;
+  margin-top: 24px;
+  padding-top: 24px;
+  border-top: 1px solid var(--payment-process-border);
+}
+
+.payment-form-actions .payments-btn {
+  flex: 1;
+}
+
+/* ===== Bank Transfer Details ===== */
+.bank-transfer-details {
+  background-color: var(--bg-cream);
+  border-radius: 12px;
+  padding: 20px;
+  margin-bottom: 24px;
+}
+
+.bank-detail-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 0;
+  border-bottom: 1px solid var(--payment-process-border);
+}
+
+.bank-detail-row:last-child {
+  border-bottom: none;
+}
+
+.bank-detail-label {
+  font-size: 14px;
+  color: var(--payment-process-text-secondary);
+  font-weight: 500;
+}
+
+.bank-detail-value {
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--payment-process-text-primary);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-family: 'Courier New', monospace;
+}
+
+.bank-copy-btn {
+  width: 28px;
+  height: 28px;
+  border-radius: 6px;
+  border: 1px solid var(--payment-process-border);
+  background-color: var(--white);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.bank-copy-btn svg {
+  width: 16px;
+  height: 16px;
+  color: var(--payment-process-text-secondary);
+}
+
+.bank-copy-btn:hover {
+  border-color: var(--payment-process-accent);
+  color: var(--payment-process-accent);
+  background-color: rgba(74, 124, 35, 0.05);
+}
+
+.payment-card-placeholder-text {
+  text-align: center;
+  color: var(--payment-process-text-secondary);
+  padding: 40px;
+}
+
+/* ===== Payment Buttons ===== */
+.payments-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 12px 24px;
+  border-radius: 10px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  border: none;
+  font-family: var(--font-main);
+  text-decoration: none;
+}
+
+.payments-btn svg {
+  width: 18px;
+  height: 18px;
+}
+
+.payments-btn-primary {
+  background-color: var(--primary-green);
+  color: var(--white);
+}
+
+.payments-btn-primary:hover {
+  background-color: var(--dark-green);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(74, 124, 35, 0.2);
+}
+
+.payments-btn-outline {
+  background-color: transparent;
+  border: 1px solid var(--payment-process-border);
+  color: var(--payment-process-text-primary);
+}
+
+.payments-btn-outline:hover {
+  background-color: var(--bg-cream);
+  border-color: var(--payment-process-accent);
+  color: var(--payment-process-accent);
+}
+
+.payments-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  transform: none;
+}
+
+/* ===== Payment Modal ===== */
+.payment-modal {
+  position: fixed;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+  padding: 20px;
+}
+
+.payment-modal-overlay {
+  position: absolute;
+  inset: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(4px);
+}
+
+.payment-modal-content {
+  position: relative;
+  background-color: var(--payment-process-surface);
+  border-radius: 20px;
+  padding: 40px;
+  max-width: 480px;
+  width: 100%;
+  text-align: center;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+  animation: modalSlideIn 0.3s ease;
+}
+
+@keyframes modalSlideIn {
+  from {
+    opacity: 0;
+    transform: translateY(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.payment-modal-icon {
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 24px;
+}
+
+.payment-modal-icon.success {
+  background-color: rgba(34, 197, 94, 0.1);
+  color: var(--payment-process-green);
+}
+
+.payment-modal-icon.error {
+  background-color: rgba(239, 68, 68, 0.1);
+  color: var(--payment-process-red);
+}
+
+.payment-modal-icon svg {
+  width: 40px;
+  height: 40px;
+}
+
+.payment-modal-title {
+  font-size: 24px;
+  font-weight: 700;
+  color: var(--payment-process-text-primary);
+  margin-bottom: 12px;
+}
+
+.payment-modal-message {
+  font-size: 15px;
+  color: var(--payment-process-text-secondary);
+  margin-bottom: 24px;
+  line-height: 1.6;
+}
+
+.payment-modal-details {
+  background-color: var(--bg-cream);
+  border-radius: 12px;
+  padding: 20px;
+  margin-bottom: 24px;
+  text-align: left;
+}
+
+.payment-modal-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 0;
+  border-bottom: 1px solid var(--payment-process-border);
+}
+
+.payment-modal-row:last-child {
+  border-bottom: none;
+  padding-bottom: 0;
+}
+
+.payment-modal-row:first-child {
+  padding-top: 0;
+}
+
+.payment-modal-label {
+  font-size: 13px;
+  color: var(--payment-process-text-secondary);
+  font-weight: 500;
+}
+
+.payment-modal-value {
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--payment-process-text-primary);
+}
+
+.payment-modal-actions {
+  display: flex;
+  gap: 12px;
+}
+
+.payment-modal-actions .payments-btn {
+  flex: 1;
+}
+
+/* ===== Toast Notification ===== */
+.payment-toast {
+  position: fixed;
+  bottom: 24px;
+  right: 24px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 16px 20px;
+  background-color: var(--payment-process-surface);
+  border-radius: 12px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+  border-left: 4px solid var(--payment-process-green);
+  z-index: 10000;
+  animation: toastSlideIn 0.3s ease;
+}
+
+@keyframes toastSlideIn {
+  from {
+    opacity: 0;
+    transform: translateX(100%);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+.payment-toast-icon {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background-color: var(--payment-process-green);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.payment-toast-icon::after {
+  content: '✓';
+  color: var(--white);
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.payment-toast.error .payment-toast-icon {
+  background-color: var(--payment-process-red);
+}
+
+.payment-toast.error .payment-toast-icon::after {
+  content: '✕';
+}
+
+.payment-toast-message {
+  font-size: 14px;
+  color: var(--payment-process-text-primary);
+  font-weight: 500;
+}
+
+/* ===== Responsive Design ===== */
+@media (max-width: 1024px) {
+  .payment-process-content {
+    padding: 20px;
+  }
+
+  .payment-method-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 768px) {
+  .payment-process-main {
+    margin-left: 0;
+  }
+
+  .payment-process-content {
+    padding: 16px;
+  }
+
+  .payment-progress-bar {
+    padding: 16px;
+  }
+
+  .payment-progress-label {
+    font-size: 11px;
+  }
+
+  .payment-progress-indicator {
+    width: 32px;
+    height: 32px;
+    font-size: 14px;
+  }
+
+  .payment-form-title {
+    font-size: 22px;
+  }
+
+  .payment-summary-card,
+  .payment-method-section,
+  .payment-form-card {
+    padding: 20px;
+  }
+
+  .gcash-qr-code {
+    width: 200px;
+    height: 200px;
+  }
+
+  .payment-form-actions {
+    flex-direction: column;
+  }
+
+  .payment-modal-content {
+    padding: 24px;
+  }
+
+  .payment-toast {
+    left: 16px;
+    right: 16px;
+    bottom: 16px;
+  }
+}
+
+@media (max-width: 480px) {
+  .payment-progress-bar {
+    flex-direction: column;
+    gap: 16px;
+  }
+
+  .payment-progress-line {
+    width: 2px;
+    height: 24px;
+    margin: 8px 0;
+  }
+
+  .gcash-qr-actions {
+    flex-direction: column;
+  }
+
+  .payment-modal-actions {
+    flex-direction: column;
+  }
+}
