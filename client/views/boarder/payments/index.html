@@ -521,7 +521,7 @@
             <!-- Payment History & Current Bill Column -->
             <div class="payments-column">
               <!-- Current Month Bill -->
-              <div class="payments-section payments-current-bill-card">
+              <div class="payments-section payments-current-bill-card" data-due-date="2025-02-01">
                 <div class="current-bill-header">
                   <div class="current-bill-title-wrapper">
                     <h2 class="payments-section-title">
@@ -542,7 +542,12 @@
                     </h2>
                     <span class="current-bill-period">January 2025</span>
                   </div>
-                  <span class="current-bill-status unpaid">Unpaid</span>
+                  <span
+                    class="current-bill-status unpaid"
+                    data-due-date="2025-02-01"
+                    data-paid-date=""
+                    >Unpaid</span
+                  >
                 </div>
 
                 <div class="current-bill-breakdown">
@@ -568,7 +573,9 @@
                 <div class="current-bill-dates">
                   <div class="current-bill-date-item">
                     <span class="current-bill-date-label">Due Date</span>
-                    <span class="current-bill-date-value">February 1, 2025</span>
+                    <span class="current-bill-date-value" data-due-date="2025-02-01"
+                      >February 1, 2025</span
+                    >
                   </div>
                   <div class="current-bill-date-item warning">
                     <span class="current-bill-date-label">Time Remaining</span>
@@ -586,7 +593,7 @@
                           d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
                         />
                       </svg>
-                      12 days
+                      <span class="time-remaining-text">12 days</span>
                     </span>
                   </div>
                 </div>
@@ -640,7 +647,7 @@
 
                 <div class="payment-timeline">
                   <!-- January 2025 -->
-                  <div class="timeline-item">
+                  <div class="timeline-item" data-due-date="2025-01-01" data-paid-date="2025-01-03">
                     <div class="timeline-marker completed">
                       <svg
                         xmlns="http://www.w3.org/2000/svg"
@@ -749,7 +756,7 @@
                   </div>
 
                   <!-- December 2024 -->
-                  <div class="timeline-item">
+                  <div class="timeline-item" data-due-date="2024-12-01" data-paid-date="2024-12-02">
                     <div class="timeline-marker completed">
                       <svg
                         xmlns="http://www.w3.org/2000/svg"
@@ -858,7 +865,7 @@
                   </div>
 
                   <!-- November 2024 -->
-                  <div class="timeline-item">
+                  <div class="timeline-item" data-due-date="2024-11-01" data-paid-date="2024-11-01">
                     <div class="timeline-marker completed">
                       <svg
                         xmlns="http://www.w3.org/2000/svg"
@@ -967,7 +974,7 @@
                   </div>
 
                   <!-- October 2024 -->
-                  <div class="timeline-item">
+                  <div class="timeline-item" data-due-date="2024-10-01" data-paid-date="2024-10-01">
                     <div class="timeline-marker completed">
                       <svg
                         xmlns="http://www.w3.org/2000/svg"
@@ -1091,6 +1098,7 @@
     <script type="module">
       import { initSidebar } from '../../../js/components/sidebar.js';
       import { initNavbar } from '../../../js/components/navbar.js';
+      import { initPaymentStatus } from '../../../js/views/boarder/boarder-payments.js';
 
       document.addEventListener('DOMContentLoaded', () => {
         // Initialize sidebar
@@ -1116,6 +1124,9 @@
             notificationCount: 3,
           });
         }
+
+        // Initialize payment status color coding
+        initPaymentStatus();
 
         // Auto-pay toggle functionality
         const autoPayToggle = document.getElementById('autoPayToggle');

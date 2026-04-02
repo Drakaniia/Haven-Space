@@ -1,0 +1,285 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Payments - Landlord Dashboard | Haven Space</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="../../../css/global.css" />
+    <link rel="stylesheet" href="../../../css/components/sidebar.css" />
+    <link rel="stylesheet" href="../../../css/components/navbar.css" />
+    <link rel="stylesheet" href="../../../css/views/landlord/landlord.css" />
+    <link rel="stylesheet" href="../../../css/views/landlord/landlord-payments.css" />
+  </head>
+  <body data-view="landlord" data-dashboard-type="landlord">
+    <div class="landlord-dashboard">
+      <!-- Sidebar Container -->
+      <div id="sidebar-container"></div>
+
+      <!-- Main Content -->
+      <main class="landlord-main">
+        <!-- Navbar Container -->
+        <div id="navbar-container"></div>
+
+        <!-- Content Wrapper -->
+        <div class="landlord-content">
+          <!-- Payments Header -->
+          <div class="payments-header-section">
+            <div class="payments-header-content">
+              <h1 class="payments-title">Payment Management</h1>
+              <p class="payments-subtitle">Track and manage rent payments from your boarders</p>
+            </div>
+            <div class="payments-header-actions">
+              <button class="landlord-btn landlord-btn-outline" id="exportBtn">
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                >
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="2"
+                    d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"
+                  />
+                </svg>
+                Export Report
+              </button>
+              <a href="record.html" class="landlord-btn landlord-btn-primary">
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                >
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="2"
+                    d="M12 4v16m8-8H4"
+                  />
+                </svg>
+                Record Payment
+              </a>
+            </div>
+          </div>
+
+          <!-- Payment Summary Cards -->
+          <div class="payment-summary-grid">
+            <div class="payment-summary-card payment-summary-green">
+              <div class="payment-summary-icon">
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                >
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="2"
+                    d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
+                  />
+                </svg>
+              </div>
+              <div class="payment-summary-info">
+                <span class="payment-summary-label">Paid On Time</span>
+                <span class="payment-summary-value">12</span>
+                <span class="payment-summary-trend">This month</span>
+              </div>
+            </div>
+
+            <div class="payment-summary-card payment-summary-orange">
+              <div class="payment-summary-icon">
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                >
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="2"
+                    d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
+                  />
+                </svg>
+              </div>
+              <div class="payment-summary-info">
+                <span class="payment-summary-label">Due Within 7 Days</span>
+                <span class="payment-summary-value">3</span>
+                <span class="payment-summary-trend">Upcoming</span>
+              </div>
+            </div>
+
+            <div class="payment-summary-card payment-summary-red">
+              <div class="payment-summary-icon">
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                >
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="2"
+                    d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"
+                  />
+                </svg>
+              </div>
+              <div class="payment-summary-info">
+                <span class="payment-summary-label">Overdue</span>
+                <span class="payment-summary-value">2</span>
+                <span class="payment-summary-trend">Requires attention</span>
+              </div>
+            </div>
+
+            <div class="payment-summary-card payment-summary-blue">
+              <div class="payment-summary-icon">
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                >
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="2"
+                    d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+                  />
+                </svg>
+              </div>
+              <div class="payment-summary-info">
+                <span class="payment-summary-label">Total Revenue</span>
+                <span class="payment-summary-value">₱67,500</span>
+                <span class="payment-summary-trend">This month</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Payment Status Legend -->
+          <div class="payment-status-legend">
+            <h3 class="payment-legend-title">Payment Status Guide</h3>
+            <div class="payment-legend-items">
+              <div class="payment-legend-item">
+                <span class="payment-legend-color payment-legend-red"></span>
+                <span class="payment-legend-label">Overdue / Missed Payments</span>
+              </div>
+              <div class="payment-legend-item">
+                <span class="payment-legend-color payment-legend-orange"></span>
+                <span class="payment-legend-label">Due Within 7 Days (Upcoming)</span>
+              </div>
+              <div class="payment-legend-item">
+                <span class="payment-legend-color payment-legend-green"></span>
+                <span class="payment-legend-label">Paid or Due Date > 7 Days Away</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Payments Table -->
+          <div class="payments-section">
+            <div class="payments-section-header">
+              <h2 class="payments-section-title">All Payments</h2>
+              <div class="payments-filters">
+                <div class="payments-filter-group">
+                  <label for="statusFilter">Status:</label>
+                  <select id="statusFilter" class="payments-select">
+                    <option value="all">All Status</option>
+                    <option value="paid">Paid</option>
+                    <option value="upcoming">Upcoming</option>
+                    <option value="overdue">Overdue</option>
+                  </select>
+                </div>
+                <div class="payments-filter-group">
+                  <label for="propertyFilter">Property:</label>
+                  <select id="propertyFilter" class="payments-select">
+                    <option value="all">All Properties</option>
+                    <option value="sunrise">Sunrise Dormitory</option>
+                    <option value="green-valley">Green Valley</option>
+                    <option value="metro">Metro Boarding</option>
+                  </select>
+                </div>
+              </div>
+            </div>
+
+            <div class="payments-table-wrapper">
+              <table class="payments-table">
+                <thead>
+                  <tr>
+                    <th>Boarder</th>
+                    <th>Property / Room</th>
+                    <th>Amount</th>
+                    <th>Due Date</th>
+                    <th>Status</th>
+                    <th>Actions</th>
+                  </tr>
+                </thead>
+                <tbody id="paymentsTableBody">
+                  <!-- Populated dynamically by JavaScript -->
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <!-- Recent Payment Activity -->
+          <div class="payments-section">
+            <div class="payments-section-header">
+              <h2 class="payments-section-title">Recent Payment Activity</h2>
+              <a href="#" class="payments-view-all">
+                View all
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                >
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="2"
+                    d="M9 5l7 7-7 7"
+                  />
+                </svg>
+              </a>
+            </div>
+
+            <div class="payment-activity-list" id="paymentActivityList">
+              <!-- Populated dynamically by JavaScript -->
+            </div>
+          </div>
+        </div>
+      </main>
+    </div>
+
+    <!-- Payment Detail Modal -->
+    <div class="modal-overlay" id="paymentModal">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h3 class="modal-title">Payment Details</h3>
+          <button class="modal-close" id="closeModal">&times;</button>
+        </div>
+        <div class="modal-body" id="modalBody">
+          <!-- Populated dynamically -->
+        </div>
+        <div class="modal-footer">
+          <button class="landlord-btn landlord-btn-outline" id="cancelModal">Close</button>
+          <button class="landlord-btn landlord-btn-primary" id="recordPaymentBtn">
+            Record Payment
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ES Module Entry Point -->
+    <script type="module" src="../../../js/main.js"></script>
+    <script type="module" src="../../../js/views/landlord/landlord-payments.js"></script>
+  </body>
+</html>
