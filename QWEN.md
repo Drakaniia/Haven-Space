@@ -271,22 +271,6 @@ git commit -m "docs: update README with setup instructions"
 git commit -m "style: fix line endings for GitHub Actions"
 ```
 
-### Git Hooks (Husky)
-
-This project uses **Husky** to enforce code quality before commits:
-
-- **Pre-commit hook**: Runs `lint-staged`, `bun run format:check`, and `bun run build`
-- **Commit-msg hook**: Validates commit messages against Conventional Commits
-
-**To skip Husky checks** (e.g., for WIP commits or urgent pushes):
-
-```bash
-git commit --no-verify -m "wip: work in progress"
-git push --no-verify
-```
-
-> **Note**: Skipping hooks bypasses all automated checks. Use only when necessary.
-
 ### Pull Request Template
 
 When preparing to push or create a PR, automatically read and use the PR template from `.github/pull_request_template.md`.
