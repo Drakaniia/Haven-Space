@@ -1145,7 +1145,148 @@
   }
 }
 
-/* ===== Print Styles ===== */
+/* ===== Payment Status Color Classes ===== */
+.status-red {
+  --status-color: var(--payments-red);
+  --status-bg: rgba(239, 68, 68, 0.1);
+  --status-border: rgba(239, 68, 68, 0.3);
+}
+
+.status-orange {
+  --status-color: var(--payments-orange);
+  --status-bg: rgba(245, 158, 11, 0.1);
+  --status-border: rgba(245, 158, 11, 0.3);
+}
+
+.status-green {
+  --status-color: var(--payments-green);
+  --status-bg: rgba(34, 197, 94, 0.1);
+  --status-border: rgba(34, 197, 94, 0.3);
+}
+
+/* Specific status classes */
+.status-paid {
+  background-color: rgba(34, 197, 94, 0.1) !important;
+  color: var(--payments-green) !important;
+  border-color: var(--payments-green) !important;
+}
+
+.status-overdue {
+  background-color: rgba(239, 68, 68, 0.1) !important;
+  color: var(--payments-red) !important;
+  border-color: var(--payments-red) !important;
+}
+
+.status-due-today {
+  background-color: rgba(245, 158, 11, 0.15) !important;
+  color: var(--payments-orange) !important;
+  border-color: var(--payments-orange) !important;
+  font-weight: 700 !important;
+}
+
+.status-upcoming {
+  background-color: rgba(245, 158, 11, 0.1) !important;
+  color: var(--payments-orange) !important;
+  border-color: var(--payments-orange) !important;
+}
+
+.status-current {
+  background-color: rgba(34, 197, 94, 0.1) !important;
+  color: var(--payments-green) !important;
+  border-color: var(--payments-green) !important;
+}
+
+/* Status badge component */
+.status-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 12px;
+  border-radius: 12px;
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.status-badge.status-red {
+  background-color: rgba(239, 68, 68, 0.1);
+  color: var(--payments-red);
+}
+
+.status-badge.status-orange {
+  background-color: rgba(245, 158, 11, 0.1);
+  color: var(--payments-orange);
+}
+
+.status-badge.status-green {
+  background-color: rgba(34, 197, 94, 0.1);
+  color: var(--payments-green);
+}
+
+.status-badge svg {
+  width: 14px;
+  height: 14px;
+}
+
+/* Timeline marker status colors */
+.timeline-marker.overdue {
+  border-color: var(--payments-red);
+  background-color: var(--payments-red);
+}
+
+.timeline-marker.overdue svg {
+  color: var(--white);
+}
+
+.timeline-marker.upcoming {
+  border-color: var(--payments-orange);
+  background-color: var(--payments-orange);
+}
+
+.timeline-marker.upcoming svg {
+  color: var(--white);
+}
+
+.timeline-marker.current {
+  border-color: var(--payments-green);
+  background-color: var(--payments-green);
+}
+
+.timeline-marker.current svg {
+  color: var(--white);
+}
+
+/* Financial card status borders */
+.financial-card.status-red {
+  border: 2px solid var(--payments-red);
+}
+
+.financial-card.status-orange {
+  border: 2px solid var(--payments-orange);
+}
+
+.financial-card.status-green {
+  border: 2px solid var(--payments-green);
+}
+
+/* Current bill card status variations */
+.payments-current-bill-card.status-red {
+  border-color: var(--payments-red);
+  box-shadow: 0 4px 12px rgba(239, 68, 68, 0.15);
+}
+
+.payments-current-bill-card.status-orange {
+  border-color: var(--payments-orange);
+  box-shadow: 0 4px 12px rgba(245, 158, 11, 0.15);
+}
+
+.payments-current-bill-card.status-green {
+  border-color: var(--payments-green);
+  box-shadow: 0 4px 12px rgba(34, 197, 94, 0.15);
+}
+
+/* Print Styles ===== */
 @media print {
   #sidebar-container,
   #navbar-container,
