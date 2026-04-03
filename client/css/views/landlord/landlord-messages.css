@@ -1,7 +1,7 @@
-/* Messages Page Styles */
+/* Messages Page Styles - Landlord Dashboard */
 
 /* Remove padding from content area on messages page */
-.boarder-content {
+.landlord-content {
   padding: 0;
 }
 
@@ -10,7 +10,7 @@
   display: grid;
   grid-template-columns: 380px 1fr;
   gap: 0;
-  background-color: var(--white);
+  background-color: var(--dashboard-surface);
   border-radius: 0;
   overflow: hidden;
   box-shadow: none;
@@ -19,22 +19,22 @@
 
 /* ===== Messages Sidebar ===== */
 .messages-sidebar {
-  border-right: 1px solid var(--border-color);
+  border-right: 1px solid var(--dashboard-border);
   display: flex;
   flex-direction: column;
-  background-color: var(--white);
+  background-color: var(--dashboard-surface);
   overflow: hidden;
 }
 
 .messages-sidebar-header {
   padding: 24px;
-  border-bottom: 1px solid var(--border-color);
+  border-bottom: 1px solid var(--dashboard-border);
 }
 
 .messages-sidebar-header h1 {
   font-size: 24px;
   font-weight: 700;
-  color: var(--text-dark);
+  color: var(--dashboard-text-primary);
   margin: 0 0 16px 0;
   font-family: var(--font-main);
 }
@@ -46,7 +46,7 @@
   gap: 8px;
   width: 100%;
   padding: 12px 16px;
-  background-color: var(--primary-green);
+  background-color: var(--dashboard-accent);
   color: var(--white);
   border: none;
   border-radius: 8px;
@@ -58,7 +58,7 @@
 }
 
 .messages-new-btn:hover {
-  background-color: var(--dark-green);
+  background-color: var(--dashboard-accent-hover);
 }
 
 .messages-new-btn svg {
@@ -69,7 +69,7 @@
 /* Search Messages */
 .messages-search {
   padding: 16px 24px;
-  border-bottom: 1px solid var(--border-color);
+  border-bottom: 1px solid var(--dashboard-border);
 }
 
 .messages-search-input-wrapper {
@@ -83,13 +83,13 @@
   transform: translateY(-50%);
   width: 20px;
   height: 20px;
-  color: var(--text-gray);
+  color: var(--dashboard-text-secondary);
 }
 
 .messages-search-input {
   width: 100%;
   padding: 10px 12px 10px 40px;
-  border: 1px solid var(--border-color);
+  border: 1px solid var(--dashboard-border);
   border-radius: 8px;
   font-size: 14px;
   font-family: var(--font-main);
@@ -98,7 +98,7 @@
 
 .messages-search-input:focus {
   outline: none;
-  border-color: var(--primary-green);
+  border-color: var(--dashboard-accent);
 }
 
 /* Conversations List */
@@ -155,14 +155,14 @@
 .conversation-name {
   font-size: 14px;
   font-weight: 600;
-  color: var(--text-dark);
+  color: var(--dashboard-text-primary);
   margin: 0;
   font-family: var(--font-main);
 }
 
 .conversation-time {
   font-size: 12px;
-  color: var(--text-gray);
+  color: var(--dashboard-text-secondary);
   flex-shrink: 0;
   margin-left: 8px;
 }
@@ -175,7 +175,7 @@
 
 .conversation-last-message {
   font-size: 13px;
-  color: var(--text-gray);
+  color: var(--dashboard-text-secondary);
   margin: 0;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -184,7 +184,7 @@
 }
 
 .conversation-item.active .conversation-last-message {
-  color: var(--text-dark);
+  color: var(--dashboard-text-primary);
   font-weight: 500;
 }
 
@@ -195,7 +195,7 @@
   min-width: 20px;
   height: 20px;
   padding: 0 6px;
-  background-color: var(--primary-green);
+  background-color: var(--dashboard-accent);
   color: var(--white);
   font-size: 11px;
   font-weight: 700;
@@ -217,8 +217,8 @@
   justify-content: space-between;
   align-items: center;
   padding: 16px 24px;
-  background-color: var(--white);
-  border-bottom: 1px solid var(--border-color);
+  background-color: var(--dashboard-surface);
+  border-bottom: 1px solid var(--dashboard-border);
 }
 
 .chat-header-info {
@@ -248,7 +248,7 @@
 .chat-name {
   font-size: 16px;
   font-weight: 600;
-  color: var(--text-dark);
+  color: var(--dashboard-text-primary);
   margin: 0;
   font-family: var(--font-main);
 }
@@ -258,7 +258,7 @@
   align-items: center;
   gap: 6px;
   font-size: 13px;
-  color: var(--text-gray);
+  color: var(--dashboard-text-secondary);
 }
 
 .chat-header-actions {
@@ -286,11 +286,11 @@
 .chat-action-btn svg {
   width: 20px;
   height: 20px;
-  color: var(--text-gray);
+  color: var(--dashboard-text-secondary);
 }
 
 .chat-action-btn:hover svg {
-  color: var(--text-dark);
+  color: var(--dashboard-text-primary);
 }
 
 /* Chat Messages */
@@ -312,12 +312,12 @@
 
 .message-date-separator span {
   padding: 6px 16px;
-  background-color: var(--white);
-  color: var(--text-gray);
+  background-color: var(--dashboard-surface);
+  color: var(--dashboard-text-secondary);
   font-size: 12px;
   font-weight: 500;
   border-radius: 20px;
-  border: 1px solid var(--border-color);
+  border: 1px solid var(--dashboard-border);
 }
 
 .message-item {
@@ -362,7 +362,7 @@
 
 .message-bubble {
   padding: 12px 16px;
-  background-color: var(--white);
+  background-color: var(--dashboard-surface);
   border-radius: 12px;
   border-top-left-radius: 4px;
   box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
@@ -372,12 +372,12 @@
   margin: 0;
   font-size: 14px;
   line-height: 1.5;
-  color: var(--text-dark);
+  color: var(--dashboard-text-primary);
   font-family: var(--font-main);
 }
 
 .message-bubble-sent {
-  background-color: var(--primary-green);
+  background-color: var(--dashboard-accent);
   border-radius: 12px;
   border-top-right-radius: 4px;
 }
@@ -388,7 +388,7 @@
 
 .message-time {
   font-size: 11px;
-  color: var(--text-gray);
+  color: var(--dashboard-text-secondary);
   padding: 0 4px;
 }
 
@@ -396,13 +396,13 @@
   display: flex;
   align-items: center;
   gap: 4px;
-  color: var(--text-gray);
+  color: var(--dashboard-text-secondary);
 }
 
 .message-read-icon {
   width: 14px;
   height: 14px;
-  color: var(--primary-green);
+  color: var(--dashboard-accent);
 }
 
 /* Message Attachment */
@@ -419,7 +419,7 @@
 .message-attachment svg {
   width: 32px;
   height: 32px;
-  color: var(--primary-green);
+  color: var(--dashboard-accent);
   flex-shrink: 0;
 }
 
@@ -434,7 +434,7 @@
 .message-attachment-name {
   font-size: 13px;
   font-weight: 500;
-  color: var(--text-dark);
+  color: var(--dashboard-text-primary);
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -442,7 +442,7 @@
 
 .message-attachment-size {
   font-size: 11px;
-  color: var(--text-gray);
+  color: var(--dashboard-text-secondary);
 }
 
 .message-attachment-download {
@@ -452,14 +452,14 @@
   width: 36px;
   height: 36px;
   border: none;
-  background-color: var(--white);
+  background-color: var(--dashboard-surface);
   border-radius: 8px;
   cursor: pointer;
   transition: background-color 0.2s ease;
 }
 
 .message-attachment-download:hover {
-  background-color: var(--primary-green);
+  background-color: var(--dashboard-accent);
 }
 
 .message-attachment-download:hover svg {
@@ -469,7 +469,7 @@
 .message-attachment-download svg {
   width: 20px;
   height: 20px;
-  color: var(--text-gray);
+  color: var(--dashboard-text-secondary);
 }
 
 /* Chat Input */
@@ -478,8 +478,8 @@
   align-items: center;
   gap: 12px;
   padding: 16px 24px;
-  background-color: var(--white);
-  border-top: 1px solid var(--border-color);
+  background-color: var(--dashboard-surface);
+  border-top: 1px solid var(--dashboard-border);
 }
 
 .chat-input-btn {
@@ -502,15 +502,15 @@
 .chat-input-btn svg {
   width: 20px;
   height: 20px;
-  color: var(--text-gray);
+  color: var(--dashboard-text-secondary);
 }
 
 .chat-input-btn:hover svg {
-  color: var(--text-dark);
+  color: var(--dashboard-text-primary);
 }
 
 .chat-send-btn:hover {
-  background-color: var(--primary-green);
+  background-color: var(--dashboard-accent);
 }
 
 .chat-send-btn:hover svg {
@@ -525,12 +525,12 @@
   padding: 8px 16px;
   background-color: var(--bg-cream);
   border-radius: 24px;
-  border: 1px solid var(--border-color);
+  border: 1px solid var(--dashboard-border);
   transition: border-color 0.2s ease;
 }
 
 .chat-input-wrapper:focus-within {
-  border-color: var(--primary-green);
+  border-color: var(--dashboard-accent);
 }
 
 .chat-input {
@@ -539,7 +539,7 @@
   background-color: transparent;
   font-size: 14px;
   font-family: var(--font-main);
-  color: var(--text-dark);
+  color: var(--dashboard-text-primary);
 }
 
 .chat-input:focus {
@@ -565,7 +565,7 @@
 }
 
 .modal {
-  background-color: var(--white);
+  background-color: var(--dashboard-surface);
   border-radius: 12px;
   width: 100%;
   max-width: 500px;
@@ -580,13 +580,13 @@
   justify-content: space-between;
   align-items: center;
   padding: 20px 24px;
-  border-bottom: 1px solid var(--border-color);
+  border-bottom: 1px solid var(--dashboard-border);
 }
 
 .modal-header h2 {
   font-size: 18px;
   font-weight: 600;
-  color: var(--text-dark);
+  color: var(--dashboard-text-primary);
   margin: 0;
   font-family: var(--font-main);
 }
@@ -611,7 +611,7 @@
 .modal-close svg {
   width: 20px;
   height: 20px;
-  color: var(--text-gray);
+  color: var(--dashboard-text-secondary);
 }
 
 .modal-body {
@@ -625,7 +625,7 @@
   justify-content: flex-end;
   gap: 12px;
   padding: 16px 24px;
-  border-top: 1px solid var(--border-color);
+  border-top: 1px solid var(--dashboard-border);
 }
 
 /* Form Styles */
@@ -641,7 +641,7 @@
   display: block;
   font-size: 14px;
   font-weight: 500;
-  color: var(--text-dark);
+  color: var(--dashboard-text-primary);
   margin-bottom: 8px;
   font-family: var(--font-main);
 }
@@ -650,7 +650,7 @@
 .form-group textarea {
   width: 100%;
   padding: 10px 12px;
-  border: 1px solid var(--border-color);
+  border: 1px solid var(--dashboard-border);
   border-radius: 8px;
   font-size: 14px;
   font-family: var(--font-main);
@@ -660,7 +660,7 @@
 .form-group input[type='text']:focus,
 .form-group textarea:focus {
   outline: none;
-  border-color: var(--primary-green);
+  border-color: var(--dashboard-accent);
 }
 
 .form-group textarea {
@@ -670,7 +670,7 @@
 
 .form-group input[type='file'] {
   font-size: 14px;
-  color: var(--text-gray);
+  color: var(--dashboard-text-secondary);
 }
 
 /* ===== Responsive Design ===== */
