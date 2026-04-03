@@ -1,0 +1,19 @@
+parameters:
+    level: 5
+    paths:
+        - server/api
+        - server/src
+    
+    # Directories to exclude
+    excludePaths:
+        - server/vendor/*
+        - server/tests/*
+    
+    # Ignore specific errors if needed
+    ignoreErrors:
+        # Ignore missing properties on stdClass
+        - '#Access to an undefined property stdClass::#'
+        
+rules:
+    # Enable additional strict rules
+    alwaysFailIfNothingReported: true

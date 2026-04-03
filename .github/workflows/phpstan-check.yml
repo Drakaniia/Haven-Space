@@ -1,0 +1,30 @@
+name: PHPStan Check
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  phpstan:
+    name: PHPStan Static Analysis
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v6
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.2'
+          coverage: none
+
+      - name: Install PHP dependencies
+        working-directory: ./server
+        run: composer install --no-interaction --prefer-dist --optimize-autoloader
+
+      - name: Run PHPStan
+        working-directory: ./server
+        run: vendor/bin/phpstan analyse --error-format=github --no-progress

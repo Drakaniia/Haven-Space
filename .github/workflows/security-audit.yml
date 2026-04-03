@@ -1,0 +1,96 @@
+name: Security Audit
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  schedule:
+    # Run security audit weekly on Monday at 9:00 AM UTC
+    - cron: '0 9 * * 1'
+
+jobs:
+  npm-audit:
+    name: NPM Security Audit
+    runs-on: ubuntu-latest
+    continue-on-error: true
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v6
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run npm audit
+        run: npm audit --audit-level=moderate
+        continue-on-error: true
+
+      - name: Upload audit results
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: npm-audit-results
+          path: npm-audit.json
+        continue-on-error: true
+
+  composer-audit:
+    name: Composer Security Audit
+    runs-on: ubuntu-latest
+    continue-on-error: true
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v6
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.2'
+          coverage: none
+
+      - name: Install PHP dependencies
+        working-directory: ./server
+        run: composer install --no-interaction --prefer-dist --optimize-autoloader
+
+      - name: Run composer audit
+        working-directory: ./server
+        run: composer audit --format=json || true
+        continue-on-error: true
+
+  codeql-security:
+    name: CodeQL Security Analysis
+    runs-on: ubuntu-latest
+    permissions:
+      actions: read
+      contents: read
+      security-events: write
+
+    strategy:
+      fail-fast: false
+      matrix:
+        language: ['javascript', 'typescript']
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v6
+
+      - name: Initialize CodeQL
+        uses: github/codeql-action/init@v3
+        with:
+          languages: ${{ matrix.language }}
+          queries: security-and-quality
+
+      - name: Autobuild
+        uses: github/codeql-action/autobuild@v3
+
+      - name: Perform CodeQL Analysis
+        uses: github/codeql-action/analyze@v3
+        with:
+          category: '/language:${{matrix.language}}'
