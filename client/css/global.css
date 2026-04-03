@@ -3,7 +3,10 @@
 @import './views/boarder/boarder.css';
 @import './views/boarder/boarder-payments.css';
 @import './views/boarder/boarder-payment-process.css';
+@import './views/boarder/boarder-messages.css';
+@import './views/landlord/landlord.css';
 @import './views/landlord/landlord-payments.css';
+@import './views/landlord/landlord-messages.css';
 
 * {
   margin: 0;

@@ -7,6 +7,7 @@
 import { initSidebar } from '../../components/sidebar.js';
 import { initNavbar } from '../../components/navbar.js';
 import { initLandlordDashboard } from './landlord.js';
+import { initMessages } from './messages.js';
 
 /**
  * Initialize Landlord Dashboard
@@ -51,6 +52,13 @@ export function initLandlordDashboardEntry() {
       role: user.role,
     },
   });
+
+  // Initialize specific pages based on current view
+  const currentPath = window.location.pathname;
+
+  if (currentPath.includes('messages')) {
+    initMessages();
+  }
 
   console.log('LandlordDashboard: Initialized');
 }
