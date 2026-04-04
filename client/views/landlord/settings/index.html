@@ -1,0 +1,547 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Settings - Landlord Dashboard - Haven Space</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="../../../css/global.css" />
+    <link rel="stylesheet" href="../../../css/components/sidebar.css" />
+    <link rel="stylesheet" href="../../../css/components/navbar.css" />
+    <link rel="stylesheet" href="../../../css/views/landlord/landlord.css" />
+    <link rel="stylesheet" href="../../../css/views/landlord/landlord-settings.css" />
+  </head>
+  <body data-view="landlord" data-dashboard-type="landlord">
+    <div class="landlord-dashboard">
+      <!-- Sidebar Container -->
+      <div id="sidebar-container"></div>
+
+      <!-- Main Content -->
+      <main class="landlord-main">
+        <!-- Navbar Container -->
+        <div id="navbar-container"></div>
+
+        <!-- Content Wrapper -->
+        <div class="landlord-content">
+          <!-- Page Header -->
+          <div class="page-header">
+            <div class="page-header-left">
+              <div class="page-icon-box">
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                >
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="2"
+                    d="M9.594 3.94c.09-.542.56-.94 1.11-.94h2.593c.55 0 1.02.398 1.11.94l.213 1.281c.063.374.313.686.645.87.074.04.147.083.22.127.324.196.72.257 1.075.124l1.217-.456a1.125 1.125 0 0 1 1.37.49l1.296 2.247a1.125 1.125 0 0 1-.26 1.431l-1.003.827c-.293.24-.438.613-.431.992a6.753 6.753 0 0 1 0 .255c-.007.378.138.75.43.99l1.005.828c.424.35.534.954.26 1.43l-1.298 2.247a1.125 1.125 0 0 1-1.369.491l-1.217-.456c-.355-.133-.75-.072-1.076.124a6.57 6.57 0 0 1-.22.128c-.331.183-.581.495-.644.869l-.213 1.28c-.09.543-.56.941-1.11.941h-2.594c-.55 0-1.02-.398-1.11-.94l-.213-1.281c-.062-.374-.312-.686-.644-.87a6.52 6.52 0 0 1-.22-.127c-.325-.196-.72-.257-1.076-.124l-1.217.456a1.125 1.125 0 0 1-1.369-.49l-1.297-2.247a1.125 1.125 0 0 1 .26-1.431l1.004-.827c.292-.24.437-.613.43-.992a6.932 6.932 0 0 1 0-.255c.007-.378-.138-.75-.43-.99l-1.004-.828a1.125 1.125 0 0 1-.26-1.43l1.297-2.247a1.125 1.125 0 0 1 1.37-.491l1.216.456c.356.133.751.072 1.076-.124.072-.044.146-.087.22-.128.332-.183.582-.495.644-.869l.214-1.281ZM15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z"
+                  />
+                </svg>
+              </div>
+              <div class="page-text-content">
+                <h1 class="page-title">Settings</h1>
+                <p class="page-subtitle">Manage your account, documents, and preferences</p>
+              </div>
+            </div>
+          </div>
+
+          <!-- Settings Tabs -->
+          <div class="settings-tabs">
+            <button class="settings-tab active" data-tab="profile">
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M15.75 6a3.75 3.75 0 1 1-7.5 0 3.75 3.75 0 0 1 7.5 0ZM4.501 20.118a7.5 7.5 0 0 1 14.998 0A17.933 17.933 0 0 1 12 21.75c-2.676 0-5.216-.584-7.499-1.632Z"
+                />
+              </svg>
+              Profile
+            </button>
+            <button class="settings-tab" data-tab="documents">
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M19.5 14.25v-2.625a3.375 3.375 0 0 0-3.375-3.375h-1.5A1.125 1.125 0 0 1 13.5 7.125v-1.5a3.375 3.375 0 0 0-3.375-3.375H8.25m0 12.75h7.5m-7.5 3H12M10.5 2.25H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 0 0-9-9Z"
+                />
+              </svg>
+              Documents
+            </button>
+            <button class="settings-tab" data-tab="welcome">
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"
+                />
+              </svg>
+              Welcome Message
+            </button>
+            <button class="settings-tab" data-tab="notifications">
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M14.857 17.082a23.848 23.848 0 0 0 5.454-1.31A8.967 8.967 0 0 1 18 9.75V9A6 6 0 0 0 6 9v.75a8.967 8.967 0 0 1-2.312 6.022c1.733.64 3.56 1.085 5.455 1.31m5.714 0a24.255 24.255 0 0 1-5.714 0m5.714 0a3 3 0 1 1-5.714 0"
+                />
+              </svg>
+              Notifications
+            </button>
+            <button class="settings-tab" data-tab="privacy">
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M9 12.75 11.25 15 15 9.75m-3-7.036A11.959 11.959 0 0 1 3.598 6 11.99 11.99 0 0 0 3 9.749c0 5.592 3.824 10.29 9 11.623 5.176-1.332 9-6.03 9-11.622 0-1.31-.21-2.571-.598-3.751h-1.564A11.959 11.959 0 0 1 12 2.714Z"
+                />
+              </svg>
+              Privacy & Security
+            </button>
+          </div>
+
+          <!-- Tab Content -->
+          <div class="settings-content">
+            <!-- Profile Tab -->
+            <div class="settings-panel active" id="profile-panel">
+              <div class="settings-card">
+                <h2 class="settings-card-title">Profile Information</h2>
+                <p class="settings-card-description">
+                  Update your personal information and profile picture
+                </p>
+
+                <form class="settings-form" id="profile-form">
+                  <div class="profile-avatar-section">
+                    <img
+                      src="../../../assets/images/sample.png"
+                      alt="Profile Avatar"
+                      class="profile-avatar"
+                      id="profile-avatar-preview"
+                    />
+                    <div class="profile-avatar-actions">
+                      <button type="button" class="btn btn-outline btn-sm" id="change-avatar-btn">
+                        Change Photo
+                      </button>
+                      <input type="file" id="avatar-input" accept="image/*" style="display: none" />
+                    </div>
+                  </div>
+
+                  <div class="form-row">
+                    <div class="form-group">
+                      <label for="first-name">First Name</label>
+                      <input
+                        type="text"
+                        id="first-name"
+                        class="form-control"
+                        value="Juan"
+                        required
+                      />
+                    </div>
+                    <div class="form-group">
+                      <label for="last-name">Last Name</label>
+                      <input
+                        type="text"
+                        id="last-name"
+                        class="form-control"
+                        value="Dela Cruz"
+                        required
+                      />
+                    </div>
+                  </div>
+
+                  <div class="form-group">
+                    <label for="email">Email Address</label>
+                    <input
+                      type="email"
+                      id="email"
+                      class="form-control"
+                      value="juan@example.com"
+                      required
+                    />
+                  </div>
+
+                  <div class="form-group">
+                    <label for="phone">Phone Number</label>
+                    <input type="tel" id="phone" class="form-control" value="+63 912 345 6789" />
+                  </div>
+
+                  <div class="form-group">
+                    <label for="company">Company Name (Optional)</label>
+                    <input
+                      type="text"
+                      id="company"
+                      class="form-control"
+                      placeholder="Enter your company name"
+                    />
+                  </div>
+
+                  <div class="form-actions">
+                    <button type="submit" class="btn btn-primary">Save Changes</button>
+                  </div>
+                </form>
+              </div>
+            </div>
+
+            <!-- Documents Tab -->
+            <div class="settings-panel" id="documents-panel">
+              <div class="settings-card">
+                <div class="settings-card-header-with-action">
+                  <div>
+                    <h2 class="settings-card-title">Document Management</h2>
+                    <p class="settings-card-description">
+                      Upload and manage documents for boarder onboarding
+                    </p>
+                  </div>
+                  <button class="btn btn-primary" id="upload-document-btn">
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      stroke="currentColor"
+                    >
+                      <path
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        stroke-width="2"
+                        d="M12 4v16m8-8H4"
+                      />
+                    </svg>
+                    <span>Upload Document</span>
+                  </button>
+                </div>
+
+                <div class="document-categories">
+                  <button class="category-tab active" data-category="all">All Documents</button>
+                  <button class="category-tab" data-category="House Rules">House Rules</button>
+                  <button class="category-tab" data-category="Community Guidelines">
+                    Community Guidelines
+                  </button>
+                  <button class="category-tab" data-category="Emergency Contacts">
+                    Emergency Contacts
+                  </button>
+                  <button class="category-tab" data-category="Custom">Custom</button>
+                </div>
+
+                <div class="documents-list" id="landlord-documents-list">
+                  <div class="loading-state">Loading documents...</div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Welcome Message Tab -->
+            <div class="settings-panel" id="welcome-panel">
+              <div class="settings-card">
+                <h2 class="settings-card-title">Welcome Message Template</h2>
+                <p class="settings-card-description">
+                  Configure the automatic welcome message for new boarders
+                </p>
+
+                <div class="welcome-message-editor">
+                  <div class="variables-info">
+                    <h3 class="variables-title">Available Variables</h3>
+                    <div class="variables-list">
+                      <div class="variable-item">
+                        <code>{boarder_name}</code>
+                        <span>Boarder's first name</span>
+                      </div>
+                      <div class="variable-item">
+                        <code>{house_name}</code>
+                        <span>Your boarding house name</span>
+                      </div>
+                      <div class="variable-item">
+                        <code>{move_in_date}</code>
+                        <span>Current date (move-in date)</span>
+                      </div>
+                      <div class="variable-item">
+                        <code>{room_number}</code>
+                        <span>Room number (defaults to TBD)</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div class="form-group">
+                    <label for="welcome-message-textarea">Welcome Message</label>
+                    <textarea
+                      id="welcome-message-textarea"
+                      class="message-textarea"
+                      rows="8"
+                      placeholder="Enter your welcome message here..."
+                    ></textarea>
+                    <p class="char-count"><span id="char-count">0</span> characters</p>
+                  </div>
+
+                  <div class="editor-actions">
+                    <button class="btn btn-secondary" id="preview-message-btn">
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        stroke="currentColor"
+                      >
+                        <path
+                          stroke-linecap="round"
+                          stroke-linejoin="round"
+                          stroke-width="2"
+                          d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
+                        />
+                        <path
+                          stroke-linecap="round"
+                          stroke-linejoin="round"
+                          stroke-width="2"
+                          d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"
+                        />
+                      </svg>
+                      <span>Preview</span>
+                    </button>
+                    <button class="btn btn-primary" id="save-message-btn">
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        stroke="currentColor"
+                      >
+                        <path
+                          stroke-linecap="round"
+                          stroke-linejoin="round"
+                          stroke-width="2"
+                          d="M5 13l4 4L19 7"
+                        />
+                      </svg>
+                      <span>Save Template</span>
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Notifications Tab -->
+            <div class="settings-panel" id="notifications-panel">
+              <div class="settings-card">
+                <h2 class="settings-card-title">Notification Preferences</h2>
+                <p class="settings-card-description">
+                  Choose what notifications you receive and how
+                </p>
+
+                <div class="notification-settings">
+                  <div class="notification-item">
+                    <div class="notification-item-info">
+                      <h4>New Applications</h4>
+                      <p>Get notified when new boarders apply</p>
+                    </div>
+                    <label class="toggle-switch">
+                      <input type="checkbox" checked data-setting="new-applications" />
+                      <span class="toggle-slider"></span>
+                    </label>
+                  </div>
+
+                  <div class="notification-item">
+                    <div class="notification-item-info">
+                      <h4>Payment Received</h4>
+                      <p>Notifications when boarders make payments</p>
+                    </div>
+                    <label class="toggle-switch">
+                      <input type="checkbox" checked data-setting="payment-received" />
+                      <span class="toggle-slider"></span>
+                    </label>
+                  </div>
+
+                  <div class="notification-item">
+                    <div class="notification-item-info">
+                      <h4>Maintenance Requests</h4>
+                      <p>New maintenance requests from boarders</p>
+                    </div>
+                    <label class="toggle-switch">
+                      <input type="checkbox" checked data-setting="maintenance-requests" />
+                      <span class="toggle-slider"></span>
+                    </label>
+                  </div>
+
+                  <div class="notification-item">
+                    <div class="notification-item-info">
+                      <h4>Messages</h4>
+                      <p>New messages from boarders</p>
+                    </div>
+                    <label class="toggle-switch">
+                      <input type="checkbox" checked data-setting="messages" />
+                      <span class="toggle-slider"></span>
+                    </label>
+                  </div>
+
+                  <div class="notification-item">
+                    <div class="notification-item-info">
+                      <h4>Lease Expiring</h4>
+                      <p>Boarder lease expiration warnings</p>
+                    </div>
+                    <label class="toggle-switch">
+                      <input type="checkbox" checked data-setting="lease-expiring" />
+                      <span class="toggle-slider"></span>
+                    </label>
+                  </div>
+                </div>
+
+                <div class="form-actions">
+                  <button type="button" class="btn btn-primary" id="save-notifications">
+                    Save Preferences
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            <!-- Privacy & Security Tab -->
+            <div class="settings-panel" id="privacy-panel">
+              <div class="settings-card">
+                <h2 class="settings-card-title">Change Password</h2>
+                <p class="settings-card-description">
+                  Update your password to keep your account secure
+                </p>
+
+                <form class="settings-form" id="password-form">
+                  <div class="form-group">
+                    <label for="current-password">Current Password</label>
+                    <input type="password" id="current-password" class="form-control" required />
+                  </div>
+
+                  <div class="form-group">
+                    <label for="new-password">New Password</label>
+                    <input type="password" id="new-password" class="form-control" required />
+                  </div>
+
+                  <div class="form-group">
+                    <label for="confirm-password">Confirm New Password</label>
+                    <input type="password" id="confirm-password" class="form-control" required />
+                  </div>
+
+                  <div class="form-actions">
+                    <button type="submit" class="btn btn-primary">Update Password</button>
+                  </div>
+                </form>
+              </div>
+
+              <div class="settings-card">
+                <h2 class="settings-card-title">Two-Factor Authentication</h2>
+                <p class="settings-card-description">
+                  Add an extra layer of security to your account
+                </p>
+
+                <div class="two-factor-section">
+                  <div class="two-factor-status">
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      stroke="currentColor"
+                    >
+                      <path
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        stroke-width="2"
+                        d="M9 12.75 11.25 15 15 9.75M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z"
+                      />
+                    </svg>
+                    <span>Two-factor authentication is currently disabled</span>
+                  </div>
+                  <button type="button" class="btn btn-outline" id="enable-2fa">Enable 2FA</button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </main>
+    </div>
+
+    <!-- Upload Document Modal -->
+    <div class="modal" id="upload-modal" style="display: none">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h2 class="modal-title">Upload Document</h2>
+          <button class="modal-close" id="modal-close-btn">
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M6 18L18 6M6 6l12 12"
+              />
+            </svg>
+          </button>
+        </div>
+        <form id="upload-form" class="modal-body">
+          <div class="form-group">
+            <label for="document-category">Category</label>
+            <select id="document-category" class="form-control" required>
+              <option value="House Rules">House Rules</option>
+              <option value="Community Guidelines">Community Guidelines</option>
+              <option value="Emergency Contacts">Emergency Contacts</option>
+              <option value="Custom">Custom</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label for="document-file">Document File (PDF only, max 10MB)</label>
+            <input type="file" id="document-file" class="form-control" accept=".pdf" required />
+          </div>
+
+          <div class="form-group">
+            <label class="checkbox-label">
+              <input type="checkbox" id="auto-send-toggle" />
+              <span>Auto-send to new boarders</span>
+            </label>
+            <p class="form-hint">
+              When enabled, this document will be automatically sent to new boarders during
+              onboarding
+            </p>
+          </div>
+        </form>
+        <div class="modal-footer">
+          <button class="btn btn-secondary" id="modal-cancel-btn">Cancel</button>
+          <button class="btn btn-primary" id="upload-submit-btn">Upload Document</button>
+        </div>
+      </div>
+    </div>
+
+    <script type="module" src="../../../js/main.js"></script>
+    <script type="module" src="../../../js/views/landlord/settings.js"></script>
+  </body>
+</html>

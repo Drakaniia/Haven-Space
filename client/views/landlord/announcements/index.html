@@ -1,0 +1,537 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Announcements - Haven Space</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="../../../css/global.css" />
+    <link rel="stylesheet" href="../../../css/components/sidebar.css" />
+    <link rel="stylesheet" href="../../../css/components/navbar.css" />
+    <link rel="stylesheet" href="../../../css/views/landlord/landlord-announcements.css" />
+  </head>
+  <body data-view="landlord" data-dashboard-type="landlord">
+    <div class="landlord-dashboard">
+      <!-- Sidebar Container -->
+      <div id="sidebar-container"></div>
+
+      <!-- Main Content -->
+      <main class="landlord-main">
+        <!-- Navbar Container -->
+        <div id="navbar-container"></div>
+
+        <!-- Content Wrapper -->
+        <div class="landlord-content">
+          <!-- Page Header -->
+          <div class="landlord-page-header">
+            <div class="landlord-page-title">
+              <h1>
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                >
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="2"
+                    d="M11 5.882V19.24a1.76 1.76 0 01-3.417.592l-2.147-6.15M18 13a3 3 0 100-6M5.436 13.683A4.001 4.001 0 017 6h1.832c4.1 0 7.625-1.234 9.168-3v14c-1.543-1.766-5.067-3-9.168-3H7a3.988 3.988 0 01-1.564-.317z"
+                  />
+                </svg>
+                Announcements
+              </h1>
+              <p>Create and manage announcements for your boarders</p>
+            </div>
+            <div class="landlord-page-actions">
+              <button class="landlord-btn landlord-btn-primary" id="create-announcement-btn">
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                >
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="2"
+                    d="M12 4v16m8-8H4"
+                  />
+                </svg>
+                Create Announcement
+              </button>
+            </div>
+          </div>
+
+          <!-- Create Announcement Modal -->
+          <div class="landlord-modal-overlay" id="announcement-modal-overlay">
+            <div
+              class="landlord-announcement-form-container"
+              id="announcement-form-container"
+              role="dialog"
+              aria-labelledby="modal-title"
+              aria-modal="true"
+            >
+              <div class="landlord-announcement-form-card">
+                <div class="landlord-form-header">
+                  <h2 id="modal-title">Create New Announcement</h2>
+                  <button class="landlord-close-form" id="close-form-btn">
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      stroke="currentColor"
+                    >
+                      <path
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        stroke-width="2"
+                        d="M6 18L18 6M6 6l12 12"
+                      />
+                    </svg>
+                  </button>
+                </div>
+
+                <form class="landlord-form" id="announcement-form">
+                  <div class="landlord-form-group">
+                    <label class="landlord-form-label" for="announcement-title">
+                      Title <span class="landlord-required">*</span>
+                    </label>
+                    <input
+                      type="text"
+                      id="announcement-title"
+                      class="landlord-form-input"
+                      placeholder="e.g., Water Maintenance Scheduled"
+                      required
+                    />
+                  </div>
+
+                  <div class="landlord-form-group">
+                    <label class="landlord-form-label" for="announcement-category">
+                      Category
+                    </label>
+                    <select id="announcement-category" class="landlord-form-select">
+                      <option value="general">General</option>
+                      <option value="maintenance">Maintenance</option>
+                      <option value="urgent">Urgent</option>
+                      <option value="reminder">Reminder</option>
+                      <option value="event">Event</option>
+                    </select>
+                  </div>
+
+                  <div class="landlord-form-group">
+                    <label class="landlord-form-label" for="announcement-priority">
+                      Priority
+                    </label>
+                    <select id="announcement-priority" class="landlord-form-select">
+                      <option value="low">Low</option>
+                      <option value="medium" selected>Medium</option>
+                      <option value="high">High</option>
+                    </select>
+                  </div>
+
+                  <div class="landlord-form-group">
+                    <label class="landlord-form-label" for="announcement-description">
+                      Description <span class="landlord-required">*</span>
+                    </label>
+                    <textarea
+                      id="announcement-description"
+                      class="landlord-form-textarea"
+                      placeholder="Write your announcement here..."
+                      rows="6"
+                      required
+                    ></textarea>
+                  </div>
+
+                  <div class="landlord-form-group">
+                    <label class="landlord-form-label" for="announcement-properties">
+                      Target Properties
+                    </label>
+                    <div class="landlord-checkbox-group">
+                      <label class="landlord-checkbox">
+                        <input type="checkbox" name="properties" value="all" checked />
+                        <span>All Properties</span>
+                      </label>
+                      <label class="landlord-checkbox">
+                        <input type="checkbox" name="properties" value="sunrise" />
+                        <span>Sunrise Dormitory</span>
+                      </label>
+                      <label class="landlord-checkbox">
+                        <input type="checkbox" name="properties" value="green-valley" />
+                        <span>Green Valley</span>
+                      </label>
+                      <label class="landlord-checkbox">
+                        <input type="checkbox" name="properties" value="metro" />
+                        <span>Metro Boarding</span>
+                      </label>
+                    </div>
+                  </div>
+
+                  <div class="landlord-form-group">
+                    <label class="landlord-form-label" for="announcement-date">
+                      Publish Date
+                    </label>
+                    <input type="date" id="announcement-date" class="landlord-form-input" />
+                  </div>
+
+                  <div class="landlord-form-actions">
+                    <button type="button" class="landlord-btn landlord-btn-outline" id="cancel-btn">
+                      Cancel
+                    </button>
+                    <button type="submit" class="landlord-btn landlord-btn-primary">
+                      Publish Announcement
+                    </button>
+                  </div>
+                </form>
+              </div>
+            </div>
+          </div>
+
+          <!-- Announcements List -->
+          <div class="landlord-announcements-list" id="announcements-list">
+            <!-- Announcement Item 1 -->
+            <div class="landlord-announcement-card">
+              <div class="landlord-announcement-card-header">
+                <div class="landlord-announcement-card-info">
+                  <div class="landlord-announcement-badges">
+                    <span class="landlord-badge landlord-badge-maintenance">Maintenance</span>
+                    <span class="landlord-badge landlord-badge-medium">Medium</span>
+                  </div>
+                  <h3 class="landlord-announcement-card-title">Water Maintenance Scheduled</h3>
+                </div>
+                <div class="landlord-announcement-card-actions">
+                  <button class="landlord-icon-btn" title="Edit">
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      stroke="currentColor"
+                    >
+                      <path
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        stroke-width="2"
+                        d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"
+                      />
+                    </svg>
+                  </button>
+                  <button class="landlord-icon-btn" title="Delete">
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      stroke="currentColor"
+                    >
+                      <path
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        stroke-width="2"
+                        d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
+                      />
+                    </svg>
+                  </button>
+                </div>
+              </div>
+              <div class="landlord-announcement-card-body">
+                <p class="landlord-announcement-card-text">
+                  Water interruption on Wednesday, 9 AM - 12 PM for pipe repairs. Please store
+                  enough water for your needs during this time.
+                </p>
+              </div>
+              <div class="landlord-announcement-card-footer">
+                <div class="landlord-announcement-card-meta">
+                  <span class="landlord-announcement-date">
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      stroke="currentColor"
+                    >
+                      <path
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        stroke-width="2"
+                        d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
+                      />
+                    </svg>
+                    Jan 18, 2025
+                  </span>
+                  <span class="landlord-announcement-target">
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      stroke="currentColor"
+                    >
+                      <path
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        stroke-width="2"
+                        d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"
+                      />
+                    </svg>
+                    All Properties
+                  </span>
+                </div>
+                <div class="landlord-announcement-stats">
+                  <span class="landlord-announcement-views">
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      stroke="currentColor"
+                    >
+                      <path
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        stroke-width="2"
+                        d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
+                      />
+                      <path
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        stroke-width="2"
+                        d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"
+                      />
+                    </svg>
+                    45 views
+                  </span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Announcement Item 2 -->
+            <div class="landlord-announcement-card">
+              <div class="landlord-announcement-card-header">
+                <div class="landlord-announcement-card-info">
+                  <div class="landlord-announcement-badges">
+                    <span class="landlord-badge landlord-badge-general">General</span>
+                    <span class="landlord-badge landlord-badge-low">Low</span>
+                  </div>
+                  <h3 class="landlord-announcement-card-title">WiFi Password Updated</h3>
+                </div>
+                <div class="landlord-announcement-card-actions">
+                  <button class="landlord-icon-btn" title="Edit">
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      stroke="currentColor"
+                    >
+                      <path
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        stroke-width="2"
+                        d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"
+                      />
+                    </svg>
+                  </button>
+                  <button class="landlord-icon-btn" title="Delete">
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      stroke="currentColor"
+                    >
+                      <path
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        stroke-width="2"
+                        d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
+                      />
+                    </svg>
+                  </button>
+                </div>
+              </div>
+              <div class="landlord-announcement-card-body">
+                <p class="landlord-announcement-card-text">
+                  New WiFi password has been posted on the notice board. Please check the common
+                  area for the updated credentials.
+                </p>
+              </div>
+              <div class="landlord-announcement-card-footer">
+                <div class="landlord-announcement-card-meta">
+                  <span class="landlord-announcement-date">
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      stroke="currentColor"
+                    >
+                      <path
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        stroke-width="2"
+                        d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
+                      />
+                    </svg>
+                    Jan 15, 2025
+                  </span>
+                  <span class="landlord-announcement-target">
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      stroke="currentColor"
+                    >
+                      <path
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        stroke-width="2"
+                        d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"
+                      />
+                    </svg>
+                    Sunrise Dormitory
+                  </span>
+                </div>
+                <div class="landlord-announcement-stats">
+                  <span class="landlord-announcement-views">
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      stroke="currentColor"
+                    >
+                      <path
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        stroke-width="2"
+                        d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
+                      />
+                      <path
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        stroke-width="2"
+                        d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"
+                      />
+                    </svg>
+                    38 views
+                  </span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Announcement Item 3 -->
+            <div class="landlord-announcement-card">
+              <div class="landlord-announcement-card-header">
+                <div class="landlord-announcement-card-info">
+                  <div class="landlord-announcement-badges">
+                    <span class="landlord-badge landlord-badge-urgent">Urgent</span>
+                    <span class="landlord-badge landlord-badge-high">High</span>
+                  </div>
+                  <h3 class="landlord-announcement-card-title">Monthly Fire Drill</h3>
+                </div>
+                <div class="landlord-announcement-card-actions">
+                  <button class="landlord-icon-btn" title="Edit">
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      stroke="currentColor"
+                    >
+                      <path
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        stroke-width="2"
+                        d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"
+                      />
+                    </svg>
+                  </button>
+                  <button class="landlord-icon-btn" title="Delete">
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      stroke="currentColor"
+                    >
+                      <path
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        stroke-width="2"
+                        d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
+                      />
+                    </svg>
+                  </button>
+                </div>
+              </div>
+              <div class="landlord-announcement-card-body">
+                <p class="landlord-announcement-card-text">
+                  Mandatory fire drill this Friday at 3 PM. All residents must participate. Please
+                  gather at the designated assembly point.
+                </p>
+              </div>
+              <div class="landlord-announcement-card-footer">
+                <div class="landlord-announcement-card-meta">
+                  <span class="landlord-announcement-date">
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      stroke="currentColor"
+                    >
+                      <path
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        stroke-width="2"
+                        d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
+                      />
+                    </svg>
+                    Jan 12, 2025
+                  </span>
+                  <span class="landlord-announcement-target">
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      stroke="currentColor"
+                    >
+                      <path
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        stroke-width="2"
+                        d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"
+                      />
+                    </svg>
+                    All Properties
+                  </span>
+                </div>
+                <div class="landlord-announcement-stats">
+                  <span class="landlord-announcement-views">
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      stroke="currentColor"
+                    >
+                      <path
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        stroke-width="2"
+                        d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
+                      />
+                      <path
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        stroke-width="2"
+                        d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"
+                      />
+                    </svg>
+                    67 views
+                  </span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </main>
+    </div>
+
+    <script type="module" src="../../../js/main.js"></script>
+    <script type="module" src="../../../js/views/landlord/announcements.js"></script>
+  </body>
+</html>
