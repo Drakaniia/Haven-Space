@@ -113,7 +113,9 @@ function depthToRoot(filePath) {
   // Count directory separators to determine depth
   // e.g., 'boarder/applications/index.html' → depth 2
   // e.g., 'index.html' → depth 0
-  const parts = filePath.split('/');
+  // Normalize to forward slashes for cross-platform compatibility
+  const normalizedPath = filePath.replace(/\\/g, '/');
+  const parts = normalizedPath.split('/');
   return parts.length - 1; // subtract 1 because the last part is the filename
 }
 
@@ -309,7 +311,6 @@ console.log('    havenspace.com/boarder/payments/ → Payments');
 console.log('    havenspace.com/boarder/profile/ → Profile');
 console.log('    havenspace.com/boarder/rooms/ → Rooms');
 console.log('    havenspace.com/boarder/find-a-room/ → Find a Room');
-console.log('    havenspace.com/boarder/room-history/ → Room History');
 console.log('    havenspace.com/boarder/lease/ → Lease');
 console.log('\n  Landlord:');
 console.log('    havenspace.com/landlord/ → Dashboard');
