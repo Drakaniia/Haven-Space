@@ -1,0 +1,74 @@
+/* Admin Dashboard Styles */
+
+/* ===== CSS Variables for Dashboard ===== */
+:root {
+  --dashboard-bg: var(--bg-cream);
+  --dashboard-surface: var(--white);
+  --dashboard-border: var(--border-color);
+  --dashboard-text-primary: var(--text-dark);
+  --dashboard-text-secondary: var(--text-gray);
+  --dashboard-accent: var(--primary-green);
+  --dashboard-accent-hover: var(--dark-green);
+  --dashboard-success: #22c55e;
+  --dashboard-warning: #f59e0b;
+  --dashboard-info: #3b82f6;
+  --dashboard-purple: #8b5cf6;
+  --dashboard-pink: #ec4899;
+  --dashboard-cyan: #06b6d4;
+  --dashboard-red: #ef4444;
+}
+
+/* ===== Layout ===== */
+.admin-dashboard {
+  display: flex;
+  min-height: 100vh;
+  background-color: var(--dashboard-bg);
+}
+
+/* Main content area - offset for fixed sidebar */
+.admin-main {
+  flex: 1;
+  margin-left: 280px;
+  padding: 0;
+  min-height: 100vh;
+  transition: margin-left 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Adjust main content when sidebar is collapsed */
+.admin-dashboard.sidebar-collapsed .admin-main {
+  margin-left: 80px;
+}
+
+/* Navbar wrapper inside main */
+#navbar-container {
+  position: sticky;
+  top: 0;
+  z-index: 50;
+  transition: opacity 0.2s ease-in-out;
+}
+
+/* When navbar is hidden, add smooth transition */
+#navbar-container[style*='display: none'] {
+  opacity: 0;
+}
+
+/* Main content adjustment when navbar is hidden */
+.admin-main.no-navbar .admin-content {
+  padding-top: 24px;
+}
+
+/* Content wrapper for padding below navbar */
+.admin-content {
+  padding: 24px 32px;
+}
+
+/* ===== Responsive ===== */
+@media (max-width: 768px) {
+  .admin-main {
+    margin-left: 0;
+  }
+
+  .admin-content {
+    padding: 16px;
+  }
+}

@@ -21,10 +21,8 @@ function detectAndInitialize() {
 
   console.log('Main: Detected view:', view, 'Dashboard type:', dashboardType);
 
+  // Initialize appropriate dashboard based on view type
   switch (view) {
-    case 'public':
-      initPublicViews();
-      break;
     case 'boarder':
       initBoarderDashboard();
       break;
@@ -34,9 +32,10 @@ function detectAndInitialize() {
     case 'admin':
       initAdminDashboard();
       break;
+    case 'public':
     default:
-      console.warn('Main: Unknown view type:', view);
       initPublicViews();
+      break;
   }
 }
 

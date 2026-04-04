@@ -19,20 +19,23 @@ const NAV_CONFIG = {
         },
         { label: 'Messages', href: '../boarder/messages/index.html', icon: 'chat', badge: '3' },
         { label: 'Payments', href: '../boarder/payments/index.html', icon: 'payment' },
+        {
+          label: 'Announcements',
+          href: '../boarder/announcements/index.html',
+          icon: 'announcement',
+        },
       ],
     },
     {
       group: 'Support',
       items: [
         { label: 'Maintenance', href: '../boarder/maintenance/index.html', icon: 'settings' },
-        { label: 'Notices', href: '../boarder/notices/index.html', icon: 'announcement' },
         { label: 'Find a Room', href: '../boarder/find-a-room/index.html', icon: 'search' },
-        {
-          label: 'Room History',
-          href: '../boarder/room-history/index.html',
-          icon: 'history',
-        },
       ],
+    },
+    {
+      group: 'Account',
+      items: [{ label: 'Settings', href: '../boarder/settings/index.html', icon: 'settings' }],
     },
   ],
   landlord: [
@@ -58,6 +61,11 @@ const NAV_CONFIG = {
         },
         { label: 'Messages', href: '../landlord/messages/index.html', icon: 'chat', badge: '5' },
         { label: 'Payments', href: '../landlord/payments/index.html', icon: 'payment' },
+        {
+          label: 'Announcements',
+          href: '../landlord/announcements/index.html',
+          icon: 'announcement',
+        },
       ],
     },
     {
@@ -66,6 +74,10 @@ const NAV_CONFIG = {
         { label: 'Maintenance', href: '../landlord/maintenance/index.html', icon: 'settings' },
         { label: 'Reports', href: '../landlord/reports/index.html', icon: 'analytics' },
       ],
+    },
+    {
+      group: 'Account',
+      items: [{ label: 'Settings', href: '../landlord/settings/index.html', icon: 'settings' }],
     },
   ],
   admin: [

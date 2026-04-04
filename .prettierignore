@@ -5,3 +5,4 @@ build/
 *.log
 *.tmp
 .DS_Store
+.playwright-mcp
