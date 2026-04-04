@@ -10,6 +10,8 @@ import { loadDashboardData } from './dashboard.js';
 import { initFindARoom } from './boarder-find-a-room.js';
 import { initLeasePage } from './lease.js';
 import { initPaymentPage } from './boarder-payment-process.js';
+import { initSettingsPage } from './settings.js';
+import { initAnnouncements } from './announcements.js';
 
 /**
  * Initialize Boarder Dashboard
@@ -65,5 +67,39 @@ export function initBoarderDashboard() {
     initPaymentPage();
   }
 
+  // Initialize settings page
+  if (currentPath.includes('settings')) {
+    initSettingsPage();
+  }
+
+  // Initialize announcements page
+  if (currentPath.includes('announcements')) {
+    initAnnouncements();
+  }
+
+  // Setup navbar event listeners only if navbar exists
+  if (navbarContainer) {
+    setupNavbarListeners();
+  }
+
   console.log('BoarderDashboard: Initialized');
+}
+
+/**
+ * Setup navbar event listeners for profile and settings
+ */
+function setupNavbarListeners() {
+  // Listen for settings click from navbar
+  window.addEventListener('navbar:user:settings:click', () => {
+    console.log('Settings clicked from navbar');
+    // Navigate to settings page
+    window.location.href = '../settings/index.html';
+  });
+
+  // Listen for profile click from navbar
+  window.addEventListener('navbar:user:profile:click', () => {
+    console.log('Profile clicked from navbar');
+    // Navigate to profile tab in settings
+    window.location.href = '../settings/index.html#profile';
+  });
 }
