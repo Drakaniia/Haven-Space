@@ -5,6 +5,25 @@
 
 import { getIcon } from '../../shared/icons.js';
 
+/**
+ * Inject icons from centralized library into elements with data-icon attributes
+ */
+function injectIcons() {
+  const iconElements = document.querySelectorAll('[data-icon]');
+
+  iconElements.forEach(element => {
+    const iconName = element.dataset.icon;
+    const options = {
+      width: element.dataset.iconWidth || 24,
+      height: element.dataset.iconHeight || 24,
+      strokeWidth: element.dataset.iconStrokeWidth || '1.5',
+      className: element.dataset.iconClass || '',
+    };
+
+    element.innerHTML = getIcon(iconName, options);
+  });
+}
+
 // Maximum number of photos allowed
 const MAX_PHOTOS = 10;
 // Maximum file size in MB
@@ -30,6 +49,9 @@ export function initCreateListing() {
   if (!form || !uploadArea || !fileInput) {
     return;
   }
+
+  // Inject icons from centralized library
+  injectIcons();
 
   // Initialize photo upload handlers
   initPhotoUpload(uploadArea, fileInput);

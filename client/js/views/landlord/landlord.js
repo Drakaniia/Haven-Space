@@ -3,6 +3,28 @@
  * Handles dashboard-specific interactions and dynamic content loading
  */
 
+import { getIcon } from '../../shared/icons.js';
+
+/**
+ * Inject icons from centralized library into elements with data-icon attributes
+ * Replaces inline SVGs with centralized icon library calls
+ */
+function injectIcons() {
+  const iconElements = document.querySelectorAll('[data-icon]');
+
+  iconElements.forEach(element => {
+    const iconName = element.dataset.icon;
+    const options = {
+      width: element.dataset.iconWidth || 24,
+      height: element.dataset.iconHeight || 24,
+      strokeWidth: element.dataset.iconStrokeWidth || '1.5',
+      className: element.dataset.iconClass || '',
+    };
+
+    element.innerHTML = getIcon(iconName, options);
+  });
+}
+
 /**
  * Initialize landlord dashboard components
  * @param {Object} config - Dashboard configuration
@@ -13,6 +35,9 @@
  */
 export function initLandlordDashboard(config = {}) {
   const { user = { name: 'Juan', initials: 'JD', role: 'Landlord' } } = config;
+
+  // Inject icons from centralized library
+  injectIcons();
 
   // Update greeting based on time of day
   updateGreeting(user.name);
@@ -238,6 +263,9 @@ function initApplicationActionButtons() {
  * Initialize all event listeners when DOM is ready
  */
 document.addEventListener('DOMContentLoaded', () => {
+  // Inject icons from centralized library
+  injectIcons();
+
   initPaymentReminderButtons();
   initApplicationActionButtons();
 });
