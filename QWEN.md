@@ -368,6 +368,46 @@ body:has(.sidebar-collapsed) .dashboard-main {
 - **DOM Ready**: Wrap initialization in `DOMContentLoaded`
 - **Naming**: Descriptive variable/function names
 
+#### Centralized Icon Library (MANDATORY)
+
+**ALWAYS use the centralized icon library** (`client/js/shared/icons.js`) when adding icons to HTML. **NEVER hardcode SVG elements** directly in HTML files.
+
+**Correct usage:**
+
+```html
+<!-- ✅ CORRECT: Using centralized icon -->
+<span data-icon="home" data-icon-width="24" data-icon-height="24" data-icon-stroke-width="2"></span>
+```
+
+**Incorrect usage:**
+
+```html
+<!-- ❌ WRONG: Hardcoded SVG -->
+<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="..." />
+</svg>
+```
+
+**Icon attributes:**
+
+- `data-icon`: Icon name (must match name in `ICON_PATHS` in `icons.js`)
+- `data-icon-width`: Icon width in pixels (default: 24)
+- `data-icon-height`: Icon height in pixels (default: 24)
+- `data-icon-stroke-width`: Stroke width (default: 1.5, use 2 for bolder icons)
+
+**Adding new icons:**
+
+1. Check if icon already exists in `client/js/shared/icons.js`
+2. If not, add the SVG path data to `ICON_PATHS` object
+3. Use Heroicons v2 (outline) from https://heroicons.com/
+4. Icon name should be camelCase (e.g., `chevronRight`, `wrenchScrewdriver`)
+
+**When generating or modifying HTML:**
+
+- Always replace existing hardcoded SVGs with `data-icon` spans
+- Use parallel edit tool for multiple icon replacements across files
+- Verify all icons are available in the library before committing
+
 ```javascript
 // Entry point pattern (main.js)
 import { initLogoCloud } from './components/logo-cloud.js';
@@ -507,6 +547,38 @@ public function show($id) {
 3. Does every line have a clear purpose?
 4. Can I use existing project patterns instead of inventing new ones?
 5. Will this be easy for another developer to understand?
+
+### Parallel Editing Workflow
+
+**ALWAYS use parallel editing** when making multiple independent changes across files to maximize efficiency:
+
+**When to use parallel editing:**
+
+- Replacing icons across multiple HTML files
+- Updating styles in different CSS files
+- Modifying multiple independent JavaScript files
+- Any batch updates that don't depend on each other
+
+**How to use parallel editing:**
+
+- Make multiple `edit` tool calls simultaneously in a single message
+- Group related changes together (e.g., all icon replacements in one batch)
+- Ensure each edit is independent and doesn't require sequential execution
+- Verify all changes after the batch completes
+
+**Example - Replacing icons across files:**
+
+```
+✅ CORRECT: Edit 6 files in parallel (single message with 6 edit calls)
+❌ WRONG: Edit files one by one in separate messages
+```
+
+**Benefits:**
+
+- Faster execution (6 edits in parallel vs. sequential)
+- Better context management (all changes visible at once)
+- Reduced API calls and token usage
+- More efficient workflow
 
 ### Example: Simple vs. Over-engineered
 
