@@ -12,6 +12,7 @@ import { initLeasePage } from './lease.js';
 import { initPaymentPage } from './boarder-payment-process.js';
 import { initSettingsPage } from './settings.js';
 import { initAnnouncements } from './announcements.js';
+import { initDashboardMap } from './dashboard-map.js';
 
 /**
  * Initialize Boarder Dashboard
@@ -50,6 +51,9 @@ export function initBoarderDashboard() {
 
   // Load dashboard data
   loadDashboardData();
+
+  // Initialize dashboard map
+  initDashboardMap();
 
   // Initialize specific pages based on current view
   const currentPath = window.location.pathname;
