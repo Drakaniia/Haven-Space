@@ -1,0 +1,496 @@
+/**
+ * House Rules / Handbook Page Styles
+ * Boarder Dashboard
+ */
+
+/* Page Content Container */
+.house-rules-page-content {
+  padding: 32px;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+/* Header Card */
+.house-rules-header-card {
+  background: linear-gradient(135deg, var(--primary-green) 0%, var(--dark-green) 100%);
+  border-radius: 16px;
+  padding: 32px;
+  color: var(--white);
+  margin-bottom: 32px;
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 24px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.house-rules-header-main {
+  flex: 1;
+}
+
+.house-rules-property-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: rgba(255, 255, 255, 0.15);
+  padding: 8px 16px;
+  border-radius: 24px;
+  font-size: 14px;
+  font-weight: 500;
+  margin-bottom: 16px;
+  backdrop-filter: blur(10px);
+}
+
+.house-rules-property-badge svg {
+  color: var(--white);
+}
+
+.house-rules-property-title {
+  font-size: 32px;
+  font-weight: 800;
+  margin: 0 0 8px 0;
+  line-height: 1.2;
+}
+
+.house-rules-property-subtitle {
+  font-size: 16px;
+  font-weight: 400;
+  margin: 0;
+  opacity: 0.9;
+}
+
+.house-rules-last-updated {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+  font-weight: 500;
+  color: rgba(255, 255, 255, 0.9);
+  white-space: nowrap;
+  background: rgba(255, 255, 255, 0.1);
+  padding: 8px 16px;
+  border-radius: 8px;
+}
+
+.house-rules-last-updated svg {
+  flex-shrink: 0;
+}
+
+/* Quick Navigation */
+.house-rules-quick-nav {
+  margin-bottom: 40px;
+}
+
+.house-rules-quick-nav-title {
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--text-dark);
+  margin: 0 0 20px 0;
+}
+
+.house-rules-quick-nav-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+  gap: 16px;
+}
+
+.house-rules-nav-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  padding: 20px;
+  background: var(--white);
+  border: 1px solid var(--border-color);
+  border-radius: 12px;
+  text-decoration: none;
+  transition: all 0.2s ease;
+  cursor: pointer;
+}
+
+.house-rules-nav-card:hover {
+  border-color: var(--primary-green);
+  box-shadow: 0 4px 12px rgba(74, 124, 35, 0.1);
+  transform: translateY(-2px);
+}
+
+.house-rules-nav-icon {
+  width: 48px;
+  height: 48px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--white);
+}
+
+.house-rules-nav-icon.blue {
+  background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+}
+
+.house-rules-nav-icon.purple {
+  background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%);
+}
+
+.house-rules-nav-icon.green {
+  background: linear-gradient(135deg, var(--light-green) 0%, var(--primary-green) 100%);
+}
+
+.house-rules-nav-icon.orange {
+  background: linear-gradient(135deg, #f97316 0%, #ea580c 100%);
+}
+
+.house-rules-nav-icon.cyan {
+  background: linear-gradient(135deg, #06b6d4 0%, #0891b2 100%);
+}
+
+.house-rules-nav-icon.pink {
+  background: linear-gradient(135deg, #ec4899 0%, #db2777 100%);
+}
+
+.house-rules-nav-icon svg {
+  width: 24px;
+  height: 24px;
+}
+
+.house-rules-nav-label {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text-dark);
+  text-align: center;
+}
+
+/* Main Content Sections */
+.house-rules-main-content {
+  display: flex;
+  flex-direction: column;
+  gap: 40px;
+}
+
+.house-rules-section {
+  scroll-margin-top: 100px;
+}
+
+.house-rules-section-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 20px;
+}
+
+.house-rules-section-icon-wrapper {
+  width: 40px;
+  height: 40px;
+  background: var(--bg-green);
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--primary-green);
+  flex-shrink: 0;
+}
+
+.house-rules-section-icon-wrapper svg {
+  width: 24px;
+  height: 24px;
+}
+
+.house-rules-section-title {
+  font-size: 24px;
+  font-weight: 700;
+  color: var(--text-dark);
+  margin: 0;
+}
+
+/* Content Card */
+.house-rules-content-card {
+  background: var(--white);
+  border: 1px solid var(--border-color);
+  border-radius: 16px;
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+/* Rule Item */
+.house-rules-rule-item {
+  display: flex;
+  gap: 20px;
+  padding: 20px;
+  background: var(--bg-cream);
+  border-radius: 12px;
+  border-left: 4px solid var(--primary-green);
+  transition: all 0.2s ease;
+}
+
+.house-rules-rule-item:hover {
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+}
+
+.house-rules-rule-number {
+  width: 36px;
+  height: 36px;
+  background: var(--primary-green);
+  color: var(--white);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 16px;
+  font-weight: 700;
+  flex-shrink: 0;
+}
+
+.house-rules-rule-content {
+  flex: 1;
+}
+
+.house-rules-rule-title {
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--text-dark);
+  margin: 0 0 8px 0;
+}
+
+.house-rules-rule-description {
+  font-size: 15px;
+  line-height: 1.6;
+  color: var(--text-gray);
+  margin: 0;
+}
+
+/* Highlight Box (for Quiet Hours) */
+.house-rules-highlight-box {
+  display: flex;
+  gap: 16px;
+  padding: 24px;
+  background: linear-gradient(135deg, #e8f5e9 0%, #c8e6c9 100%);
+  border-radius: 12px;
+  border: 2px solid var(--light-green);
+  margin-bottom: 8px;
+}
+
+.house-rules-highlight-icon {
+  width: 48px;
+  height: 48px;
+  background: var(--primary-green);
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--white);
+  flex-shrink: 0;
+}
+
+.house-rules-highlight-icon svg {
+  width: 24px;
+  height: 24px;
+}
+
+.house-rules-highlight-content {
+  flex: 1;
+}
+
+.house-rules-highlight-title {
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--dark-green);
+  margin: 0 0 16px 0;
+}
+
+.house-rules-highlight-times {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.house-rules-time-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 16px;
+  background: var(--white);
+  border-radius: 8px;
+}
+
+.house-rules-time-label {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text-dark);
+}
+
+.house-rules-time-value {
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--primary-green);
+}
+
+/* Acknowledgment Card */
+.house-rules-acknowledgment-card {
+  background: linear-gradient(135deg, var(--bg-cream) 0%, var(--bg-green) 100%);
+  border: 2px solid var(--primary-green);
+  border-radius: 16px;
+  padding: 32px;
+  margin-top: 20px;
+}
+
+.house-rules-acknowledgment-header {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 20px;
+}
+
+.house-rules-acknowledgment-icon {
+  width: 48px;
+  height: 48px;
+  background: var(--primary-green);
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--white);
+}
+
+.house-rules-acknowledgment-icon svg {
+  width: 24px;
+  height: 24px;
+}
+
+.house-rules-acknowledgment-title {
+  font-size: 24px;
+  font-weight: 700;
+  color: var(--text-dark);
+  margin: 0;
+}
+
+.house-rules-acknowledgment-text {
+  font-size: 15px;
+  line-height: 1.7;
+  color: var(--text-gray);
+  margin: 0 0 24px 0;
+}
+
+.house-rules-acknowledgment-actions {
+  display: flex;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+/* Buttons */
+.house-rules-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 12px 24px;
+  border-radius: 8px;
+  font-size: 15px;
+  font-weight: 600;
+  text-decoration: none;
+  cursor: pointer;
+  border: 2px solid transparent;
+  transition: all 0.2s ease;
+  background: none;
+  font-family: var(--font-main);
+}
+
+.house-rules-btn svg {
+  width: 20px;
+  height: 20px;
+}
+
+.house-rules-btn-primary {
+  background: var(--primary-green);
+  color: var(--white);
+  border-color: var(--primary-green);
+}
+
+.house-rules-btn-primary:hover {
+  background: var(--dark-green);
+  border-color: var(--dark-green);
+  box-shadow: 0 4px 12px rgba(74, 124, 35, 0.3);
+}
+
+.house-rules-btn-primary.acknowledged {
+  background: var(--light-green);
+  border-color: var(--light-green);
+  cursor: default;
+}
+
+.house-rules-btn-outline {
+  background: var(--white);
+  color: var(--primary-green);
+  border-color: var(--primary-green);
+}
+
+.house-rules-btn-outline:hover {
+  background: var(--bg-green);
+  box-shadow: 0 4px 12px rgba(74, 124, 35, 0.15);
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .house-rules-page-content {
+    padding: 20px;
+  }
+
+  .house-rules-header-card {
+    flex-direction: column;
+    padding: 24px;
+  }
+
+  .house-rules-property-title {
+    font-size: 24px;
+  }
+
+  .house-rules-last-updated {
+    align-self: flex-start;
+  }
+
+  .house-rules-quick-nav-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .house-rules-rule-item {
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .house-rules-rule-number {
+    align-self: flex-start;
+  }
+
+  .house-rules-highlight-box {
+    flex-direction: column;
+  }
+
+  .house-rules-time-item {
+    flex-direction: column;
+    gap: 8px;
+    text-align: center;
+  }
+
+  .house-rules-acknowledgment-actions {
+    flex-direction: column;
+  }
+
+  .house-rules-btn {
+    width: 100%;
+  }
+}
+
+@media (max-width: 480px) {
+  .house-rules-quick-nav-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .house-rules-section-title {
+    font-size: 20px;
+  }
+
+  .house-rules-rule-title {
+    font-size: 16px;
+  }
+}
