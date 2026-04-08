@@ -11,6 +11,7 @@ import { getIcon } from '../shared/icons.js';
  * @param {string} options.containerId - ID of container element (default: 'navbar-container')
  * @param {Object} options.user - User info object with name, initials, avatarUrl, email
  * @param {number} options.notificationCount - Number of unread notifications
+ * @param {Array} options.notifications - Array of notification objects
  */
 export function initNavbar(options = {}) {
   const {
@@ -22,6 +23,7 @@ export function initNavbar(options = {}) {
       email: 'juan@example.com',
     },
     notificationCount = 3,
+    notifications = getDefaultNotifications(),
   } = options;
 
   const container = document.getElementById(containerId);
@@ -47,9 +49,13 @@ export function initNavbar(options = {}) {
       // Update notification count
       updateNotificationCount(notificationCount);
 
+      // Render notification list
+      renderNotifications(notifications);
+
       // Setup event handlers
       setupThemeToggle();
       setupNotificationHandler();
+      setupNotificationPopup();
       setupUserMenu();
       setupUserMenuHandlers(user);
       setupDocumentClickHandler();
@@ -57,6 +63,42 @@ export function initNavbar(options = {}) {
     .catch(err => {
       console.error('Failed to load navbar template:', err);
     });
+}
+
+/**
+ * Get default notifications for demo
+ * @returns {Array} Array of notification objects
+ */
+function getDefaultNotifications() {
+  return [
+    {
+      id: 1,
+      type: 'success',
+      icon: 'checkCircle',
+      title: 'Payment Received',
+      description: 'Your payment of ₱5,000 has been successfully processed.',
+      time: '2 minutes ago',
+      unread: true,
+    },
+    {
+      id: 2,
+      type: 'info',
+      icon: 'informationCircle',
+      title: 'New Message',
+      description: 'You have a new message from your landlord regarding Room 204.',
+      time: '1 hour ago',
+      unread: true,
+    },
+    {
+      id: 3,
+      type: 'warning',
+      icon: 'exclamationTriangle',
+      title: 'Maintenance Scheduled',
+      description: 'Water system maintenance scheduled for tomorrow, 9:00 AM - 12:00 PM.',
+      time: '3 hours ago',
+      unread: true,
+    },
+  ];
 }
 
 /**
@@ -156,6 +198,168 @@ function setupNotificationHandler() {
       // Optional: Navigate to notifications page or open dropdown
       console.log('Notifications clicked');
     });
+  }
+}
+
+/**
+ * Setup notification popup handler
+ */
+function setupNotificationPopup() {
+  const notificationsBtn = document.getElementById('navbar-notifications');
+  const notificationMenu = document.getElementById('navbar-notification-menu');
+
+  if (notificationsBtn && notificationMenu) {
+    notificationsBtn.addEventListener('click', e => {
+      e.stopPropagation();
+      notificationMenu.classList.toggle('show');
+
+      // Emit custom event for notification menu
+      window.dispatchEvent(
+        new CustomEvent('navbar:notification:menu:click', {
+          detail: { isOpen: notificationMenu.classList.contains('show') },
+        })
+      );
+    });
+  }
+
+  // Setup clear notifications button
+  const clearBtn = document.getElementById('navbar-clear-notifications');
+  if (clearBtn) {
+    clearBtn.addEventListener('click', e => {
+      e.stopPropagation();
+      markAllAsRead();
+      console.log('All notifications marked as read');
+    });
+  }
+
+  // Setup view all notifications link
+  const viewAllLink = document.getElementById('navbar-view-all-notifications');
+  if (viewAllLink) {
+    viewAllLink.addEventListener('click', e => {
+      e.preventDefault();
+      console.log('View all notifications clicked');
+      window.dispatchEvent(new CustomEvent('navbar:notification:view:click'));
+      closeNotificationMenu();
+    });
+  }
+}
+
+/**
+ * Render notification items in the popup
+ * @param {Array} notifications - Array of notification objects
+ */
+function renderNotifications(notifications) {
+  const list = document.getElementById('navbar-notification-list');
+  if (!list) return;
+
+  if (!notifications || notifications.length === 0) {
+    list.innerHTML = `
+      <div class="navbar-notification-empty">
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
+        </svg>
+        <div class="navbar-notification-empty-text">No notifications yet</div>
+      </div>
+    `;
+    return;
+  }
+
+  list.innerHTML = notifications
+    .map(
+      notification => `
+    <div class="navbar-notification-item ${notification.unread ? 'unread' : ''}" data-id="${
+        notification.id
+      }">
+      <div class="navbar-notification-icon ${notification.type}">
+        <span data-notification-icon="${notification.icon}"></span>
+      </div>
+      <div class="navbar-notification-content">
+        <div class="navbar-notification-title">${notification.title}</div>
+        <div class="navbar-notification-description">${notification.description}</div>
+        <div class="navbar-notification-time">${notification.time}</div>
+      </div>
+    </div>
+  `
+    )
+    .join('');
+
+  // Inject icons into notification items
+  list.querySelectorAll('[data-notification-icon]').forEach(placeholder => {
+    const iconName = placeholder.dataset.notificationIcon;
+    if (iconName) {
+      placeholder.outerHTML = getIcon(iconName, {
+        className: 'navbar-notification-icon-svg',
+        width: 20,
+        height: 20,
+      });
+    }
+  });
+
+  // Setup click handlers for notification items
+  list.querySelectorAll('.navbar-notification-item').forEach(item => {
+    item.addEventListener('click', () => {
+      const notificationId = parseInt(item.dataset.id);
+      console.log('Notification clicked:', notificationId);
+      window.dispatchEvent(
+        new CustomEvent('navbar:notification:click', {
+          detail: { id: notificationId },
+        })
+      );
+
+      // Mark as read
+      if (item.classList.contains('unread')) {
+        item.classList.remove('unread');
+        updateUnreadCount(-1);
+      }
+    });
+  });
+}
+
+/**
+ * Mark all notifications as read
+ */
+function markAllAsRead() {
+  const list = document.getElementById('navbar-notification-list');
+  if (!list) return;
+
+  const unreadItems = list.querySelectorAll('.navbar-notification-item.unread');
+  const count = unreadItems.length;
+
+  unreadItems.forEach(item => {
+    item.classList.remove('unread');
+  });
+
+  updateUnreadCount(-count);
+
+  window.dispatchEvent(new CustomEvent('navbar:notification:markAllRead'));
+}
+
+/**
+ * Update unread notification count
+ * @param {number} change - Number to change count by (can be negative)
+ */
+function updateUnreadCount(change) {
+  const badge = document.getElementById('navbar-notification-badge');
+  if (!badge) return;
+
+  const currentCount = parseInt(badge.textContent) || 0;
+  const newCount = Math.max(0, currentCount + change);
+
+  if (newCount > 0) {
+    badge.textContent = newCount > 99 ? '99+' : newCount;
+    badge.style.display = 'flex';
+  } else {
+    badge.style.display = 'none';
+  }
+}
+
+/**
+ * Close notification menu
+ */
+function closeNotificationMenu() {
+  const notificationMenu = document.getElementById('navbar-notification-menu');
+  if (notificationMenu) {
+    notificationMenu.classList.remove('show');
   }
 }
 
@@ -273,15 +477,28 @@ function closeUserMenu() {
 }
 
 /**
- * Setup document click handler to close menu when clicking outside
+ * Setup document click handler to close menus when clicking outside
  */
 function setupDocumentClickHandler() {
   document.addEventListener('click', e => {
     const userMenu = document.getElementById('navbar-user-menu');
     const userBtn = document.getElementById('navbar-user');
+    const notificationMenu = document.getElementById('navbar-notification-menu');
+    const notificationBtn = document.getElementById('navbar-notifications');
 
+    // Close user menu
     if (userMenu && userBtn && !userBtn.contains(e.target) && !userMenu.contains(e.target)) {
       closeUserMenu();
+    }
+
+    // Close notification menu
+    if (
+      notificationMenu &&
+      notificationBtn &&
+      !notificationBtn.contains(e.target) &&
+      !notificationMenu.contains(e.target)
+    ) {
+      closeNotificationMenu();
     }
   });
 }
