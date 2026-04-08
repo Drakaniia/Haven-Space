@@ -1,0 +1,398 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Reports & Analytics - Haven Space</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="../../../css/global.css" />
+    <link rel="stylesheet" href="../../../css/components/sidebar.css" />
+    <link rel="stylesheet" href="../../../css/components/navbar.css" />
+    <link rel="stylesheet" href="../../../css/views/landlord/landlord-reports.css" />
+  </head>
+  <body data-view="landlord" data-dashboard-type="landlord">
+    <div class="landlord-dashboard">
+      <!-- Sidebar Container -->
+      <div id="sidebar-container"></div>
+
+      <!-- Main Content -->
+      <main class="landlord-main">
+        <!-- Navbar Container -->
+        <div id="navbar-container"></div>
+
+        <!-- Content Wrapper -->
+        <div class="reports-content">
+          <!-- Page Header -->
+          <div class="reports-header">
+            <div class="reports-header-info">
+              <h1>Reports & Analytics</h1>
+              <p>Track your property performance and business insights.</p>
+            </div>
+            <div class="reports-header-actions">
+              <select id="dateRangeFilter" class="date-range-filter">
+                <option value="7">Last 7 Days</option>
+                <option value="30" selected>Last 30 Days</option>
+                <option value="90">Last 90 Days</option>
+                <option value="180">Last 6 Months</option>
+                <option value="365">Last Year</option>
+                <option value="custom">Custom Range</option>
+              </select>
+              <button id="exportReport" class="btn-export">
+                <span
+                  data-icon="arrowDownTray"
+                  data-icon-width="18"
+                  data-icon-height="18"
+                  data-icon-stroke-width="2"
+                ></span>
+                Export Report
+              </button>
+            </div>
+          </div>
+
+          <!-- Custom Date Range Picker (Hidden by Default) -->
+          <div id="customDateRange" class="custom-date-range" style="display: none">
+            <div class="date-input-group">
+              <label for="startDate">Start Date</label>
+              <input type="date" id="startDate" class="date-input" />
+            </div>
+            <div class="date-input-group">
+              <label for="endDate">End Date</label>
+              <input type="date" id="endDate" class="date-input" />
+            </div>
+            <button id="applyDateRange" class="btn-apply-range">Apply</button>
+          </div>
+
+          <!-- Summary Stats Grid -->
+          <div class="reports-stats-grid">
+            <div class="report-stat-card">
+              <div class="report-stat-header">
+                <span class="report-stat-label">Total Revenue</span>
+                <div class="report-stat-icon green">
+                  <span
+                    data-icon="currencyDollar"
+                    data-icon-width="24"
+                    data-icon-height="24"
+                    data-icon-stroke-width="2"
+                  ></span>
+                </div>
+              </div>
+              <div class="report-stat-value">₱142,500</div>
+              <div class="report-stat-change positive">
+                <span class="change-arrow">↑</span>
+                <span class="change-value">12.5%</span>
+                <span class="change-label">vs previous period</span>
+              </div>
+            </div>
+
+            <div class="report-stat-card">
+              <div class="report-stat-header">
+                <span class="report-stat-label">Average Occupancy</span>
+                <div class="report-stat-icon blue">
+                  <span
+                    data-icon="home"
+                    data-icon-width="24"
+                    data-icon-height="24"
+                    data-icon-stroke-width="2"
+                  ></span>
+                </div>
+              </div>
+              <div class="report-stat-value">87.3%</div>
+              <div class="report-stat-change positive">
+                <span class="change-arrow">↑</span>
+                <span class="change-value">3.2%</span>
+                <span class="change-label">vs previous period</span>
+              </div>
+            </div>
+
+            <div class="report-stat-card">
+              <div class="report-stat-header">
+                <span class="report-stat-label">Total Boarders</span>
+                <div class="report-stat-icon purple">
+                  <span
+                    data-icon="users"
+                    data-icon-width="24"
+                    data-icon-height="24"
+                    data-icon-stroke-width="2"
+                  ></span>
+                </div>
+              </div>
+              <div class="report-stat-value">34</div>
+              <div class="report-stat-change positive">
+                <span class="change-arrow">↑</span>
+                <span class="change-value">6 new</span>
+                <span class="change-label">vs previous period</span>
+              </div>
+            </div>
+
+            <div class="report-stat-card">
+              <div class="report-stat-header">
+                <span class="report-stat-label">Outstanding Payments</span>
+                <div class="report-stat-icon orange">
+                  <span
+                    data-icon="bell"
+                    data-icon-width="24"
+                    data-icon-height="24"
+                    data-icon-stroke-width="2"
+                  ></span>
+                </div>
+              </div>
+              <div class="report-stat-value">₱12,750</div>
+              <div class="report-stat-change negative">
+                <span class="change-arrow">↓</span>
+                <span class="change-value">8.3%</span>
+                <span class="change-label">vs previous period</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Charts Row 1: Revenue & Occupancy Trends -->
+          <div class="reports-grid reports-grid-2col">
+            <div class="report-chart-card">
+              <div class="report-chart-header">
+                <h2 class="report-chart-title">
+                  <span
+                    data-icon="analytics"
+                    data-icon-width="20"
+                    data-icon-height="20"
+                    data-icon-stroke-width="2"
+                  ></span>
+                  Revenue Trend
+                </h2>
+                <div class="report-chart-legend">
+                  <span class="legend-item">
+                    <span class="legend-dot green"></span>
+                    Revenue
+                  </span>
+                </div>
+              </div>
+              <div class="report-chart-container">
+                <canvas id="revenueChart"></canvas>
+              </div>
+            </div>
+
+            <div class="report-chart-card">
+              <div class="report-chart-header">
+                <h2 class="report-chart-title">
+                  <span
+                    data-icon="home"
+                    data-icon-width="20"
+                    data-icon-height="20"
+                    data-icon-stroke-width="2"
+                  ></span>
+                  Occupancy Rate
+                </h2>
+                <div class="report-chart-legend">
+                  <span class="legend-item">
+                    <span class="legend-dot blue"></span>
+                    Occupancy %
+                  </span>
+                </div>
+              </div>
+              <div class="report-chart-container">
+                <canvas id="occupancyChart"></canvas>
+              </div>
+            </div>
+          </div>
+
+          <!-- Charts Row 2: Payment Status & Property Breakdown -->
+          <div class="reports-grid reports-grid-2col">
+            <div class="report-chart-card">
+              <div class="report-chart-header">
+                <h2 class="report-chart-title">
+                  <span
+                    data-icon="creditCard"
+                    data-icon-width="20"
+                    data-icon-height="20"
+                    data-icon-stroke-width="2"
+                  ></span>
+                  Payment Status Distribution
+                </h2>
+              </div>
+              <div class="report-chart-container">
+                <canvas id="paymentStatusChart"></canvas>
+              </div>
+            </div>
+
+            <div class="report-chart-card">
+              <div class="report-chart-header">
+                <h2 class="report-chart-title">
+                  <span
+                    data-icon="building"
+                    data-icon-width="20"
+                    data-icon-height="20"
+                    data-icon-stroke-width="2"
+                  ></span>
+                  Revenue by Property
+                </h2>
+              </div>
+              <div class="report-chart-container">
+                <canvas id="propertyRevenueChart"></canvas>
+              </div>
+            </div>
+          </div>
+
+          <!-- Payment History Table -->
+          <div class="report-table-card">
+            <div class="report-table-header">
+              <h2 class="report-chart-title">
+                <span
+                  data-icon="documentText"
+                  data-icon-width="20"
+                  data-icon-height="20"
+                  data-icon-stroke-width="2"
+                ></span>
+                Payment History
+              </h2>
+              <div class="report-table-actions">
+                <div class="search-box">
+                  <span
+                    data-icon="search"
+                    data-icon-width="18"
+                    data-icon-height="18"
+                    data-icon-stroke-width="2"
+                  ></span>
+                  <input
+                    type="text"
+                    id="paymentSearch"
+                    placeholder="Search payments..."
+                    class="search-input"
+                  />
+                </div>
+                <select id="paymentStatusFilter" class="status-filter">
+                  <option value="all">All Status</option>
+                  <option value="paid">Paid</option>
+                  <option value="pending">Pending</option>
+                  <option value="overdue">Overdue</option>
+                </select>
+              </div>
+            </div>
+            <div class="report-table-wrapper">
+              <table class="report-table" id="paymentTable">
+                <thead>
+                  <tr>
+                    <th>Boarder</th>
+                    <th>Property</th>
+                    <th>Amount</th>
+                    <th>Due Date</th>
+                    <th>Status</th>
+                    <th>Actions</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td>
+                      <div class="boarder-info">
+                        <strong>Maria Santos</strong>
+                        <span class="boarder-email">maria@example.com</span>
+                      </div>
+                    </td>
+                    <td>Sunrise Dormitory - Room 201</td>
+                    <td class="amount">₱5,500</td>
+                    <td>Feb 15, 2025</td>
+                    <td><span class="status-badge status-paid">Paid</span></td>
+                    <td>
+                      <button class="table-btn table-btn-outline">View Receipt</button>
+                    </td>
+                  </tr>
+                  <tr>
+                    <td>
+                      <div class="boarder-info">
+                        <strong>Jose Reyes</strong>
+                        <span class="boarder-email">jose@example.com</span>
+                      </div>
+                    </td>
+                    <td>Green Valley - Room 105</td>
+                    <td class="amount">₱4,500</td>
+                    <td>Jan 31, 2025</td>
+                    <td><span class="status-badge status-pending">Pending</span></td>
+                    <td>
+                      <button class="table-btn table-btn-primary">Send Reminder</button>
+                    </td>
+                  </tr>
+                  <tr>
+                    <td>
+                      <div class="boarder-info">
+                        <strong>Pedro Cruz</strong>
+                        <span class="boarder-email">pedro@example.com</span>
+                      </div>
+                    </td>
+                    <td>Metro Boarding - Room 302</td>
+                    <td class="amount">₱5,250</td>
+                    <td>Jan 20, 2025</td>
+                    <td><span class="status-badge status-overdue">Overdue</span></td>
+                    <td>
+                      <button class="table-btn table-btn-danger">Send Notice</button>
+                    </td>
+                  </tr>
+                  <tr>
+                    <td>
+                      <div class="boarder-info">
+                        <strong>Ana Garcia</strong>
+                        <span class="boarder-email">ana@example.com</span>
+                      </div>
+                    </td>
+                    <td>Sunrise Dormitory - Room 305</td>
+                    <td class="amount">₱5,000</td>
+                    <td>Feb 28, 2025</td>
+                    <td><span class="status-badge status-paid">Paid</span></td>
+                    <td>
+                      <button class="table-btn table-btn-outline">View Receipt</button>
+                    </td>
+                  </tr>
+                  <tr>
+                    <td>
+                      <div class="boarder-info">
+                        <strong>Luis Torres</strong>
+                        <span class="boarder-email">luis@example.com</span>
+                      </div>
+                    </td>
+                    <td>Green Valley - Room 210</td>
+                    <td class="amount">₱4,800</td>
+                    <td>Feb 20, 2025</td>
+                    <td><span class="status-badge status-paid">Paid</span></td>
+                    <td>
+                      <button class="table-btn table-btn-outline">View Receipt</button>
+                    </td>
+                  </tr>
+                  <tr>
+                    <td>
+                      <div class="boarder-info">
+                        <strong>Sofia Mendoza</strong>
+                        <span class="boarder-email">sofia@example.com</span>
+                      </div>
+                    </td>
+                    <td>Metro Boarding - Room 108</td>
+                    <td class="amount">₱4,200</td>
+                    <td>Feb 10, 2025</td>
+                    <td><span class="status-badge status-pending">Pending</span></td>
+                    <td>
+                      <button class="table-btn table-btn-primary">Send Reminder</button>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+            <div class="report-table-footer">
+              <span class="table-info">Showing 6 of 34 entries</span>
+              <div class="table-pagination">
+                <button class="pagination-btn" disabled>Previous</button>
+                <button class="pagination-btn active">1</button>
+                <button class="pagination-btn">2</button>
+                <button class="pagination-btn">3</button>
+                <button class="pagination-btn">Next</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </main>
+    </div>
+
+    <script type="module" src="../../../js/main.js"></script>
+    <script type="module" src="../../../js/views/landlord/reports.js"></script>
+  </body>
+</html>
