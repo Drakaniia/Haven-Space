@@ -7,6 +7,8 @@
  * - Green: Paid or due date > 7 days away
  */
 
+import { getIcon } from '../../shared/icons.js';
+
 /**
  * Calculate payment status based on due date and paid date
  * @param {string|Date} dueDate - The payment due date
@@ -274,16 +276,14 @@ export function initPaymentStatus() {
 export function createStatusBadge(status) {
   const badge = document.createElement('span');
   badge.className = `status-badge status-${status.color}`;
+  const iconName =
+    status.status === 'paid'
+      ? 'check'
+      : status.status === 'overdue'
+      ? 'exclamationCircle'
+      : 'history';
   badge.innerHTML = `
-    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-      ${
-        status.status === 'paid'
-          ? '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />'
-          : status.status === 'overdue'
-          ? '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />'
-          : '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />'
-      }
-    </svg>
+    ${getIcon(iconName, { strokeWidth: '2' })}
     ${status.label}${
     status.days !== null && status.status !== 'paid' ? ` (${formatDaysRemaining(status.days)})` : ''
   }
