@@ -6,9 +6,11 @@
 @import './views/boarder/boarder-payments.css';
 @import './views/boarder/boarder-payment-process.css';
 @import './views/boarder/boarder-messages.css';
+@import './views/boarder/boarder-house-rules.css';
 @import './views/landlord/landlord.css';
 @import './views/landlord/landlord-payments.css';
 @import './views/landlord/landlord-messages.css';
+@import './views/landlord/landlord-reports.css';
 @import './views/admin/admin.css';
 
 * {

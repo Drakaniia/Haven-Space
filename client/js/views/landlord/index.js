@@ -10,6 +10,7 @@ import { initLandlordDashboard } from './landlord.js';
 import { initMessages } from './messages.js';
 import { initLandlordSettings } from './settings.js';
 import { initAnnouncements } from './announcements.js';
+import { initReports } from './reports.js';
 
 /**
  * Initialize Landlord Dashboard
@@ -96,6 +97,11 @@ export function initLandlordDashboardEntry() {
   // Initialize settings page
   if (currentPath.includes('settings')) {
     initLandlordSettings();
+  }
+
+  // Initialize reports page
+  if (currentPath.includes('reports')) {
+    initReports();
   }
 
   // Setup navbar event listeners

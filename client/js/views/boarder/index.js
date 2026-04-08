@@ -13,6 +13,7 @@ import { initPaymentPage } from './boarder-payment-process.js';
 import { initSettingsPage } from './settings.js';
 import { initAnnouncements } from './announcements.js';
 import { initDashboardMap } from './dashboard-map.js';
+import { initHouseRulesPage } from './house-rules.js';
 
 /**
  * Initialize Boarder Dashboard
@@ -79,6 +80,11 @@ export function initBoarderDashboard() {
   // Initialize announcements page
   if (currentPath.includes('announcements')) {
     initAnnouncements();
+  }
+
+  // Initialize house rules page
+  if (currentPath.includes('house-rules')) {
+    initHouseRulesPage();
   }
 
   // Setup navbar event listeners only if navbar exists
