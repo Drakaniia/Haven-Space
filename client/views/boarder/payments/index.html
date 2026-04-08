@@ -38,10 +38,10 @@
                 <span class="icon-placeholder" data-icon="arrowDownTray"></span>
                 Download Statement
               </button>
-              <button class="payments-btn payments-btn-primary" id="payNowBtn">
+              <a href="./pay.html" class="payments-btn payments-btn-primary" id="payNowBtn">
                 <span class="icon-placeholder" data-icon="creditCard"></span>
                 Pay Now
-              </button>
+              </a>
             </div>
           </div>
 
@@ -334,7 +334,10 @@
                   </div>
                 </div>
 
-                <button class="payments-btn payments-btn-primary payments-btn-lg payments-btn-full">
+                <button
+                  class="payments-btn payments-btn-primary payments-btn-lg payments-btn-full"
+                  onclick="window.location.href='./pay.html'"
+                >
                   <span class="icon-placeholder" data-icon="creditCard"></span>
                   Pay ₱5,500 Now
                 </button>
@@ -567,14 +570,6 @@
         if (downloadBtn) {
           downloadBtn.addEventListener('click', () => {
             alert('Statement download feature coming soon!');
-          });
-        }
-
-        // Pay now button
-        const payNowBtn = document.getElementById('payNowBtn');
-        if (payNowBtn) {
-          payNowBtn.addEventListener('click', () => {
-            alert('Payment processing feature coming soon!');
           });
         }
 

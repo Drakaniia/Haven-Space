@@ -14,6 +14,13 @@
     <link rel="stylesheet" href="../../css/components/sidebar.css" />
     <link rel="stylesheet" href="../../css/components/navbar.css" />
     <link rel="stylesheet" href="../../css/views/boarder/boarder.css" />
+    <!-- Leaflet CSS for Map -->
+    <link
+      rel="stylesheet"
+      href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+      integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY="
+      crossorigin=""
+    />
   </head>
   <body data-view="boarder" data-dashboard-type="boarder">
     <div class="boarder-dashboard">
@@ -34,8 +41,8 @@
               <p>Manage your lease, utilities, and maintenance requests</p>
             </div>
             <div class="boarder-topbar-actions">
-              <!-- TODO: Add quick action button for resident mode -->
-              <a href="../payments/index.html" class="boarder-btn boarder-btn-primary">
+              <!-- TODO: Integrate with backend API for payment processing -->
+              <a href="./payments/pay.html" class="boarder-btn boarder-btn-primary">
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
                   fill="none"
@@ -184,7 +191,7 @@
                   </svg>
                   Room Announcements
                 </h2>
-                <a href="../announcements/index.html" class="boarder-view-all">
+                <a href="./announcements/index.html" class="boarder-view-all">
                   View all
                   <svg
                     xmlns="http://www.w3.org/2000/svg"
@@ -395,7 +402,7 @@
                   </svg>
                   Payment Center
                 </h2>
-                <a href="../payments/index.html" class="boarder-view-all">
+                <a href="./payments/index.html" class="boarder-view-all">
                   View all
                   <svg
                     xmlns="http://www.w3.org/2000/svg"
@@ -434,7 +441,11 @@
                     </div>
                   </div>
                   <!-- TODO: Integrate with backend API for payment processing -->
-                  <button class="boarder-btn boarder-btn-primary boarder-btn-full">Pay Now</button>
+                  <a
+                    href="./payments/pay.html"
+                    class="boarder-btn boarder-btn-primary boarder-btn-full"
+                    >Pay Now</a
+                  >
                 </div>
 
                 <!-- Previous Month - Paid -->
@@ -524,8 +535,21 @@
               </div>
               <div class="boarder-map-preview">
                 <div class="boarder-map-container">
-                  <!-- Placeholder for interactive map -->
-                  <div class="boarder-map-placeholder">
+                  <div id="dashboard-map" class="dashboard-map"></div>
+                  <!-- Map property markers will be dynamically added here -->
+                </div>
+                <div class="boarder-map-stats">
+                  <div class="boarder-map-stat">
+                    <span class="boarder-map-stat-value">127</span>
+                    <span class="boarder-map-stat-label">Properties nearby</span>
+                  </div>
+                  <div class="boarder-map-stat">
+                    <span class="boarder-map-stat-value">2.5km</span>
+                    <span class="boarder-map-stat-label">From your location</span>
+                  </div>
+                </div>
+                <div class="boarder-map-actions">
+                  <button class="boarder-btn boarder-btn-outline">
                     <svg
                       xmlns="http://www.w3.org/2000/svg"
                       fill="none"
@@ -536,60 +560,28 @@
                         stroke-linecap="round"
                         stroke-linejoin="round"
                         stroke-width="2"
-                        d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7"
+                        d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"
                       />
                     </svg>
-                    <p>Interactive Map View</p>
-                    <p class="boarder-map-hint">
-                      Search properties by location, distance from university, and amenities
-                    </p>
-                  </div>
-                  <!-- Map property markers would be dynamically added here -->
-                  <div class="boarder-map-stats">
-                    <div class="boarder-map-stat">
-                      <span class="boarder-map-stat-value">127</span>
-                      <span class="boarder-map-stat-label">Properties nearby</span>
-                    </div>
-                    <div class="boarder-map-stat">
-                      <span class="boarder-map-stat-value">2.5km</span>
-                      <span class="boarder-map-stat-label">From your location</span>
-                    </div>
-                  </div>
+                    Use My Location
+                  </button>
+                  <button class="boarder-btn boarder-btn-outline">
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      stroke="currentColor"
+                    >
+                      <path
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        stroke-width="2"
+                        d="M12 6v6m0 0v6m0-6h6m-6 0H6"
+                      />
+                    </svg>
+                    Draw Search Area
+                  </button>
                 </div>
-              </div>
-              <div class="boarder-map-actions">
-                <button class="boarder-btn boarder-btn-outline">
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    stroke="currentColor"
-                  >
-                    <path
-                      stroke-linecap="round"
-                      stroke-linejoin="round"
-                      stroke-width="2"
-                      d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"
-                    />
-                  </svg>
-                  Use My Location
-                </button>
-                <button class="boarder-btn boarder-btn-outline">
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    stroke="currentColor"
-                  >
-                    <path
-                      stroke-linecap="round"
-                      stroke-linejoin="round"
-                      stroke-width="2"
-                      d="M12 6v6m0 0v6m0-6h6m-6 0H6"
-                    />
-                  </svg>
-                  Draw Search Area
-                </button>
               </div>
             </div>
 
@@ -1034,7 +1026,7 @@
                 <span class="boarder-action-label">New Application</span>
               </a>
 
-              <a href="../payments/index.html" class="boarder-action-btn">
+              <a href="./payments/index.html" class="boarder-action-btn">
                 <div class="boarder-action-icon">
                   <svg
                     xmlns="http://www.w3.org/2000/svg"
@@ -1060,5 +1052,12 @@
 
     <!-- ES Module Entry Point -->
     <script type="module" src="../../js/main.js"></script>
+    <!-- Leaflet JS for Map -->
+    <script
+      src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+      integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo="
+      crossorigin=""
+    ></script>
+    <script type="module" src="../../js/views/boarder/dashboard-map.js"></script>
   </body>
 </html>
