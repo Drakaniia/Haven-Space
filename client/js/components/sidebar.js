@@ -28,10 +28,7 @@ const NAV_CONFIG = {
     },
     {
       group: 'Support',
-      items: [
-        { label: 'Maintenance', href: '../boarder/maintenance/index.html', icon: 'settings' },
-        { label: 'Find a Room', href: '../boarder/find-a-room/index.html', icon: 'search' },
-      ],
+      items: [{ label: 'Find a Room', href: '../boarder/find-a-room/index.html', icon: 'search' }],
     },
     {
       group: 'Account',
@@ -70,10 +67,7 @@ const NAV_CONFIG = {
     },
     {
       group: 'Management',
-      items: [
-        { label: 'Maintenance', href: '../landlord/maintenance/index.html', icon: 'settings' },
-        { label: 'Reports', href: '../landlord/reports/index.html', icon: 'analytics' },
-      ],
+      items: [{ label: 'Reports', href: '../landlord/reports/index.html', icon: 'analytics' }],
     },
     {
       group: 'Account',
