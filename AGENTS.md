@@ -314,6 +314,40 @@ git checkout -b hotfix/critical-security-patch
 - **DOM Ready**: Wrap initialization in `DOMContentLoaded`
 - **Naming**: Descriptive variable/function names
 
+#### Centralized Icon Library (MANDATORY)
+
+**ALWAYS use the centralized icon library** (`client/js/shared/icons.js`) when adding or updating icons. **NEVER hardcode SVG elements or SVG path data** directly in HTML, JavaScript, or templates.
+
+**Correct usage:**
+
+```html
+<span data-icon="home" data-icon-width="24" data-icon-height="24" data-icon-stroke-width="2"></span>
+```
+
+**Incorrect usage:**
+
+```html
+<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="..." />
+</svg>
+```
+
+```javascript
+const iconPath = 'M3 12l2-2 7-7 7 7';
+```
+
+**Adding new icons:**
+
+1. Check if the icon already exists in `client/js/shared/icons.js`
+2. If not, add the new path data to the centralized `ICON_PATHS` object
+3. Reference the icon by name through the shared icon API or `data-icon` attributes
+
+**When modifying UI code:**
+
+- Replace existing hardcoded SVGs and inline path strings with centralized icons
+- Do not duplicate SVG path definitions across files
+- Keep icon definitions in one shared source of truth
+
 ```javascript
 // Entry point pattern (main.js)
 import { initLogoCloud } from './components/logo-cloud.js';
