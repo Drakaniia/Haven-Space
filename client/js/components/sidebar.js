@@ -27,8 +27,19 @@ const NAV_CONFIG = {
       ],
     },
     {
-      group: 'Support',
+      group: 'Discovery',
       items: [{ label: 'Find a Room', href: '../boarder/find-a-room/index.html', icon: 'search' }],
+    },
+    {
+      group: 'Info',
+      items: [
+        {
+          label: 'House Rules / Handbook',
+          href: '../boarder/house-rules/index.html',
+          icon: 'document',
+        },
+        { label: 'Contact Management', href: '../boarder/contacts/index.html', icon: 'phone' },
+      ],
     },
     {
       group: 'Account',
@@ -53,7 +64,7 @@ const NAV_CONFIG = {
               href: '../landlord/applications/index.html',
               icon: 'application',
             },
-            { label: 'Boarders', href: '../landlord/boarders/index.html', icon: 'users' },
+            { label: 'Tenants', href: '../landlord/boarders/index.html', icon: 'users' },
           ],
         },
         { label: 'Messages', href: '../landlord/messages/index.html', icon: 'chat', badge: '5' },
@@ -67,7 +78,10 @@ const NAV_CONFIG = {
     },
     {
       group: 'Management',
-      items: [{ label: 'Reports', href: '../landlord/reports/index.html', icon: 'analytics' }],
+      items: [
+        { label: 'Calendar', href: '../landlord/calendar/index.html', icon: 'calendar' },
+        { label: 'Reports', href: '../landlord/reports/index.html', icon: 'analytics' },
+      ],
     },
     {
       group: 'Account',

@@ -370,7 +370,7 @@ body:has(.sidebar-collapsed) .dashboard-main {
 
 #### Centralized Icon Library (MANDATORY)
 
-**ALWAYS use the centralized icon library** (`client/js/shared/icons.js`) when adding icons to HTML. **NEVER hardcode SVG elements** directly in HTML files.
+**ALWAYS use the centralized icon library** (`client/js/shared/icons.js`) when adding or updating icons. **NEVER hardcode SVG elements or SVG path data** directly in HTML, JavaScript, or templates.
 
 **Correct usage:**
 
@@ -386,6 +386,11 @@ body:has(.sidebar-collapsed) .dashboard-main {
 <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="..." />
 </svg>
+```
+
+```javascript
+// ❌ WRONG: Hardcoded path string outside the centralized icon library
+const iconPath = 'M3 12l2-2 7-7 7 7';
 ```
 
 **Icon attributes:**
@@ -405,6 +410,7 @@ body:has(.sidebar-collapsed) .dashboard-main {
 **When generating or modifying HTML:**
 
 - Always replace existing hardcoded SVGs with `data-icon` spans
+- Always replace hardcoded SVG path strings with centralized icon definitions
 - Use parallel edit tool for multiple icon replacements across files
 - Verify all icons are available in the library before committing
 

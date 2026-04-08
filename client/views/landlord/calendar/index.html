@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Calendar - Landlord Dashboard | Haven Space</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="../../../css/global.css" />
+    <link rel="stylesheet" href="../../../css/components/sidebar.css" />
+    <link rel="stylesheet" href="../../../css/components/navbar.css" />
+    <link rel="stylesheet" href="../../../css/views/landlord/landlord.css" />
+    <link rel="stylesheet" href="../../../css/views/landlord/landlord-calendar.css" />
+  </head>
+  <body data-view="landlord" data-dashboard-type="landlord">
+    <div class="landlord-dashboard">
+      <!-- Sidebar Container -->
+      <div id="sidebar-container"></div>
+
+      <!-- Main Content -->
+      <main class="landlord-main">
+        <!-- Navbar Container -->
+        <div id="navbar-container"></div>
+
+        <!-- Content Wrapper -->
+        <div class="landlord-content">
+          <!-- Calendar Header -->
+          <div class="calendar-header">
+            <div class="calendar-header-content">
+              <h1 class="calendar-title">Calendar</h1>
+              <p class="calendar-subtitle">
+                Track payments, lease events, and maintenance schedules
+              </p>
+            </div>
+            <div class="calendar-header-actions">
+              <button class="landlord-btn landlord-btn-outline" id="todayBtn">
+                <span
+                  data-icon="calendar"
+                  data-icon-width="20"
+                  data-icon-height="20"
+                  data-icon-stroke-width="2"
+                ></span>
+                Today
+              </button>
+              <div class="calendar-view-toggle">
+                <button
+                  class="landlord-btn landlord-btn-outline calendar-view-btn active"
+                  data-view="month"
+                >
+                  Month
+                </button>
+                <button
+                  class="landlord-btn landlord-btn-outline calendar-view-btn"
+                  data-view="week"
+                >
+                  Week
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Calendar Navigation -->
+          <div class="calendar-nav">
+            <button class="calendar-nav-btn" id="prevMonth" aria-label="Previous month">
+              <span
+                data-icon="chevronLeft"
+                data-icon-width="24"
+                data-icon-height="24"
+                data-icon-stroke-width="2"
+              ></span>
+            </button>
+            <h2 class="calendar-month-title" id="calendarMonthTitle">April 2026</h2>
+            <button class="calendar-nav-btn" id="nextMonth" aria-label="Next month">
+              <span
+                data-icon="chevronRight"
+                data-icon-width="24"
+                data-icon-height="24"
+                data-icon-stroke-width="2"
+              ></span>
+            </button>
+          </div>
+
+          <!-- Calendar Grid -->
+          <div class="calendar-container">
+            <div class="calendar-grid">
+              <!-- Day Headers -->
+              <div class="calendar-day-header">Sun</div>
+              <div class="calendar-day-header">Mon</div>
+              <div class="calendar-day-header">Tue</div>
+              <div class="calendar-day-header">Wed</div>
+              <div class="calendar-day-header">Thu</div>
+              <div class="calendar-day-header">Fri</div>
+              <div class="calendar-day-header">Sat</div>
+
+              <!-- Calendar days will be injected by JavaScript -->
+              <div id="calendarDays" class="calendar-days-container"></div>
+            </div>
+          </div>
+
+          <!-- Calendar Legend -->
+          <div class="calendar-legend">
+            <h3 class="calendar-legend-title">Event Types</h3>
+            <div class="calendar-legend-items">
+              <div class="calendar-legend-item">
+                <span class="calendar-legend-color calendar-legend-green"></span>
+                <span class="calendar-legend-label">Payment Due</span>
+              </div>
+              <div class="calendar-legend-item">
+                <span class="calendar-legend-color calendar-legend-blue"></span>
+                <span class="calendar-legend-label">Lease Start/End</span>
+              </div>
+              <div class="calendar-legend-item">
+                <span class="calendar-legend-color calendar-legend-orange"></span>
+                <span class="calendar-legend-label">Maintenance Scheduled</span>
+              </div>
+              <div class="calendar-legend-item">
+                <span class="calendar-legend-color calendar-legend-purple"></span>
+                <span class="calendar-legend-label">Inspection</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Upcoming Events List -->
+          <div class="upcoming-events-section">
+            <div class="upcoming-events-header">
+              <h2 class="upcoming-events-title">Upcoming Events</h2>
+              <a href="#" class="upcoming-events-view-all">
+                View all
+                <span
+                  data-icon="chevronRight"
+                  data-icon-width="16"
+                  data-icon-height="16"
+                  data-icon-stroke-width="2"
+                ></span>
+              </a>
+            </div>
+            <div class="upcoming-events-list" id="upcomingEventsList">
+              <!-- Populated dynamically by JavaScript -->
+            </div>
+          </div>
+        </div>
+      </main>
+    </div>
+
+    <!-- Event Detail Modal -->
+    <div class="modal-overlay" id="eventModal">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h3 class="modal-title" id="modalTitle">Event Details</h3>
+          <button class="modal-close" id="closeModal">&times;</button>
+        </div>
+        <div class="modal-body" id="modalBody">
+          <!-- Populated dynamically -->
+        </div>
+        <div class="modal-footer">
+          <button class="landlord-btn landlord-btn-outline" id="cancelModal">Close</button>
+          <button class="landlord-btn landlord-btn-primary" id="viewDetailsBtn">
+            View Details
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ES Module Entry Point -->
+    <script type="module" src="../../../js/main.js"></script>
+    <script type="module" src="../../../js/views/landlord/landlord-calendar.js"></script>
+  </body>
+</html>

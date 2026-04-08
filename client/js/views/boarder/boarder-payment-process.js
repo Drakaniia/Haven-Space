@@ -4,6 +4,8 @@
  * Handles payment form, GCash QR code generation, and payment confirmation
  */
 
+import { getIcon } from '../../shared/icons.js';
+
 // Payment state
 const paymentState = {
   selectedMethod: 'gcash',
@@ -349,9 +351,7 @@ async function handleSubmitPayment() {
     if (submitBtn) {
       submitBtn.disabled = false;
       submitBtn.innerHTML = `
-        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
-        </svg>
+        ${getIcon('check', { strokeWidth: '2' })}
         Submit Payment
       `;
     }
