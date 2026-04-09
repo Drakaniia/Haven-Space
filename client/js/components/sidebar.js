@@ -161,7 +161,7 @@ export function initSidebar(options = {}) {
       renderNavigation(role, basePath);
       updateUserInfo(user);
       setActiveState();
-      setupToggleHandler();
+      setupNavbarSidebarToggle();
       setupLogoutHandler();
       restoreCollapsedState();
     })
@@ -449,21 +449,21 @@ function setupLogoutHandler() {
 }
 
 /**
- * Setup sidebar toggle handler
+ * Setup sidebar toggle handler (listens for navbar toggle event)
  */
-function setupToggleHandler() {
-  const toggleBtn = document.getElementById('sidebar-toggle');
-  const sidebar = document.querySelector('.sidebar');
-  // Support both boarder and landlord dashboard containers
-  const dashboardContainer =
-    document.querySelector('.boarder-dashboard') ||
-    document.querySelector('.landlord-dashboard') ||
-    document.querySelector('.admin-dashboard');
-  // Support properties page layout
-  const propertiesMain = document.querySelector('.your-properties-main');
+function setupNavbarSidebarToggle() {
+  // Listen for the custom event dispatched by navbar toggle button
+  window.addEventListener('navbar:sidebar:toggle', () => {
+    const sidebar = document.querySelector('.sidebar');
+    // Support both boarder and landlord dashboard containers
+    const dashboardContainer =
+      document.querySelector('.boarder-dashboard') ||
+      document.querySelector('.landlord-dashboard') ||
+      document.querySelector('.admin-dashboard');
+    // Support properties page layout
+    const propertiesMain = document.querySelector('.your-properties-main');
 
-  if (toggleBtn && sidebar) {
-    toggleBtn.addEventListener('click', () => {
+    if (sidebar) {
       const isCollapsed = !sidebar.classList.contains('collapsed');
       sidebar.classList.toggle('collapsed');
 
@@ -478,8 +478,8 @@ function setupToggleHandler() {
       }
 
       saveCollapsedState(isCollapsed);
-    });
-  }
+    }
+  });
 }
 
 /**

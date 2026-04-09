@@ -59,6 +59,7 @@ export function initNavbar(options = {}) {
       setupUserMenu();
       setupUserMenuHandlers(user);
       setupDocumentClickHandler();
+      setupSidebarToggle();
     })
     .catch(err => {
       console.error('Failed to load navbar template:', err);
@@ -500,6 +501,19 @@ function setupDocumentClickHandler() {
     ) {
       closeNotificationMenu();
     }
+  });
+}
+
+/**
+ * Setup sidebar toggle button handler
+ */
+function setupSidebarToggle() {
+  const sidebarToggle = document.getElementById('navbar-sidebar-toggle');
+  if (!sidebarToggle) return;
+
+  sidebarToggle.addEventListener('click', () => {
+    // Dispatch custom event for sidebar toggle
+    window.dispatchEvent(new CustomEvent('navbar:sidebar:toggle'));
   });
 }
 

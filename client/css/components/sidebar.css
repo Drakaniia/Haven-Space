@@ -42,42 +42,6 @@
   pointer-events: none;
 }
 
-/* Toggle Button */
-.sidebar-toggle {
-  position: absolute;
-  right: 0.75rem;
-  top: 50%;
-  transform: translateY(-50%);
-  width: 28px;
-  height: 28px;
-  border-radius: 6px;
-  border: 1px solid #e5e7eb;
-  background: var(--white);
-  color: var(--text-gray);
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: all 0.2s ease;
-  flex-shrink: 0;
-}
-
-.sidebar-toggle:hover {
-  background: var(--bg-green);
-  border-color: var(--primary-green);
-  color: var(--primary-green);
-}
-
-.sidebar-toggle svg {
-  width: 16px;
-  height: 16px;
-  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-.sidebar.collapsed .sidebar-toggle svg {
-  transform: rotate(180deg);
-}
-
 /* Navigation */
 .sidebar-nav {
   flex: 1;

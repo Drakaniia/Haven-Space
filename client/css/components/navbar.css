@@ -19,8 +19,27 @@
 .navbar-left {
   display: flex;
   align-items: center;
-  flex: 1;
-  max-width: 480px;
+  gap: 0.75rem;
+}
+
+/* Sidebar Toggle Button */
+.navbar-sidebar-toggle .navbar-icon {
+  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.navbar-sidebar-toggle:hover .navbar-icon {
+  transform: scale(1.1);
+}
+
+/* When sidebar is collapsed, mirror the icon horizontally */
+.sidebar-collapsed ~ .dashboard-main .navbar-sidebar-toggle .navbar-icon,
+.sidebar-collapsed .navbar-sidebar-toggle .navbar-icon {
+  transform: scaleX(-1);
+}
+
+.sidebar-collapsed ~ .dashboard-main .navbar-sidebar-toggle:hover .navbar-icon,
+.sidebar-collapsed .navbar-sidebar-toggle:hover .navbar-icon {
+  transform: scaleX(-1) scale(1.1);
 }
 
 /* Search Bar */
