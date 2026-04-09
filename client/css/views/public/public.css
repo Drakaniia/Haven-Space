@@ -203,6 +203,24 @@
   z-index: -1;
 }
 
+/* App Preview Section */
+.app-preview-section {
+  width: 100%;
+  padding-bottom: -10fr;
+}
+
+.app-preview-container {
+  max-width: 1700px;
+  margin: 0 auto;
+  padding: 0 1.5rem;
+}
+
+.app-preview-image {
+  width: 100%;
+  height: auto;
+  display: block;
+}
+
 /* Responsive Design */
 @media (max-width: 768px) {
   .navbar {
@@ -242,6 +260,14 @@
 
   .hero-image img {
     max-height: 250px;
+  }
+
+  .app-preview-section {
+    padding: 1.5rem 0;
+  }
+
+  .app-preview-container {
+    padding: 0 1rem;
   }
 }
 
