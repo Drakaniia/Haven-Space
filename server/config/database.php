@@ -12,6 +12,8 @@ return [
     'username' => env('DB_USER', 'root'),
     'password' => env('DB_PASS', ''),
     'charset' => 'utf8mb4',
+    'ssl_mode' => env('DB_SSL_MODE', null),
+    'ssl_ca' => env('DB_SSL_CA', null),
     'options' => [
         PDO::ATTR_ERRMODE => isDebugMode() ? PDO::ERRMODE_EXCEPTION : PDO::ERRMODE_SILENT,
         PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,

@@ -34,9 +34,12 @@ header_remove('Access-Control-Allow-Methods');
 header_remove('Access-Control-Allow-Headers');
 header_remove('Access-Control-Allow-Credentials');
 
-// 2. Handle Origin
-if (in_array($origin, $allowed_origins)) {
-    header("Access-Control-Allow-Origin: $origin");
+// Allow requests without Origin header (direct browser navigation)
+// This is needed for OAuth authorize endpoints that redirect the browser
+if ($origin === '' || in_array($origin, $allowed_origins)) {
+    if ($origin !== '') {
+        header("Access-Control-Allow-Origin: $origin");
+    }
 } else {
     // Log unauthorized origin in debug mode
     if (isDebugMode()) {

@@ -1,7 +1,132 @@
 {
-  "name": "Prime Real Estate",
-  "source": "client/assets/images/public/PrimeRealEstate.png",
-  "description": "City skyline illustration used in hero section",
-  "type": "image/png",
-  "usage": "Hero section illustration"
+  "name": "PrimeRealEstate",
+  "type": "illustration",
+  "description": "Minimalist cityscape illustration with line art style and eco-friendly accent colors",
+  "created": "2026-04-09",
+  "visualStyle": {
+    "artStyle": "minimalist-line-art",
+    "drawingStyle": "vector-line-art",
+    "complexity": "low",
+    "detailLevel": "medium"
+  },
+  "colorPalette": {
+    "primary": { "line": "#000000", "background": "#FFFFFF" },
+    "accent": {
+      "eco-green": "#4CAF50",
+      "description": "Used for trees, window panes, and hot balloons - represents sustainability and eco-friendliness"
+    },
+    "neutral": {
+      "light-gray": "#CCCCCC",
+      "description": "Used for some window pane fills and secondary elements"
+    },
+    "usageNotes": "Low saturation with single highlight color. Minimalist approach with clear visual hierarchy."
+  },
+  "typography": {
+    "recommended": {
+      "headings": {
+        "fontFamily": ["Inter", "SF Pro Display", "Plus Jakarta Sans"],
+        "fontWeight": "700+",
+        "fontSize": "24px+",
+        "color": "#333333"
+      },
+      "body": {
+        "fontFamily": ["Inter", "Noto Sans", "Plus Jakarta Sans"],
+        "fontWeight": "400",
+        "fontSize": "16px",
+        "lineHeight": 1.5,
+        "color": "#333333"
+      }
+    },
+    "notes": "Original image contains no text. Recommendations are for text overlay compatibility."
+  },
+  "layout": {
+    "gridSystem": {
+      "type": "12-column-responsive",
+      "visualMetaphor": "Buildings naturally divide into 8-10 vertical sections"
+    },
+    "spacing": { "horizontalSpacing": "80-120px", "calculatedFrom": "1920px desktop width" },
+    "proportions": {
+      "buildingWidthRatio": [1, 1.2, 1.5],
+      "description": "Small → Medium → Large building proportions following golden section rhythm"
+    },
+    "alignment": { "baseLine": "unified bottom baseline", "referenceElement": "ground line" },
+    "layers": {
+      "foreground": "street elements (people, cars, trees) - thicker lines, clearer details",
+      "midground": "buildings - medium line weight",
+      "background": "mountains, water, hot balloons - thinnest lines, distance effect"
+    }
+  },
+  "components": {
+    "buildings": {
+      "type": "card-style-architecture",
+      "borderRadius": "4px",
+      "description": "Can be abstracted as information cards. Modern UI requires slight rounding"
+    },
+    "icons": {
+      "tree": { "usage": "environmental/outdoor tag icon", "format": "SVG path extractable" },
+      "hotBalloon": {
+        "usage": "explore/navigation CTA button hover effect",
+        "interaction": "green fill + slight upward animation"
+      },
+      "streetLamp": { "usage": "lighting mode functional icon" },
+      "umbrella": { "usage": "rest area functional icon" }
+    },
+    "shadow": {
+      "foregroundElements": "box-shadow: 0 4px 12px rgba(0,0,0,0.05)",
+      "notes": "Original has no shadows. Added for UI depth enhancement"
+    }
+  },
+  "interactions": {
+    "hover": {
+      "accentElements": {
+        "transform": "scale(1.05)",
+        "color": "#388E3C",
+        "elements": ["hot balloon", "trees", "accented windows"]
+      }
+    },
+    "active": {
+      "buildingArea": { "overlay": "rgba(76, 175, 80, 0.1)", "content": "show brief description" }
+    },
+    "disabled": { "global": { "filter": "grayscale(100%)", "accentColor": "#9E9E9E" } }
+  },
+  "brandElements": {
+    "logo": "none present",
+    "brandDirection": {
+      "themes": ["ESG", "environmental", "sustainability", "smart-city"],
+      "styleAttributes": ["minimalist", "eco-friendly", "inclusive", "universal"]
+    },
+    "iconSemantics": "Unified - all people/animals are simple outlines with no facial details, representing inclusivity and universality"
+  },
+  "visualElements": {
+    "sceneComposition": "Asymmetric with visual balance through left/right hot balloons, mountains, and building clusters",
+    "focalPoints": {
+      "primary": "green hot balloon (right-center) + green window panes",
+      "secondary": "central spire tower (height focus)",
+      "eyeFlow": "Guided rightward through color anchors"
+    },
+    "atmosphere": "fresh, ecological, modern, sustainable",
+    "colorAnchors": "12 green window panes distributed across buildings + 1 solid green hot balloon"
+  },
+  "applications": {
+    "suitableFor": [
+      "website banners",
+      "PPT backgrounds",
+      "brand visual storytelling",
+      "green city digital products",
+      "community service platforms",
+      "sustainability tech branding"
+    ],
+    "useCases": ["hero sections", "landing pages", "feature illustrations", "brand identity"]
+  },
+  "accessibility": {
+    "contrast": "high (black lines on white background)",
+    "colorBlindness": "single accent color may be challenging for some forms of color blindness",
+    "recommendation": "use additional visual cues (patterns, icons) beyond just color for important information"
+  },
+  "metadata": {
+    "sourceFile": "PrimeRealEstate.webp",
+    "extractionDate": "2026-04-09",
+    "version": "1.0",
+    "notes": "Extracted visual style for design system integration"
+  }
 }
