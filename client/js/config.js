@@ -45,7 +45,7 @@ function getApiBaseUrl() {
   const env = detectEnvironment();
 
   const apiUrls = {
-    production: 'https://haven-space-api.onrender.com/api', // Production API on Render
+    production: 'https://haven-space-api.onrender.com', // Production API on Render (Docker root is already /api)
     'local-apache': 'http://localhost/haven-space/server/api', // XAMPP Apache
     'local-dev': 'http://localhost:8000', // PHP built-in server
   };
