@@ -4,7 +4,14 @@ build/
 *.log
 *.tmp
 .DS_Store
+
+# Environment files (NEVER commit these!)
 .env
+.env.local
+.env.production
+!.env.example
+!.env.xampp
+
 .idea/
 .vscode/.worktrees/
 .worktrees/  

@@ -1,7 +1,7 @@
 /**
  * Public Views Entry Point
  *
- * Initializes homepage components (logo cloud, floating header)
+ * Initializes homepage components (logo cloud, floating header, FAQ accordion)
  */
 
 import { initLogoCloud } from '../../components/logo-cloud.js';
@@ -46,8 +46,83 @@ function initFloatingHeader() {
 }
 
 /**
+ * FAQ Accordion - Toggle expand/collapse
+ * Only one item can be open at a time with smooth animation
+ */
+function initFAQAccordion() {
+  const faqItems = document.querySelectorAll('.faq-item');
+  const faqTabs = document.querySelectorAll('.faq-tab');
+
+  if (faqItems.length === 0) {
+    return;
+  }
+
+  let activeCategory = 'all';
+
+  // Handle tab clicks
+  faqTabs.forEach(tab => {
+    tab.addEventListener('click', () => {
+      const category = tab.dataset.category;
+
+      // Update active tab
+      faqTabs.forEach(t => t.classList.remove('active'));
+      tab.classList.add('active');
+
+      // Update active category
+      activeCategory = category;
+
+      // Filter FAQ items
+      faqItems.forEach(item => {
+        const itemCategory = item.dataset.category;
+        const shouldShow = category === 'all' || itemCategory === category;
+
+        if (shouldShow) {
+          item.classList.remove('hidden');
+        } else {
+          item.classList.add('hidden');
+          // Close the item if it's open
+          item.classList.remove('active');
+          const question = item.querySelector('.faq-question');
+          if (question) {
+            question.setAttribute('aria-expanded', 'false');
+          }
+        }
+      });
+    });
+  });
+
+  // Handle accordion clicks
+  faqItems.forEach(item => {
+    const question = item.querySelector('.faq-question');
+
+    if (question) {
+      question.addEventListener('click', () => {
+        const isActive = item.classList.contains('active');
+
+        // Close all items first
+        faqItems.forEach(otherItem => {
+          otherItem.classList.remove('active');
+          const otherQuestion = otherItem.querySelector('.faq-question');
+          if (otherQuestion) {
+            otherQuestion.setAttribute('aria-expanded', 'false');
+          }
+        });
+
+        // If the clicked item wasn't active, open it
+        if (!isActive) {
+          item.classList.add('active');
+          question.setAttribute('aria-expanded', 'true');
+        }
+      });
+    }
+  });
+
+  console.log('PublicViews: FAQ Accordion initialized');
+}
+
+/**
  * Initialize Public Views
- * Sets up homepage components (logo cloud, floating header)
+ * Sets up homepage components (logo cloud, floating header, FAQ accordion)
  */
 export function initPublicViews() {
   // Wait for DOM and images to be ready
@@ -66,6 +141,9 @@ export function initPublicViews() {
 function initPublicComponents() {
   // Initialize floating header (homepage only)
   initFloatingHeader();
+
+  // Initialize FAQ accordion
+  initFAQAccordion();
 
   // Initialize logo cloud (homepage only)
   const logoSlider = document.getElementById('logoSlider');

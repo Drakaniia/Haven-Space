@@ -6,6 +6,7 @@ Backend API for Haven Space, a platform connecting boarders with verified boardi
 
 ## Table of Contents
 
+- [Environment Configuration](#environment-configuration)
 - [Prerequisites](#prerequisites)
 - [Installation](#installation)
 - [Configuration](#configuration)
@@ -15,6 +16,68 @@ Backend API for Haven Space, a platform connecting boarders with verified boardi
 - [Google OAuth Setup](#google-oauth-setup)
 - [Testing](#testing)
 - [Project Structure](#project-structure)
+
+---
+
+## Environment Configuration
+
+Haven Space supports **environment-based configuration**, allowing seamless switching between local development and production without code changes.
+
+### How It Works
+
+The application automatically detects the environment and loads appropriate settings:
+
+| Environment         | Purpose                | Database              | API URL                      |
+| ------------------- | ---------------------- | --------------------- | ---------------------------- |
+| **local** (default) | Development with XAMPP | Local MySQL           | `http://localhost:8000`      |
+| **production**      | Live deployment        | Production SQL server | `https://yourdomain.com/api` |
+
+### Quick Setup
+
+**For Local Development (XAMPP):**
+
+```bash
+# Copy XAMPP environment template
+cp server/.env.xampp server/.env
+
+# Start XAMPP (Apache + MySQL), then:
+cd server
+php -S localhost:8000 -t api
+```
+
+**For Production Deployment:**
+
+```bash
+# Copy example environment file
+cp server/.env.example server/.env
+
+# Edit .env with production values:
+# - APP_ENV=production
+# - APP_DEBUG=false
+# - Production database credentials
+# - Production API URLs
+```
+
+### Environment Variables
+
+Key environment variables (see `server/.env.example` for full list):
+
+```env
+# Application Environment
+APP_ENV=local              # Options: local, production
+APP_DEBUG=true             # true for dev, false for production
+
+# Database Configuration
+DB_HOST=127.0.0.1         # Database server
+DB_NAME=havenspace_db     # Database name
+DB_USER=root              # Database username
+DB_PASS=                  # Database password
+
+# CORS - Allowed Origins (comma-separated)
+ALLOWED_ORIGINS=http://localhost:3000,http://localhost:8000
+```
+
+📖 **Complete Guide:** See [docs/ENVIRONMENT_SETUP.md](../docs/ENVIRONMENT_SETUP.md) for detailed setup instructions, troubleshooting, and production deployment guide.
 
 ---
 

@@ -1,0 +1,382 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Find a Room - Haven Space</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="../../css/global.css" />
+    <link rel="stylesheet" href="../../css/views/public/find-a-room.css" />
+    <script type="module">
+      import { getIcon } from '../../js/shared/icons.js';
+      window.getIcon = getIcon;
+    </script>
+  </head>
+  <body data-view="public">
+    <!-- Main Content -->
+    <main class="find-room-main">
+      <!-- Content Wrapper -->
+      <div class="find-room-content">
+        <!-- Hero Search Section -->
+        <div class="find-room-hero">
+          <div class="find-room-hero-content">
+            <h1 class="find-room-hero-title">Find Your Perfect Space</h1>
+            <p class="find-room-hero-subtitle">
+              Discover verified boarding houses near your university with all the amenities you need
+            </p>
+
+            <!-- Main Search Bar -->
+            <div class="find-room-search-wrapper">
+              <div class="find-room-search-box">
+                <script>
+                  document.write(getIcon('search', { className: 'find-room-search-icon' }));
+                </script>
+                <input
+                  type="text"
+                  class="find-room-search-input"
+                  placeholder="Search by location, university, or property name..."
+                  id="main-search-input"
+                />
+                <button class="find-room-search-btn" id="main-search-btn">
+                  Search
+                  <script>
+                    document.write(getIcon('arrowRightSimple', { width: 20, height: 20 }));
+                  </script>
+                </button>
+              </div>
+
+              <!-- Quick Location Chips -->
+              <div class="find-room-location-chips">
+                <span class="find-room-chip-label">Popular:</span>
+                <button class="find-room-chip" data-location="University of the Philippines">
+                  <script>
+                    document.write(getIcon('location', { width: 16, height: 16 }));
+                  </script>
+                  UP Area
+                </button>
+                <button class="find-room-chip" data-location="Ateneo de Manila">
+                  <script>
+                    document.write(getIcon('location', { width: 16, height: 16 }));
+                  </script>
+                  Ateneo
+                </button>
+                <button class="find-room-chip" data-location="Miriam College">
+                  <script>
+                    document.write(getIcon('location', { width: 16, height: 16 }));
+                  </script>
+                  Miriam
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Decorative Elements -->
+          <div class="find-room-hero-decoration">
+            <div class="find-room-hero-shape find-room-hero-shape-1"></div>
+            <div class="find-room-hero-shape find-room-hero-shape-2"></div>
+            <div class="find-room-hero-shape find-room-hero-shape-3"></div>
+          </div>
+        </div>
+
+        <!-- Filter Bar -->
+        <div class="find-room-filter-bar">
+          <div class="find-room-filter-container">
+            <!-- Filter Group 1: Price Range -->
+            <div class="find-room-filter-group">
+              <label class="find-room-filter-label">
+                <script>
+                  document.write(getIcon('currencyDollar', { width: 20, height: 20 }));
+                </script>
+                Price Range
+              </label>
+              <select class="find-room-filter-select" id="price-filter">
+                <option value="any">Any Price</option>
+                <option value="0-3000">₱0 - ₱3,000</option>
+                <option value="3000-5000">₱3,000 - ₱5,000</option>
+                <option value="5000-8000">₱5,000 - ₱8,000</option>
+                <option value="8000+">₱8,000+</option>
+              </select>
+            </div>
+
+            <!-- Filter Group 2: Room Type -->
+            <div class="find-room-filter-group">
+              <label class="find-room-filter-label">
+                <script>
+                  document.write(getIcon('homeModern', { width: 20, height: 20 }));
+                </script>
+                Room Type
+              </label>
+              <select class="find-room-filter-select" id="room-type-filter">
+                <option value="any">Any Type</option>
+                <option value="single">Single Occupancy</option>
+                <option value="shared">Shared Room</option>
+                <option value="studio">Studio</option>
+                <option value="1bhk">1 BHK</option>
+              </select>
+            </div>
+
+            <!-- Filter Group 3: Amenities -->
+            <div class="find-room-filter-group">
+              <label class="find-room-filter-label">
+                <script>
+                  document.write(getIcon('wrench', { width: 20, height: 20 }));
+                </script>
+                Amenities
+              </label>
+              <div class="find-room-amenities-dropdown">
+                <button class="find-room-amenities-btn" id="amenities-toggle">
+                  Select Amenities
+                  <script>
+                    document.write(getIcon('chevronDown', { width: 20, height: 20 }));
+                  </script>
+                </button>
+                <div class="find-room-amenities-panel" id="amenities-panel">
+                  <label class="find-room-amenity-checkbox">
+                    <input type="checkbox" value="wifi" />
+                    <span>WiFi</span>
+                  </label>
+                  <label class="find-room-amenity-checkbox">
+                    <input type="checkbox" value="ac" />
+                    <span>Air Conditioning</span>
+                  </label>
+                  <label class="find-room-amenity-checkbox">
+                    <input type="checkbox" value="furnished" />
+                    <span>Furnished</span>
+                  </label>
+                  <label class="find-room-amenity-checkbox">
+                    <input type="checkbox" value="parking" />
+                    <span>Parking</span>
+                  </label>
+                  <label class="find-room-amenity-checkbox">
+                    <input type="checkbox" value="laundry" />
+                    <span>Laundry</span>
+                  </label>
+                  <label class="find-room-amenity-checkbox">
+                    <input type="checkbox" value="kitchen" />
+                    <span>Kitchen Access</span>
+                  </label>
+                  <label class="find-room-amenity-checkbox">
+                    <input type="checkbox" value="security" />
+                    <span>24/7 Security</span>
+                  </label>
+                  <label class="find-room-amenity-checkbox">
+                    <input type="checkbox" value="cctv" />
+                    <span>CCTV</span>
+                  </label>
+                </div>
+              </div>
+            </div>
+
+            <!-- Filter Group 4: Distance -->
+            <div class="find-room-filter-group">
+              <label class="find-room-filter-label">
+                <script>
+                  document.write(getIcon('target', { width: 20, height: 20 }));
+                </script>
+                Distance
+              </label>
+              <select class="find-room-filter-select" id="distance-filter">
+                <option value="any">Any Distance</option>
+                <option value="1">Within 1 km</option>
+                <option value="2">Within 2 km</option>
+                <option value="5">Within 5 km</option>
+                <option value="10">Within 10 km</option>
+              </select>
+            </div>
+
+            <!-- Reset Filters -->
+            <button class="find-room-reset-btn" id="reset-filters-btn">
+              <script>
+                document.write(getIcon('history', { width: 20, height: 20 }));
+              </script>
+              Reset
+            </button>
+          </div>
+
+          <!-- Active Filters Tags -->
+          <div class="find-room-active-filters" id="active-filters-container">
+            <!-- Dynamic filter tags will appear here -->
+          </div>
+        </div>
+
+        <!-- Results Header -->
+        <div class="find-room-results-header">
+          <div class="find-room-results-info">
+            <h2 class="find-room-results-title">
+              <span id="results-count">24</span> Rooms Available
+            </h2>
+            <p class="find-room-results-subtitle" id="results-subtitle">
+              Showing all available properties
+            </p>
+          </div>
+          <div class="find-room-view-toggle">
+            <button class="find-room-view-btn active" data-view="grid" title="Grid View">
+              <script>
+                document.write(getIcon('grid2x2', { width: 24, height: 24 }));
+              </script>
+            </button>
+            <button class="find-room-view-btn" data-view="list" title="List View">
+              <script>
+                document.write(getIcon('list', { width: 24, height: 24 }));
+              </script>
+            </button>
+            <div class="find-room-sort-wrapper">
+              <label class="find-room-sort-label">Sort by:</label>
+              <select class="find-room-sort-select" id="sort-select">
+                <option value="recommended">Recommended</option>
+                <option value="price-low">Price: Low to High</option>
+                <option value="price-high">Price: High to Low</option>
+                <option value="distance">Distance</option>
+                <option value="newest">Newest Listings</option>
+                <option value="rating">Top Rated</option>
+              </select>
+            </div>
+          </div>
+        </div>
+
+        <!-- Property Grid -->
+        <div class="find-room-properties-grid" id="properties-grid">
+          <!-- Property cards will be dynamically inserted here by JavaScript -->
+        </div>
+
+        <!-- Load More -->
+        <div class="find-room-load-more">
+          <button class="find-room-load-more-btn" id="load-more-btn">
+            <script>
+              document.write(getIcon('plus', { width: 20, height: 20 }));
+            </script>
+            Load More Properties
+          </button>
+        </div>
+
+        <!-- No Results State -->
+        <div class="find-room-no-results" id="no-results" style="display: none">
+          <div class="find-room-no-results-content">
+            <script>
+              document.write(getIcon('magnifyingGlass', { width: 80, height: 80 }));
+            </script>
+            <h3>No Properties Found</h3>
+            <p>
+              We couldn't find any properties matching your criteria. Try adjusting your filters or
+              search area.
+            </p>
+            <button class="find-room-btn find-room-btn-primary" id="clear-filters-btn">
+              Clear All Filters
+            </button>
+          </div>
+        </div>
+      </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="footer">
+      <div class="footer-container">
+        <div class="footer-grid">
+          <!-- Brand Column -->
+          <div class="footer-brand">
+            <div class="footer-logo">
+              <span class="logo-text">Haven Space</span>
+            </div>
+            <p class="footer-tagline">Your trusted boarding house platform.</p>
+            <div class="footer-social">
+              <a href="#linkedin" class="social-link" aria-label="LinkedIn">
+                <span
+                  data-icon="linkedin"
+                  data-icon-width="20"
+                  data-icon-height="20"
+                  data-icon-stroke-width="1.5"
+                ></span>
+              </a>
+              <a href="#twitter" class="social-link" aria-label="Twitter">
+                <span
+                  data-icon="twitter"
+                  data-icon-width="20"
+                  data-icon-height="20"
+                  data-icon-stroke-width="1.5"
+                ></span>
+              </a>
+              <a href="#instagram" class="social-link" aria-label="Instagram">
+                <span
+                  data-icon="instagram"
+                  data-icon-width="20"
+                  data-icon-height="20"
+                  data-icon-stroke-width="1.5"
+                ></span>
+              </a>
+            </div>
+            <div class="footer-status">
+              <span class="status-dot"></span>
+              <span>All Systems Normal</span>
+            </div>
+          </div>
+
+          <!-- Company Column -->
+          <div class="footer-column">
+            <h3 class="footer-column-title">Company</h3>
+            <ul class="footer-links">
+              <li><a href="#properties">Properties</a></li>
+              <li><a href="#new">What's New</a></li>
+              <li><a href="#about">About</a></li>
+              <li><a href="#press">Press</a></li>
+              <li><a href="#careers">Careers</a></li>
+            </ul>
+          </div>
+
+          <!-- Community Column -->
+          <div class="footer-column">
+            <h3 class="footer-column-title">Community</h3>
+            <ul class="footer-links">
+              <li><a href="#landlord-guide">Landlord Guide</a></li>
+              <li><a href="#boarder-guide">Boarder Guide</a></li>
+              <li><a href="#success-stories">Success Stories</a></li>
+              <li><a href="#trending">Trending</a></li>
+              <li><a href="#explore">Explore Listings</a></li>
+            </ul>
+          </div>
+
+          <!-- Support Column -->
+          <div class="footer-column">
+            <h3 class="footer-column-title">Support</h3>
+            <ul class="footer-links">
+              <li><a href="#help">Help Topics</a></li>
+              <li><a href="#getting-started">Getting Started</a></li>
+              <li><a href="#pro">Haven Pro</a></li>
+              <li><a href="#faqs">FAQs</a></li>
+              <li><a href="#report">Report a Violation</a></li>
+            </ul>
+          </div>
+        </div>
+
+        <!-- Footer Bottom -->
+        <div class="footer-bottom">
+          <div class="footer-copyright">
+            <p>
+              &copy; 2026 Haven Space. All rights reserved &bull; Built with
+              <span class="heart-icon">&hearts;</span> from the Philippines.
+            </p>
+          </div>
+          <div class="footer-legal">
+            <a href="#terms">T&C</a>
+            <span class="separator">&bull;</span>
+            <a href="#privacy">Privacy Notice</a>
+            <span class="separator">&bull;</span>
+            <a href="#cookies">Cookie Notice</a>
+            <span class="separator">&bull;</span>
+            <a href="#trust">Trust Center</a>
+            <span class="separator">&bull;</span>
+            <a href="#cookie-preferences">Cookie Preferences</a>
+          </div>
+        </div>
+      </div>
+    </footer>
+
+    <!-- ES Module Entry Point -->
+    <script type="module" src="../../js/main.js"></script>
+    <script type="module" src="../../js/views/public/find-a-room.js"></script>
+  </body>
+</html>

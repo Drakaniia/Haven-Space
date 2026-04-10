@@ -1,14 +1,19 @@
 <?php
 // Haven Space Database Configuration
+// Supports environment-specific database settings
+
+// Load environment helper functions
+require_once __DIR__ . '/app.php';
 
 return [
-    'host' => $_ENV['DB_HOST'] ?? '127.0.0.1',
-    'database' => $_ENV['DB_NAME'] ?? 'havenspace_db',
-    'username' => $_ENV['DB_USER'] ?? 'root', // Default XAMPP username
-    'password' => $_ENV['DB_PASS'] ?? '',     // Default XAMPP password (empty)
+    'host' => env('DB_HOST', '127.0.0.1'),
+    'port' => env('DB_PORT', 3306),
+    'database' => env('DB_NAME', 'havenspace_db'),
+    'username' => env('DB_USER', 'root'),
+    'password' => env('DB_PASS', ''),
     'charset' => 'utf8mb4',
     'options' => [
-        PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
+        PDO::ATTR_ERRMODE => isDebugMode() ? PDO::ERRMODE_EXCEPTION : PDO::ERRMODE_SILENT,
         PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
         PDO::ATTR_EMULATE_PREPARES => false,
     ],
