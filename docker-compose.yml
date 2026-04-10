@@ -8,7 +8,7 @@ services:
       dockerfile: Dockerfile
     container_name: haven-space-api
     ports:
-      - "8000:80"
+      - '8000:80'
     volumes:
       - ./server:/var/www/html
       - ./server/storage:/var/www/html/storage
@@ -36,7 +36,7 @@ services:
     container_name: haven-space-db
     restart: always
     ports:
-      - "3307:3306"
+      - '3307:3306'
     environment:
       MYSQL_ROOT_PASSWORD: root
       MYSQL_DATABASE: havenspace_db
@@ -52,7 +52,7 @@ services:
     container_name: haven-space-frontend
     working_dir: /app
     ports:
-      - "3000:3000"
+      - '3000:3000'
     volumes:
       - .:/app
     command: sh -c "npm install && npm run serve"
