@@ -8,11 +8,18 @@ function detectEnvironment() {
   const hostname = window.location.hostname;
 
   // Production environments
-  const productionHosts = ['havenspace.com', 'www.havenspace.com', 'onrender.com'];
+  const productionHosts = [
+    'havenspace.com',
+    'www.havenspace.com',
+    'onrender.com',
+    'github.io', // GitHub Pages
+  ];
+
   if (
     productionHosts.includes(hostname) ||
     hostname.includes('havenspace') ||
-    hostname.includes('render')
+    hostname.includes('render') ||
+    hostname.includes('github.io')
   ) {
     return 'production';
   }
