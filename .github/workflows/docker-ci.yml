@@ -34,6 +34,16 @@ jobs:
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
+      - name: Save Docker image
+        run: docker save haven-space-api:latest | gzip > haven-space-api.tar.gz
+
+      - name: Upload image artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: docker-image
+          path: haven-space-api.tar.gz
+          retention-days: 1
+
   lint:
     name: Lint Dockerfile
     runs-on: ubuntu-latest
@@ -52,8 +62,13 @@ jobs:
     needs: build
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout
-        uses: actions/checkout@v6
+      - name: Download Docker image
+        uses: actions/download-artifact@v4
+        with:
+          name: docker-image
+
+      - name: Load Docker image
+        run: docker load < haven-space-api.tar.gz
 
       - name: Run container
         run: |
