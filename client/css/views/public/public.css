@@ -1,3 +1,6 @@
+/* Import Find a Room Page Styles */
+@import url('find-a-room.css');
+
 /* Navigation */
 .navbar {
   position: fixed;

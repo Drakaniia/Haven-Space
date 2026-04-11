@@ -17,7 +17,27 @@
       window.getIcon = getIcon;
     </script>
   </head>
-  <body data-view="public">
+  <body data-view="public-find-room">
+    <!-- Navigation -->
+    <nav class="navbar">
+      <div class="nav-container">
+        <div class="nav-logo">
+          <span class="logo-text">Haven Space</span>
+        </div>
+        <ul class="nav-links">
+          <li><a href="index.html">Home</a></li>
+          <li><a href="find-a-room.html" class="active">Find a Room</a></li>
+          <li><a href="maps.html">View Map</a></li>
+          <li><a href="#about">About</a></li>
+          <li><a href="#contact">Contact</a></li>
+        </ul>
+        <div class="nav-actions">
+          <a href="auth/login.html" class="btn-login">Log in</a>
+          <a href="auth/signup.html" class="btn-join">Join now</a>
+        </div>
+      </div>
+    </nav>
+
     <!-- Main Content -->
     <main class="find-room-main">
       <!-- Content Wrapper -->
@@ -241,14 +261,352 @@
 
         <!-- Property Grid -->
         <div class="find-room-properties-grid" id="properties-grid">
-          <!-- Property cards will be dynamically inserted here by JavaScript -->
+          <!-- Property Card 1 -->
+          <div class="find-room-property-card" data-property-id="1">
+            <div class="find-room-card-image-wrapper">
+              <img
+                src="https://images.unsplash.com/photo-1555854877-bab0e564b8d5?w=800&q=80"
+                alt="Sunrise Dormitory"
+                class="find-room-card-image"
+              />
+              <div class="find-room-card-badges">
+                <span class="find-room-badge find-room-badge-verified">
+                  <script>
+                    document.write(getIcon('badgeCheck', { width: 16, height: 16 }));
+                  </script>
+                  Verified
+                </span>
+                <span class="find-room-badge find-room-badge-new">New</span>
+              </div>
+              <button class="find-room-favorite-btn" data-favorite="false">
+                <script>
+                  document.write(getIcon('bookmark', { width: 24, height: 24 }));
+                </script>
+              </button>
+              <div class="find-room-card-amenities-preview">
+                <span class="find-room-amenity-icon" title="WiFi">
+                  <script>
+                    document.write(getIcon('sparkles', { width: 20, height: 20 }));
+                  </script>
+                </span>
+                <span class="find-room-amenity-icon" title="Air Conditioning">
+                  <script>
+                    document.write(getIcon('computerDesktop', { width: 20, height: 20 }));
+                  </script>
+                </span>
+                <span class="find-room-amenity-icon" title="Parking">
+                  <script>
+                    document.write(getIcon('checkSimple', { width: 20, height: 20 }));
+                  </script>
+                </span>
+                <span class="find-room-amenity-more">+3</span>
+              </div>
+            </div>
+            <div class="find-room-card-content">
+              <div class="find-room-card-header">
+                <div class="find-room-card-location">
+                  <script>
+                    document.write(getIcon('location', { width: 20, height: 20 }));
+                  </script>
+                  <span class="find-room-card-distance">0.5 km from UP</span>
+                </div>
+                <div class="find-room-card-rating">
+                  <script>
+                    document.write(getIcon('starSolid', { width: 16, height: 16 }));
+                  </script>
+                  <span class="find-room-card-rating-value">4.8</span>
+                  <span class="find-room-card-rating-count">(24)</span>
+                </div>
+              </div>
+              <h3 class="find-room-card-title">Sunrise Dormitory</h3>
+              <p class="find-room-card-address">Katipunan Avenue, Quezon City, Metro Manila</p>
+              <div class="find-room-card-features">
+                <span class="find-room-feature">
+                  <script>
+                    document.write(getIcon('userCircle', { width: 20, height: 20 }));
+                  </script>
+                  Single & Shared
+                </span>
+                <span class="find-room-feature">
+                  <script>
+                    document.write(getIcon('calendar', { width: 20, height: 20 }));
+                  </script>
+                  Available Now
+                </span>
+              </div>
+              <div class="find-room-card-footer">
+                <div class="find-room-card-price">
+                  <span class="find-room-card-price-amount">₱4,500</span>
+                  <span class="find-room-card-price-period">/month</span>
+                </div>
+                <a href="auth/login.html" class="find-room-card-btn">
+                  View Details
+                  <script>
+                    document.write(getIcon('arrowRightSimple', { width: 20, height: 20 }));
+                  </script>
+                </a>
+              </div>
+            </div>
+          </div>
+
+          <!-- Property Card 2 -->
+          <div class="find-room-property-card" data-property-id="2">
+            <div class="find-room-card-image-wrapper">
+              <img
+                src="https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?w=800&q=80"
+                alt="Campus View Residences"
+                class="find-room-card-image"
+              />
+              <div class="find-room-card-badges">
+                <span class="find-room-badge find-room-badge-verified">
+                  <script>
+                    document.write(getIcon('badgeCheck', { width: 16, height: 16 }));
+                  </script>
+                  Verified
+                </span>
+              </div>
+              <button class="find-room-favorite-btn" data-favorite="true">
+                <script>
+                  document.write(getIcon('heartSolid', { width: 24, height: 24 }));
+                </script>
+              </button>
+              <div class="find-room-card-amenities-preview">
+                <span class="find-room-amenity-icon" title="WiFi">
+                  <script>
+                    document.write(getIcon('sparkles', { width: 20, height: 20 }));
+                  </script>
+                </span>
+                <span class="find-room-amenity-icon" title="Furnished">
+                  <script>
+                    document.write(getIcon('checkSimple', { width: 20, height: 20 }));
+                  </script>
+                </span>
+                <span class="find-room-amenity-more">+2</span>
+              </div>
+            </div>
+            <div class="find-room-card-content">
+              <div class="find-room-card-header">
+                <div class="find-room-card-location">
+                  <script>
+                    document.write(getIcon('location', { width: 20, height: 20 }));
+                  </script>
+                  <span class="find-room-card-distance">1.2 km from Ateneo</span>
+                </div>
+                <div class="find-room-card-rating">
+                  <script>
+                    document.write(getIcon('starSolid', { width: 16, height: 16 }));
+                  </script>
+                  <span class="find-room-card-rating-value">4.6</span>
+                  <span class="find-room-card-rating-count">(18)</span>
+                </div>
+              </div>
+              <h3 class="find-room-card-title">Campus View Residences</h3>
+              <p class="find-room-card-address">Loyola Heights, Quezon City, Metro Manila</p>
+              <div class="find-room-card-features">
+                <span class="find-room-feature">
+                  <script>
+                    document.write(getIcon('userCircle', { width: 20, height: 20 }));
+                  </script>
+                  Studio & 1 BHK
+                </span>
+                <span class="find-room-feature">
+                  <script>
+                    document.write(getIcon('calendar', { width: 20, height: 20 }));
+                  </script>
+                  Available Sept 1
+                </span>
+              </div>
+              <div class="find-room-card-footer">
+                <div class="find-room-card-price">
+                  <span class="find-room-card-price-amount">₱6,500</span>
+                  <span class="find-room-card-price-period">/month</span>
+                </div>
+                <a href="auth/login.html" class="find-room-card-btn">
+                  View Details
+                  <script>
+                    document.write(getIcon('arrowRightSimple', { width: 20, height: 20 }));
+                  </script>
+                </a>
+              </div>
+            </div>
+          </div>
+
+          <!-- Property Card 3 -->
+          <div class="find-room-property-card" data-property-id="3">
+            <div class="find-room-card-image-wrapper">
+              <img
+                src="https://images.unsplash.com/photo-1502672260266-1c1ef2d93688?w=800&q=80"
+                alt="Greenfield Boarding House"
+                class="find-room-card-image"
+              />
+              <div class="find-room-card-badges">
+                <span class="find-room-badge find-room-badge-promo">Promo</span>
+              </div>
+              <button class="find-room-favorite-btn" data-favorite="false">
+                <script>
+                  document.write(getIcon('bookmark', { width: 24, height: 24 }));
+                </script>
+              </button>
+              <div class="find-room-card-amenities-preview">
+                <span class="find-room-amenity-icon" title="WiFi">
+                  <script>
+                    document.write(getIcon('sparkles', { width: 20, height: 20 }));
+                  </script>
+                </span>
+                <span class="find-room-amenity-icon" title="Laundry">
+                  <script>
+                    document.write(getIcon('wrench', { width: 20, height: 20 }));
+                  </script>
+                </span>
+                <span class="find-room-amenity-icon" title="Kitchen">
+                  <script>
+                    document.write(getIcon('wrench', { width: 20, height: 20 }));
+                  </script>
+                </span>
+                <span class="find-room-amenity-more">+1</span>
+              </div>
+            </div>
+            <div class="find-room-card-content">
+              <div class="find-room-card-header">
+                <div class="find-room-card-location">
+                  <script>
+                    document.write(getIcon('location', { width: 20, height: 20 }));
+                  </script>
+                  <span class="find-room-card-distance">2.1 km from Miriam</span>
+                </div>
+                <div class="find-room-card-rating">
+                  <script>
+                    document.write(getIcon('starSolid', { width: 16, height: 16 }));
+                  </script>
+                  <span class="find-room-card-rating-value">4.5</span>
+                  <span class="find-room-card-rating-count">(32)</span>
+                </div>
+              </div>
+              <h3 class="find-room-card-title">Greenfield Boarding House</h3>
+              <p class="find-room-card-address">Commonwealth Avenue, Quezon City, Metro Manila</p>
+              <div class="find-room-card-features">
+                <span class="find-room-feature">
+                  <script>
+                    document.write(getIcon('userCircle', { width: 20, height: 20 }));
+                  </script>
+                  Shared Rooms
+                </span>
+                <span class="find-room-feature">
+                  <script>
+                    document.write(getIcon('calendar', { width: 20, height: 20 }));
+                  </script>
+                  Available Now
+                </span>
+              </div>
+              <div class="find-room-card-footer">
+                <div class="find-room-card-price">
+                  <span class="find-room-card-price-amount">₱3,200</span>
+                  <span class="find-room-card-price-period">/month</span>
+                </div>
+                <a href="auth/login.html" class="find-room-card-btn">
+                  View Details
+                  <script>
+                    document.write(getIcon('arrowRightSimple', { width: 20, height: 20 }));
+                  </script>
+                </a>
+              </div>
+            </div>
+          </div>
+
+          <!-- Property Card 4 -->
+          <div class="find-room-property-card" data-property-id="4">
+            <div class="find-room-card-image-wrapper">
+              <img
+                src="https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?w=800&q=80"
+                alt="Metro Plaza Apartments"
+                class="find-room-card-image"
+              />
+              <div class="find-room-card-badges">
+                <span class="find-room-badge find-room-badge-verified">
+                  <script>
+                    document.write(getIcon('badgeCheck', { width: 16, height: 16 }));
+                  </script>
+                  Verified
+                </span>
+                <span class="find-room-badge find-room-badge-new">New</span>
+              </div>
+              <button class="find-room-favorite-btn" data-favorite="false">
+                <script>
+                  document.write(getIcon('bookmark', { width: 24, height: 24 }));
+                </script>
+              </button>
+              <div class="find-room-card-amenities-preview">
+                <span class="find-room-amenity-icon" title="WiFi">
+                  <script>
+                    document.write(getIcon('sparkles', { width: 20, height: 20 }));
+                  </script>
+                </span>
+                <span class="find-room-amenity-icon" title="Air Conditioning">
+                  <script>
+                    document.write(getIcon('computerDesktop', { width: 20, height: 20 }));
+                  </script>
+                </span>
+                <span class="find-room-amenity-icon" title="Security">
+                  <script>
+                    document.write(getIcon('shieldCheck', { width: 20, height: 20 }));
+                  </script>
+                </span>
+                <span class="find-room-amenity-more">+4</span>
+              </div>
+            </div>
+            <div class="find-room-card-content">
+              <div class="find-room-card-header">
+                <div class="find-room-card-location">
+                  <script>
+                    document.write(getIcon('location', { width: 20, height: 20 }));
+                  </script>
+                  <span class="find-room-card-distance">0.8 km from UP</span>
+                </div>
+                <div class="find-room-card-rating">
+                  <script>
+                    document.write(getIcon('starSolid', { width: 16, height: 16 }));
+                  </script>
+                  <span class="find-room-card-rating-value">4.9</span>
+                  <span class="find-room-card-rating-count">(41)</span>
+                </div>
+              </div>
+              <h3 class="find-room-card-title">Metro Plaza Apartments</h3>
+              <p class="find-room-card-address">Roxas Boulevard, Quezon City, Metro Manila</p>
+              <div class="find-room-card-features">
+                <span class="find-room-feature">
+                  <script>
+                    document.write(getIcon('userCircle', { width: 20, height: 20 }));
+                  </script>
+                  1 BHK & Studio
+                </span>
+                <span class="find-room-feature">
+                  <script>
+                    document.write(getIcon('calendar', { width: 20, height: 20 }));
+                  </script>
+                  Available Aug 15
+                </span>
+              </div>
+              <div class="find-room-card-footer">
+                <div class="find-room-card-price">
+                  <span class="find-room-card-price-amount">₱7,800</span>
+                  <span class="find-room-card-price-period">/month</span>
+                </div>
+                <a href="auth/login.html" class="find-room-card-btn">
+                  View Details
+                  <script>
+                    document.write(getIcon('arrowRightSimple', { width: 20, height: 20 }));
+                  </script>
+                </a>
+              </div>
+            </div>
+          </div>
         </div>
 
         <!-- Load More -->
         <div class="find-room-load-more">
           <button class="find-room-load-more-btn" id="load-more-btn">
             <script>
-              document.write(getIcon('plus', { width: 20, height: 20 }));
+              document.write(getIcon('history', { width: 20, height: 20 }));
             </script>
             Load More Properties
           </button>
@@ -258,7 +616,7 @@
         <div class="find-room-no-results" id="no-results" style="display: none">
           <div class="find-room-no-results-content">
             <script>
-              document.write(getIcon('magnifyingGlass', { width: 80, height: 80 }));
+              document.write(getIcon('exclamationCircle', { width: 80, height: 80 }));
             </script>
             <h3>No Properties Found</h3>
             <p>
@@ -273,7 +631,7 @@
       </div>
     </main>
 
-    <!-- Footer -->
+    <!-- Footer Section -->
     <footer class="footer">
       <div class="footer-container">
         <div class="footer-grid">
@@ -377,6 +735,6 @@
 
     <!-- ES Module Entry Point -->
     <script type="module" src="../../js/main.js"></script>
-    <script type="module" src="../../js/views/public/find-a-room.js"></script>
+    <script type="module" src="../../js/views/public/public-find-a-room.js"></script>
   </body>
 </html>

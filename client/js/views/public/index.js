@@ -5,6 +5,7 @@
  */
 
 import { initLogoCloud } from '../../components/logo-cloud.js';
+import { initPublicFindARoom } from './public-find-a-room.js';
 
 /**
  * Floating Header - Scroll-triggered transition
@@ -144,6 +145,11 @@ function initPublicComponents() {
 
   // Initialize FAQ accordion
   initFAQAccordion();
+
+  // Initialize find-a-room page (only if elements exist)
+  if (document.querySelector('.find-room-main')) {
+    initPublicFindARoom();
+  }
 
   // Initialize logo cloud (homepage only)
   const logoSlider = document.getElementById('logoSlider');

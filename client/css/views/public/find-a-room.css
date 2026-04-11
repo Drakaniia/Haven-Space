@@ -1,133 +1,15 @@
 /* ==========================================================================
    Find a Room Page Styles - Public Version
-   Haven Space
+   Haven Space - Public Views
    ========================================================================== */
 
 /* ==========================================================================
-   Navigation Styles
-   ========================================================================== */
-
-.navbar {
-  background: var(--white);
-  border-bottom: 1px solid var(--border-color);
-  padding: 1rem 2rem;
-  position: sticky;
-  top: 0;
-  z-index: 1000;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
-}
-
-.nav-container {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  max-width: 1400px;
-  margin: 0 auto;
-  gap: 2rem;
-}
-
-.nav-logo {
-  font-size: 1.5rem;
-  font-weight: 800;
-  color: var(--primary-green);
-}
-
-.logo-link {
-  text-decoration: none;
-  color: inherit;
-}
-
-.nav-links {
-  display: flex;
-  align-items: center;
-  gap: 2rem;
-  list-style: none;
-  margin: 0;
-  padding: 0;
-}
-
-.nav-links a {
-  text-decoration: none;
-  color: var(--text-dark);
-  font-size: 0.938rem;
-  font-weight: 500;
-  transition: color 0.2s ease;
-  padding: 0.5rem 0;
-  position: relative;
-}
-
-.nav-links a:hover {
-  color: var(--primary-green);
-}
-
-.nav-links a.active {
-  color: var(--primary-green);
-}
-
-.nav-links a.active::after {
-  content: '';
-  position: absolute;
-  bottom: 0;
-  left: 0;
-  right: 0;
-  height: 2px;
-  background: var(--primary-green);
-}
-
-.nav-actions {
-  display: flex;
-  align-items: center;
-  gap: 1rem;
-}
-
-.btn-login {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  padding: 0.625rem 1.5rem;
-  border: 1px solid var(--border-color);
-  border-radius: 10px;
-  font-size: 0.938rem;
-  font-weight: 500;
-  color: var(--text-dark);
-  background: var(--white);
-  text-decoration: none;
-  transition: all 0.2s ease;
-}
-
-.btn-login:hover {
-  border-color: var(--primary-green);
-  color: var(--primary-green);
-}
-
-.btn-join {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  padding: 0.625rem 1.5rem;
-  border: none;
-  border-radius: 10px;
-  font-size: 0.938rem;
-  font-weight: 600;
-  color: var(--white);
-  background: var(--primary-green);
-  text-decoration: none;
-  transition: all 0.2s ease;
-}
-
-.btn-join:hover {
-  background: var(--dark-green);
-  transform: translateY(-1px);
-}
-
-/* ==========================================================================
-   Main Content Layout
+   Main Layout (No Sidebar)
    ========================================================================== */
 
 .find-room-main {
-  flex: 1;
-  padding: 0;
-  min-height: calc(100vh - 80px);
+  min-height: 100vh;
+  background-color: var(--bg-cream);
 }
 
 .find-room-content {
@@ -141,9 +23,10 @@
 .find-room-hero {
   position: relative;
   background: linear-gradient(135deg, var(--primary-green) 0%, var(--dark-green) 100%);
-  padding: 3rem 3rem 4rem;
+  padding: 4rem 2rem 5rem;
   overflow: hidden;
   color: var(--white);
+  margin-top: 72px;
 }
 
 .find-room-hero-content {
@@ -155,17 +38,17 @@
 }
 
 .find-room-hero-title {
-  font-size: 2.5rem;
+  font-size: 3rem;
   font-weight: 800;
-  margin-bottom: 0.75rem;
+  margin-bottom: 1rem;
   letter-spacing: -0.02em;
   line-height: 1.2;
 }
 
 .find-room-hero-subtitle {
-  font-size: 1.125rem;
+  font-size: 1.25rem;
   opacity: 0.95;
-  margin-bottom: 2rem;
+  margin-bottom: 2.5rem;
   font-weight: 400;
   line-height: 1.6;
 }
@@ -333,8 +216,8 @@
   border-bottom: 1px solid var(--border-color);
   padding: 1.25rem 2rem;
   position: sticky;
-  top: 80px;
-  z-index: 999;
+  top: 72px;
+  z-index: 100;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
 }
 
@@ -563,9 +446,11 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 1.5rem 2rem;
+  padding: 2rem 2rem 1.5rem;
   gap: 1rem;
   flex-wrap: wrap;
+  max-width: 1440px;
+  margin: 0 auto;
 }
 
 .find-room-results-info {
@@ -670,7 +555,7 @@
   grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
   gap: 1.5rem;
   padding: 0 2rem 2rem;
-  max-width: 1400px;
+  max-width: 1440px;
   margin: 0 auto;
 }
 
@@ -1081,13 +966,14 @@
 .find-room-btn-primary {
   display: inline-flex;
   align-items: center;
+  justify-content: center;
   gap: 0.5rem;
   background: var(--primary-green);
   color: var(--white);
   border: none;
   border-radius: 10px;
   padding: 0.75rem 1.5rem;
-  font-size: 0.938rem;
+  font-size: 1rem;
   font-weight: 600;
   font-family: var(--font-main);
   cursor: pointer;
@@ -1096,7 +982,8 @@
 
 .find-room-btn-primary:hover {
   background: var(--dark-green);
-  transform: translateY(-1px);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(74, 124, 35, 0.2);
 }
 
 /* ==========================================================================
@@ -1105,7 +992,7 @@
 
 @media (max-width: 1024px) {
   .find-room-hero-title {
-    font-size: 2rem;
+    font-size: 2.5rem;
   }
 
   .find-room-properties-grid {
@@ -1114,31 +1001,16 @@
 }
 
 @media (max-width: 768px) {
-  .nav-container {
-    flex-wrap: wrap;
-    gap: 1rem;
-  }
-
-  .nav-links {
-    order: 3;
-    width: 100%;
-    justify-content: center;
-  }
-
-  .nav-actions {
-    order: 2;
-  }
-
   .find-room-hero {
-    padding: 2rem 1.5rem 3rem;
+    padding: 3rem 1.5rem 4rem;
   }
 
   .find-room-hero-title {
-    font-size: 1.75rem;
+    font-size: 2rem;
   }
 
   .find-room-hero-subtitle {
-    font-size: 1rem;
+    font-size: 1.125rem;
   }
 
   .find-room-search-box {
@@ -1196,8 +1068,16 @@
 }
 
 @media (max-width: 480px) {
+  .find-room-hero {
+    padding: 2.5rem 1rem 3rem;
+  }
+
   .find-room-hero-title {
-    font-size: 1.5rem;
+    font-size: 1.75rem;
+  }
+
+  .find-room-hero-subtitle {
+    font-size: 1rem;
   }
 
   .find-room-location-chips {
@@ -1233,5 +1113,9 @@
 
   .find-room-sort-select {
     flex: 1;
+  }
+
+  .find-room-properties-grid {
+    padding: 0 1rem 1rem;
   }
 }
