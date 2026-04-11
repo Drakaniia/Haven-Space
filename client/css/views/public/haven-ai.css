@@ -1,0 +1,893 @@
+/* Haven AI Landing Page Styles */
+
+/* ========================================
+   Hero Section
+   ======================================== */
+
+.haven-ai-hero {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 10rem 1.5rem 4rem;
+  text-align: center;
+  overflow: hidden;
+}
+
+.haven-ai-hero-background {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  background-image: radial-gradient(
+      ellipse 60% 50% at 50% 0%,
+      rgba(74, 124, 35, 0.08) 0%,
+      transparent 60%
+    ),
+    radial-gradient(at 20% 20%, rgba(124, 179, 66, 0.15) 0%, transparent 50%),
+    radial-gradient(at 80% 10%, rgba(74, 124, 35, 0.1) 0%, transparent 50%);
+}
+
+.haven-ai-hero-content {
+  position: relative;
+  z-index: 1;
+  max-width: 800px;
+  margin: 0 auto;
+}
+
+/* Hero Badge */
+.haven-ai-hero-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  background: rgba(74, 124, 35, 0.08);
+  border: 1px solid rgba(74, 124, 35, 0.2);
+  border-radius: 9999px;
+  padding: 0.5rem 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.haven-ai-badge-icon {
+  color: var(--primary-green);
+  display: flex;
+  align-items: center;
+}
+
+.haven-ai-badge-text {
+  color: var(--primary-green);
+  font-size: 0.875rem;
+  font-weight: 600;
+}
+
+/* Hero Title */
+.haven-ai-hero-title {
+  font-size: 4rem;
+  font-weight: 800;
+  line-height: 1.1;
+  color: var(--text-dark);
+  margin-bottom: 1rem;
+  letter-spacing: -0.025em;
+}
+
+.haven-ai-hero-description {
+  font-size: 1.25rem;
+  color: var(--text-gray);
+  line-height: 1.6;
+  margin-bottom: 2rem;
+  max-width: 680px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+/* Hero Buttons */
+.haven-ai-hero-buttons {
+  display: flex;
+  gap: 1rem;
+  justify-content: center;
+  align-items: center;
+}
+
+.btn-haven-ai-primary {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  background: var(--primary-green);
+  color: var(--white);
+  text-decoration: none;
+  font-weight: 600;
+  font-size: 1rem;
+  padding: 0.85rem 1.75rem;
+  border-radius: 25px;
+  transition: all 0.2s;
+  border: 2px solid var(--primary-green);
+}
+
+.btn-haven-ai-primary:hover {
+  background: var(--dark-green);
+  border-color: var(--dark-green);
+  transform: translateY(-1px);
+}
+
+.btn-haven-ai-primary span {
+  display: flex;
+  align-items: center;
+}
+
+.btn-haven-ai-secondary {
+  display: inline-block;
+  background: var(--white);
+  color: var(--primary-green);
+  text-decoration: none;
+  font-weight: 600;
+  font-size: 1rem;
+  padding: 0.85rem 1.75rem;
+  border-radius: 25px;
+  border: 2px solid var(--primary-green);
+  transition: all 0.2s;
+}
+
+.btn-haven-ai-secondary:hover {
+  background: var(--bg-green);
+}
+
+/* ========================================
+   Demo Preview Window
+   ======================================== */
+
+.haven-ai-demo-preview {
+  position: relative;
+  z-index: 1;
+  width: 100%;
+  max-width: 600px;
+  margin: 4rem auto 0;
+}
+
+.haven-ai-demo-window {
+  background: var(--white);
+  border-radius: 1rem;
+  border: 1px solid var(--border-color);
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.1);
+  overflow: hidden;
+}
+
+.haven-ai-demo-header {
+  background: #f8f9fa;
+  padding: 0.75rem 1rem;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.haven-ai-demo-dots {
+  display: flex;
+  gap: 0.375rem;
+}
+
+.dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  display: inline-block;
+}
+
+.dot-red {
+  background: #ef4444;
+}
+
+.dot-yellow {
+  background: #f59e0b;
+}
+
+.dot-green {
+  background: #16a34a;
+}
+
+.haven-ai-demo-title {
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: var(--text-gray);
+}
+
+.haven-ai-demo-chat {
+  padding: 1.5rem;
+  min-height: 250px;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.demo-message {
+  display: flex;
+  gap: 0.75rem;
+  align-items: flex-start;
+}
+
+.demo-user-message {
+  justify-content: flex-end;
+  flex-direction: row-reverse;
+}
+
+.demo-message-avatar {
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  background: var(--bg-green);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  color: var(--primary-green);
+}
+
+.demo-ai-avatar {
+  background: linear-gradient(135deg, var(--primary-green), var(--light-green));
+  color: var(--white);
+}
+
+.demo-message-content {
+  max-width: 75%;
+  padding: 0.75rem 1rem;
+  border-radius: 1rem;
+  font-size: 0.95rem;
+  line-height: 1.5;
+}
+
+.demo-user-message .demo-message-content {
+  background: var(--primary-green);
+  color: var(--white);
+  border-bottom-right-radius: 0.25rem;
+}
+
+.demo-ai-message .demo-message-content {
+  background: #f8f9fa;
+  color: var(--text-dark);
+  border-bottom-left-radius: 0.25rem;
+}
+
+.demo-message-content p {
+  margin: 0;
+}
+
+/* Typing Indicator */
+.demo-typing-indicator {
+  display: flex;
+  gap: 0.25rem;
+  padding: 0.25rem 0;
+}
+
+.typing-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--text-gray);
+  animation: typing-bounce 1.5s infinite;
+}
+
+.typing-dot:nth-child(2) {
+  animation-delay: 0.2s;
+}
+
+.typing-dot:nth-child(3) {
+  animation-delay: 0.4s;
+}
+
+@keyframes typing-bounce {
+  0%,
+  60%,
+  100% {
+    transform: translateY(0);
+  }
+  30% {
+    transform: translateY(-4px);
+  }
+}
+
+/* Demo Input */
+.haven-ai-demo-input {
+  padding: 1rem 1.5rem;
+  border-top: 1px solid var(--border-color);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+}
+
+.demo-input-placeholder {
+  flex: 1;
+  color: var(--text-gray);
+  font-size: 0.875rem;
+}
+
+.demo-send-button {
+  width: 36px;
+  height: 36px;
+  border-radius: 8px;
+  background: var(--primary-green);
+  color: var(--white);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.demo-send-button:hover {
+  background: var(--dark-green);
+}
+
+/* ========================================
+   Section Common Styles
+   ======================================== */
+
+.haven-ai-section-container {
+  max-width: 72rem;
+  margin: 0 auto;
+  padding: 0 1.5rem;
+}
+
+.haven-ai-section-header {
+  text-align: center;
+  margin-bottom: 3rem;
+}
+
+.haven-ai-section-badge {
+  display: inline-block;
+  background: var(--bg-green);
+  color: var(--primary-green);
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  padding: 0.5rem 1rem;
+  border-radius: 9999px;
+  text-transform: uppercase;
+  margin-bottom: 1rem;
+}
+
+.haven-ai-section-title {
+  font-size: 2.5rem;
+  font-weight: 800;
+  color: var(--text-dark);
+  margin: 0 0 1rem;
+  line-height: 1.2;
+  letter-spacing: -0.025em;
+}
+
+.haven-ai-section-subtitle {
+  font-size: 1.1rem;
+  color: var(--text-gray);
+  margin: 0;
+  max-width: 48rem;
+  margin-left: auto;
+  margin-right: auto;
+  line-height: 1.6;
+}
+
+/* ========================================
+   Features Grid Section
+   ======================================== */
+
+.haven-ai-features-section {
+  padding: 6rem 0;
+  background: var(--white);
+}
+
+.haven-ai-features-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1.5rem;
+}
+
+.haven-ai-feature-card {
+  background: var(--white);
+  border: 1px solid var(--border-color);
+  border-radius: 1rem;
+  padding: 2rem;
+  transition: all 0.2s;
+}
+
+.haven-ai-feature-card:hover {
+  border-color: var(--primary-green);
+  box-shadow: 0 8px 24px rgba(74, 124, 35, 0.08);
+  transform: translateY(-2px);
+}
+
+.haven-ai-feature-icon {
+  width: 56px;
+  height: 56px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 1.25rem;
+}
+
+.haven-ai-feature-icon-green {
+  background: rgba(74, 124, 35, 0.1);
+  color: var(--primary-green);
+}
+
+.haven-ai-feature-icon-blue {
+  background: rgba(37, 99, 235, 0.1);
+  color: #2563eb;
+}
+
+.haven-ai-feature-icon-purple {
+  background: rgba(147, 51, 234, 0.1);
+  color: #9333ea;
+}
+
+.haven-ai-feature-icon-orange {
+  background: rgba(217, 119, 6, 0.1);
+  color: #d97706;
+}
+
+.haven-ai-feature-icon-teal {
+  background: rgba(20, 184, 166, 0.1);
+  color: #14b8a6;
+}
+
+.haven-ai-feature-icon-pink {
+  background: rgba(236, 72, 153, 0.1);
+  color: #ec4899;
+}
+
+.haven-ai-feature-content {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.haven-ai-feature-title {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: var(--text-dark);
+  margin: 0;
+}
+
+.haven-ai-feature-description {
+  font-size: 0.95rem;
+  color: var(--text-gray);
+  line-height: 1.6;
+  margin: 0;
+}
+
+/* ========================================
+   How It Works Section
+   ======================================== */
+
+.haven-ai-how-it-works-section {
+  padding: 6rem 0;
+  background: #f8f9fa;
+}
+
+.haven-ai-steps-container {
+  display: flex;
+  flex-direction: column;
+  gap: 3rem;
+}
+
+.haven-ai-step {
+  display: grid;
+  grid-template-columns: 60px 1fr 120px;
+  gap: 1.5rem;
+  align-items: center;
+  padding: 2rem;
+  background: var(--white);
+  border-radius: 1rem;
+  border: 1px solid var(--border-color);
+  transition: all 0.2s;
+}
+
+.haven-ai-step:hover {
+  border-color: var(--primary-green);
+  box-shadow: 0 8px 24px rgba(74, 124, 35, 0.08);
+}
+
+.haven-ai-step-number {
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  background: var(--primary-green);
+  color: var(--white);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.5rem;
+  font-weight: 800;
+}
+
+.haven-ai-step-content {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.haven-ai-step-title {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: var(--text-dark);
+  margin: 0;
+}
+
+.haven-ai-step-description {
+  font-size: 0.95rem;
+  color: var(--text-gray);
+  line-height: 1.6;
+  margin: 0;
+}
+
+.haven-ai-step-visual {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--primary-green);
+  opacity: 0.6;
+}
+
+/* ========================================
+   Use Cases Section
+   ======================================== */
+
+.haven-ai-use-cases-section {
+  padding: 6rem 0;
+  background: var(--white);
+}
+
+.haven-ai-use-cases-header {
+  margin-bottom: 3rem;
+}
+
+.haven-ai-use-cases-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1.5rem;
+}
+
+.haven-ai-use-case-card {
+  background: var(--white);
+  border: 1px solid var(--border-color);
+  border-radius: 1rem;
+  padding: 2rem;
+  transition: all 0.2s;
+}
+
+.haven-ai-use-case-card:hover {
+  border-color: var(--primary-green);
+  box-shadow: 0 8px 24px rgba(74, 124, 35, 0.08);
+}
+
+.haven-ai-use-case-header {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-bottom: 1.5rem;
+}
+
+.haven-ai-use-case-icon {
+  width: 40px;
+  height: 40px;
+  border-radius: 10px;
+  background: var(--bg-green);
+  color: var(--primary-green);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.haven-ai-use-case-title {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: var(--text-dark);
+  margin: 0;
+}
+
+.haven-ai-use-case-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.haven-ai-use-case-list li {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.9rem;
+  color: var(--text-gray);
+  line-height: 1.5;
+}
+
+.haven-ai-use-case-list li span:first-child {
+  color: var(--primary-green);
+  flex-shrink: 0;
+}
+
+/* ========================================
+   Privacy & Trust Section
+   ======================================== */
+
+.haven-ai-privacy-section {
+  padding: 6rem 0;
+  background: #f8f9fa;
+}
+
+.haven-ai-privacy-card {
+  background: var(--white);
+  border: 1px solid var(--border-color);
+  border-radius: 1.5rem;
+  padding: 3rem;
+  text-align: center;
+}
+
+.haven-ai-privacy-icon {
+  color: var(--primary-green);
+  margin-bottom: 1.5rem;
+}
+
+.haven-ai-privacy-title {
+  font-size: 2rem;
+  font-weight: 800;
+  color: var(--text-dark);
+  margin: 0 0 1rem;
+}
+
+.haven-ai-privacy-description {
+  font-size: 1.1rem;
+  color: var(--text-gray);
+  line-height: 1.6;
+  margin: 0 0 2rem;
+  max-width: 56rem;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.haven-ai-privacy-list {
+  list-style: none;
+  padding: 0;
+  margin: 0 auto;
+  max-width: 40rem;
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 1rem;
+  text-align: left;
+}
+
+.haven-ai-privacy-list li {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  font-size: 0.95rem;
+  color: var(--text-dark);
+}
+
+.haven-ai-privacy-list li span:first-child {
+  color: var(--primary-green);
+  flex-shrink: 0;
+}
+
+/* ========================================
+   CTA Section
+   ======================================== */
+
+.haven-ai-cta-section {
+  padding: 6rem 0;
+  background: var(--white);
+}
+
+.haven-ai-cta-content {
+  text-align: center;
+}
+
+.haven-ai-cta-title {
+  font-size: 2.5rem;
+  font-weight: 800;
+  color: var(--text-dark);
+  margin: 0 0 1rem;
+  line-height: 1.2;
+}
+
+.haven-ai-cta-description {
+  font-size: 1.1rem;
+  color: var(--text-gray);
+  line-height: 1.6;
+  margin: 0 0 2rem;
+  max-width: 48rem;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.haven-ai-cta-buttons {
+  display: flex;
+  gap: 1rem;
+  justify-content: center;
+  align-items: center;
+}
+
+.btn-haven-ai-cta-primary {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  background: var(--primary-green);
+  color: var(--white);
+  text-decoration: none;
+  font-weight: 600;
+  font-size: 1rem;
+  padding: 0.85rem 1.75rem;
+  border-radius: 25px;
+  transition: all 0.2s;
+  border: 2px solid var(--primary-green);
+}
+
+.btn-haven-ai-cta-primary:hover {
+  background: var(--dark-green);
+  border-color: var(--dark-green);
+  transform: translateY(-1px);
+}
+
+.btn-haven-ai-cta-primary span {
+  display: flex;
+  align-items: center;
+}
+
+.btn-haven-ai-cta-secondary {
+  display: inline-block;
+  background: var(--white);
+  color: var(--primary-green);
+  text-decoration: none;
+  font-weight: 600;
+  font-size: 1rem;
+  padding: 0.85rem 1.75rem;
+  border-radius: 25px;
+  border: 2px solid var(--primary-green);
+  transition: all 0.2s;
+}
+
+.btn-haven-ai-cta-secondary:hover {
+  background: var(--bg-green);
+}
+
+/* ========================================
+   Responsive Design
+   ======================================== */
+
+@media (max-width: 1024px) {
+  .haven-ai-features-grid,
+  .haven-ai-use-cases-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .haven-ai-step {
+    grid-template-columns: 60px 1fr;
+    gap: 1.5rem;
+  }
+
+  .haven-ai-step-visual {
+    display: none;
+  }
+}
+
+@media (max-width: 768px) {
+  .haven-ai-hero {
+    padding: 8rem 1rem 3rem;
+  }
+
+  .haven-ai-hero-title {
+    font-size: 2.5rem;
+  }
+
+  .haven-ai-hero-description {
+    font-size: 1rem;
+  }
+
+  .haven-ai-hero-buttons {
+    flex-direction: column;
+    width: 100%;
+  }
+
+  .btn-haven-ai-primary,
+  .btn-haven-ai-secondary {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .haven-ai-demo-preview {
+    margin: 3rem auto 0;
+  }
+
+  .haven-ai-section-title {
+    font-size: 2rem;
+  }
+
+  .haven-ai-section-subtitle {
+    font-size: 1rem;
+  }
+
+  .haven-ai-features-section,
+  .haven-ai-how-it-works-section,
+  .haven-ai-use-cases-section,
+  .haven-ai-privacy-section,
+  .haven-ai-cta-section {
+    padding: 4rem 0;
+  }
+
+  .haven-ai-features-grid,
+  .haven-ai-use-cases-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .haven-ai-steps-container {
+    gap: 2rem;
+  }
+
+  .haven-ai-step {
+    grid-template-columns: 48px 1fr;
+    gap: 1rem;
+    padding: 1.5rem;
+  }
+
+  .haven-ai-step-number {
+    width: 48px;
+    height: 48px;
+    font-size: 1.25rem;
+  }
+
+  .haven-ai-step-title {
+    font-size: 1.1rem;
+  }
+
+  .haven-ai-step-description {
+    font-size: 0.9rem;
+  }
+
+  .haven-ai-privacy-card {
+    padding: 2rem 1.5rem;
+  }
+
+  .haven-ai-privacy-title {
+    font-size: 1.5rem;
+  }
+
+  .haven-ai-privacy-description {
+    font-size: 1rem;
+  }
+
+  .haven-ai-privacy-list {
+    grid-template-columns: 1fr;
+  }
+
+  .haven-ai-cta-title {
+    font-size: 2rem;
+  }
+
+  .haven-ai-cta-buttons {
+    flex-direction: column;
+    width: 100%;
+  }
+
+  .btn-haven-ai-cta-primary,
+  .btn-haven-ai-cta-secondary {
+    width: 100%;
+    justify-content: center;
+  }
+}
+
+@media (max-width: 480px) {
+  .haven-ai-hero-title {
+    font-size: 2rem;
+  }
+
+  .haven-ai-demo-window {
+    margin: 0 -0.5rem;
+  }
+
+  .haven-ai-demo-chat {
+    min-height: 200px;
+    padding: 1rem;
+  }
+
+  .demo-message-content {
+    font-size: 0.85rem;
+  }
+}

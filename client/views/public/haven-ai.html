@@ -1,0 +1,700 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Haven AI - Intelligent Boarding House Assistant | Haven Space</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="../../css/global.css" />
+    <link rel="stylesheet" href="../../css/views/public/public.css" />
+    <link rel="stylesheet" href="../../css/views/public/haven-ai.css" />
+  </head>
+  <body data-view="haven-ai">
+    <!-- Navigation -->
+    <nav class="navbar">
+      <div class="nav-container">
+        <div class="nav-logo">
+          <span class="logo-text">Haven Space</span>
+        </div>
+        <ul class="nav-links">
+          <li><a href="index.html">Home</a></li>
+          <li><a href="find-a-room.html">Find a Room</a></li>
+          <li><a href="maps.html">View Map</a></li>
+          <li><a href="#about">About</a></li>
+          <li><a href="#contact">Contact</a></li>
+        </ul>
+        <div class="nav-actions">
+          <a href="auth/login.html" class="btn-login">Log in</a>
+          <a href="auth/signup.html" class="btn-join">Join now</a>
+        </div>
+      </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <main class="haven-ai-hero">
+      <div class="haven-ai-hero-background"></div>
+      <div class="haven-ai-hero-content">
+        <div class="haven-ai-hero-badge">
+          <span
+            data-icon="sparkles"
+            data-icon-width="18"
+            data-icon-height="18"
+            data-icon-stroke-width="2"
+            class="haven-ai-badge-icon"
+          ></span>
+          <span class="haven-ai-badge-text">Introducing Haven AI</span>
+        </div>
+        <h1 class="haven-ai-hero-title">Your smart boarding<br />house assistant</h1>
+        <p class="haven-ai-hero-description">
+          Haven AI transforms how you find, manage, and experience boarding houses. Get instant
+          answers, personalized recommendations, and intelligent insights—all powered by AI.
+        </p>
+        <div class="haven-ai-hero-buttons">
+          <a href="#features" class="btn-haven-ai-primary">
+            <span
+              data-icon="arrowRight"
+              data-icon-width="20"
+              data-icon-height="20"
+              data-icon-stroke-width="2"
+            ></span>
+            <span>Explore Features</span>
+          </a>
+          <a href="auth/signup.html" class="btn-haven-ai-secondary">Get Started Free</a>
+        </div>
+      </div>
+
+      <!-- Animated Demo Preview -->
+      <div class="haven-ai-demo-preview">
+        <div class="haven-ai-demo-window">
+          <div class="haven-ai-demo-header">
+            <div class="haven-ai-demo-dots">
+              <span class="dot dot-red"></span>
+              <span class="dot dot-yellow"></span>
+              <span class="dot dot-green"></span>
+            </div>
+            <span class="haven-ai-demo-title">Haven AI Assistant</span>
+          </div>
+          <div class="haven-ai-demo-chat">
+            <div class="demo-message demo-user-message">
+              <div class="demo-message-avatar">
+                <span
+                  data-icon="user"
+                  data-icon-width="18"
+                  data-icon-height="18"
+                  data-icon-stroke-width="2"
+                ></span>
+              </div>
+              <div class="demo-message-content">
+                <p>Find me a room under ₱5,000 near universities with WiFi</p>
+              </div>
+            </div>
+            <div class="demo-message demo-ai-message">
+              <div class="demo-message-avatar demo-ai-avatar">
+                <span
+                  data-icon="sparkles"
+                  data-icon-width="18"
+                  data-icon-height="18"
+                  data-icon-stroke-width="2"
+                ></span>
+              </div>
+              <div class="demo-message-content">
+                <p class="demo-typing-indicator">
+                  <span class="typing-dot"></span>
+                  <span class="typing-dot"></span>
+                  <span class="typing-dot"></span>
+                </p>
+              </div>
+            </div>
+          </div>
+          <div class="haven-ai-demo-input">
+            <div class="demo-input-placeholder">Ask Haven AI anything...</div>
+            <div class="demo-send-button">
+              <span
+                data-icon="arrowRight"
+                data-icon-width="18"
+                data-icon-height="18"
+                data-icon-stroke-width="2"
+              ></span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </main>
+
+    <!-- Features Grid Section -->
+    <section class="haven-ai-features-section" id="features">
+      <div class="haven-ai-section-container">
+        <div class="haven-ai-section-header">
+          <span class="haven-ai-section-badge">FEATURES</span>
+          <h2 class="haven-ai-section-title">Everything you need,<br />intelligently automated</h2>
+          <p class="haven-ai-section-subtitle">
+            From smart search to instant support, Haven AI makes your boarding house experience
+            effortless.
+          </p>
+        </div>
+
+        <div class="haven-ai-features-grid">
+          <!-- Feature 1: Smart Property Matching -->
+          <div class="haven-ai-feature-card">
+            <div class="haven-ai-feature-icon haven-ai-feature-icon-green">
+              <span
+                data-icon="magnifyingGlassPlus"
+                data-icon-width="28"
+                data-icon-height="28"
+                data-icon-stroke-width="1.5"
+              ></span>
+            </div>
+            <div class="haven-ai-feature-content">
+              <h3 class="haven-ai-feature-title">Smart Property Matching</h3>
+              <p class="haven-ai-feature-description">
+                Search using natural language—"Find rooms under ₱5,000 near universities with WiFi."
+                Our AI understands your needs and finds the perfect matches.
+              </p>
+            </div>
+          </div>
+
+          <!-- Feature 2: 24/7 AI Assistant -->
+          <div class="haven-ai-feature-card">
+            <div class="haven-ai-feature-icon haven-ai-feature-icon-blue">
+              <span
+                data-icon="chat"
+                data-icon-width="28"
+                data-icon-height="28"
+                data-icon-stroke-width="1.5"
+              ></span>
+            </div>
+            <div class="haven-ai-feature-content">
+              <h3 class="haven-ai-feature-title">24/7 AI Assistant</h3>
+              <p class="haven-ai-feature-description">
+                Get instant answers to your questions anytime. From application status to payment
+                details, our AI assistant is always here to help.
+              </p>
+            </div>
+          </div>
+
+          <!-- Feature 3: Intelligent Insights -->
+          <div class="haven-ai-feature-card">
+            <div class="haven-ai-feature-icon haven-ai-feature-icon-purple">
+              <span
+                data-icon="analytics"
+                data-icon-width="28"
+                data-icon-height="28"
+                data-icon-stroke-width="1.5"
+              ></span>
+            </div>
+            <div class="haven-ai-feature-content">
+              <h3 class="haven-ai-feature-title">Intelligent Insights</h3>
+              <p class="haven-ai-feature-description">
+                Landlords get pricing suggestions and occupancy predictions. Boarders get
+                neighborhood insights and cost of living comparisons.
+              </p>
+            </div>
+          </div>
+
+          <!-- Feature 4: Smart Maintenance Triage -->
+          <div class="haven-ai-feature-card">
+            <div class="haven-ai-feature-icon haven-ai-feature-icon-orange">
+              <span
+                data-icon="wrenchScrewdriver"
+                data-icon-width="28"
+                data-icon-height="28"
+                data-icon-stroke-width="1.5"
+              ></span>
+            </div>
+            <div class="haven-ai-feature-content">
+              <h3 class="haven-ai-feature-title">Smart Maintenance Triage</h3>
+              <p class="haven-ai-feature-description">
+                AI automatically categorizes and prioritizes maintenance requests, provides
+                troubleshooting steps, and dispatches landlords when needed.
+              </p>
+            </div>
+          </div>
+
+          <!-- Feature 5: Communication Aid -->
+          <div class="haven-ai-feature-card">
+            <div class="haven-ai-feature-icon haven-ai-feature-icon-teal">
+              <span
+                data-icon="envelope"
+                data-icon-width="28"
+                data-icon-height="28"
+                data-icon-stroke-width="1.5"
+              ></span>
+            </div>
+            <div class="haven-ai-feature-content">
+              <h3 class="haven-ai-feature-title">Communication Aid</h3>
+              <p class="haven-ai-feature-description">
+                Draft professional messages to landlords or boarders, translate communications, and
+                summarize long conversation threads automatically.
+              </p>
+            </div>
+          </div>
+
+          <!-- Feature 6: Personalized Recommendations -->
+          <div class="haven-ai-feature-card">
+            <div class="haven-ai-feature-icon haven-ai-feature-icon-pink">
+              <span
+                data-icon="heart"
+                data-icon-width="28"
+                data-icon-height="28"
+                data-icon-stroke-width="1.5"
+              ></span>
+            </div>
+            <div class="haven-ai-feature-content">
+              <h3 class="haven-ai-feature-title">Personalized Recommendations</h3>
+              <p class="haven-ai-feature-description">
+                Haven AI learns your preferences over time, suggesting rooms, amenities, and
+                locations that match your lifestyle and priorities.
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- How It Works Section -->
+    <section class="haven-ai-how-it-works-section">
+      <div class="haven-ai-section-container">
+        <div class="haven-ai-section-header">
+          <span class="haven-ai-section-badge">HOW IT WORKS</span>
+          <h2 class="haven-ai-section-title">Three simple steps</h2>
+          <p class="haven-ai-section-subtitle">
+            Getting started with Haven AI is quick and effortless.
+          </p>
+        </div>
+
+        <div class="haven-ai-steps-container">
+          <!-- Step 1 -->
+          <div class="haven-ai-step">
+            <div class="haven-ai-step-number">1</div>
+            <div class="haven-ai-step-content">
+              <h3 class="haven-ai-step-title">Ask or Search</h3>
+              <p class="haven-ai-step-description">
+                Type your question in natural language—whether it's finding a room, checking payment
+                status, or requesting maintenance.
+              </p>
+            </div>
+            <div class="haven-ai-step-visual">
+              <span
+                data-icon="search"
+                data-icon-width="48"
+                data-icon-height="48"
+                data-icon-stroke-width="1"
+              ></span>
+            </div>
+          </div>
+
+          <!-- Step 2 -->
+          <div class="haven-ai-step">
+            <div class="haven-ai-step-number">2</div>
+            <div class="haven-ai-step-content">
+              <h3 class="haven-ai-step-title">AI Understands & Analyzes</h3>
+              <p class="haven-ai-step-description">
+                Haven AI processes your request, considers your context and preferences, then
+                generates intelligent, personalized responses.
+              </p>
+            </div>
+            <div class="haven-ai-step-visual">
+              <span
+                data-icon="sparkles"
+                data-icon-width="48"
+                data-icon-height="48"
+                data-icon-stroke-width="1"
+              ></span>
+            </div>
+          </div>
+
+          <!-- Step 3 -->
+          <div class="haven-ai-step">
+            <div class="haven-ai-step-number">3</div>
+            <div class="haven-ai-step-content">
+              <h3 class="haven-ai-step-title">Get Instant Results</h3>
+              <p class="haven-ai-step-description">
+                Receive actionable answers, curated listings, and smart recommendations in
+                seconds—not minutes.
+              </p>
+            </div>
+            <div class="haven-ai-step-visual">
+              <span
+                data-icon="checkCircle"
+                data-icon-width="48"
+                data-icon-height="48"
+                data-icon-stroke-width="1"
+              ></span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Use Cases Section -->
+    <section class="haven-ai-use-cases-section">
+      <div class="haven-ai-section-container">
+        <div class="haven-ai-use-cases-header">
+          <span class="haven-ai-section-badge">USE CASES</span>
+          <h2 class="haven-ai-section-title">Built for everyone</h2>
+          <p class="haven-ai-section-subtitle">
+            Haven AI adapts to your role, providing relevant assistance whether you're a boarder,
+            landlord, or admin.
+          </p>
+        </div>
+
+        <div class="haven-ai-use-cases-grid">
+          <!-- Boarder Use Case -->
+          <div class="haven-ai-use-case-card">
+            <div class="haven-ai-use-case-header">
+              <div class="haven-ai-use-case-icon">
+                <span
+                  data-icon="user"
+                  data-icon-width="24"
+                  data-icon-height="24"
+                  data-icon-stroke-width="1.5"
+                ></span>
+              </div>
+              <h3 class="haven-ai-use-case-title">For Boarders</h3>
+            </div>
+            <ul class="haven-ai-use-case-list">
+              <li>
+                <span
+                  data-icon="check"
+                  data-icon-width="18"
+                  data-icon-height="18"
+                  data-icon-stroke-width="2"
+                ></span>
+                <span>"Show me rooms with AC near my university"</span>
+              </li>
+              <li>
+                <span
+                  data-icon="check"
+                  data-icon-width="18"
+                  data-icon-height="18"
+                  data-icon-stroke-width="2"
+                ></span>
+                <span>"What's my application status?"</span>
+              </li>
+              <li>
+                <span
+                  data-icon="check"
+                  data-icon-width="18"
+                  data-icon-height="18"
+                  data-icon-stroke-width="2"
+                ></span>
+                <span>"Help me submit a maintenance request"</span>
+              </li>
+              <li>
+                <span
+                  data-icon="check"
+                  data-icon-width="18"
+                  data-icon-height="18"
+                  data-icon-stroke-width="2"
+                ></span>
+                <span>"When is my next payment due?"</span>
+              </li>
+            </ul>
+          </div>
+
+          <!-- Landlord Use Case -->
+          <div class="haven-ai-use-case-card">
+            <div class="haven-ai-use-case-header">
+              <div class="haven-ai-use-case-icon">
+                <span
+                  data-icon="homeModern"
+                  data-icon-width="24"
+                  data-icon-height="24"
+                  data-icon-stroke-width="1.5"
+                ></span>
+              </div>
+              <h3 class="haven-ai-use-case-title">For Landlords</h3>
+            </div>
+            <ul class="haven-ai-use-case-list">
+              <li>
+                <span
+                  data-icon="check"
+                  data-icon-width="18"
+                  data-icon-height="18"
+                  data-icon-stroke-width="2"
+                ></span>
+                <span>"What should I price my listing at?"</span>
+              </li>
+              <li>
+                <span
+                  data-icon="check"
+                  data-icon-width="18"
+                  data-icon-height="18"
+                  data-icon-stroke-width="2"
+                ></span>
+                <span>"Show me occupancy trends this month"</span>
+              </li>
+              <li>
+                <span
+                  data-icon="check"
+                  data-icon-width="18"
+                  data-icon-height="18"
+                  data-icon-stroke-width="2"
+                ></span>
+                <span>"How can I improve my listing?"</span>
+              </li>
+              <li>
+                <span
+                  data-icon="check"
+                  data-icon-width="18"
+                  data-icon-height="18"
+                  data-icon-stroke-width="2"
+                ></span>
+                <span>"Track pending applications"</span>
+              </li>
+            </ul>
+          </div>
+
+          <!-- Admin Use Case -->
+          <div class="haven-ai-use-case-card">
+            <div class="haven-ai-use-case-header">
+              <div class="haven-ai-use-case-icon">
+                <span
+                  data-icon="shieldCheck"
+                  data-icon-width="24"
+                  data-icon-height="24"
+                  data-icon-stroke-width="1.5"
+                ></span>
+              </div>
+              <h3 class="haven-ai-use-case-title">For Admins</h3>
+            </div>
+            <ul class="haven-ai-use-case-list">
+              <li>
+                <span
+                  data-icon="check"
+                  data-icon-width="18"
+                  data-icon-height="18"
+                  data-icon-stroke-width="2"
+                ></span>
+                <span>"Flag suspicious listing patterns"</span>
+              </li>
+              <li>
+                <span
+                  data-icon="check"
+                  data-icon-width="18"
+                  data-icon-height="18"
+                  data-icon-stroke-width="2"
+                ></span>
+                <span>"Generate platform activity report"</span>
+              </li>
+              <li>
+                <span
+                  data-icon="check"
+                  data-icon-width="18"
+                  data-icon-height="18"
+                  data-icon-stroke-width="2"
+                ></span>
+                <span>"Review user dispute history"</span>
+              </li>
+              <li>
+                <span
+                  data-icon="check"
+                  data-icon-width="18"
+                  data-icon-height="18"
+                  data-icon-stroke-width="2"
+                ></span>
+                <span>"Monitor system health metrics"</span>
+              </li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Privacy & Trust Section -->
+    <section class="haven-ai-privacy-section">
+      <div class="haven-ai-section-container">
+        <div class="haven-ai-privacy-card">
+          <div class="haven-ai-privacy-content">
+            <div class="haven-ai-privacy-icon">
+              <span
+                data-icon="shieldCheck"
+                data-icon-width="48"
+                data-icon-height="48"
+                data-icon-stroke-width="1.5"
+              ></span>
+            </div>
+            <h2 class="haven-ai-privacy-title">Your privacy comes first</h2>
+            <p class="haven-ai-privacy-description">
+              Haven AI is built with privacy and security at its core. We never share sensitive data
+              with AI models, and all personal information is encrypted and anonymized.
+            </p>
+            <ul class="haven-ai-privacy-list">
+              <li>
+                <span
+                  data-icon="checkCircle"
+                  data-icon-width="20"
+                  data-icon-height="20"
+                  data-icon-stroke-width="1.5"
+                ></span>
+                <span>No passwords or payment details sent to AI</span>
+              </li>
+              <li>
+                <span
+                  data-icon="checkCircle"
+                  data-icon-width="20"
+                  data-icon-height="20"
+                  data-icon-stroke-width="1.5"
+                ></span>
+                <span>Personal data anonymized before processing</span>
+              </li>
+              <li>
+                <span
+                  data-icon="checkCircle"
+                  data-icon-width="20"
+                  data-icon-height="20"
+                  data-icon-stroke-width="1.5"
+                ></span>
+                <span>Clear consent for all AI data processing</span>
+              </li>
+              <li>
+                <span
+                  data-icon="checkCircle"
+                  data-icon-width="20"
+                  data-icon-height="20"
+                  data-icon-stroke-width="1.5"
+                ></span>
+                <span>Option to disable AI assistant anytime</span>
+              </li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- CTA Section -->
+    <section class="haven-ai-cta-section">
+      <div class="haven-ai-section-container">
+        <div class="haven-ai-cta-content">
+          <h2 class="haven-ai-cta-title">Ready to experience smarter boarding?</h2>
+          <p class="haven-ai-cta-description">
+            Join thousands of users already benefiting from Haven AI's intelligent features.
+          </p>
+          <div class="haven-ai-cta-buttons">
+            <a href="auth/signup.html" class="btn-haven-ai-cta-primary">
+              Get Started Free
+              <span
+                data-icon="arrowRight"
+                data-icon-width="20"
+                data-icon-height="20"
+                data-icon-stroke-width="2"
+              ></span>
+            </a>
+            <a href="index.html" class="btn-haven-ai-cta-secondary">Back to Homepage</a>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Footer Section -->
+    <footer class="footer">
+      <div class="footer-container">
+        <div class="footer-grid">
+          <!-- Brand Column -->
+          <div class="footer-brand">
+            <div class="footer-logo">
+              <span class="logo-text">Haven Space</span>
+            </div>
+            <p class="footer-tagline">Your trusted boarding house platform.</p>
+            <div class="footer-social">
+              <a href="#linkedin" class="social-link" aria-label="LinkedIn">
+                <span
+                  data-icon="linkedin"
+                  data-icon-width="20"
+                  data-icon-height="20"
+                  data-icon-stroke-width="1.5"
+                ></span>
+              </a>
+              <a href="#twitter" class="social-link" aria-label="Twitter">
+                <span
+                  data-icon="twitter"
+                  data-icon-width="20"
+                  data-icon-height="20"
+                  data-icon-stroke-width="1.5"
+                ></span>
+              </a>
+              <a href="#instagram" class="social-link" aria-label="Instagram">
+                <span
+                  data-icon="instagram"
+                  data-icon-width="20"
+                  data-icon-height="20"
+                  data-icon-stroke-width="1.5"
+                ></span>
+              </a>
+            </div>
+            <div class="footer-status">
+              <span class="status-dot"></span>
+              <span>All Systems Normal</span>
+            </div>
+          </div>
+
+          <!-- Company Column -->
+          <div class="footer-column">
+            <h3 class="footer-column-title">Company</h3>
+            <ul class="footer-links">
+              <li><a href="#properties">Properties</a></li>
+              <li><a href="#new">What's New</a></li>
+              <li><a href="#about">About</a></li>
+              <li><a href="#press">Press</a></li>
+              <li><a href="#careers">Careers</a></li>
+            </ul>
+          </div>
+
+          <!-- Community Column -->
+          <div class="footer-column">
+            <h3 class="footer-column-title">Community</h3>
+            <ul class="footer-links">
+              <li><a href="#landlord-guide">Landlord Guide</a></li>
+              <li><a href="#boarder-guide">Boarder Guide</a></li>
+              <li><a href="#success-stories">Success Stories</a></li>
+              <li><a href="#trending">Trending</a></li>
+              <li><a href="#explore">Explore Listings</a></li>
+            </ul>
+          </div>
+
+          <!-- Support Column -->
+          <div class="footer-column">
+            <h3 class="footer-column-title">Support</h3>
+            <ul class="footer-links">
+              <li><a href="#help">Help Topics</a></li>
+              <li><a href="#getting-started">Getting Started</a></li>
+              <li><a href="#pro">Haven Pro</a></li>
+              <li><a href="#faqs">FAQs</a></li>
+              <li><a href="#report">Report a Violation</a></li>
+            </ul>
+          </div>
+        </div>
+
+        <!-- Footer Bottom -->
+        <div class="footer-bottom">
+          <div class="footer-copyright">
+            <p>
+              &copy; 2026 Haven Space. All rights reserved &bull; Built with
+              <span class="heart-icon">&hearts;</span> from the Philippines.
+            </p>
+          </div>
+          <div class="footer-legal">
+            <a href="#terms">T&C</a>
+            <span class="separator">&bull;</span>
+            <a href="#privacy">Privacy Notice</a>
+            <span class="separator">&bull;</span>
+            <a href="#cookies">Cookie Notice</a>
+            <span class="separator">&bull;</span>
+            <a href="#trust">Trust Center</a>
+            <span class="separator">&bull;</span>
+            <a href="#cookie-preferences">Cookie Preferences</a>
+          </div>
+        </div>
+      </div>
+    </footer>
+
+    <!-- ES Module Entry Point -->
+    <script type="module" src="../../js/main.js"></script>
+    <script type="module" src="../../js/views/public/haven-ai.js"></script>
+  </body>
+</html>

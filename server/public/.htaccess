@@ -1,0 +1,6 @@
+# Redirect /api/auth/* to /auth/* for backward compatibility
+# This handles the case where Google OAuth redirect_uri includes /api prefix
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+    RewriteRule ^api/auth/(.*)$ /auth/$1 [R=301,L]
+</IfModule>

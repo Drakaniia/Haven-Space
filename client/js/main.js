@@ -6,6 +6,7 @@
  */
 
 import { initPublicViews } from './views/public/index.js';
+import { initHavenAIPage } from './views/public/haven-ai.js';
 import { initBoarderDashboard } from './views/boarder/index.js';
 import { initLandlordDashboardEntry } from './views/landlord/index.js';
 import { initAdminDashboard } from './views/admin/index.js';
@@ -31,6 +32,9 @@ function detectAndInitialize() {
       break;
     case 'admin':
       initAdminDashboard();
+      break;
+    case 'haven-ai':
+      initHavenAIPage();
       break;
     case 'public':
     default:

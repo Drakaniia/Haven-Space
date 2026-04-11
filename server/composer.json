@@ -30,8 +30,6 @@
   },
   "scripts": {
     "test": "phpunit",
-    "analyze": "phpstan analyse",
-    "migrate": "php database/migrate.php",
-    "server:dev": "php -S localhost:8000 -t api"
+    "analyze": "phpstan analyse"
   }
 }

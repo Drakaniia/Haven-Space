@@ -17,8 +17,11 @@ use App\Core\Auth\Middleware;
 try {
     Middleware::ensureAuthenticated();
 } catch (\Exception $e) {
-    // User not authenticated, redirect to login
-    header('Location: ../../../views/public/auth/login.html?error=Please%20login%20first%20to%20link%20Google%20account');
+    // User not authenticated, redirect to login with absolute path
+    $protocol = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') ? 'https' : 'http';
+    $host = $_SERVER['HTTP_HOST'];
+    $baseUrl = $protocol . '://' . $host;
+    header('Location: ' . $baseUrl . '/client/views/public/auth/login.html?error=Please%20login%20first%20to%20link%20Google%20account');
     exit;
 }
 

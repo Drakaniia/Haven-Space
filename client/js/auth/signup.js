@@ -20,36 +20,55 @@ document.addEventListener('DOMContentLoaded', function () {
 
   // Check for pending Google OAuth signup
   const urlParams = new URLSearchParams(window.location.search);
-  const oauthPending = urlParams.get('oauth') === 'pending';
+  const oauthStatus = urlParams.get('oauth');
+  const oauthPending = oauthStatus === 'pending';
+  const oauthNew = oauthStatus === 'new';
 
-  if (oauthPending) {
-    // User is coming from Google OAuth, skip to step 2
-    step1.classList.add('hidden');
-    step2.classList.remove('hidden');
-    headerLinkContainer.classList.remove('hidden');
-
+  if (oauthPending || oauthNew) {
     // Fetch pending user data from session
     fetch(`${CONFIG.API_BASE_URL}/auth/google/get-pending-user.php`, {
       credentials: 'include',
     })
       .then(res => res.json())
       .then(result => {
-        if (result.success && result.data) {
-          const pendingUser = result.data;
-          if (pendingUser.first_name) {
-            document.getElementById('firstName').value = pendingUser.first_name;
-          }
-          if (pendingUser.last_name) {
-            document.getElementById('lastName').value = pendingUser.last_name;
-          }
-          if (pendingUser.email) {
-            document.getElementById('email').value = pendingUser.email;
-            document.getElementById('email').readOnly = true; // Email from Google is verified
-          }
+        if (!result.success || !result.data) {
+          // No pending user data - user might already exist, redirect to login
+          console.warn('No pending user data found, redirecting to login');
+          window.location.href = 'login.html?error=Session%20expired.%20Please%20login%20again.';
+          return;
+        }
+
+        const pendingUser = result.data;
+
+        if (oauthPending) {
+          // User is coming from Google OAuth signup (with role), skip to step 2
+          step1.classList.add('hidden');
+          step2.classList.remove('hidden');
+          headerLinkContainer.classList.remove('hidden');
+        } else if (oauthNew) {
+          // User is coming from Google OAuth login (no account), show step 1 for role selection
+          // Keep step 1 visible, hide step 2
+          step1.classList.remove('hidden');
+          step2.classList.add('hidden');
+          headerLinkContainer.classList.add('hidden');
+        }
+
+        // Pre-fill form if on step 2
+        if (pendingUser.first_name) {
+          document.getElementById('firstName').value = pendingUser.first_name;
+        }
+        if (pendingUser.last_name) {
+          document.getElementById('lastName').value = pendingUser.last_name;
+        }
+        if (pendingUser.email) {
+          document.getElementById('email').value = pendingUser.email;
+          document.getElementById('email').readOnly = true; // Email from Google is verified
         }
       })
       .catch(err => {
         console.error('Error fetching pending user data:', err);
+        window.location.href =
+          'login.html?error=Error%20loading%20signup%20data.%20Please%20try%20again.';
       });
   }
 
@@ -95,6 +114,9 @@ document.addEventListener('DOMContentLoaded', function () {
       step2.classList.remove('hidden');
       headerLinkContainer.classList.remove('hidden');
 
+      // Check if this is an OAuth user to pre-fill form
+      const isOAuthUser = oauthPending || oauthNew;
+
       // Update title and header link based on role
       if (selectedRole === 'landlord') {
         roleTitleText.textContent = 'great boarders';
@@ -116,6 +138,32 @@ document.addEventListener('DOMContentLoaded', function () {
           e.preventDefault();
           switchRole('landlord');
         };
+      }
+
+      // If OAuth user, fetch and pre-fill data after showing step 2
+      if (isOAuthUser) {
+        fetch(`${CONFIG.API_BASE_URL}/auth/google/get-pending-user.php`, {
+          credentials: 'include',
+        })
+          .then(res => res.json())
+          .then(result => {
+            if (result.success && result.data) {
+              const pendingUser = result.data;
+              if (pendingUser.first_name) {
+                document.getElementById('firstName').value = pendingUser.first_name;
+              }
+              if (pendingUser.last_name) {
+                document.getElementById('lastName').value = pendingUser.last_name;
+              }
+              if (pendingUser.email) {
+                document.getElementById('email').value = pendingUser.email;
+                document.getElementById('email').readOnly = true;
+              }
+            }
+          })
+          .catch(err => {
+            console.error('Error fetching pending user data:', err);
+          });
       }
     }
   });
@@ -176,10 +224,12 @@ document.addEventListener('DOMContentLoaded', function () {
         alert('Please select your role first (Boarder or Landlord)');
         return;
       }
+
+      // If user selected role on step 1, include it in the OAuth flow
+      const roleForOAuth = selectedRole || '';
+
       // Redirect to Google OAuth authorize endpoint with role preference
-      const authUrl = `${CONFIG.API_BASE_URL}/auth/google/authorize.php?action=signup&role=${
-        selectedRole || ''
-      }`;
+      const authUrl = `${CONFIG.API_BASE_URL}/auth/google/authorize.php?action=signup&role=${roleForOAuth}`;
       window.location.href = authUrl;
     });
   });
@@ -217,11 +267,23 @@ document.addEventListener('DOMContentLoaded', function () {
           // Store user info
           localStorage.setItem('user', JSON.stringify(result.user));
 
-          // Redirect based on role
-          if (result.user.role === 'landlord') {
-            window.location.href = '../../landlord/index.html';
+          // Redirect based on role - detect Apache setup vs GitHub Pages
+          const pathname = window.location.pathname;
+          let basePath;
+
+          if (pathname.includes('github.io')) {
+            // GitHub Pages deployment
+            basePath = '/Haven-Space/client/views/';
           } else {
-            window.location.href = '../../boarder/index.html';
+            // Apache setup: document root points to client folder
+            // OR local development with Apache
+            basePath = '/views/';
+          }
+
+          if (result.user.role === 'landlord') {
+            window.location.href = `${basePath}landlord/index.html`;
+          } else {
+            window.location.href = `${basePath}boarder/index.html`;
           }
         } else {
           alert(result.error || 'Signup failed');

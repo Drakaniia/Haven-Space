@@ -44,7 +44,7 @@ Final/
 │   │   ├── components/          # Component-specific styles
 │   │   │   ├── logo-cloud.css   # Logo cloud slider styles
 │   │   │   ├── sidebar.css      # Sidebar navigation styles
-│   │   │   └── navbar.css       # Navbar styles
+│   │   └── navbar.css       # Navbar styles
 │   │   ├── views/               # Page-specific styles (nested by view type)
 │   │   │   ├── admin/
 │   │   │   ├── boarder/
@@ -58,11 +58,11 @@ Final/
 │   │   ├── auth/                # Authentication logic
 │   │   │   ├── forgot-password.js
 │   │   │   ├── login.js
-│   │   │   └── signup.js
+│   │   └── signup.js
 │   │   ├── components/          # Component logic
 │   │   │   ├── logo-cloud.js
 │   │   │   ├── sidebar.js
-│   │   │   └── navbar.js
+│   │   └── navbar.js
 │   │   ├── shared/              # Shared utilities
 │   │   │   └── state.js
 │   │   ├── views/               # Page-specific logic (nested by view type)
@@ -307,7 +307,7 @@ git checkout -b hotfix/critical-security-patch
 
 ### CSS Architecture
 
-- **CSS Custom Properties**: Defined in `global.css` under `:root`
+- **CSS Custom Variables**: Defined in `global.css` under `:root`
 - **Component Styles**: Modular files in `css/components/`
 - **Page Styles**: Specific styles in `css/views/`
 - **Import Order**: `global.css` imports component and view styles

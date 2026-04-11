@@ -41,11 +41,23 @@ document.addEventListener('DOMContentLoaded', function () {
         // Store user info (token is now in httpOnly cookie)
         localStorage.setItem('user', JSON.stringify(result.user));
 
-        // Redirect based on role
-        if (result.user.role === 'landlord') {
-          window.location.href = '../../landlord/index.html';
+        // Redirect based on role - detect Apache setup vs GitHub Pages
+        const pathname = window.location.pathname;
+        let basePath;
+
+        if (pathname.includes('github.io')) {
+          // GitHub Pages deployment
+          basePath = '/Haven-Space/client/views/';
         } else {
-          window.location.href = '../../boarder/index.html';
+          // Apache setup: document root points to client folder
+          // OR local development with Apache
+          basePath = '/views/';
+        }
+
+        if (result.user.role === 'landlord') {
+          window.location.href = `${basePath}landlord/index.html`;
+        } else {
+          window.location.href = `${basePath}boarder/index.html`;
         }
       } else {
         alert(result.error || 'Login failed');
