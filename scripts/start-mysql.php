@@ -8,7 +8,7 @@ $xamppPath = 'C:\\xampp';
 $mysqlPath = $xamppPath . '\\mysql\\bin\\mysqld.exe';
 $mysqlBin = basename($mysqlPath);
 
-echo "🚀 Starting XAMPP MySQL...\n\n";
+echo "Starting XAMPP MySQL...\n\n";
 
 // Check if MySQL is already running
 $output = [];
@@ -57,7 +57,7 @@ if ($alreadyRunning) {
     }
 }
 
-echo "\n🌐 Opening phpMyAdmin...\n";
+echo "\nOpening phpMyAdmin...\n";
 
 // Wait a moment for MySQL to fully initialize
 usleep(500000); // 0.5 seconds

@@ -4,8 +4,11 @@
   "type": "module",
   "scripts": {
     "build": "node scripts/build.js",
-    "xampp:apache": "php scripts/start-apache.php",
-    "xampp:mysql": "php scripts/start-mysql.php",
+    "server": "cd server && php -S localhost:8000 -t api",
+    "client": "php scripts/start-apache.php",
+    "mysql": "php scripts/start-mysql.php",
+    "db:setup": "php scripts/setup-database.php",
+    "db:seed": "php scripts/setup-database.php --seed",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
     "lint": "eslint client/js/**/*.js --no-error-on-unmatched-pattern",

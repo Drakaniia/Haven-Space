@@ -36,7 +36,7 @@ function getProcessPid($processName) {
     return null;
 }
 
-echo "🚀 Starting XAMPP Apache...\n\n";
+echo "Starting XAMPP Apache...\n\n";
 
 // Check if Apache is already running
 if (isProcessRunning(basename($apachePath))) {
@@ -68,8 +68,8 @@ if (isProcessRunning(basename($apachePath))) {
     }
 }
 
-echo "\n✅ Apache is running! (PID: {$apachePid})\n";
-echo "\n🌐 Opening browser...\n";
+echo "\nApache is running! (PID: {$apachePid})\n";
+echo "\nOpening browser...\n";
 
 // Wait a moment for Apache to fully initialize
 sleep(2);
