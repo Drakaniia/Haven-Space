@@ -9,15 +9,12 @@ function detectEnvironment() {
 
   // Production environments
   const productionHosts = [
-    'havenspace.com',
-    'www.havenspace.com',
     'onrender.com',
     'github.io', // GitHub Pages
   ];
 
   if (
     productionHosts.includes(hostname) ||
-    hostname.includes('havenspace') ||
     hostname.includes('render') ||
     hostname.includes('github.io')
   ) {
@@ -26,11 +23,24 @@ function detectEnvironment() {
 
   // Local development (XAMPP, Apache)
   if (hostname === 'localhost' || hostname === '127.0.0.1') {
-    // Check if running via PHP built-in server (:8000) or Apache (/haven-space/)
+    // Check if running via PHP built-in server (:8000) or Apache
+    const port = window.location.port;
     const pathname = window.location.pathname;
-    if (pathname.includes('haven-space') || pathname.includes('htdocs')) {
+
+    // PHP built-in server on port 8000
+    if (port === '8000') {
+      return 'local-dev';
+    }
+
+    // Apache setup typically uses paths like /views/ or /haven-space/
+    if (
+      pathname.includes('haven-space') ||
+      pathname.includes('htdocs') ||
+      pathname.includes('/views/')
+    ) {
       return 'local-apache';
     }
+
     return 'local-dev';
   }
 
@@ -45,8 +55,7 @@ function getApiBaseUrl() {
   const env = detectEnvironment();
 
   const apiUrls = {
-    production: 'https://haven-space-api.onrender.com', // Production API on Render (Docker root is already /api)
-    'local-apache': 'http://localhost/haven-space/server/api', // XAMPP Apache
+    production: 'https://haven-space-api.onrender.com', // Production API on Render
     'local-dev': 'http://localhost:8000', // PHP built-in server
   };
 

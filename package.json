@@ -4,7 +4,8 @@
   "type": "module",
   "scripts": {
     "build": "node scripts/build.js",
-    "server": "cd server && php -S localhost:8000 -t api",
+    "server": "cd server && php -S localhost:8000 router.php",
+    "server:api": "cd server && php -S localhost:8000 router.php",
     "client": "php scripts/start-apache.php",
     "mysql": "php scripts/start-mysql.php",
     "db:setup": "php scripts/setup-database.php",

@@ -41,10 +41,18 @@ document.addEventListener('DOMContentLoaded', function () {
         // Store user info (token is now in httpOnly cookie)
         localStorage.setItem('user', JSON.stringify(result.user));
 
-        // Redirect based on role - use absolute paths for GitHub Pages compatibility
-        const basePath = window.location.pathname.includes('github.io')
-          ? '/Haven-Space/client/views/'
-          : '/client/views/';
+        // Redirect based on role - detect Apache setup vs GitHub Pages
+        const pathname = window.location.pathname;
+        let basePath;
+
+        if (pathname.includes('github.io')) {
+          // GitHub Pages deployment
+          basePath = '/Haven-Space/client/views/';
+        } else {
+          // Apache setup: document root points to client folder
+          // OR local development with Apache
+          basePath = '/views/';
+        }
 
         if (result.user.role === 'landlord') {
           window.location.href = `${basePath}landlord/index.html`;

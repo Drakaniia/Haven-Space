@@ -1,8 +1,5 @@
 -- Haven Space Database Schema
 
-CREATE DATABASE IF NOT EXISTS havenspace_db;
-USE havenspace_db;
-
 -- Users Table
 CREATE TABLE IF NOT EXISTS users (
     id INT AUTO_INCREMENT PRIMARY KEY,
