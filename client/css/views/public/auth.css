@@ -546,12 +546,13 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  background: var(--bg-cream);
+  background: transparent;
 }
 
 .auth-split-image {
-  width: 100%;
-  height: 100%;
+  width: 75%;
+  height: auto;
+  max-height: 85vh;
   object-fit: contain;
   display: block;
 }
@@ -646,6 +647,37 @@
   color: var(--text-dark);
 }
 
+/* Signup Decorative Corner Images */
+.signup-decorative-images {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  pointer-events: none;
+  z-index: 1;
+}
+
+.signup-decorative-left,
+.signup-decorative-right {
+  position: absolute;
+  bottom: 0;
+}
+
+.signup-decorative-left {
+  left: 0;
+}
+
+.signup-decorative-right {
+  right: 0;
+}
+
+.signup-decorative-left img,
+.signup-decorative-right img {
+  height: auto;
+  max-width: 300px;
+  display: block;
+}
+
 /* Responsive Design */
 @media (max-width: 1024px) {
   .auth-split-container {
@@ -714,5 +746,10 @@
 
   .code-input-container {
     gap: 0.5rem;
+  }
+
+  .signup-decorative-left img,
+  .signup-decorative-right img {
+    max-width: 200px;
   }
 }

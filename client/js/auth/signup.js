@@ -1,4 +1,25 @@
 import CONFIG from '../config.js';
+import { getIcon } from '../shared/icons.js';
+
+/**
+ * Inject icons from centralized library into elements with data-icon attributes
+ * Replaces inline SVGs with centralized icon library calls
+ */
+function injectIcons() {
+  const iconElements = document.querySelectorAll('[data-icon]');
+
+  iconElements.forEach(element => {
+    const iconName = element.dataset.icon;
+    const options = {
+      width: element.dataset.iconWidth || 24,
+      height: element.dataset.iconHeight || 24,
+      strokeWidth: element.dataset.iconStrokeWidth || '1.5',
+      className: element.dataset.iconClass || '',
+    };
+
+    element.innerHTML = getIcon(iconName, options);
+  });
+}
 
 document.addEventListener('DOMContentLoaded', function () {
   const step1 = document.getElementById('step1');
@@ -15,8 +36,15 @@ document.addEventListener('DOMContentLoaded', function () {
   const passwordInput = document.getElementById('password');
   const eyeOpen = passwordToggle.querySelector('.eye-open');
   const eyeClosed = passwordToggle.querySelector('.eye-closed');
+  const confirmPasswordToggle = document.getElementById('confirmPasswordToggle');
+  const confirmPasswordInput = document.getElementById('confirmPassword');
+  const confirmEyeOpen = confirmPasswordToggle.querySelector('.eye-open');
+  const confirmEyeClosed = confirmPasswordToggle.querySelector('.eye-closed');
 
   let selectedRole = null;
+
+  // Inject icons from centralized library
+  injectIcons();
 
   // Check for pending Google OAuth signup
   const urlParams = new URLSearchParams(window.location.search);
@@ -216,6 +244,14 @@ document.addEventListener('DOMContentLoaded', function () {
     eyeClosed.classList.toggle('hidden');
   });
 
+  // Confirm password visibility toggle
+  confirmPasswordToggle.addEventListener('click', function () {
+    const isPassword = confirmPasswordInput.type === 'password';
+    confirmPasswordInput.type = isPassword ? 'text' : 'password';
+    confirmEyeOpen.classList.toggle('hidden');
+    confirmEyeClosed.classList.toggle('hidden');
+  });
+
   // Google OAuth signup - works from step 1 or step 2
   document.querySelectorAll('.social-btn-google').forEach(btn => {
     btn.addEventListener('click', function () {
@@ -244,6 +280,16 @@ document.addEventListener('DOMContentLoaded', function () {
   // Form submission
   document.getElementById('signupForm').addEventListener('submit', async function (e) {
     e.preventDefault();
+
+    // Validate password confirmation
+    const password = e.target.password.value;
+    const confirmPassword = e.target.confirmPassword.value;
+
+    if (password !== confirmPassword) {
+      alert('Passwords do not match. Please try again.');
+      e.target.confirmPassword.focus();
+      return;
+    }
 
     // Check if this is a Google OAuth pending user completing signup
     if (oauthPending) {

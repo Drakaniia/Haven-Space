@@ -1,4 +1,25 @@
 import CONFIG from '../config.js';
+import { getIcon } from '../shared/icons.js';
+
+/**
+ * Inject icons from centralized library into elements with data-icon attributes
+ * Replaces inline SVGs with centralized icon library calls
+ */
+function injectIcons() {
+  const iconElements = document.querySelectorAll('[data-icon]');
+
+  iconElements.forEach(element => {
+    const iconName = element.dataset.icon;
+    const options = {
+      width: element.dataset.iconWidth || 24,
+      height: element.dataset.iconHeight || 24,
+      strokeWidth: element.dataset.iconStrokeWidth || '1.5',
+      className: element.dataset.iconClass || '',
+    };
+
+    element.innerHTML = getIcon(iconName, options);
+  });
+}
 
 document.addEventListener('DOMContentLoaded', function () {
   const passwordToggle = document.getElementById('passwordToggle');
@@ -6,6 +27,9 @@ document.addEventListener('DOMContentLoaded', function () {
   const eyeOpen = passwordToggle.querySelector('.eye-open');
   const eyeClosed = passwordToggle.querySelector('.eye-closed');
   const loginForm = document.getElementById('loginForm');
+
+  // Inject icons from centralized library
+  injectIcons();
 
   // Password visibility toggle
   passwordToggle.addEventListener('click', function () {
