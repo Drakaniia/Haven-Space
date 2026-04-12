@@ -349,6 +349,11 @@ function goToStep(stepNumber) {
         initializeMap();
       } else {
         window._signupMap.invalidateSize();
+
+        // Re-enable button if location is already set
+        if (signupState.step2.latitude && signupState.step2.longitude) {
+          document.getElementById('step2Next').disabled = false;
+        }
       }
     }, 100);
   }
@@ -410,6 +415,9 @@ function initializeMap() {
       draggable: true,
       onDragEnd: handleMarkerDrag,
     });
+
+    // Enable next button since location is already set
+    document.getElementById('step2Next').disabled = false;
   } else {
     // Try to get user's current location
     attemptGeolocation();
@@ -459,6 +467,17 @@ function attemptGeolocation() {
         console.error('Error getting address:', error);
         document.getElementById('fullAddress').value =
           'Unable to resolve address. Coordinates saved.';
+
+        // Update state with coordinates even if address resolution failed
+        signupState.step2 = {
+          latitude: lat,
+          longitude: lng,
+          address: '',
+        };
+        saveState();
+
+        // Enable next button - coordinates are saved even if address lookup failed
+        document.getElementById('step2Next').disabled = false;
       }
     },
     error => {
@@ -511,6 +530,17 @@ async function handleMapClick(e) {
   } catch (error) {
     console.error('Error getting address:', error);
     document.getElementById('fullAddress').value = 'Unable to resolve address. Coordinates saved.';
+
+    // Update state with coordinates even if address resolution failed
+    signupState.step2 = {
+      latitude: lat,
+      longitude: lng,
+      address: '',
+    };
+    saveState();
+
+    // Enable next button - coordinates are saved even if address lookup failed
+    document.getElementById('step2Next').disabled = false;
   }
 }
 
@@ -1129,7 +1159,7 @@ async function submitSignup() {
     const userId = userResult.user.id;
 
     // Step 2: Save boarding house details (Profile must be created first before location & payment!)
-    const propertyResponse = await fetch(`${CONFIG.API_BASE_URL}/landlord/profile.php`, {
+    const propertyResponse = await fetch(`${CONFIG.API_BASE_URL}/api/landlord/profile.php`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -1148,18 +1178,21 @@ async function submitSignup() {
     }
 
     // Step 3: Save property location
-    const locationResponse = await fetch(`${CONFIG.API_BASE_URL}/landlord/property-location.php`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        userId,
-        latitude: signupState.step2.latitude,
-        longitude: signupState.step2.longitude,
-        address: signupState.step2.address,
-      }),
-    });
+    const locationResponse = await fetch(
+      `${CONFIG.API_BASE_URL}/api/landlord/property-location.php`,
+      {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          userId,
+          latitude: signupState.step2.latitude,
+          longitude: signupState.step2.longitude,
+          address: signupState.step2.address,
+        }),
+      }
+    );
 
     if (!locationResponse.ok) {
       console.error('Failed to save property location');
@@ -1167,20 +1200,23 @@ async function submitSignup() {
 
     // Step 4: Save payment method (if not skipped)
     if (!signupState.step4.skipped && signupState.step4.paymentMethod) {
-      const paymentResponse = await fetch(`${CONFIG.API_BASE_URL}/landlord/payment-methods.php`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          userId,
-          methodType: signupState.step4.paymentMethod,
-          accountNumber: signupState.step4.accountNumber,
-          accountName: signupState.step4.accountName,
-          bankName: signupState.step4.bankName,
-          isPrimary: true,
-        }),
-      });
+      const paymentResponse = await fetch(
+        `${CONFIG.API_BASE_URL}/api/landlord/payment-methods.php`,
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            userId,
+            methodType: signupState.step4.paymentMethod,
+            accountNumber: signupState.step4.accountNumber,
+            accountName: signupState.step4.accountName,
+            bankName: signupState.step4.bankName,
+            isPrimary: true,
+          }),
+        }
+      );
 
       if (!paymentResponse.ok) {
         console.error('Failed to save payment method');

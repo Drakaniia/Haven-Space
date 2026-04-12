@@ -4,17 +4,12 @@
  * Handles saving and retrieving landlord profile/property details during signup
  */
 
-header('Content-Type: application/json');
-header('Access-Control-Allow-Origin: *');
-header('Access-Control-Allow-Methods: POST, GET, OPTIONS');
-header('Access-Control-Allow-Headers: Content-Type, Authorization');
-
-if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
-    http_response_code(200);
-    exit;
-}
-
+// Include centralized CORS configuration FIRST (before any headers)
+require_once __DIR__ . '/../cors.php';
 require_once __DIR__ . '/../../config/database.php';
+
+// Set content type AFTER CORS headers
+header('Content-Type: application/json');
 
 /**
  * POST /api/landlord/profile.php

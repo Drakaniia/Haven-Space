@@ -68,10 +68,19 @@ $passwordHash = password_hash($password, PASSWORD_BCRYPT);
 try {
     $stmt = $pdo->prepare('INSERT INTO users (first_name, last_name, email, password_hash, role, country) VALUES (?, ?, ?, ?, ?, ?)');
     $stmt->execute([$firstName, $lastName, $email, $passwordHash, $role, $country]);
+    
+    $userId = $pdo->lastInsertId();
 
     echo json_encode([
         'success' => true,
-        'message' => 'User registered successfully'
+        'message' => 'User registered successfully',
+        'user' => [
+            'id' => $userId,
+            'first_name' => $firstName,
+            'last_name' => $lastName,
+            'email' => $email,
+            'role' => $role,
+        ]
     ]);
 } catch (\PDOException $e) {
     http_response_code(500);

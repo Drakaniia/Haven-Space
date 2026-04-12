@@ -3,6 +3,64 @@ import { getIcon } from '../shared/icons.js';
 import { getBasePath, getBoarderRedirectPath, updateBoarderStatus } from '../shared/routing.js';
 
 /**
+ * Show toast notification
+ * @param {string} message - Message to display
+ * @param {string} type - Toast type: 'error', 'success', 'warning'
+ */
+function showToast(message, type = 'error') {
+  // Remove existing toast
+  const existingToast = document.querySelector('.toast-notification');
+  if (existingToast) {
+    existingToast.remove();
+  }
+
+  const toast = document.createElement('div');
+  toast.className = `toast-notification toast-${type}`;
+
+  const iconMap = {
+    error: 'exclamationCircle',
+    success: 'checkCircle',
+    warning: 'exclamationTriangle',
+  };
+
+  toast.innerHTML = `
+    <div class="toast-icon">
+      ${getIcon(iconMap[type] || 'exclamationCircle', { width: 20, height: 20, strokeWidth: '2' })}
+    </div>
+    <div class="toast-content">${message}</div>
+    <button class="toast-close" aria-label="Close notification">
+      ${getIcon('xMark', { width: 16, height: 16, strokeWidth: '2' })}
+    </button>
+  `;
+
+  document.body.appendChild(toast);
+
+  // Trigger animation
+  requestAnimationFrame(() => {
+    toast.classList.add('toast-visible');
+  });
+
+  // Auto remove after 5 seconds
+  const autoRemoveTimeout = setTimeout(() => {
+    removeToast(toast);
+  }, 5000);
+
+  // Close button handler
+  const closeBtn = toast.querySelector('.toast-close');
+  closeBtn.addEventListener('click', () => {
+    clearTimeout(autoRemoveTimeout);
+    removeToast(toast);
+  });
+}
+
+function removeToast(toast) {
+  toast.classList.remove('toast-visible');
+  setTimeout(() => {
+    toast.remove();
+  }, 300);
+}
+
+/**
  * Inject icons from centralized library into elements with data-icon attributes
  * Replaces inline SVGs with centralized icon library calls
  */
@@ -287,6 +345,16 @@ document.addEventListener('DOMContentLoaded', function () {
   // Form submission
   document.getElementById('signupForm').addEventListener('submit', async function (e) {
     e.preventDefault();
+
+    // Validate terms checkbox
+    const termsCheckbox = e.target.terms;
+    if (!termsCheckbox.checked) {
+      showToast(
+        'Please agree to the Terms of Service, including the User Agreement and Privacy Policy to continue.',
+        'warning'
+      );
+      return;
+    }
 
     // Validate password confirmation
     const password = e.target.password.value;

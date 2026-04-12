@@ -5,15 +5,10 @@
  * This acts as a proxy to avoid CORS issues and rate limiting on the client side
  */
 
-header('Content-Type: application/json');
-header('Access-Control-Allow-Origin: *');
-header('Access-Control-Allow-Methods: GET, OPTIONS');
-header('Access-Control-Allow-Headers: Content-Type, Authorization');
+// Include centralized CORS configuration
+require_once __DIR__ . '/../cors.php';
 
-if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
-    http_response_code(200);
-    exit;
-}
+header('Content-Type: application/json');
 
 /**
  * GET /api/geocode/reverse.php?lat={lat}&lng={lng}

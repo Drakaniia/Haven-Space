@@ -4,17 +4,11 @@
  * Handles adding, retrieving, updating, and deleting payment methods
  */
 
-header('Content-Type: application/json');
-header('Access-Control-Allow-Origin: *');
-header('Access-Control-Allow-Methods: POST, GET, PATCH, DELETE, OPTIONS');
-header('Access-Control-Allow-Headers: Content-Type, Authorization');
-
-if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
-    http_response_code(200);
-    exit;
-}
-
+// Include centralized CORS configuration
+require_once __DIR__ . '/../cors.php';
 require_once __DIR__ . '/../../config/database.php';
+
+header('Content-Type: application/json');
 
 /**
  * POST /api/landlord/payment-methods.php
