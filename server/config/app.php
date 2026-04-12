@@ -129,4 +129,5 @@ return [
     'jwt_expiration' => (int) env('JWT_EXPIRATION', 3600),
     'refresh_token_expiration' => (int) env('REFRESH_TOKEN_EXPIRATION', 604800),
     'api_prefix' => '/api',
+    'app_base_url' => env('APP_BASE_URL', 'http://localhost:8000'),
 ];

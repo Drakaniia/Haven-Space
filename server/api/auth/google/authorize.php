@@ -14,8 +14,6 @@ require_once __DIR__ . '/../../../src/Core/bootstrap.php';
 
 use App\Core\Auth\GoogleOAuth;
 
-session_start();
-
 // Validate action parameter
 $action = $_GET['action'] ?? 'login';
 $validActions = ['login', 'signup', 'link'];

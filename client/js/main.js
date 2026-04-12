@@ -18,9 +18,6 @@ import { initAdminDashboard } from './views/admin/index.js';
 function detectAndInitialize() {
   const body = document.body;
   const view = body.dataset.view || 'public';
-  const dashboardType = body.dataset.dashboardType;
-
-  console.log('Main: Detected view:', view, 'Dashboard type:', dashboardType);
 
   // Initialize appropriate dashboard based on view type
   switch (view) {
@@ -45,7 +42,6 @@ function detectAndInitialize() {
 
 // Initialize on DOM ready
 function initialize() {
-  console.log('Main: DOMContentLoaded');
   detectAndInitialize();
 }
 

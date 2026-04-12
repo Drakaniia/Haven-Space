@@ -893,3 +893,80 @@
     align-items: flex-start;
   }
 }
+
+/* ===== Pending Verification Banner ===== */
+.landlord-pending-banner {
+  background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+  border: 1px solid #f59e0b;
+  border-radius: 12px;
+  padding: 20px 24px;
+  margin-bottom: 24px;
+  animation: bannerSlideIn 0.4s ease-out;
+}
+
+@keyframes bannerSlideIn {
+  from {
+    opacity: 0;
+    transform: translateY(-12px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.landlord-pending-banner-content {
+  display: flex;
+  gap: 16px;
+  align-items: flex-start;
+}
+
+.landlord-pending-banner-icon {
+  flex-shrink: 0;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background-color: rgba(245, 158, 11, 0.2);
+  color: #d97706;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.landlord-pending-banner-icon svg {
+  width: 22px;
+  height: 22px;
+}
+
+.landlord-pending-banner-text {
+  flex: 1;
+}
+
+.landlord-pending-banner-text strong {
+  font-size: 15px;
+  font-weight: 700;
+  color: #92400e;
+  display: block;
+  margin-bottom: 6px;
+}
+
+.landlord-pending-banner-text p {
+  font-size: 13px;
+  color: #78350f;
+  line-height: 1.5;
+  margin: 0;
+}
+
+/* ===== Disabled Action State (read-only mode) ===== */
+.landlord-action-disabled {
+  opacity: 0.45;
+  cursor: not-allowed !important;
+  pointer-events: none;
+  user-select: none;
+  filter: grayscale(30%);
+}
+
+.landlord-action-disabled:hover {
+  transform: none !important;
+  box-shadow: none !important;
+}

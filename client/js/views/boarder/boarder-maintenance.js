@@ -136,11 +136,7 @@ function initTicketActions() {
  * TODO: Implement ticket detail modal or navigation
  */
 function handleTicketView(ticketId) {
-  // For now, just log the ticket ID
   // TODO: Implement proper ticket detail view
-  console.log('Viewing ticket:', ticketId);
-
-  // Show a simple alert for demo purposes
   alert(
     `Viewing details for ticket #${ticketId}\n\nThis feature will open the ticket detail view.`
   );
@@ -169,7 +165,6 @@ function initRatingSystem() {
         });
 
         // TODO: Send rating to backend
-        console.log(`Rating submitted: ${rating} stars`);
       }
     });
   });
@@ -197,7 +192,6 @@ function updateStats() {
   const total = tickets.length;
   let pending = 0;
   let completed = 0;
-  let inProgress = 0;
   let urgent = 0;
 
   tickets.forEach(ticket => {
@@ -208,8 +202,6 @@ function updateStats() {
       pending++;
     } else if (status === 'completed') {
       completed++;
-    } else if (status === 'in-progress') {
-      inProgress++;
     }
 
     if (isUrgent) {

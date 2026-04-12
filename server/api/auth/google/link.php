@@ -25,8 +25,6 @@ try {
     exit;
 }
 
-session_start();
-
 // Store action as 'link' for callback to handle
 $_SESSION['oauth_action'] = 'link';
 

@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>My Applications - Haven Space</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="../../../css/global.css" />
+    <link rel="stylesheet" href="../../../css/components/sidebar.css" />
+    <link rel="stylesheet" href="../../../css/components/navbar.css" />
+    <link rel="stylesheet" href="../../../css/components/status-banner.css" />
+    <link rel="stylesheet" href="../../../css/views/boarder/boarder.css" />
+    <link rel="stylesheet" href="../../../css/views/boarder/boarder-applications.css" />
+  </head>
+  <body data-view="boarder" data-dashboard-type="boarder">
+    <div class="boarder-dashboard">
+      <!-- Sidebar Container -->
+      <div id="sidebar-container"></div>
+
+      <!-- Main Content -->
+      <main class="boarder-main">
+        <!-- Navbar Container -->
+        <div id="navbar-container"></div>
+
+        <!-- Content Wrapper -->
+        <div class="boarder-content">
+          <!-- Status Banner Container (conditionally shown) -->
+          <div
+            id="boarder-status-banner-container"
+            class="boarder-status-banner-wrapper"
+            style="display: none"
+          >
+            <!-- Banner will be injected here by JavaScript -->
+          </div>
+
+          <!-- Applications Page -->
+          <div class="applications-container">
+            <!-- Page Header -->
+            <div class="applications-header">
+              <div class="applications-header-content">
+                <h1 class="applications-title">My Rental Applications</h1>
+                <p class="applications-subtitle">
+                  Track and manage your boarding house applications
+                </p>
+              </div>
+              <div class="applications-header-actions">
+                <a href="../../public/find-a-room.html" class="btn btn-primary">
+                  <span data-icon="plus" data-icon-width="20" data-icon-height="20"></span>
+                  Find More Rooms
+                </a>
+              </div>
+            </div>
+
+            <!-- Applications List -->
+            <div class="applications-list" id="applications-list">
+              <!-- Application Card 1 - Pending -->
+              <div class="application-card pending" data-application-id="1">
+                <div class="application-status-indicator pending"></div>
+                <div class="application-content">
+                  <div class="application-header">
+                    <div class="application-property-info">
+                      <h3 class="application-property-name">Sunrise Dormitory</h3>
+                      <p class="application-property-location">
+                        <span
+                          data-icon="location"
+                          data-icon-width="16"
+                          data-icon-height="16"
+                        ></span>
+                        123 College Ave, Quezon City
+                      </p>
+                    </div>
+                    <div class="application-status-badge pending">Pending Review</div>
+                  </div>
+
+                  <div class="application-details">
+                    <div class="application-detail-row">
+                      <span class="application-detail-label">Room Type:</span>
+                      <span class="application-detail-value">Single Occupancy</span>
+                    </div>
+                    <div class="application-detail-row">
+                      <span class="application-detail-label">Monthly Rent:</span>
+                      <span class="application-detail-value">₱5,500</span>
+                    </div>
+                    <div class="application-detail-row">
+                      <span class="application-detail-label">Applied On:</span>
+                      <span class="application-detail-value">January 15, 2025</span>
+                    </div>
+                    <div class="application-detail-row">
+                      <span class="application-detail-label">Expected Response:</span>
+                      <span class="application-detail-value">Within 3-5 business days</span>
+                    </div>
+                  </div>
+
+                  <div class="application-message">
+                    <p class="application-message-text">
+                      "Hello! I'm interested in renting a room at Sunrise Dormitory. I'm a quiet
+                      student at UP and would be a responsible tenant. Thank you for considering my
+                      application!"
+                    </p>
+                  </div>
+                </div>
+                <div class="application-actions">
+                  <button class="btn btn-outline btn-sm" data-action="view-details">
+                    View Details
+                  </button>
+                  <button class="btn btn-danger btn-sm" data-action="cancel">
+                    Cancel Application
+                  </button>
+                </div>
+              </div>
+
+              <!-- Application Card 2 - Accepted -->
+              <div class="application-card accepted" data-application-id="2">
+                <div class="application-status-indicator accepted"></div>
+                <div class="application-content">
+                  <div class="application-header">
+                    <div class="application-property-info">
+                      <h3 class="application-property-name">Green Valley Boarding House</h3>
+                      <p class="application-property-location">
+                        <span
+                          data-icon="location"
+                          data-icon-width="16"
+                          data-icon-height="16"
+                        ></span>
+                        456 University Rd, Manila
+                      </p>
+                    </div>
+                    <div class="application-status-badge accepted">Accepted</div>
+                  </div>
+
+                  <div class="application-details">
+                    <div class="application-detail-row">
+                      <span class="application-detail-label">Room Type:</span>
+                      <span class="application-detail-value">Double Occupancy</span>
+                    </div>
+                    <div class="application-detail-row">
+                      <span class="application-detail-label">Monthly Rent:</span>
+                      <span class="application-detail-value">₱4,000</span>
+                    </div>
+                    <div class="application-detail-row">
+                      <span class="application-detail-label">Applied On:</span>
+                      <span class="application-detail-value">January 10, 2025</span>
+                    </div>
+                    <div class="application-detail-row">
+                      <span class="application-detail-label">Accepted On:</span>
+                      <span class="application-detail-value">January 12, 2025</span>
+                    </div>
+                  </div>
+
+                  <div class="application-actions-inline">
+                    <a href="../index.html" class="btn btn-primary btn-sm"> Go to Dashboard </a>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Application Card 3 - Rejected -->
+              <div class="application-card rejected" data-application-id="3">
+                <div class="application-status-indicator rejected"></div>
+                <div class="application-content">
+                  <div class="application-header">
+                    <div class="application-property-info">
+                      <h3 class="application-property-name">City Lights Residence</h3>
+                      <p class="application-property-location">
+                        <span
+                          data-icon="location"
+                          data-icon-width="16"
+                          data-icon-height="16"
+                        ></span>
+                        789 Metro St, Pasay City
+                      </p>
+                    </div>
+                    <div class="application-status-badge rejected">Not Accepted</div>
+                  </div>
+
+                  <div class="application-details">
+                    <div class="application-detail-row">
+                      <span class="application-detail-label">Room Type:</span>
+                      <span class="application-detail-value">Single Occupancy</span>
+                    </div>
+                    <div class="application-detail-row">
+                      <span class="application-detail-label">Monthly Rent:</span>
+                      <span class="application-detail-value">₱6,000</span>
+                    </div>
+                    <div class="application-detail-row">
+                      <span class="application-detail-label">Applied On:</span>
+                      <span class="application-detail-value">January 5, 2025</span>
+                    </div>
+                    <div class="application-detail-row rejection-reason">
+                      <span class="application-detail-label">Reason:</span>
+                      <span class="application-detail-value"
+                        >Room already filled by another applicant</span
+                      >
+                    </div>
+                  </div>
+
+                  <div class="application-actions-inline">
+                    <a href="../../public/find-a-room.html" class="btn btn-primary btn-sm">
+                      <span data-icon="search" data-icon-width="16" data-icon-height="16"></span>
+                      Find Available Rooms
+                    </a>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Empty State (shown when no applications) -->
+            <div class="applications-empty" id="applications-empty" style="display: none">
+              <div class="empty-state-icon">
+                <span data-icon="document" data-icon-width="64" data-icon-height="64"></span>
+              </div>
+              <h3 class="empty-state-title">No Applications Yet</h3>
+              <p class="empty-state-description">
+                You haven't submitted any rental applications yet. Start browsing available rooms
+                and find your perfect boarding house!
+              </p>
+              <a href="../../public/find-a-room.html" class="btn btn-primary">
+                <span data-icon="search" data-icon-width="20" data-icon-height="20"></span>
+                Find Available Rooms
+              </a>
+            </div>
+          </div>
+        </div>
+      </main>
+    </div>
+
+    <!-- JavaScript -->
+    <script type="module">
+      import { initBoarderApplications } from '../../../js/views/boarder/applications.js';
+
+      document.addEventListener('DOMContentLoaded', () => {
+        initBoarderApplications();
+      });
+    </script>
+  </body>
+</html>

@@ -1,7 +1,0 @@
-ignored:
-  - DL3008  # Pin versions in apt get install
-  - DL3009  # Delete the apt-get lists after installing something
-  - DL3015  # Avoid additional packages by specifying --no-install-recommends
-  - DL3028  # Pin versions in ruby gem install
-  - DL3059  # Multiple consecutive run instructions
-  - SC2015  # Note on using && vs ; (shellcheck)

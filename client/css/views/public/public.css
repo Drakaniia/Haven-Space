@@ -1,6 +1,9 @@
 /* Import Find a Room Page Styles */
 @import url('find-a-room.css');
 
+/* Import Terms of Service Page Styles */
+@import url('tos.css');
+
 /* Navigation */
 .navbar {
   position: fixed;

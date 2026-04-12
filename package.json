@@ -4,8 +4,7 @@
   "type": "module",
   "scripts": {
     "build": "node scripts/build.js",
-    "server": "cd server && php -S localhost:8000 router.php",
-    "server:api": "cd server && php -S localhost:8000 router.php",
+    "server": "php -S localhost:8000 -t server server/router.php",
     "client": "php scripts/start-apache.php",
     "mysql": "php scripts/start-mysql.php",
     "db:setup": "php scripts/setup-database.php",
@@ -33,6 +32,7 @@
     "eslint-plugin-prettier": "4.2.1",
     "http-server": "^14.1.1",
     "husky": "^9.1.7",
+    "leaflet": "^1.9.4",
     "lint-staged": "^16.4.0",
     "prettier": "^2.8.8"
   }

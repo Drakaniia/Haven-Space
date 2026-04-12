@@ -11,6 +11,7 @@ import { initMessages } from './messages.js';
 import { initLandlordSettings } from './settings.js';
 import { initAnnouncements } from './announcements.js';
 import { initReports } from './reports.js';
+import { initLandlordPermissions } from '../../shared/permissions.js';
 
 /**
  * Initialize Landlord Dashboard
@@ -55,6 +56,9 @@ export function initLandlordDashboardEntry() {
       role: user.role,
     },
   });
+
+  // Check landlord verification status and apply read-only restrictions if pending
+  initLandlordPermissions();
 
   // Initialize specific pages based on current view
   const currentPath = window.location.pathname;

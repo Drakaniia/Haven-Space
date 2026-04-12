@@ -4,6 +4,7 @@
  */
 
 import { getIcon, getSolidIcon } from '../../shared/icons.js';
+import { updateBoarderStatus } from '../../shared/routing.js';
 
 // State management
 const state = {
@@ -94,6 +95,9 @@ export function initFindARoom() {
   if (!document.querySelector('.find-room-dashboard')) {
     return;
   }
+
+  // Update boarder status to 'browsing' when accessing find-a-room page
+  updateBoarderStatus('browsing');
 
   // Wait for DOM to be ready
   if (document.readyState === 'loading') {

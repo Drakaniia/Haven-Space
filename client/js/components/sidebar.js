@@ -3,7 +3,7 @@
  * Reusable sidebar with role-based navigation
  */
 
-import { getIcon, ICON_PATHS } from '../shared/icons.js';
+import { getIcon } from '../shared/icons.js';
 
 // Navigation configurations per role
 const NAV_CONFIG = {
@@ -90,27 +90,16 @@ const NAV_CONFIG = {
   ],
   admin: [
     {
-      group: 'Main',
+      group: 'Operations',
       items: [
-        { label: 'Dashboard', href: '../admin/index.html', icon: 'home' },
-        {
-          label: 'Management',
-          icon: 'list',
-          dropdown: true,
-          children: [
-            { label: 'Users', href: '../admin/users/index.html', icon: 'users' },
-            { label: 'Properties', href: '../admin/properties/index.html', icon: 'list' },
-            { label: 'Bookings', href: '../admin/bookings/index.html', icon: 'calendar' },
-          ],
-        },
-        { label: 'Analytics', href: '../admin/analytics/index.html', icon: 'analytics' },
-      ],
-    },
-    {
-      group: 'System',
-      items: [
-        { label: 'Settings', href: '../admin/settings/index.html', icon: 'settings' },
-        { label: 'Logs', href: '../admin/logs/index.html', icon: 'announcement' },
+        { label: 'Overview', href: '../admin/index.html#overview', icon: 'home' },
+        { label: 'Landlord verification', href: '../admin/index.html#verification', icon: 'users' },
+        { label: 'Users', href: '../admin/index.html#users', icon: 'users' },
+        { label: 'Properties', href: '../admin/index.html#properties', icon: 'list' },
+        { label: 'Applications', href: '../admin/index.html#applications', icon: 'application' },
+        { label: 'Analytics', href: '../admin/index.html#analytics', icon: 'analytics' },
+        { label: 'Reports & disputes', href: '../admin/index.html#reports', icon: 'announcement' },
+        { label: 'System settings', href: '../admin/index.html#settings', icon: 'settings' },
       ],
     },
   ],
@@ -127,6 +116,7 @@ export function initSidebar(options = {}) {
   const {
     role = 'boarder',
     containerId = 'sidebar-container',
+    onAfterRender,
     user = {
       name: 'Juan Dela Cruz',
       initials: 'JD',
@@ -164,6 +154,9 @@ export function initSidebar(options = {}) {
       setupNavbarSidebarToggle();
       setupLogoutHandler();
       restoreCollapsedState();
+      if (typeof onAfterRender === 'function') {
+        onAfterRender();
+      }
     })
     .catch(err => {
       console.error('Failed to load sidebar template:', err);

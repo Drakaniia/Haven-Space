@@ -10,7 +10,8 @@ $apachePath = $xamppPath . '\\apache\\bin\\httpd.exe';
 $apachePid = null;
 
 // Function to check if a process is running
-function isProcessRunning($processName) {
+function isProcessRunning($processName)
+{
     $output = [];
     exec("tasklist /FI \"IMAGENAME eq {$processName}\"", $output);
     foreach ($output as $line) {
@@ -22,7 +23,8 @@ function isProcessRunning($processName) {
 }
 
 // Function to get PID of a process
-function getProcessPid($processName) {
+function getProcessPid($processName)
+{
     $output = [];
     exec("tasklist /FI \"IMAGENAME eq {$processName}\" /FO CSV /NH", $output);
     foreach ($output as $line) {
@@ -50,7 +52,7 @@ if (isProcessRunning(basename($apachePath))) {
 
     // Run in background
     pclose(popen($command, 'r'));
-    
+
     // Wait for Apache to start
     $retries = 0;
     $maxRetries = 20;
@@ -58,7 +60,7 @@ if (isProcessRunning(basename($apachePath))) {
         usleep(500000); // 0.5 seconds
         $retries++;
     }
-    
+
     if (isProcessRunning(basename($apachePath))) {
         echo "✓ Apache started successfully\n";
         $apachePid = getProcessPid(basename($apachePath));
@@ -74,8 +76,17 @@ echo "\nOpening browser...\n";
 // Wait a moment for Apache to fully initialize
 sleep(2);
 
-// Open browser to localhost
-$url = 'http://localhost';
+// Check if PHP API server is running on port 8000
+$apiRunning = false;
+$connection = @fsockopen('localhost', 8000, $errno, $errstr, 1);
+if (is_resource($connection)) {
+    fclose($connection);
+    $apiRunning = true;
+}
+
+// The frontend needs the API server on port 8000
+// Open the homepage
+$url = 'http://localhost/views/public/index.html';
 
 // Detect OS and open browser accordingly
 if (strtoupper(substr(PHP_OS, 0, 3)) === 'WIN') {
@@ -90,3 +101,21 @@ if (strtoupper(substr(PHP_OS, 0, 3)) === 'WIN') {
 }
 
 echo "✓ Browser opened to {$url}\n";
+echo "\n";
+
+if (!$apiRunning) {
+    echo "⚠️  WARNING: API server is NOT running on port 8000!\n";
+    echo "   You need to run 'bun run server' in a SEPARATE terminal\n";
+    echo "   \n";
+    echo "   Without the API server:\n";
+    echo "   - Login/Signup won't work\n";
+    echo "   - Google OAuth will fail\n";
+    echo "   - All database operations will fail\n";
+    echo "   \n";
+    echo "   Run this command in another terminal:\n";
+    echo "   bun run server\n";
+    echo "   \n";
+} else {
+    echo "✓ API server detected on port 8000\n";
+    echo "   Frontend (Apache:80) → API (PHP:8000) ✓\n";
+}

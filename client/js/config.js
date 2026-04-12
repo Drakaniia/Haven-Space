@@ -81,13 +81,6 @@ const CONFIG = {
   isLocal: () => detectEnvironment().startsWith('local'),
 };
 
-// Log environment info in development
-if (CONFIG.isLocal()) {
-  console.log(
-    `%c🔧 Haven Space - ${CONFIG.ENV.toUpperCase()} Environment`,
-    'background: #4a7c23; color: white; padding: 4px 8px; font-weight: bold;',
-    `\nAPI Base URL: ${CONFIG.API_BASE_URL}`
-  );
-}
+// Environment info available via CONFIG.ENV
 
 export default CONFIG;

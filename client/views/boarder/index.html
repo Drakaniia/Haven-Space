@@ -13,6 +13,7 @@
     <link rel="stylesheet" href="../../css/global.css" />
     <link rel="stylesheet" href="../../css/components/sidebar.css" />
     <link rel="stylesheet" href="../../css/components/navbar.css" />
+    <link rel="stylesheet" href="../../css/components/status-banner.css" />
     <link rel="stylesheet" href="../../css/views/boarder/boarder.css" />
     <!-- Leaflet CSS for Map -->
     <link
@@ -34,6 +35,15 @@
 
         <!-- Content Wrapper -->
         <div class="boarder-content">
+          <!-- Status Banner Container (conditionally shown based on boarder status) -->
+          <div
+            id="boarder-status-banner-container"
+            class="boarder-status-banner-wrapper"
+            style="display: none"
+          >
+            <!-- Banner will be injected here by JavaScript -->
+          </div>
+
           <!-- Top Bar with Greeting -->
           <div class="boarder-topbar">
             <div class="boarder-greeting">

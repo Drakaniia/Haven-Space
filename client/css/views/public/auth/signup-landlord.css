@@ -1,0 +1,343 @@
+/* Landlord Multi-Step Signup Styles */
+
+/* Progress Indicator */
+.signup-progress {
+  position: fixed;
+  top: 80px;
+  left: 0;
+  right: 0;
+  z-index: 90;
+  padding: 1.5rem 2rem;
+  background: var(--white);
+  border-bottom: 1px solid var(--border-color);
+}
+
+.signup-progress-bar {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  max-width: 800px;
+  margin: 0 auto;
+}
+
+.signup-progress-step {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  position: relative;
+}
+
+.signup-progress-circle {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  border: 2px solid var(--border-color);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--text-gray);
+  background: var(--white);
+  transition: all 0.3s ease;
+}
+
+.signup-progress-step.active .signup-progress-circle {
+  border-color: var(--primary-green);
+  background: var(--primary-green);
+  color: var(--white);
+}
+
+.signup-progress-step.completed .signup-progress-circle {
+  border-color: var(--primary-green);
+  background: var(--light-green);
+  color: var(--white);
+}
+
+.signup-progress-label {
+  margin-top: 0.5rem;
+  font-size: 0.75rem;
+  font-weight: 500;
+  color: var(--text-gray);
+  transition: color 0.3s ease;
+}
+
+.signup-progress-step.active .signup-progress-label {
+  color: var(--primary-green);
+  font-weight: 600;
+}
+
+.signup-progress-step.completed .signup-progress-label {
+  color: var(--text-dark);
+}
+
+.signup-progress-line {
+  flex: 1;
+  height: 2px;
+  background: var(--border-color);
+  margin: 0 0.5rem;
+  margin-bottom: 1.5rem;
+  transition: background 0.3s ease;
+}
+
+.signup-progress-line.completed {
+  background: var(--primary-green);
+}
+
+/* Multi-Step Form Adjustments */
+.signup-step {
+  padding-top: 11rem;
+}
+
+/* Map Container */
+.signup-map-container {
+  max-width: 900px;
+}
+
+#signup-map {
+  width: 100%;
+  height: 400px;
+  border-radius: 12px;
+  border: 2px solid var(--border-color);
+  margin: 1.5rem 0;
+  z-index: 1;
+}
+
+.map-search-wrapper {
+  margin-bottom: 1.5rem;
+}
+
+.address-search-wrapper {
+  position: relative;
+}
+
+.address-search-results {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  background: var(--white);
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  margin-top: 0.5rem;
+  max-height: 250px;
+  overflow-y: auto;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  z-index: 1000;
+}
+
+.address-search-result {
+  padding: 0.75rem 1rem;
+  cursor: pointer;
+  border-bottom: 1px solid var(--border-color);
+  transition: background 0.2s ease;
+}
+
+.address-search-result:last-child {
+  border-bottom: none;
+}
+
+.address-search-result:hover {
+  background: #f5f5f5;
+}
+
+.address-search-result-name {
+  font-weight: 500;
+  color: var(--text-dark);
+  font-size: 0.9rem;
+}
+
+.address-search-result-detail {
+  font-size: 0.8rem;
+  color: var(--text-gray);
+  margin-top: 0.25rem;
+}
+
+.map-location-info {
+  margin-top: 1.5rem;
+}
+
+/* Payment Method Styles */
+.signup-payment-subtitle {
+  text-align: center;
+  font-size: 0.9rem;
+  color: var(--text-gray);
+  margin-top: -1rem;
+  margin-bottom: 1.5rem;
+}
+
+.payment-fields-group {
+  margin-top: 1rem;
+  padding: 1.5rem;
+  background: #f9f9f9;
+  border-radius: 8px;
+  border: 1px solid var(--border-color);
+}
+
+/* Secondary Button */
+.auth-btn-secondary {
+  display: block;
+  width: 100%;
+  max-width: 100%;
+  margin: 1rem auto 0;
+  padding: 0.875rem 1.5rem;
+  background: transparent;
+  color: var(--text-gray);
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  font-size: 0.9rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.auth-btn-secondary:hover {
+  border-color: #bbb;
+  color: var(--text-dark);
+  background: #fafafa;
+}
+
+/* Review Section */
+.signup-review {
+  margin-bottom: 2rem;
+}
+
+.review-section {
+  background: #f9f9f9;
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  padding: 1.25rem;
+  margin-bottom: 1rem;
+}
+
+.review-section-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+  padding-bottom: 0.75rem;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.review-section-header h3 {
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--text-dark);
+  margin: 0;
+}
+
+.review-edit-btn {
+  padding: 0.4rem 0.75rem;
+  background: transparent;
+  border: 1px solid var(--primary-green);
+  color: var(--primary-green);
+  border-radius: 6px;
+  font-size: 0.8rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.review-edit-btn:hover {
+  background: var(--primary-green);
+  color: var(--white);
+}
+
+.review-item {
+  display: flex;
+  justify-content: space-between;
+  padding: 0.5rem 0;
+}
+
+.review-label {
+  font-size: 0.85rem;
+  color: var(--text-gray);
+  font-weight: 500;
+}
+
+.review-value {
+  font-size: 0.85rem;
+  color: var(--text-dark);
+  font-weight: 500;
+  text-align: right;
+  max-width: 60%;
+}
+
+/* Textarea */
+.form-textarea {
+  resize: vertical;
+  min-height: 80px;
+  font-family: var(--font-main);
+}
+
+/* Responsive Design */
+@media (max-width: 1024px) {
+  .signup-progress {
+    padding: 1rem;
+  }
+
+  .signup-progress-label {
+    display: none;
+  }
+
+  .signup-progress-circle {
+    width: 32px;
+    height: 32px;
+    font-size: 0.8rem;
+  }
+}
+
+@media (max-width: 768px) {
+  .signup-progress {
+    top: 70px;
+    padding: 0.75rem 0.5rem;
+  }
+
+  .signup-progress-bar {
+    justify-content: space-between;
+  }
+
+  .signup-progress-line {
+    margin: 0 0.25rem;
+    margin-bottom: 1.2rem;
+  }
+
+  .signup-step {
+    padding-top: 10rem;
+  }
+
+  #signup-map {
+    height: 300px;
+  }
+
+  .review-item {
+    flex-direction: column;
+    gap: 0.25rem;
+  }
+
+  .review-value {
+    text-align: left;
+    max-width: 100%;
+  }
+}
+
+@media (max-width: 480px) {
+  .signup-progress-circle {
+    width: 28px;
+    height: 28px;
+    font-size: 0.75rem;
+  }
+
+  .signup-progress-line {
+    margin: 0 0.15rem;
+    margin-bottom: 1rem;
+  }
+
+  .signup-step {
+    padding-top: 9rem;
+  }
+
+  #signup-map {
+    height: 250px;
+  }
+}

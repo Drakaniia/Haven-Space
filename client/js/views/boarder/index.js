@@ -14,6 +14,7 @@ import { initSettingsPage } from './settings.js';
 import { initAnnouncements } from './announcements.js';
 import { initDashboardMap } from './dashboard-map.js';
 import { initHouseRulesPage } from './house-rules.js';
+import { initBoarderStatus } from './status.js';
 
 /**
  * Initialize Boarder Dashboard
@@ -52,6 +53,9 @@ export function initBoarderDashboard() {
 
   // Load dashboard data
   loadDashboardData();
+
+  // Initialize boarder status banners (pending/rejected states)
+  initBoarderStatus();
 
   // Initialize dashboard map
   initDashboardMap();

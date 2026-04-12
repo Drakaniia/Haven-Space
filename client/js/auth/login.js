@@ -1,5 +1,6 @@
 import CONFIG from '../config.js';
 import { getIcon } from '../shared/icons.js';
+import { getBoarderRedirectPath, updateBoarderStatus } from '../shared/routing.js';
 
 /**
  * Inject icons from centralized library into elements with data-icon attributes
@@ -78,16 +79,25 @@ document.addEventListener('DOMContentLoaded', function () {
           basePath = '/views/';
         }
 
-        if (result.user.role === 'landlord') {
+        if (result.user.role === 'admin') {
+          window.location.href = `${basePath}admin/index.html`;
+        } else if (result.user.role === 'landlord') {
           window.location.href = `${basePath}landlord/index.html`;
         } else {
-          window.location.href = `${basePath}boarder/index.html`;
+          // Boarder: check status and redirect conditionally
+          const boarderStatus = result.user.boarder_status || 'new';
+          updateBoarderStatus(boarderStatus);
+
+          const redirectPath = getBoarderRedirectPath({
+            ...result.user,
+            boarderStatus,
+          });
+          window.location.href = redirectPath;
         }
       } else {
         alert(result.error || 'Login failed');
       }
     } catch (error) {
-      console.error('Error during login:', error);
       alert('An error occurred. Please try again.');
     }
   });
@@ -101,7 +111,6 @@ document.addEventListener('DOMContentLoaded', function () {
 
   // Apple login button (placeholder for future implementation)
   document.querySelector('.social-btn-apple')?.addEventListener('click', function () {
-    console.log('Apple login clicked');
     // TODO: Implement Apple OAuth
     alert('Apple login to be implemented');
   });

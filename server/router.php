@@ -5,12 +5,16 @@
  * Routes API requests to api/ directory
  */
 
-$uri = parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH);
+$uri = parse_url($_SERVER['REQUEST_URI'] ?? '/', PHP_URL_PATH);
 
 // API routes - forward to api directory
 if (strpos($uri, '/auth/') === 0 || strpos($uri, '/api/') === 0) {
-    // Forward API requests to the api directory
-    $apiFile = __DIR__ . '/api' . $uri;
+    // /auth/* lives under server/api/auth/*; /api/* is served from server/api/* (strip /api prefix)
+    if (strpos($uri, '/api/') === 0) {
+        $apiFile = __DIR__ . '/api/' . substr($uri, 5);
+    } else {
+        $apiFile = __DIR__ . '/api' . $uri;
+    }
 
     if (file_exists($apiFile)) {
         require $apiFile;
@@ -37,7 +41,12 @@ if (strpos($uri, '/auth/') === 0 || strpos($uri, '/api/') === 0) {
 }
 
 // Static file serving from client directory
-$staticFile = __DIR__ . '/../client' . $uri;
+// If URI already includes /client prefix, remove it to prevent duplication
+$clientUri = $uri;
+if (strpos($clientUri, '/client') === 0) {
+    $clientUri = substr($clientUri, 7);
+}
+$staticFile = __DIR__ . '/../client' . $clientUri;
 
 // Check if file exists
 if (file_exists($staticFile) && is_file($staticFile)) {

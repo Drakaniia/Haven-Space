@@ -2,9 +2,11 @@
 
 namespace App\Api;
 
-require_once __DIR__ . '/../../src/Core/Auth/JWT.php';
+require_once __DIR__ . '/../src/Core/Auth/JWT.php';
+require_once __DIR__ . '/../src/Core/Database/Connection.php';
 
 use App\Core\Auth\JWT;
+use App\Core\Database\Connection;
 
 class Middleware
 {
@@ -27,6 +29,10 @@ class Middleware
             $token = $matches[1];
         }
 
+        if (empty($token) && !empty($_COOKIE['access_token'])) {
+            $token = $_COOKIE['access_token'];
+        }
+
         if (empty($token)) {
             http_response_code(401);
             echo json_encode(['error' => 'No token provided']);
@@ -41,6 +47,19 @@ class Middleware
             exit;
         }
 
+        $userId = (int) ($payload['user_id'] ?? 0);
+        if ($userId > 0) {
+            $pdo = Connection::getInstance()->getPdo();
+            $stmt = $pdo->prepare('SELECT account_status FROM users WHERE id = ?');
+            $stmt->execute([$userId]);
+            $row = $stmt->fetch();
+            if (!$row || ($row['account_status'] ?? 'active') !== 'active') {
+                http_response_code(403);
+                echo json_encode(['error' => 'Account is suspended or banned']);
+                exit;
+            }
+        }
+
         return $payload;
     }
 
@@ -51,6 +70,29 @@ class Middleware
         if (!in_array($user['role'], $allowedRoles)) {
             http_response_code(403);
             echo json_encode(['error' => 'Forbidden: You do not have permission to access this resource']);
+            exit;
+        }
+
+        return $user;
+    }
+
+    /**
+     * Require verified landlord for write operations.
+     * GET requests are allowed (read-only access for pending landlords).
+     * POST/PUT/PATCH/DELETE are blocked if the landlord is not verified.
+     */
+    public static function authorizeVerifiedLandlord()
+    {
+        $user = self::authorize(['landlord']);
+
+        $method = $_SERVER['REQUEST_METHOD'];
+        $writeMethods = ['POST', 'PUT', 'PATCH', 'DELETE'];
+
+        if (in_array($method, $writeMethods) && empty($user['is_verified'])) {
+            http_response_code(403);
+            echo json_encode([
+                'error' => 'Your account is pending verification. Write operations are not allowed until an admin approves your account.'
+            ]);
             exit;
         }
 

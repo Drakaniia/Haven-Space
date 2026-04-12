@@ -1,5 +1,6 @@
 import CONFIG from '../config.js';
 import { getIcon } from '../shared/icons.js';
+import { getBasePath, getBoarderRedirectPath, updateBoarderStatus } from '../shared/routing.js';
 
 /**
  * Inject icons from centralized library into elements with data-icon attributes
@@ -135,9 +136,16 @@ document.addEventListener('DOMContentLoaded', function () {
     });
   });
 
-  // Continue to step 2
+  // Continue to step 2 or redirect for landlords
   continueBtn.addEventListener('click', function () {
     if (selectedRole) {
+      // Redirect landlords to multi-step signup flow
+      if (selectedRole === 'landlord') {
+        window.location.href = 'signup-landlord.html';
+        return;
+      }
+
+      // Boarders continue to step 2 (original flow)
       step1.classList.add('hidden');
       step2.classList.remove('hidden');
       headerLinkContainer.classList.remove('hidden');
@@ -272,7 +280,6 @@ document.addEventListener('DOMContentLoaded', function () {
 
   // Apple signup button (placeholder for future implementation)
   document.querySelector('.social-btn-apple')?.addEventListener('click', function () {
-    console.log('Apple signup clicked');
     // TODO: Implement Apple OAuth
     alert('Apple signup to be implemented');
   });
@@ -313,23 +320,14 @@ document.addEventListener('DOMContentLoaded', function () {
           // Store user info
           localStorage.setItem('user', JSON.stringify(result.user));
 
-          // Redirect based on role - detect Apache setup vs GitHub Pages
-          const pathname = window.location.pathname;
-          let basePath;
-
-          if (pathname.includes('github.io')) {
-            // GitHub Pages deployment
-            basePath = '/Haven-Space/client/views/';
-          } else {
-            // Apache setup: document root points to client folder
-            // OR local development with Apache
-            basePath = '/views/';
-          }
+          // Redirect based on role
+          const basePath = getBasePath();
 
           if (result.user.role === 'landlord') {
             window.location.href = `${basePath}landlord/index.html`;
           } else {
-            window.location.href = `${basePath}boarder/index.html`;
+            // New boarder - redirect to find a room page
+            window.location.href = `${basePath}public/find-a-room.html`;
           }
         } else {
           alert(result.error || 'Signup failed');
@@ -365,13 +363,28 @@ document.addEventListener('DOMContentLoaded', function () {
       const result = await response.json();
 
       if (response.ok) {
-        alert('Registration successful! Please login.');
-        window.location.href = 'login.html';
+        // Auto-login boarders and redirect based on conditional routing
+        if (selectedRole === 'boarder') {
+          // Store user info to auto-login
+          const userInfo = {
+            ...result.user,
+            boarderStatus: 'new', // New signup, set to 'new'
+          };
+          localStorage.setItem('user', JSON.stringify(userInfo));
+          updateBoarderStatus('new');
+
+          // Redirect using conditional routing logic
+          const redirectPath = getBoarderRedirectPath(userInfo);
+          window.location.href = redirectPath;
+        } else {
+          // Landlord: redirect to login page to verify email
+          alert('Registration successful! Please check your email for verification, then login.');
+          window.location.href = 'login.html';
+        }
       } else {
         alert(result.error || 'Registration failed');
       }
     } catch (error) {
-      console.error('Error during signup:', error);
       alert('An error occurred. Please try again.');
     }
   });

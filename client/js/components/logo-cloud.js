@@ -5,19 +5,16 @@
 
 export function initLogoCloud() {
   const slider = document.getElementById('logoSlider');
-  console.log('Logo cloud init:', slider ? 'found' : 'not found');
   if (!slider) {
     return;
   }
 
   let currentSpeed = 80; // base speed
-  let isTransitioning = false;
   let animationFrameId = null;
   let position = 0;
 
   // Calculate the width of one complete set of logos
   const logoTrack = slider.querySelector('.logo-track');
-  console.log('Logo track:', logoTrack ? 'found' : 'not found');
   if (!logoTrack) {
     return;
   }
@@ -40,14 +37,11 @@ export function initLogoCloud() {
 
     // Fallback: if trackWidth is 0, use a reasonable estimate
     if (trackWidth === 0) {
-      console.warn('Logo cloud: trackWidth is 0, using fallback calculation');
       // Assume average logo width of 100px
       const gap = 42;
       const logoCount = logoTrack.children.length;
       trackWidth = (100 + gap) * logoCount - gap;
     }
-
-    console.log('Logo cloud: trackWidth =', trackWidth);
 
     // Recalculate on window resize
     let resizeTimeout;
@@ -87,7 +81,6 @@ export function initLogoCloud() {
 
     // Hover effects - slow down on hover
     slider.addEventListener('mouseenter', () => {
-      isTransitioning = true;
       // Smoothly transition to slower speed
       const slowDown = () => {
         if (currentSpeed > 25) {
@@ -95,14 +88,12 @@ export function initLogoCloud() {
           requestAnimationFrame(slowDown);
         } else {
           currentSpeed = 25;
-          isTransitioning = false;
         }
       };
       slowDown();
     });
 
     slider.addEventListener('mouseleave', () => {
-      isTransitioning = true;
       // Smoothly transition back to normal speed
       const speedUp = () => {
         if (currentSpeed < 80) {
@@ -110,7 +101,6 @@ export function initLogoCloud() {
           requestAnimationFrame(speedUp);
         } else {
           currentSpeed = 80;
-          isTransitioning = false;
         }
       };
       speedUp();
@@ -118,7 +108,6 @@ export function initLogoCloud() {
 
     // Initialize
     startAnimation();
-    console.log('Logo cloud: Animation started');
 
     // Cleanup function (if needed)
     return () => {
