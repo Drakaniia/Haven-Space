@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Confirm Booking - Haven Space</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="../../../css/global.css" />
+    <link rel="stylesheet" href="../../../css/components/sidebar.css" />
+    <link rel="stylesheet" href="../../../css/components/navbar.css" />
+    <link rel="stylesheet" href="../../../css/components/status-banner.css" />
+    <link rel="stylesheet" href="../../../css/views/boarder/boarder.css" />
+    <link rel="stylesheet" href="../../../css/views/boarder/confirm-booking.css" />
+  </head>
+  <body data-view="boarder" data-dashboard-type="boarder">
+    <div class="boarder-dashboard">
+      <!-- Sidebar Container -->
+      <div id="sidebar-container"></div>
+
+      <!-- Main Content -->
+      <main class="boarder-main">
+        <!-- Navbar Container -->
+        <div id="navbar-container"></div>
+
+        <!-- Content Wrapper -->
+        <div class="boarder-content">
+          <!-- Confirm Booking Page -->
+          <main class="confirm-booking-page">
+            <div class="confirm-booking-container">
+              <!-- Header Section -->
+              <section class="confirm-booking-header">
+                <div class="confirm-booking-icon">
+                  <span
+                    data-icon="checkCircle"
+                    data-icon-width="64"
+                    data-icon-height="64"
+                    data-icon-stroke-width="1.5"
+                  ></span>
+                </div>
+                <h1 class="confirm-booking-title">You've Been Accepted!</h1>
+                <p class="confirm-booking-subtitle">
+                  The landlord has accepted your application. Ready to make it official?
+                </p>
+              </section>
+
+              <!-- Property Details Card -->
+              <section class="confirm-booking-details">
+                <div class="confirm-booking-card">
+                  <h2 class="card-title">Room Details</h2>
+                  <div class="card-content">
+                    <div class="detail-row">
+                      <span class="detail-label">Property</span>
+                      <span class="detail-value" id="confirm-property-name"></span>
+                    </div>
+                    <div class="detail-row">
+                      <span class="detail-label">Room Type</span>
+                      <span class="detail-value" id="confirm-room-type"></span>
+                    </div>
+                    <div class="detail-row">
+                      <span class="detail-label">Monthly Rent</span>
+                      <span class="detail-value" id="confirm-monthly-rent"></span>
+                    </div>
+                    <div class="detail-row">
+                      <span class="detail-label">Accepted Date</span>
+                      <span class="detail-value" id="confirm-accepted-date"></span>
+                    </div>
+                    <div class="detail-row">
+                      <span class="detail-label">Landlord</span>
+                      <span class="detail-value" id="confirm-landlord-name"></span>
+                    </div>
+                  </div>
+                </div>
+              </section>
+
+              <!-- Terms & Agreement -->
+              <section class="confirm-booking-terms">
+                <div class="terms-checkbox">
+                  <input type="checkbox" id="terms-agreement" />
+                  <label for="terms-agreement">
+                    I agree to the terms and conditions, house rules, and rental agreement for this
+                    property. I understand that confirming this booking is a commitment to rent this
+                    room.
+                  </label>
+                </div>
+              </section>
+
+              <!-- Action Buttons -->
+              <section class="confirm-booking-actions">
+                <button class="btn btn-secondary" id="confirm-decline-btn">Not Ready Yet</button>
+                <button class="btn btn-primary" id="confirm-accept-btn" disabled>
+                  Confirm Booking
+                </button>
+              </section>
+
+              <!-- Help Section -->
+              <section class="confirm-booking-help">
+                <p>
+                  <span
+                    data-icon="informationCircle"
+                    data-icon-width="16"
+                    data-icon-height="16"
+                  ></span>
+                  Need help? Contact the landlord through messages if you have questions before
+                  confirming.
+                </p>
+              </section>
+            </div>
+          </main>
+        </div>
+      </main>
+    </div>
+
+    <script type="module">
+      import { initSidebar } from '../../../js/components/sidebar.js';
+      import { initNavbar } from '../../../js/components/navbar.js';
+      import { initConfirmBooking } from '../../../js/views/boarder/confirm-booking.js';
+
+      document.addEventListener('DOMContentLoaded', () => {
+        // Initialize sidebar
+        if (document.getElementById('sidebar-container')) {
+          initSidebar({
+            role: 'boarder',
+            user: {
+              name: 'Juan Dela Cruz',
+              initials: 'JD',
+              role: 'Boarder',
+            },
+          });
+        }
+
+        // Initialize navbar
+        if (document.getElementById('navbar-container')) {
+          initNavbar({
+            user: {
+              name: 'Juan Dela Cruz',
+              initials: 'JD',
+              avatarUrl: '',
+            },
+            notificationCount: 3,
+          });
+        }
+
+        // Initialize confirm booking page
+        initConfirmBooking();
+      });
+    </script>
+  </body>
+</html>

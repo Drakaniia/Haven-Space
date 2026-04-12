@@ -36,6 +36,10 @@ export function getBoarderRedirectPath(user) {
       // Has pending applications - show applications page
       return `${basePath}boarder/applications/index.html`;
 
+    case 'pending_confirmation':
+      // Landlord accepted, waiting for boarder confirmation
+      return `${basePath}boarder/confirm-booking/index.html`;
+
     case 'accepted':
       // Has room - show full dashboard
       return `${basePath}boarder/index.html`;

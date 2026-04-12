@@ -18,6 +18,188 @@
     </script>
   </head>
   <body data-view="public-find-room">
+    <!-- Floating Smart Header -->
+    <header class="find-room-floating-header hidden" id="find-room-floating-header">
+      <div class="find-room-floating-header-container">
+        <!-- Left Side: Logo/Brand -->
+        <div class="find-room-floating-header-left">
+          <a href="index.html" class="find-room-floating-header-logo">
+            <span class="find-room-floating-header-logo-text">Haven Space</span>
+          </a>
+        </div>
+
+        <!-- Right Side: Controls -->
+        <div class="find-room-floating-header-right">
+          <!-- Status Dropdown -->
+          <div class="find-room-header-dropdown" id="status-dropdown">
+            <button class="find-room-header-dropdown-btn" id="status-dropdown-btn">
+              <span data-icon="clipboard" data-icon-width="18" data-icon-height="18"></span>
+              <span>Status</span>
+              <span class="find-room-status-badge" id="status-badge" style="display: none">0</span>
+              <span data-icon="chevronDown" data-icon-width="16" data-icon-height="16"></span>
+            </button>
+            <div class="find-room-header-dropdown-menu" id="status-dropdown-menu">
+              <div class="find-room-status-header">
+                <h4>My Applications</h4>
+                <button class="find-room-status-close" id="find-room-status-close">
+                  <span data-icon="close" data-icon-width="18" data-icon-height="18"></span>
+                </button>
+              </div>
+              <div class="find-room-status-tabs">
+                <button class="find-room-status-tab active" data-status="all">All</button>
+                <button class="find-room-status-tab" data-status="pending">Pending</button>
+                <button class="find-room-status-tab" data-status="accepted">Accepted</button>
+              </div>
+              <div class="find-room-applications-list" id="applications-list">
+                <!-- Applications will be injected here -->
+              </div>
+            </div>
+          </div>
+
+          <!-- Map View Button -->
+          <button class="find-room-header-icon-btn" id="map-view-btn" title="Toggle Map View">
+            <span data-icon="map" data-icon-width="20" data-icon-height="20"></span>
+            <span class="find-room-header-btn-label">Map</span>
+          </button>
+
+          <!-- Profile Dropdown -->
+          <div class="find-room-header-dropdown" id="profile-dropdown">
+            <button class="find-room-header-profile-btn" id="profile-dropdown-btn">
+              <img
+                src="../../assets/images/sample.png"
+                alt="User Avatar"
+                class="find-room-header-profile-avatar"
+              />
+              <span class="find-room-header-profile-name">Juan Dela Cruz</span>
+              <span data-icon="chevronDown" data-icon-width="16" data-icon-height="16"></span>
+            </button>
+            <div
+              class="find-room-header-dropdown-menu find-room-profile-menu"
+              id="profile-dropdown-menu"
+            >
+              <div class="find-room-profile-menu-header">
+                <div class="find-room-profile-menu-avatar">JD</div>
+                <div class="find-room-profile-menu-info">
+                  <div class="find-room-profile-menu-name">Juan Dela Cruz</div>
+                  <div class="find-room-profile-menu-email">juan@example.com</div>
+                </div>
+              </div>
+              <div class="find-room-profile-menu-divider"></div>
+              <a
+                href="../boarder/profile/index.html"
+                class="find-room-profile-menu-item"
+                id="profile-menu-profile"
+              >
+                <span data-icon="user" data-icon-width="18" data-icon-height="18"></span>
+                <span>Profile</span>
+              </a>
+              <a href="#" class="find-room-profile-menu-item" id="profile-menu-settings">
+                <span data-icon="settings" data-icon-width="18" data-icon-height="18"></span>
+                <span>Settings</span>
+              </a>
+              <div class="find-room-profile-menu-divider"></div>
+              <a
+                href="#"
+                class="find-room-profile-menu-item find-room-profile-menu-logout"
+                id="profile-menu-logout"
+              >
+                <span data-icon="logout" data-icon-width="18" data-icon-height="18"></span>
+                <span>Log out</span>
+              </a>
+            </div>
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <!-- Confirmation Selection Modal -->
+    <div class="find-room-modal-overlay" id="confirmation-modal" style="display: none">
+      <div class="find-room-modal find-room-confirmation-modal">
+        <div class="find-room-modal-header">
+          <h3>Choose Your Boarding House</h3>
+          <button class="find-room-modal-close" id="confirmation-modal-close">
+            <span data-icon="close" data-icon-width="20" data-icon-height="20"></span>
+          </button>
+        </div>
+        <div class="find-room-modal-body">
+          <p class="find-room-confirmation-description">
+            Multiple landlords have accepted your application. Please select one boarding house to
+            proceed.
+          </p>
+          <div class="find-room-accepted-list" id="accepted-list">
+            <!-- Accepted boarding houses will be injected here -->
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Rejection Reason Modal -->
+    <div class="find-room-modal-overlay" id="rejection-modal" style="display: none">
+      <div class="find-room-modal find-room-rejection-modal">
+        <div class="find-room-modal-header">
+          <h3>Why are you rejecting this option?</h3>
+          <button class="find-room-modal-close" id="rejection-modal-close">
+            <span data-icon="close" data-icon-width="20" data-icon-height="20"></span>
+          </button>
+        </div>
+        <div class="find-room-modal-body">
+          <p class="find-room-rejection-description">
+            Please select a reason for rejecting <strong id="rejection-property-name"></strong>:
+          </p>
+          <div class="find-room-rejection-reasons" id="rejection-reasons">
+            <label class="find-room-reason-option">
+              <input type="radio" name="rejection-reason" value="too-expensive" />
+              <span>Too expensive</span>
+            </label>
+            <label class="find-room-reason-option">
+              <input type="radio" name="rejection-reason" value="location-not-ideal" />
+              <span>Location not ideal</span>
+            </label>
+            <label class="find-room-reason-option">
+              <input type="radio" name="rejection-reason" value="found-better" />
+              <span>Found better option</span>
+            </label>
+            <label class="find-room-reason-option">
+              <input type="radio" name="rejection-reason" value="not-responsive" />
+              <span>Not responsive landlord</span>
+            </label>
+            <label class="find-room-reason-option">
+              <input type="radio" name="rejection-reason" value="others" />
+              <span>Others (please specify)</span>
+            </label>
+          </div>
+          <div class="find-room-reason-other-input" id="reason-other-input" style="display: none">
+            <input
+              type="text"
+              class="find-room-reason-other-text"
+              id="rejection-other-text"
+              placeholder="Please specify your reason..."
+            />
+            <div class="find-room-reason-error" id="rejection-other-error">
+              Please enter your reason in the text field.
+            </div>
+          </div>
+          <div class="find-room-rejection-actions">
+            <button class="find-room-btn find-room-btn-secondary" id="rejection-cancel-btn">
+              Cancel
+            </button>
+            <button class="find-room-btn find-room-btn-danger" id="rejection-confirm-btn">
+              Confirm Rejection
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Map View Container -->
+    <div class="find-room-map-container" id="find-room-map-container" style="display: none">
+      <div id="find-room-map" class="find-room-map"></div>
+      <button class="find-room-map-close-btn" id="find-room-map-close-btn" title="Close Map View">
+        <span data-icon="close" data-icon-width="20" data-icon-height="20"></span>
+        Close Map
+      </button>
+    </div>
+
     <!-- Main Content -->
     <main class="find-room-main">
       <!-- Content Wrapper -->
@@ -716,5 +898,6 @@
     <!-- ES Module Entry Point -->
     <script type="module" src="../../js/main.js"></script>
     <script type="module" src="../../js/views/public/public-find-a-room.js"></script>
+    <script type="module" src="../../js/views/public/find-a-room.js"></script>
   </body>
 </html>

@@ -20,6 +20,16 @@ const STATUS_TEMPLATES = {
       { label: 'Continue Browsing', href: '../public/find-a-room.html', type: 'secondary' },
     ],
   },
+  pending_confirmation: {
+    icon: 'checkCircle',
+    title: 'Confirm Your Booking',
+    message: appName =>
+      `A landlord has accepted your application to <strong>${appName}</strong>. Review the details and confirm your booking to secure the room.`,
+    actions: [
+      { label: 'Review & Confirm', href: './confirm-booking/index.html', type: 'primary' },
+      { label: 'View Application', href: './applications/index.html', type: 'outline' },
+    ],
+  },
   rejected: {
     icon: 'xMark',
     title: 'Application Not Accepted',
@@ -126,11 +136,12 @@ export function initBoarderStatus() {
     updateBoarderStatus(currentStatus);
   }
 
-  // Only show banner for pending or rejected status
+  // Only show banner for pending, pending_confirmation, or rejected status
   if (
     currentStatus === 'pending' ||
     currentStatus === 'rejected' ||
-    currentStatus === 'applied_pending'
+    currentStatus === 'applied_pending' ||
+    currentStatus === 'pending_confirmation'
   ) {
     const displayStatus = currentStatus === 'applied_pending' ? 'pending' : currentStatus;
 

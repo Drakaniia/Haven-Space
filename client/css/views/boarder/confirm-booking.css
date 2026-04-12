@@ -1,0 +1,262 @@
+/* Confirm Booking Page Styles */
+
+.confirm-booking-page {
+  min-height: 100vh;
+  background: var(--bg-cream);
+  padding: 3rem 2rem;
+}
+
+.confirm-booking-container {
+  max-width: 720px;
+  margin: 0 auto;
+}
+
+/* ==========================================================================
+   Header Section
+   ========================================================================== */
+
+.confirm-booking-header {
+  text-align: center;
+  margin-bottom: 3rem;
+}
+
+.confirm-booking-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 96px;
+  height: 96px;
+  background: var(--bg-green);
+  color: var(--primary-green);
+  border-radius: 50%;
+  margin-bottom: 1.5rem;
+}
+
+.confirm-booking-icon svg {
+  width: 64px;
+  height: 64px;
+  stroke: currentColor;
+  fill: none;
+}
+
+.confirm-booking-title {
+  font-size: 2.5rem;
+  font-weight: 800;
+  color: var(--text-dark);
+  margin-bottom: 0.75rem;
+}
+
+.confirm-booking-subtitle {
+  font-size: 1.125rem;
+  color: var(--text-gray);
+  max-width: 500px;
+  margin: 0 auto;
+  line-height: 1.6;
+}
+
+/* ==========================================================================
+   Details Card
+   ========================================================================== */
+
+.confirm-booking-details {
+  margin-bottom: 2.5rem;
+}
+
+.confirm-booking-card {
+  background: var(--white);
+  border-radius: 16px;
+  padding: 2rem;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+}
+
+.card-title {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: var(--text-dark);
+  margin-bottom: 1.5rem;
+  padding-bottom: 1rem;
+  border-bottom: 2px solid var(--border-color);
+}
+
+.card-content {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+
+.detail-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.75rem 0;
+}
+
+.detail-label {
+  font-size: 0.938rem;
+  color: var(--text-gray);
+  font-weight: 500;
+}
+
+.detail-value {
+  font-size: 1rem;
+  color: var(--text-dark);
+  font-weight: 600;
+}
+
+/* ==========================================================================
+   Terms Section
+   ========================================================================== */
+
+.confirm-booking-terms {
+  margin-bottom: 2.5rem;
+}
+
+.terms-checkbox {
+  display: flex;
+  gap: 1rem;
+  align-items: flex-start;
+  background: var(--white);
+  padding: 1.5rem;
+  border-radius: 12px;
+  border: 1px solid var(--border-color);
+}
+
+.terms-checkbox input[type='checkbox'] {
+  width: 20px;
+  height: 20px;
+  margin-top: 2px;
+  flex-shrink: 0;
+  cursor: pointer;
+  accent-color: var(--primary-green);
+}
+
+.terms-checkbox label {
+  font-size: 0.938rem;
+  color: var(--text-gray);
+  line-height: 1.6;
+  cursor: pointer;
+}
+
+/* ==========================================================================
+   Action Buttons
+   ========================================================================== */
+
+.confirm-booking-actions {
+  display: flex;
+  gap: 1rem;
+  justify-content: center;
+  margin-bottom: 2rem;
+}
+
+.confirm-booking-actions .btn {
+  min-width: 180px;
+  padding: 0.875rem 2rem;
+  font-size: 1rem;
+  font-weight: 600;
+  border-radius: 12px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-family: var(--font-main);
+}
+
+.confirm-booking-actions .btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.confirm-booking-actions .btn-primary {
+  background: var(--primary-green);
+  color: var(--white);
+  border: 2px solid var(--primary-green);
+}
+
+.confirm-booking-actions .btn-primary:hover:not(:disabled) {
+  background: var(--dark-green);
+  border-color: var(--dark-green);
+}
+
+.confirm-booking-actions .btn-secondary {
+  background: var(--white);
+  color: var(--text-gray);
+  border: 2px solid var(--border-color);
+}
+
+.confirm-booking-actions .btn-secondary:hover {
+  background: var(--bg-cream);
+  border-color: var(--text-gray);
+}
+
+/* ==========================================================================
+   Help Section
+   ========================================================================== */
+
+.confirm-booking-help {
+  text-align: center;
+  padding: 1.5rem;
+  background: #f0f9ff;
+  border-radius: 12px;
+  color: var(--text-gray);
+  font-size: 0.938rem;
+  line-height: 1.6;
+}
+
+.confirm-booking-help svg {
+  vertical-align: middle;
+  margin-right: 0.5rem;
+}
+
+/* ==========================================================================
+   Responsive Design
+   ========================================================================== */
+
+@media (max-width: 768px) {
+  .confirm-booking-page {
+    padding: 2rem 1rem;
+  }
+
+  .confirm-booking-title {
+    font-size: 2rem;
+  }
+
+  .confirm-booking-subtitle {
+    font-size: 1rem;
+  }
+
+  .confirm-booking-actions {
+    flex-direction: column;
+  }
+
+  .confirm-booking-actions .btn {
+    width: 100%;
+  }
+
+  .detail-row {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.5rem;
+  }
+
+  .confirm-booking-icon {
+    width: 80px;
+    height: 80px;
+  }
+
+  .confirm-booking-icon svg {
+    width: 48px;
+    height: 48px;
+  }
+}
+
+@media (max-width: 640px) {
+  .confirm-booking-title {
+    font-size: 1.75rem;
+  }
+
+  .confirm-booking-card {
+    padding: 1.5rem;
+  }
+
+  .terms-checkbox {
+    padding: 1.25rem;
+  }
+}

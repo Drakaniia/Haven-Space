@@ -4,6 +4,7 @@
  */
 
 import { getIcon, getSolidIcon } from '../../shared/icons.js';
+import { initFindARoomEnhanced } from './find-a-room.js';
 
 // State management
 const state = {
@@ -97,9 +98,15 @@ export function initPublicFindARoom() {
 
   // Wait for DOM to be ready
   if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', setupEventListeners);
+    document.addEventListener('DOMContentLoaded', () => {
+      setupEventListeners();
+      // Initialize enhanced features after basic setup
+      initFindARoomEnhanced();
+    });
   } else {
     setupEventListeners();
+    // Initialize enhanced features after basic setup
+    initFindARoomEnhanced();
   }
 }
 
