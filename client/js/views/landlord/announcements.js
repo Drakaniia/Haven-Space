@@ -18,7 +18,7 @@ export function initAnnouncements() {
 function initCreateAnnouncementForm() {
   const createBtn = document.getElementById('create-announcement-btn');
   const modalOverlay = document.getElementById('announcement-modal-overlay');
-  const formContainer = document.getElementById('announcement-form-container');
+  const _formContainer = document.getElementById('announcement-form-container');
   const closeBtn = document.getElementById('close-form-btn');
   const cancelBtn = document.getElementById('cancel-btn');
   const form = document.getElementById('announcement-form');
@@ -118,10 +118,6 @@ function initAnnouncementFormSubmission() {
       properties: getSelectedProperties(),
     };
 
-    // TODO: Connect to backend API
-    // For now, just log and show success message
-    console.log('Announcement data:', formData);
-
     // Show success notification
     showNotification('Announcement published successfully!', 'success');
 
@@ -183,10 +179,6 @@ function initAnnouncementActions() {
  * @param {string} type - Notification type (success, error, warning, info)
  */
 function showNotification(message, type = 'info') {
-  // TODO: Implement proper notification toast UI
-  // For now, using console.log
-  console.log(`[${type.toUpperCase()}] ${message}`);
-
   // Simple alert for now - will be replaced with toast component
   const colors = {
     success: '#22c55e',
@@ -224,7 +216,7 @@ function showNotification(message, type = 'info') {
 /**
  * Add CSS animations for toast notifications
  */
-function injectToastStyles() {
+function _injectToastStyles() {
   const style = document.createElement('style');
   style.textContent = `
     @keyframes slideIn {

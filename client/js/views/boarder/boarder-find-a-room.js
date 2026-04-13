@@ -346,7 +346,6 @@ function setupEventListeners() {
   // Map toggle button
   const mapToggleBtn = document.getElementById('map-toggle-btn');
   const mapCloseBtn = document.getElementById('map-close-btn');
-  const mapView = document.getElementById('map-view');
 
   if (mapToggleBtn) {
     mapToggleBtn.addEventListener('click', () => {

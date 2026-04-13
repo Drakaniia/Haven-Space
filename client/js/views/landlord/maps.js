@@ -37,7 +37,7 @@ document.addEventListener('DOMContentLoaded', () => {
   updateInputs(marker.getLatLng());
 
   // Update inputs when marker gets dragged
-  marker.on('dragend', function (e) {
+  marker.on('dragend', function (_e) {
     const latlng = marker.getLatLng();
     updateInputs(latlng);
     map.flyTo(latlng, map.getZoom());
@@ -68,7 +68,7 @@ document.addEventListener('DOMContentLoaded', () => {
             map.flyTo(latlng, 16);
             locateBtn.classList.remove('loading');
           },
-          error => {
+          _error => {
             locateBtn.classList.remove('loading');
             alert('Could not get your location. Please check browser permissions.');
           }

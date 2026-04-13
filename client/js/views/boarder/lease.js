@@ -79,8 +79,6 @@ export async function initLeasePage() {
 
   // Initialize lease page functionality
   setupLeasePage();
-
-  console.log('Lease page initialized');
 }
 
 /**
@@ -108,8 +106,7 @@ function setupLeasePage() {
  * TODO: Remove this function when backend integration is complete
  */
 function loadMockData() {
-  console.log('Lease page loaded with mock data');
-  console.log('TODO: Replace with actual API calls');
+  // TODO: Replace with actual API calls
 }
 
 /**
@@ -126,7 +123,6 @@ function setupDocumentDownloadHandlers() {
       // await downloadDocument(docId);
 
       // Mock download for development
-      console.log(`TODO: Download document with ID: ${docId}`);
       alert(
         `TODO: Backend Integration\n\nDownloading document: ${docId}\n\nThis will connect to the backend API to fetch the actual document.`
       );
@@ -138,74 +134,54 @@ function setupDocumentDownloadHandlers() {
  * Fetch lease data from backend
  * TODO: Integrate with backend API
  */
-async function fetchLeaseData() {
-  try {
-    // TODO: Replace with actual API endpoint
-    const response = await fetch(`${API_BASE_URL}/api/lease/current`, {
-      method: 'GET',
-      headers: {
-        'Content-Type': 'application/json',
-        // TODO: Add authentication header
-        // 'Authorization': `Bearer ${getAuthToken()}`
-      },
-      credentials: 'include',
-    });
-
-    if (!response.ok) {
-      throw new Error('Failed to fetch lease data');
-    }
-
-    const data = await response.json();
-    renderLeaseDetails(data);
-  } catch (error) {
-    console.error('Error fetching lease data:', error);
-    // TODO: Show error message to user
-  }
-}
+// async function _fetchLeaseData() {
+//   try {
+//     const response = await fetch(`${API_BASE_URL}/api/lease/current`, {
+//       method: 'GET',
+//       headers: { 'Content-Type': 'application/json' },
+//       credentials: 'include',
+//     });
+//     if (!response.ok) throw new Error('Failed to fetch lease data');
+//     const data = await response.json();
+//     renderLeaseDetails(data);
+//   } catch (error) {
+//     console.error('Error fetching lease data:', error);
+//   }
+// }
 
 /**
  * Render lease details
- * @param {Object} lease - Lease data from backend
+ * @param {Object} _lease - Lease data from backend
  */
-function renderLeaseDetails(lease) {
+function renderLeaseDetails(_lease) {
   // TODO: Update lease details DOM elements with actual data
-  console.log('TODO: Render lease details', lease);
 }
 
 /**
  * Fetch lease documents from backend
  * TODO: Integrate with backend API
  */
-async function fetchLeaseDocuments() {
-  try {
-    // TODO: Replace with actual API endpoint
-    const response = await fetch(`${API_BASE_URL}/api/lease/documents`, {
-      method: 'GET',
-      headers: {
-        'Content-Type': 'application/json',
-        // TODO: Add authentication header
-      },
-      credentials: 'include',
-    });
-
-    if (!response.ok) {
-      throw new Error('Failed to fetch lease documents');
-    }
-
-    const data = await response.json();
-    renderLeaseDocuments(data);
-  } catch (error) {
-    console.error('Error fetching lease documents:', error);
-  }
-}
+// async function _fetchLeaseDocuments() {
+//   try {
+//     const response = await fetch(`${API_BASE_URL}/api/lease/documents`, {
+//       method: 'GET',
+//       headers: { 'Content-Type': 'application/json' },
+//       credentials: 'include',
+//     });
+//     if (!response.ok) throw new Error('Failed to fetch lease documents');
+//     const data = await response.json();
+//     renderLeaseDocuments(data);
+//   } catch (error) {
+//     console.error('Error fetching lease documents:', error);
+//   }
+// }
 
 /**
  * Render lease documents list
- * @param {Array} documents - Array of document objects
+ * @param {Array} _documents - Array of document objects
  */
-function renderLeaseDocuments(documents) {
+function renderLeaseDocuments(_documents) {
   // TODO: Update documents list DOM with actual data
-  console.log('TODO: Render lease documents', documents);
 }
 
 /**
@@ -213,108 +189,78 @@ function renderLeaseDocuments(documents) {
  * @param {string} docId - Document ID
  * TODO: Integrate with backend API
  */
-async function downloadDocument(docId) {
-  try {
-    // TODO: Replace with actual API endpoint
-    const response = await fetch(`${API_BASE_URL}/api/lease/documents/${docId}/download`, {
-      method: 'GET',
-      headers: {
-        'Content-Type': 'application/json',
-        // TODO: Add authentication header
-      },
-      credentials: 'include',
-    });
-
-    if (!response.ok) {
-      throw new Error('Failed to download document');
-    }
-
-    // TODO: Handle file download
-    const blob = await response.blob();
-    const url = window.URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `${docId}.pdf`;
-    document.body.appendChild(a);
-    a.click();
-    window.URL.revokeObjectURL(url);
-    document.body.removeChild(a);
-  } catch (error) {
-    console.error('Error downloading document:', error);
-    // TODO: Show error message to user
-  }
-}
+// async function downloadDocument(docId) {
+//   try {
+//     const response = await fetch(`${API_BASE_URL}/api/lease/documents/${docId}/download`, {
+//       method: 'GET',
+//       headers: { 'Content-Type': 'application/json' },
+//       credentials: 'include',
+//     });
+//     if (!response.ok) throw new Error('Failed to download document');
+//     const blob = await response.blob();
+//     const url = window.URL.createObjectURL(blob);
+//     const a = document.createElement('a');
+//     a.href = url;
+//     a.download = docId;
+//     a.click();
+//     window.URL.revokeObjectURL(url);
+//   } catch (error) {
+//     console.error('Error downloading document:', error);
+//   }
+// }
 
 /**
  * Fetch payment history from backend
  * TODO: Integrate with backend API
  */
-async function fetchPaymentHistory() {
-  try {
-    // TODO: Replace with actual API endpoint
-    const response = await fetch(`${API_BASE_URL}/api/lease/payments`, {
-      method: 'GET',
-      headers: {
-        'Content-Type': 'application/json',
-        // TODO: Add authentication header
-      },
-      credentials: 'include',
-    });
-
-    if (!response.ok) {
-      throw new Error('Failed to fetch payment history');
-    }
-
-    const data = await response.json();
-    renderPaymentHistory(data);
-  } catch (error) {
-    console.error('Error fetching payment history:', error);
-  }
-}
+// async function _fetchPaymentHistory() {
+//   try {
+//     const response = await fetch(`${API_BASE_URL}/api/lease/payments`, {
+//       method: 'GET',
+//       headers: { 'Content-Type': 'application/json' },
+//       credentials: 'include',
+//     });
+//     if (!response.ok) throw new Error('Failed to fetch payment history');
+//     const data = await response.json();
+//     renderPaymentHistory(data);
+//   } catch (error) {
+//     console.error('Error fetching payment history:', error);
+//   }
+// }
 
 /**
  * Render payment history table
- * @param {Array} payments - Array of payment objects
+ * @param {Array} _payments - Array of payment objects
  */
-function renderPaymentHistory(payments) {
+function renderPaymentHistory(_payments) {
   // TODO: Update payment table DOM with actual data
-  console.log('TODO: Render payment history', payments);
 }
 
 /**
  * Fetch maintenance history from backend
  * TODO: Integrate with backend API
  */
-async function fetchMaintenanceHistory() {
-  try {
-    // TODO: Replace with actual API endpoint
-    const response = await fetch(`${API_BASE_URL}/api/lease/maintenance`, {
-      method: 'GET',
-      headers: {
-        'Content-Type': 'application/json',
-        // TODO: Add authentication header
-      },
-      credentials: 'include',
-    });
-
-    if (!response.ok) {
-      throw new Error('Failed to fetch maintenance history');
-    }
-
-    const data = await response.json();
-    renderMaintenanceHistory(data);
-  } catch (error) {
-    console.error('Error fetching maintenance history:', error);
-  }
-}
+// async function _fetchMaintenanceHistory() {
+//   try {
+//     const response = await fetch(`${API_BASE_URL}/api/lease/maintenance`, {
+//       method: 'GET',
+//       headers: { 'Content-Type': 'application/json' },
+//       credentials: 'include',
+//     });
+//     if (!response.ok) throw new Error('Failed to fetch maintenance history');
+//     const data = await response.json();
+//     renderMaintenanceHistory(data);
+//   } catch (error) {
+//     console.error('Error fetching maintenance history:', error);
+//   }
+// }
 
 /**
  * Render maintenance history list
- * @param {Array} maintenance - Array of maintenance request objects
+ * @param {Array} _maintenance - Array of maintenance request objects
  */
-function renderMaintenanceHistory(maintenance) {
+function renderMaintenanceHistory(_maintenance) {
   // TODO: Update maintenance list DOM with actual data
-  console.log('TODO: Render maintenance history', maintenance);
 }
 
 /**
@@ -322,7 +268,6 @@ function renderMaintenanceHistory(maintenance) {
  * @returns {string|null} Auth token
  * TODO: Implement proper auth token retrieval
  */
-function getAuthToken() {
-  // TODO: Replace with actual auth token retrieval
-  return localStorage.getItem('authToken') || null;
-}
+// function _getAuthToken() {
+//   return localStorage.getItem('authToken') || null;
+// }

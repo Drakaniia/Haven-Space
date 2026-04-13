@@ -38,7 +38,6 @@ document.addEventListener('DOMContentLoaded', () => {
  */
 function initializeSearch() {
   const searchInput = document.querySelector('.boarder-search-input');
-  const searchFilters = document.querySelectorAll('.boarder-filter-select');
   const searchButton = document.querySelector('.boarder-search-filters .boarder-btn');
 
   if (searchButton) {
@@ -68,8 +67,6 @@ function handleSearch() {
     amenities: filters[1]?.value || '',
     propertyType: filters[2]?.value || '',
   };
-
-  console.log('Searching with params:', searchParams);
 
   // Navigate to rooms page with search params
   const queryParams = new URLSearchParams(searchParams).toString();
@@ -136,7 +133,6 @@ function getUserLocation() {
     navigator.geolocation.getCurrentPosition(
       position => {
         const { latitude, longitude } = position.coords;
-        console.log('User location:', latitude, longitude);
         window.location.href = `../maps.html?lat=${latitude}&lng=${longitude}`;
       },
       error => {
@@ -157,12 +153,7 @@ function initializeSavedSearches() {
 
   searchToggles.forEach(toggle => {
     toggle.addEventListener('change', e => {
-      const searchAlert = e.target.closest('.boarder-search-alert');
-      const searchName =
-        searchAlert?.querySelector('.boarder-search-alert-name')?.textContent || '';
       const isEnabled = e.target.checked;
-
-      console.log(`Search alert "${searchName}" ${isEnabled ? 'enabled' : 'disabled'}`);
 
       // In production, this would call an API to update notification preferences
       showNotification(
@@ -181,10 +172,6 @@ function initializeDocumentVault() {
 
   documentActions.forEach(action => {
     action.addEventListener('click', () => {
-      const docCard = action.closest('.boarder-document-card');
-      const docName = docCard?.querySelector('.boarder-document-name')?.textContent || '';
-
-      console.log('Downloading document:', docName);
       showNotification('Document download started', 'success');
 
       // In production, this would trigger a file download
@@ -226,7 +213,6 @@ function initializeApplicationTracker() {
         )}&action=sign`;
       } else if (action === 'Withdraw') {
         if (confirm(`Are you sure you want to withdraw your application for ${appName}?`)) {
-          console.log('Withdrawing application:', appName);
           showNotification('Application withdrawal submitted', 'info');
         }
       }
@@ -348,10 +334,7 @@ function updateDashboardUI() {
   }
 
   // Update payment stats
-  const upcomingPayments = dashboardState.payments.filter(
-    p => p.status === 'upcoming' || p.status === 'warning'
-  ).length;
-  console.log(`${upcomingPayments} upcoming payments`);
+  dashboardState.payments.filter(p => p.status === 'upcoming' || p.status === 'warning').length;
 }
 
 /**

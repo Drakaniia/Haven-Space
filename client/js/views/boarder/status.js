@@ -4,7 +4,7 @@
  */
 
 import { getIcon } from '../../shared/icons.js';
-import { getBoarderStatus, updateBoarderStatus, getBasePath } from '../../shared/routing.js';
+import { getBoarderStatus, updateBoarderStatus } from '../../shared/routing.js';
 
 /**
  * Status banner templates
@@ -176,7 +176,7 @@ export function initBoarderStatus() {
  * @param {string} newStatus - New status to set
  * @param {Object} data - Additional data
  */
-export function updateBoarderStatusUI(newStatus, data = {}) {
+export function updateBoarderStatusUI(newStatus, _data = {}) {
   updateBoarderStatus(newStatus);
   initBoarderStatus();
 }

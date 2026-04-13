@@ -143,8 +143,6 @@ export async function initLandlordDashboardEntry() {
 
   // Setup navbar event listeners
   setupNavbarListeners();
-
-  console.log('LandlordDashboard: Initialized');
 }
 
 /**

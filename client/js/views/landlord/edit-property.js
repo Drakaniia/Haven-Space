@@ -218,7 +218,7 @@ function hasUnsavedChanges() {
   }
 
   const form = document.getElementById('edit-property-form');
-  const formData = new FormData(form);
+  const _formData = new FormData(form);
 
   // Simple check - compare photo count
   if (uploadedPhotos.length !== originalProperty.photos.length) {
@@ -263,7 +263,7 @@ function initPhotoUpload(uploadArea, fileInput) {
  * Handle selected/dropped files
  */
 function handleFiles(files) {
-  const errorEl = document.getElementById('photo-error');
+  const _errorEl = document.getElementById('photo-error');
 
   for (const file of files) {
     // Check if we've reached max photos
@@ -391,7 +391,7 @@ function setupDragToReorder(grid) {
     return false;
   }
 
-  function handleDragLeave(e) {
+  function handleDragLeave(_e) {
     this.classList.remove('drag-over');
   }
 
@@ -423,7 +423,7 @@ function setupDragToReorder(grid) {
     return false;
   }
 
-  function handleDragEnd(e) {
+  function handleDragEnd(_e) {
     this.classList.remove('dragging');
     items.forEach(item => {
       item.classList.remove('drag-over');
@@ -542,10 +542,6 @@ async function handleFormSubmit(e) {
     photos: uploadedPhotos.map(photo => photo.url || photo.preview),
   };
 
-  // Log data for debugging (replace with actual API call)
-  console.log('Property updated with data:', data);
-  console.log('Photos:', uploadedPhotos.length);
-
   // Show success message
   alert('Property updated successfully! (This is a demo - backend integration required)');
 
@@ -570,7 +566,6 @@ function handleSaveDraft() {
     photos: uploadedPhotos.map(photo => photo.url || photo.preview),
   };
 
-  console.log('Draft saved:', data);
   alert('Draft saved successfully! (This is a demo - backend integration required)');
 }
 
@@ -673,7 +668,7 @@ function handleAddCustomAmenity() {
 /**
  * Remove custom amenity
  */
-function removeCustomAmenity(value) {
+function _removeCustomAmenity(value) {
   customAmenitiesList = customAmenitiesList.filter(a => a !== value);
 
   // Re-render list

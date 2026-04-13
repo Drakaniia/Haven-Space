@@ -432,7 +432,6 @@ function attemptGeolocation() {
     async (lat, lng) => {
       // Validate location is in Philippines
       if (!isValidPhilippinesLocation(lat, lng)) {
-        console.log('Current location is outside Philippines, using default');
         return;
       }
 
@@ -480,8 +479,7 @@ function attemptGeolocation() {
         document.getElementById('step2Next').disabled = false;
       }
     },
-    error => {
-      console.log('Geolocation failed:', error.message);
+    _error => {
       // Silently fail - user can manually select location
     }
   );
@@ -685,7 +683,6 @@ function populateReview() {
   document.getElementById('reviewRooms').textContent = `${signupState.step3.totalRooms} room(s)`;
 
   // Payment method
-  const paymentSection = document.getElementById('reviewPaymentSection');
   if (signupState.step4.skipped) {
     document.getElementById('reviewPaymentMethod').textContent = 'Will add later';
   } else if (signupState.step4.paymentMethod) {
@@ -1248,9 +1245,9 @@ async function submitSignup() {
 
 /**
  * Show welcome modal after successful signup
- * @param {Object} userData - User data object
+ * @param {Object} _userData - User data object
  */
-function showWelcomeModal(userData) {
+function showWelcomeModal(_userData) {
   const modal = document.createElement('div');
   modal.className = 'welcome-modal-overlay';
   modal.innerHTML = `

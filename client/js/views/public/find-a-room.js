@@ -332,11 +332,6 @@ function setupEnhancedFeatures() {
     // Initialize with sample data and persist to localStorage
     enhancedState.applications = sampleApplications;
     localStorage.setItem('applications', JSON.stringify(sampleApplications));
-    console.log(
-      'Applications initialized and saved to localStorage:',
-      sampleApplications.length,
-      'items'
-    );
   }
 
   // Initialize floating header
@@ -597,7 +592,6 @@ function initProfileDropdown() {
       e.preventDefault();
       dropdownMenu.classList.remove('show');
       // Show settings or navigate
-      console.log('Settings clicked');
     });
   }
 
@@ -639,7 +633,6 @@ function initProfileDropdown() {
 function initMapView() {
   // Map buttons now navigate to maps.html instead of toggling embedded map
   // The embedded map container and related functionality has been removed
-  console.log('Map view navigation: buttons now link to maps.html');
 }
 
 // Note: The following functions have been removed as map navigation now goes to maps.html:
@@ -653,7 +646,7 @@ function initMapView() {
  */
 function openDetailPanel(property) {
   const detailOverlay = document.getElementById('detail-overlay');
-  const detailPanel = document.getElementById('detail-panel');
+  const _detailPanel = document.getElementById('detail-panel');
 
   if (detailOverlay) {
     detailOverlay.style.display = 'flex';
@@ -782,7 +775,7 @@ function populateDetailPanel(property) {
     roomsSection.style.display = 'block';
     roomsGrid.innerHTML = property.rooms
       .map(
-        (room, index) => `
+        (room, _index) => `
       <div class="find-room-detail-room-card">
         <div class="find-room-room-image-wrapper">
           <img src="${room.image}" alt="${room.type}" class="find-room-room-image" />
@@ -952,7 +945,7 @@ window.openDetailPanelById = function (propertyId) {
 /**
  * Close map view
  */
-function closeMapView() {
+function _closeMapView() {
   const mapContainer = document.getElementById('find-room-map-container');
   const mapBtnHeader = document.getElementById('map-view-btn');
   const mapBtnHero = document.getElementById('map-view-btn-hero');
@@ -1109,8 +1102,6 @@ function initModals() {
       const reason =
         selectedRadio.value === 'others' ? otherInput?.value.trim() : selectedRadio.value;
 
-      console.log('Property rejected:', enhancedState.selectedProperty, 'Reason:', reason);
-
       // Add to rejected set
       if (enhancedState.selectedProperty) {
         enhancedState.rejectedProperties.add(enhancedState.selectedProperty.id);
@@ -1234,8 +1225,6 @@ function showConfirmationModal() {
 function handlePropertySelection(propertyId) {
   const selectedApp = enhancedState.applications.find(app => app.propertyId === propertyId);
   if (!selectedApp) return;
-
-  console.log('Property selected:', selectedApp);
 
   // Store selection
   enhancedState.selectedProperty = selectedApp;

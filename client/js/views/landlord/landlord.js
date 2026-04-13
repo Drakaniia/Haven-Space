@@ -93,9 +93,9 @@ async function loadDashboardData() {
 
 /**
  * Update dashboard stats with fetched data
- * @param {Object} data - Dashboard data from API
+ * @param {Object} _data - Dashboard data from API
  */
-function updateDashboardStats(data) {
+function _updateDashboardStats(_data) {
   // TODO: Update stat cards with real data
   // - Occupancy rate
   // - Monthly revenue
@@ -110,8 +110,6 @@ function updateDashboardStats(data) {
  */
 export async function sendPaymentReminder(paymentId, tenantName) {
   // TODO: Implement API call to send payment reminder
-  console.log(`Sending payment reminder to ${tenantName} (Payment ID: ${paymentId})`);
-
   // Example:
   // try {
   //   const response = await fetch('/api/payments/send-reminder', {
@@ -134,8 +132,6 @@ export async function sendPaymentReminder(paymentId, tenantName) {
  */
 export async function recordPayment(paymentId, paymentData) {
   // TODO: Implement API call to record payment
-  console.log(`Recording payment for Payment ID: ${paymentId}`, paymentData);
-
   // Example:
   // try {
   //   const response = await fetch('/api/payments/record', {
@@ -158,8 +154,6 @@ export async function recordPayment(paymentId, paymentData) {
  */
 export async function approveApplication(applicationId) {
   // TODO: Implement API call to approve application
-  console.log(`Approving application ID: ${applicationId}`);
-
   // Example:
   // try {
   //   const response = await fetch('/api/applications/approve', {
@@ -183,8 +177,6 @@ export async function approveApplication(applicationId) {
  */
 export async function rejectApplication(applicationId, reason = '') {
   // TODO: Implement API call to reject application
-  console.log(`Rejecting application ID: ${applicationId}`, reason);
-
   // Example:
   // try {
   //   const response = await fetch('/api/applications/reject', {
@@ -206,9 +198,8 @@ export async function rejectApplication(applicationId, reason = '') {
  * @param {string} message - Notification message
  * @param {string} type - Notification type (success, error, warning, info)
  */
-function showNotification(message, type = 'info') {
+function _showNotification(message, type = 'info') {
   // TODO: Implement notification toast UI
-  console.log(`[${type.toUpperCase()}] ${message}`);
 }
 
 /**

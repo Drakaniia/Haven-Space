@@ -506,7 +506,6 @@ function initEventListeners() {
       btn.classList.add('active');
       currentView = btn.dataset.view;
       // TODO: Implement week view if needed
-      console.log(`Switched to ${currentView} view`);
     });
   });
 
@@ -542,7 +541,6 @@ function initEventListeners() {
     viewDetailsBtn.addEventListener('click', () => {
       closeEventModal();
       // TODO: Navigate to detailed view if needed
-      console.log('Navigate to detailed event view');
     });
   }
 }

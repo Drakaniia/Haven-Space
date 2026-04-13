@@ -3,8 +3,6 @@
  * Handles messaging functionality for landlords with API integration
  */
 
-const API_BASE_URL = 'http://localhost:8000';
-
 let currentConversationId = null;
 let conversations = [];
 

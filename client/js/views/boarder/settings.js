@@ -6,7 +6,6 @@
  * Initialize settings page
  */
 export function initSettingsPage() {
-  console.log('Settings Page: Initialized');
   initSettingsTabs();
   initProfileForm();
   initNotificationSettings();
@@ -58,20 +57,15 @@ function initProfileForm() {
     profileForm.addEventListener('submit', async e => {
       e.preventDefault();
 
-      const formData = {
-        firstName: document.getElementById('first-name').value,
-        lastName: document.getElementById('last-name').value,
-        email: document.getElementById('email').value,
-        phone: document.getElementById('phone').value,
-      };
-
-      console.log('Profile updated:', formData);
-
       // TODO: Integrate with backend API
       // await fetch(`${CONFIG.API_BASE_URL}/api/profile/update`, {
       //   method: 'POST',
       //   headers: { 'Content-Type': 'application/json' },
-      //   body: JSON.stringify(formData),
+      //   body: JSON.stringify({
+      //     firstName: document.getElementById('first-name').value,
+      //     lastName: document.getElementById('last-name').value,
+      //     phone: document.getElementById('phone').value,
+      //   }),
       // });
 
       showToast('Profile updated successfully', 'success');
@@ -93,8 +87,6 @@ function initNotificationSettings() {
       toggles.forEach(toggle => {
         preferences[toggle.dataset.setting] = toggle.checked;
       });
-
-      console.log('Notification preferences:', preferences);
 
       // TODO: Integrate with backend API
       // await fetch(`${CONFIG.API_BASE_URL}/api/notifications/preferences`, {
@@ -118,7 +110,6 @@ function initPasswordForm() {
     passwordForm.addEventListener('submit', async e => {
       e.preventDefault();
 
-      const currentPassword = document.getElementById('current-password').value;
       const newPassword = document.getElementById('new-password').value;
       const confirmPassword = document.getElementById('confirm-password').value;
 
@@ -133,8 +124,6 @@ function initPasswordForm() {
         return;
       }
 
-      console.log('Password update requested');
-
       // TODO: Integrate with backend API
       // await fetch(`${CONFIG.API_BASE_URL}/api/auth/change-password`, {
       //   method: 'POST',
@@ -147,11 +136,9 @@ function initPasswordForm() {
     });
   }
 
-  // Two-factor authentication button
   const enable2faBtn = document.getElementById('enable-2fa');
   if (enable2faBtn) {
     enable2faBtn.addEventListener('click', () => {
-      console.log('Enable 2FA clicked');
       // TODO: Implement 2FA setup flow
       showToast('2FA setup coming soon', 'info');
     });
@@ -190,7 +177,6 @@ function initAvatarUpload() {
         const reader = new FileReader();
         reader.onload = e => {
           avatarPreview.src = e.target.result;
-          console.log('Avatar preview updated');
         };
         reader.readAsDataURL(file);
 

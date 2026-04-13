@@ -7,8 +7,6 @@
  * Initialize Reports Page
  */
 export function initReports() {
-  console.log('Reports: Initializing reports page...');
-
   // Initialize charts
   initRevenueChart();
   initOccupancyChart();
@@ -425,7 +423,6 @@ function initFilters() {
       const endDate = document.getElementById('endDate').value;
 
       if (startDate && endDate) {
-        console.log('Reports: Applying custom date range', { startDate, endDate });
         customDateRange.style.display = 'none';
         updateCharts('custom');
       }
@@ -457,10 +454,8 @@ function initFilters() {
  * @param {string} range - Date range value
  */
 function updateCharts(range) {
-  console.log('Reports: Updating charts for range:', range);
-
   // Simulate data update (in real app, fetch from API)
-  const multiplier = range === '7' ? 0.25 : range === '30' ? 1 : range === '90' ? 3 : 6;
+  const _multiplier = range === '7' ? 0.25 : range === '30' ? 1 : range === '90' ? 3 : 6;
 
   // Update revenue chart with new data
   const revenueData = [32000, 35500, 38200, 42500].map(v => v * (1 + Math.random() * 0.1));
@@ -560,8 +555,6 @@ function exportToCSV() {
   document.body.appendChild(link);
   link.click();
   document.body.removeChild(link);
-
-  console.log('Reports: Exported CSV');
 }
 
 /**

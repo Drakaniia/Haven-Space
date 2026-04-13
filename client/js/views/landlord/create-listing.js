@@ -129,7 +129,7 @@ function initPhotoUpload(uploadArea, fileInput) {
  * Handle selected/dropped files
  */
 function handleFiles(files) {
-  const errorEl = document.getElementById('photo-error');
+  const _errorEl = document.getElementById('photo-error');
 
   for (const file of files) {
     // Check if we've reached max photos
@@ -301,10 +301,6 @@ async function handleFormSubmit(e) {
     photos: uploadedPhotos.map(photo => photo.file),
   };
 
-  // Log data for debugging (replace with actual API call)
-  console.log('Form submitted with data:', data);
-  console.log('Photos to upload:', uploadedPhotos.length);
-
   // Show success message
   alert('Listing created successfully! (This is a demo - backend integration required)');
 
@@ -411,7 +407,7 @@ function handleAddCustomAmenity() {
 /**
  * Remove custom amenity
  */
-function removeCustomAmenity(value) {
+function _removeCustomAmenity(value) {
   customAmenitiesList = customAmenitiesList.filter(a => a !== value);
 
   // Re-render list

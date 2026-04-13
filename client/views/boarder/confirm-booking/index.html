@@ -18,239 +18,226 @@
     <div class="confirm-booking-standalone">
       <!-- Content Wrapper -->
       <div class="confirm-booking-container">
-            <!-- Page Header -->
-            <div class="confirm-booking-header">
-              <div class="confirm-booking-header-content">
-                <h1 class="confirm-booking-title">Confirm Your Booking</h1>
-                <p class="confirm-booking-subtitle">
-                  Review the details below and complete your booking
+        <!-- Page Header -->
+        <div class="confirm-booking-header">
+          <div class="confirm-booking-header-content">
+            <h1 class="confirm-booking-title">Confirm Your Booking</h1>
+            <p class="confirm-booking-subtitle">
+              Review the details below and complete your booking
+            </p>
+          </div>
+        </div>
+
+        <!-- Property Details Card -->
+        <div class="confirm-booking-card confirm-property-card">
+          <div class="confirm-card-header">
+            <h2 class="confirm-card-title">
+              <span data-icon="home" data-icon-width="24" data-icon-height="24"></span>
+              Property Details
+            </h2>
+          </div>
+          <div class="confirm-property-details">
+            <div class="confirm-property-row">
+              <span class="confirm-property-label">Property Name:</span>
+              <span class="confirm-property-value" id="confirm-property-name">-</span>
+            </div>
+            <div class="confirm-property-row">
+              <span class="confirm-property-label">Room Type:</span>
+              <span class="confirm-property-value" id="confirm-room-type">-</span>
+            </div>
+            <div class="confirm-property-row">
+              <span class="confirm-property-label">Monthly Rent:</span>
+              <span class="confirm-property-value confirm-property-price" id="confirm-monthly-rent"
+                >-</span
+              >
+            </div>
+            <div class="confirm-property-row">
+              <span class="confirm-property-label">Accepted On:</span>
+              <span class="confirm-property-value" id="confirm-accepted-date">-</span>
+            </div>
+            <div class="confirm-property-row">
+              <span class="confirm-property-label">Landlord:</span>
+              <span class="confirm-property-value" id="confirm-landlord-name">-</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Agreement Section -->
+        <div class="confirm-booking-card confirm-agreement-card">
+          <div class="confirm-card-header">
+            <h2 class="confirm-card-title">
+              <span data-icon="document" data-icon-width="24" data-icon-height="24"></span>
+              Rental Agreement
+            </h2>
+          </div>
+          <div class="confirm-agreement-content">
+            <div class="confirm-agreement-text">
+              <h3>Terms and Conditions</h3>
+              <p>By confirming this booking, you agree to the following terms:</p>
+              <ul class="confirm-agreement-list">
+                <li>You will pay the monthly rent on or before the due date (5th of each month)</li>
+                <li>A security deposit equivalent to one month's rent is required upon move-in</li>
+                <li>The minimum stay period is 6 months from the move-in date</li>
+                <li>You are responsible for maintaining the cleanliness of your room</li>
+                <li>Noise levels should be kept to a minimum during quiet hours (10 PM - 7 AM)</li>
+                <li>Guests are allowed but must be registered with the landlord</li>
+                <li>Any damages to the property will be deducted from the security deposit</li>
+                <li>
+                  Early termination requires 30 days advance notice and may forfeit the deposit
+                </li>
+                <li>
+                  The landlord reserves the right to conduct property inspections with 24 hours
+                  notice
+                </li>
+                <li>All house rules posted on the property must be followed</li>
+              </ul>
+              <p class="confirm-agreement-note">
+                <strong>Note:</strong> This is a binding agreement. Please read all terms carefully
+                before confirming.
+              </p>
+            </div>
+            <div class="confirm-agreement-checkbox">
+              <label class="confirm-checkbox-label">
+                <input type="checkbox" id="terms-agreement" class="confirm-checkbox-input" />
+                <span class="confirm-checkbox-mark"></span>
+                <span class="confirm-checkbox-text">
+                  I have read and agree to all the terms and conditions stated above
+                </span>
+              </label>
+            </div>
+          </div>
+        </div>
+
+        <!-- Payment Details Section -->
+        <div class="confirm-booking-card confirm-payment-card">
+          <div class="confirm-card-header">
+            <h2 class="confirm-card-title">
+              <span data-icon="creditCard" data-icon-width="24" data-icon-height="24"></span>
+              Payment Details
+            </h2>
+          </div>
+          <div class="confirm-payment-content">
+            <!-- Payment Summary -->
+            <div class="confirm-payment-summary">
+              <h3 class="confirm-payment-summary-title">Payment Breakdown</h3>
+              <div class="confirm-payment-breakdown">
+                <div class="confirm-payment-row">
+                  <span class="confirm-payment-label">Security Deposit (1 month):</span>
+                  <span class="confirm-payment-value" id="security-deposit">-</span>
+                </div>
+                <div class="confirm-payment-row">
+                  <span class="confirm-payment-label">First Month's Rent:</span>
+                  <span class="confirm-payment-value" id="first-month-rent">-</span>
+                </div>
+                <div class="confirm-payment-divider"></div>
+                <div class="confirm-payment-row confirm-payment-total">
+                  <span class="confirm-payment-label">Total Due Upon Move-in:</span>
+                  <span class="confirm-payment-value" id="total-due">-</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Payment Due Date -->
+            <div class="confirm-payment-due-date">
+              <div class="confirm-due-date-icon">
+                <span data-icon="calendar" data-icon-width="24" data-icon-height="24"></span>
+              </div>
+              <div class="confirm-due-date-content">
+                <h4 class="confirm-due-date-title">Payment Due Date</h4>
+                <p class="confirm-due-date-value" id="payment-due-date">-</p>
+                <p class="confirm-due-date-note">
+                  Payment must be completed before this date to secure your booking
                 </p>
               </div>
             </div>
 
-            <!-- Property Details Card -->
-            <div class="confirm-booking-card confirm-property-card">
-              <div class="confirm-card-header">
-                <h2 class="confirm-card-title">
-                  <span data-icon="home" data-icon-width="24" data-icon-height="24"></span>
-                  Property Details
-                </h2>
-              </div>
-              <div class="confirm-property-details">
-                <div class="confirm-property-row">
-                  <span class="confirm-property-label">Property Name:</span>
-                  <span class="confirm-property-value" id="confirm-property-name">-</span>
-                </div>
-                <div class="confirm-property-row">
-                  <span class="confirm-property-label">Room Type:</span>
-                  <span class="confirm-property-value" id="confirm-room-type">-</span>
-                </div>
-                <div class="confirm-property-row">
-                  <span class="confirm-property-label">Monthly Rent:</span>
-                  <span
-                    class="confirm-property-value confirm-property-price"
-                    id="confirm-monthly-rent"
-                    >-</span
-                  >
-                </div>
-                <div class="confirm-property-row">
-                  <span class="confirm-property-label">Accepted On:</span>
-                  <span class="confirm-property-value" id="confirm-accepted-date">-</span>
-                </div>
-                <div class="confirm-property-row">
-                  <span class="confirm-property-label">Landlord:</span>
-                  <span class="confirm-property-value" id="confirm-landlord-name">-</span>
-                </div>
-              </div>
-            </div>
-
-            <!-- Agreement Section -->
-            <div class="confirm-booking-card confirm-agreement-card">
-              <div class="confirm-card-header">
-                <h2 class="confirm-card-title">
-                  <span data-icon="document" data-icon-width="24" data-icon-height="24"></span>
-                  Rental Agreement
-                </h2>
-              </div>
-              <div class="confirm-agreement-content">
-                <div class="confirm-agreement-text">
-                  <h3>Terms and Conditions</h3>
-                  <p>By confirming this booking, you agree to the following terms:</p>
-                  <ul class="confirm-agreement-list">
-                    <li>
-                      You will pay the monthly rent on or before the due date (5th of each month)
-                    </li>
-                    <li>
-                      A security deposit equivalent to one month's rent is required upon move-in
-                    </li>
-                    <li>The minimum stay period is 6 months from the move-in date</li>
-                    <li>You are responsible for maintaining the cleanliness of your room</li>
-                    <li>
-                      Noise levels should be kept to a minimum during quiet hours (10 PM - 7 AM)
-                    </li>
-                    <li>Guests are allowed but must be registered with the landlord</li>
-                    <li>Any damages to the property will be deducted from the security deposit</li>
-                    <li>
-                      Early termination requires 30 days advance notice and may forfeit the deposit
-                    </li>
-                    <li>
-                      The landlord reserves the right to conduct property inspections with 24 hours
-                      notice
-                    </li>
-                    <li>All house rules posted on the property must be followed</li>
-                  </ul>
-                  <p class="confirm-agreement-note">
-                    <strong>Note:</strong> This is a binding agreement. Please read all terms
-                    carefully before confirming.
-                  </p>
-                </div>
-                <div class="confirm-agreement-checkbox">
-                  <label class="confirm-checkbox-label">
-                    <input type="checkbox" id="terms-agreement" class="confirm-checkbox-input" />
-                    <span class="confirm-checkbox-mark"></span>
-                    <span class="confirm-checkbox-text">
-                      I have read and agree to all the terms and conditions stated above
-                    </span>
-                  </label>
-                </div>
-              </div>
-            </div>
-
-            <!-- Payment Details Section -->
-            <div class="confirm-booking-card confirm-payment-card">
-              <div class="confirm-card-header">
-                <h2 class="confirm-card-title">
-                  <span data-icon="creditCard" data-icon-width="24" data-icon-height="24"></span>
-                  Payment Details
-                </h2>
-              </div>
-              <div class="confirm-payment-content">
-                <!-- Payment Summary -->
-                <div class="confirm-payment-summary">
-                  <h3 class="confirm-payment-summary-title">Payment Breakdown</h3>
-                  <div class="confirm-payment-breakdown">
-                    <div class="confirm-payment-row">
-                      <span class="confirm-payment-label">Security Deposit (1 month):</span>
-                      <span class="confirm-payment-value" id="security-deposit">-</span>
+            <!-- Payment Method Selection -->
+            <div class="confirm-payment-methods">
+              <h3 class="confirm-payment-methods-title">Select Payment Method</h3>
+              <div class="confirm-payment-method-grid">
+                <label class="confirm-payment-method-option" data-method="gcash">
+                  <input
+                    type="radio"
+                    name="payment-method"
+                    value="gcash"
+                    class="confirm-payment-method-input"
+                  />
+                  <div class="confirm-payment-method-content">
+                    <div class="confirm-payment-method-icon gcash">
+                      <span data-icon="phone" data-icon-width="32" data-icon-height="32"></span>
                     </div>
-                    <div class="confirm-payment-row">
-                      <span class="confirm-payment-label">First Month's Rent:</span>
-                      <span class="confirm-payment-value" id="first-month-rent">-</span>
-                    </div>
-                    <div class="confirm-payment-divider"></div>
-                    <div class="confirm-payment-row confirm-payment-total">
-                      <span class="confirm-payment-label">Total Due Upon Move-in:</span>
-                      <span class="confirm-payment-value" id="total-due">-</span>
+                    <div class="confirm-payment-method-info">
+                      <h4 class="confirm-payment-method-name">GCash</h4>
+                      <p class="confirm-payment-method-desc">Pay via QR code or GCash wallet</p>
                     </div>
                   </div>
-                </div>
-
-                <!-- Payment Due Date -->
-                <div class="confirm-payment-due-date">
-                  <div class="confirm-due-date-icon">
-                    <span data-icon="calendar" data-icon-width="24" data-icon-height="24"></span>
+                  <div class="confirm-payment-method-check">
+                    <span data-icon="check" data-icon-width="20" data-icon-height="20"></span>
                   </div>
-                  <div class="confirm-due-date-content">
-                    <h4 class="confirm-due-date-title">Payment Due Date</h4>
-                    <p class="confirm-due-date-value" id="payment-due-date">-</p>
-                    <p class="confirm-due-date-note">
-                      Payment must be completed before this date to secure your booking
-                    </p>
+                </label>
+
+                <label class="confirm-payment-method-option" data-method="bank">
+                  <input
+                    type="radio"
+                    name="payment-method"
+                    value="bank"
+                    class="confirm-payment-method-input"
+                  />
+                  <div class="confirm-payment-method-content">
+                    <div class="confirm-payment-method-icon bank">
+                      <span data-icon="building" data-icon-width="32" data-icon-height="32"></span>
+                    </div>
+                    <div class="confirm-payment-method-info">
+                      <h4 class="confirm-payment-method-name">Bank Transfer</h4>
+                      <p class="confirm-payment-method-desc">BDO, BPI, Metrobank</p>
+                    </div>
                   </div>
-                </div>
-
-                <!-- Payment Method Selection -->
-                <div class="confirm-payment-methods">
-                  <h3 class="confirm-payment-methods-title">Select Payment Method</h3>
-                  <div class="confirm-payment-method-grid">
-                    <label class="confirm-payment-method-option" data-method="gcash">
-                      <input
-                        type="radio"
-                        name="payment-method"
-                        value="gcash"
-                        class="confirm-payment-method-input"
-                      />
-                      <div class="confirm-payment-method-content">
-                        <div class="confirm-payment-method-icon gcash">
-                          <span data-icon="phone" data-icon-width="32" data-icon-height="32"></span>
-                        </div>
-                        <div class="confirm-payment-method-info">
-                          <h4 class="confirm-payment-method-name">GCash</h4>
-                          <p class="confirm-payment-method-desc">Pay via QR code or GCash wallet</p>
-                        </div>
-                      </div>
-                      <div class="confirm-payment-method-check">
-                        <span data-icon="check" data-icon-width="20" data-icon-height="20"></span>
-                      </div>
-                    </label>
-
-                    <label class="confirm-payment-method-option" data-method="bank">
-                      <input
-                        type="radio"
-                        name="payment-method"
-                        value="bank"
-                        class="confirm-payment-method-input"
-                      />
-                      <div class="confirm-payment-method-content">
-                        <div class="confirm-payment-method-icon bank">
-                          <span
-                            data-icon="building"
-                            data-icon-width="32"
-                            data-icon-height="32"
-                          ></span>
-                        </div>
-                        <div class="confirm-payment-method-info">
-                          <h4 class="confirm-payment-method-name">Bank Transfer</h4>
-                          <p class="confirm-payment-method-desc">BDO, BPI, Metrobank</p>
-                        </div>
-                      </div>
-                      <div class="confirm-payment-method-check">
-                        <span data-icon="check" data-icon-width="20" data-icon-height="20"></span>
-                      </div>
-                    </label>
-
-                    <label class="confirm-payment-method-option" data-method="card">
-                      <input
-                        type="radio"
-                        name="payment-method"
-                        value="card"
-                        class="confirm-payment-method-input"
-                      />
-                      <div class="confirm-payment-method-content">
-                        <div class="confirm-payment-method-icon card">
-                          <span
-                            data-icon="creditCard"
-                            data-icon-width="32"
-                            data-icon-height="32"
-                          ></span>
-                        </div>
-                        <div class="confirm-payment-method-info">
-                          <h4 class="confirm-payment-method-name">Credit/Debit Card</h4>
-                          <p class="confirm-payment-method-desc">Visa, Mastercard</p>
-                        </div>
-                      </div>
-                      <div class="confirm-payment-method-check">
-                        <span data-icon="check" data-icon-width="20" data-icon-height="20"></span>
-                      </div>
-                    </label>
+                  <div class="confirm-payment-method-check">
+                    <span data-icon="check" data-icon-width="20" data-icon-height="20"></span>
                   </div>
-                </div>
+                </label>
+
+                <label class="confirm-payment-method-option" data-method="card">
+                  <input
+                    type="radio"
+                    name="payment-method"
+                    value="card"
+                    class="confirm-payment-method-input"
+                  />
+                  <div class="confirm-payment-method-content">
+                    <div class="confirm-payment-method-icon card">
+                      <span
+                        data-icon="creditCard"
+                        data-icon-width="32"
+                        data-icon-height="32"
+                      ></span>
+                    </div>
+                    <div class="confirm-payment-method-info">
+                      <h4 class="confirm-payment-method-name">Credit/Debit Card</h4>
+                      <p class="confirm-payment-method-desc">Visa, Mastercard</p>
+                    </div>
+                  </div>
+                  <div class="confirm-payment-method-check">
+                    <span data-icon="check" data-icon-width="20" data-icon-height="20"></span>
+                  </div>
+                </label>
               </div>
-            </div>
-
-            <!-- Action Buttons -->
-            <div class="confirm-booking-actions">
-              <button class="confirm-btn confirm-btn-secondary" id="confirm-decline-btn">
-                <span data-icon="xMark" data-icon-width="20" data-icon-height="20"></span>
-                Decline & Continue Browsing
-              </button>
-              <button class="confirm-btn confirm-btn-primary" id="confirm-accept-btn" disabled>
-                <span data-icon="check" data-icon-width="20" data-icon-height="20"></span>
-                Confirm & Complete Booking
-              </button>
             </div>
           </div>
         </div>
+
+        <!-- Action Buttons -->
+        <div class="confirm-booking-actions">
+          <button class="confirm-btn confirm-btn-secondary" id="confirm-decline-btn">
+            <span data-icon="xMark" data-icon-width="20" data-icon-height="20"></span>
+            Decline & Continue Browsing
+          </button>
+          <button class="confirm-btn confirm-btn-primary" id="confirm-accept-btn" disabled>
+            <span data-icon="check" data-icon-width="20" data-icon-height="20"></span>
+            Confirm & Complete Booking
+          </button>
+        </div>
+      </div>
     </div>
 
     <!-- Success Modal -->

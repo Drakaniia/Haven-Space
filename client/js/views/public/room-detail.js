@@ -3,8 +3,6 @@
  * Handles room details display and gallery for public users
  */
 
-import { getIcon } from '../../shared/icons.js';
-
 // Sample room data (replace with API calls in production)
 const roomData = {
   1: {
@@ -461,7 +459,7 @@ function updateGalleryImage() {
 /**
  * Setup event listeners
  */
-function setupEventListeners(room) {
+function setupEventListeners(_room) {
   // Apply Now button - redirect to login for public users
   const applyBtn = document.getElementById('apply-now-btn');
   if (applyBtn) {

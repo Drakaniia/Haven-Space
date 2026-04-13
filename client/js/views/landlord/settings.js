@@ -6,7 +6,6 @@
  * Initialize settings page
  */
 export function initLandlordSettings() {
-  console.log('Landlord Settings Page: Initialized');
   initSettingsTabs();
   initProfileForm();
   initNotificationSettings();
@@ -68,8 +67,6 @@ function initProfileForm() {
         company: document.getElementById('company').value,
       };
 
-      console.log('Profile updated:', formData);
-
       // TODO: Integrate with backend API
       showToast('Profile updated successfully', 'success');
     });
@@ -91,8 +88,6 @@ function initNotificationSettings() {
         preferences[toggle.dataset.setting] = toggle.checked;
       });
 
-      console.log('Notification preferences:', preferences);
-
       // TODO: Integrate with backend API
       showToast('Notification preferences saved', 'success');
     });
@@ -109,7 +104,7 @@ function initPasswordForm() {
     passwordForm.addEventListener('submit', async e => {
       e.preventDefault();
 
-      const currentPassword = document.getElementById('current-password').value;
+      const _currentPassword = document.getElementById('current-password').value;
       const newPassword = document.getElementById('new-password').value;
       const confirmPassword = document.getElementById('confirm-password').value;
 
@@ -124,19 +119,15 @@ function initPasswordForm() {
         return;
       }
 
-      console.log('Password update requested');
-
       // TODO: Integrate with backend API
       showToast('Password updated successfully', 'success');
       passwordForm.reset();
     });
   }
 
-  // Two-factor authentication button
   const enable2faBtn = document.getElementById('enable-2fa');
   if (enable2faBtn) {
     enable2faBtn.addEventListener('click', () => {
-      console.log('Enable 2FA clicked');
       showToast('2FA setup coming soon', 'info');
     });
   }
@@ -174,7 +165,6 @@ function initAvatarUpload() {
         const reader = new FileReader();
         reader.onload = e => {
           avatarPreview.src = e.target.result;
-          console.log('Avatar preview updated');
         };
         reader.readAsDataURL(file);
       }
@@ -200,7 +190,6 @@ function initWelcomeMessageEditor() {
   if (previewBtn) {
     previewBtn.addEventListener('click', () => {
       const message = textarea?.value || '';
-      console.log('Preview message:', message);
       showToast('Preview feature coming soon', 'info');
     });
   }
@@ -208,7 +197,6 @@ function initWelcomeMessageEditor() {
   if (saveBtn) {
     saveBtn.addEventListener('click', () => {
       const message = textarea?.value || '';
-      console.log('Save welcome message:', message);
       // TODO: Integrate with backend API
       showToast('Welcome message saved successfully', 'success');
     });
@@ -272,8 +260,6 @@ function initDocumentUpload() {
         showToast('Only PDF files are allowed', 'error');
         return;
       }
-
-      console.log('Upload document:', { category, file: file.name, autoSend });
 
       // TODO: Integrate with backend API
       showToast('Document uploaded successfully', 'success');
@@ -412,7 +398,6 @@ function setupDocumentActions() {
   editBtns.forEach(btn => {
     btn.addEventListener('click', () => {
       const docId = btn.dataset.id;
-      console.log('Edit document:', docId);
       showToast('Edit feature coming soon', 'info');
     });
   });
@@ -421,7 +406,6 @@ function setupDocumentActions() {
     btn.addEventListener('click', () => {
       const docId = btn.dataset.id;
       if (confirm('Are you sure you want to delete this document?')) {
-        console.log('Delete document:', docId);
         // TODO: Integrate with backend API
         btn.closest('.document-item')?.remove();
         showToast('Document deleted successfully', 'success');

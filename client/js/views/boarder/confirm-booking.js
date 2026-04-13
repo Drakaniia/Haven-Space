@@ -4,7 +4,7 @@
  */
 
 import { getIcon } from '../../shared/icons.js';
-import { updateBoarderStatus, getBoarderStatus } from '../../shared/routing.js';
+import { updateBoarderStatus } from '../../shared/routing.js';
 
 /**
  * Initialize the confirm booking page
@@ -110,14 +110,10 @@ function getAcceptedApplication() {
     const application = applications.find(app => app.id === parseInt(appId));
 
     if (application) {
-      console.log('Application found in localStorage:', application);
       return application;
     }
 
     // Fallback: Try to reconstruct from URL params if not found in localStorage
-    console.warn(
-      'Application not found in localStorage, attempting to reconstruct from URL params'
-    );
     return reconstructApplicationFromParams(appId);
   }
 
@@ -152,7 +148,6 @@ function reconstructApplicationFromParams(appId) {
     appliedDate: new Date().toISOString().split('T')[0],
   };
 
-  console.log('Reconstructed application:', reconstructed);
   return reconstructed;
 }
 
@@ -176,12 +171,6 @@ function populateApplicationDetails(app) {
   if (acceptedDate)
     acceptedDate.textContent = formatDate(app.acceptedDate || app.appliedDate || new Date());
   if (landlordName) landlordName.textContent = app.landlordName || 'Property Owner';
-
-  console.log('Populated application details:', {
-    title: app.title,
-    rent,
-    status: app.status,
-  });
 }
 
 /**
@@ -209,13 +198,6 @@ function populatePaymentDetails(app) {
   if (paymentDueDateEl) {
     paymentDueDateEl.textContent = formatDate(dueDate);
   }
-
-  console.log('Populated payment details:', {
-    securityDeposit,
-    firstMonthRent: rent,
-    totalDue,
-    dueDate: dueDate.toISOString(),
-  });
 }
 
 /**
@@ -228,7 +210,7 @@ function setupPaymentMethodSelection() {
     const radio = option.querySelector('.confirm-payment-method-input');
     if (!radio) return;
 
-    option.addEventListener('click', e => {
+    option.addEventListener('click', _e => {
       // Remove selected state from all options
       methodOptions.forEach(opt => opt.classList.remove('selected'));
 
@@ -270,7 +252,6 @@ async function handleAcceptBooking(application) {
 
     // Show loading state
     const acceptBtn = document.getElementById('confirm-accept-btn');
-    const originalText = acceptBtn.innerHTML;
     acceptBtn.disabled = true;
     acceptBtn.innerHTML =
       '<span data-icon="loading" data-icon-width="20" data-icon-height="20"></span> Confirming...';
@@ -344,9 +325,8 @@ function showSuccessModal(booking) {
 
 /**
  * Handle declining the booking (return to browsing)
- * @param {Object} application - Application object
  */
-function handleDeclineBooking(application) {
+function handleDeclineBooking(_application) {
   // Keep status as 'pending_confirmation' or revert to 'applied_pending'
   // User can continue browsing rooms
   window.location.href = '../../public/find-a-room.html';
@@ -382,7 +362,7 @@ function formatDate(dateString) {
  * Update UI based on application status (pending vs accepted)
  * @param {Object} application - Application object
  */
-function updateUIForStatus(application) {
+function _updateUIForStatus(application) {
   const title = document.querySelector('.confirm-booking-title');
   const subtitle = document.querySelector('.confirm-booking-subtitle');
   const acceptBtn = document.getElementById('confirm-accept-btn');

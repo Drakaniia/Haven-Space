@@ -53,12 +53,11 @@ function initFloatingHeader() {
 function initFAQAccordion() {
   const faqItems = document.querySelectorAll('.faq-item');
   const faqTabs = document.querySelectorAll('.faq-tab');
+  let activeCategory = 'all';
 
   if (faqItems.length === 0) {
     return;
   }
-
-  let activeCategory = 'all';
 
   // Handle tab clicks
   faqTabs.forEach(tab => {
@@ -117,8 +116,6 @@ function initFAQAccordion() {
       });
     }
   });
-
-  console.log('PublicViews: FAQ Accordion initialized');
 }
 
 /**

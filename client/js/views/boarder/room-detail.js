@@ -3,7 +3,6 @@
  * Handles room details display, gallery, and booking functionality
  */
 
-import { getIcon } from '../../shared/icons.js';
 import { updateBoarderStatus, getBoarderStatus } from '../../shared/routing.js';
 
 // Sample room data (replace with API calls in production)
@@ -496,8 +495,6 @@ function setupEventListeners(room) {
  * Handle Apply Now action
  */
 function handleApplyNow(room) {
-  const boarderStatus = getBoarderStatus();
-
   // Check if user is logged in
   const user = JSON.parse(localStorage.getItem('user') || '{}');
 

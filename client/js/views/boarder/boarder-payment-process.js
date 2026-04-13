@@ -20,8 +20,6 @@ const paymentState = {
  * Sets up event listeners and initializes components
  */
 export async function initPaymentPage() {
-  console.log('PaymentPage: Initializing...');
-
   // Initialize sidebar and navbar
   await initializeNavigation();
 
@@ -36,8 +34,6 @@ export async function initPaymentPage() {
 
   // Set default payment date to today
   setDefaultPaymentDate();
-
-  console.log('PaymentPage: Initialized');
 }
 
 /**
@@ -255,21 +251,15 @@ function handleRefreshQR() {
 
   // TODO: Generate new QR code from backend
   showToast('QR Code refreshed successfully');
-
-  console.log('PaymentPage: QR Code refreshed');
 }
 
 /**
  * Handle Download QR Code
  */
 function handleDownloadQR() {
-  const canvas = document.getElementById('gcashQRCode');
-
   // TODO: Generate actual QR code and download
   // For now, show a message
   showToast('QR Code download initiated');
-
-  console.log('PaymentPage: QR Code download requested');
 }
 
 /**
@@ -344,7 +334,7 @@ async function handleSubmitPayment() {
   const referenceNumber = document.getElementById('referenceNumber').value.trim();
   const paymentAmount = parseFloat(document.getElementById('paymentAmount').value);
   const paymentDate = document.getElementById('paymentDate').value;
-  const termsAccepted = document.getElementById('termsAccept').checked;
+  document.getElementById('termsAccept').checked;
 
   // Disable submit button
   const submitBtn = document.getElementById('submitPaymentBtn');
@@ -375,8 +365,6 @@ async function handleSubmitPayment() {
         day: 'numeric',
       }),
     });
-
-    console.log('PaymentPage: Payment submitted successfully');
   } catch (error) {
     console.error('Payment processing failed:', error);
     showErrorModal('There was an error processing your payment. Please try again.');
@@ -544,7 +532,6 @@ function handleDone() {
 function handleDownloadReceipt() {
   // TODO: Generate and download receipt PDF
   showToast('Receipt download initiated');
-  console.log('PaymentPage: Receipt download requested');
 }
 
 /**

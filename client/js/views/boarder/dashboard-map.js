@@ -80,8 +80,6 @@ export function initDashboardMap() {
 
   // Update stats
   updateDashboardMapStats(dashboardMapProperties);
-
-  console.log('DashboardMap: Initialized with', dashboardMapProperties.length, 'properties');
 }
 
 /**
@@ -199,7 +197,6 @@ function updateDashboardMapStats(properties) {
  * Global function to view property from dashboard map popup
  */
 window.viewPropertyFromDashboard = function (propertyId) {
-  console.log('View property from dashboard:', propertyId);
   // Navigate to rooms page with property ID
   window.location.href = `../rooms/index.html?id=${propertyId}`;
 };

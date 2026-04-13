@@ -8,8 +8,6 @@
  * Initialize House Rules Page
  */
 export function initHouseRulesPage() {
-  console.log('HouseRules: Initializing...');
-
   // Acknowledge button handler
   const acknowledgeBtn = document.getElementById('acknowledge-rules-btn');
   if (acknowledgeBtn) {
@@ -23,8 +21,6 @@ export function initHouseRulesPage() {
       `;
       acknowledgeBtn.disabled = true;
       acknowledgeBtn.classList.add('acknowledged');
-
-      console.log('HouseRules: Rules acknowledged by user');
     });
   }
 
@@ -35,10 +31,6 @@ export function initHouseRulesPage() {
       e.preventDefault();
       // TODO: Integrate with backend API to download PDF
       alert('Download functionality will be connected to backend API.');
-
-      console.log('HouseRules: Download handbook clicked');
     });
   }
-
-  console.log('HouseRules: Initialized');
 }

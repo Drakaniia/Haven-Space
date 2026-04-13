@@ -145,7 +145,7 @@ function formatDate(dateString) {
  * @param {string} dateString - Date in YYYY-MM-DD format
  * @returns {string} Date in YYYY-MM-DD format for input
  */
-function formatDateForInput(dateString) {
+function _formatDateForInput(dateString) {
   return dateString;
 }
 
@@ -283,8 +283,6 @@ function prefillBoarderPaymentDetails(payment) {
   if (!submission) {
     return;
   }
-
-  console.log('Boarder already submitted payment:', submission);
 
   // Prefill based on payment method
   if (submission.paymentMethod === 'gcash') {
@@ -478,7 +476,7 @@ function handleFileUpload(method, files) {
  * @param {string} method - Payment method
  * @param {string} fileName - File name to remove
  */
-function removeFile(method, fileName) {
+function _removeFile(method, fileName) {
   uploadedFiles[method] = uploadedFiles[method].filter(f => f.name !== fileName);
 
   const previewContainer = document.getElementById(`${method}FilePreview`);
@@ -638,8 +636,6 @@ function submitPayment() {
     return;
   }
 
-  console.log('Recording payment:', paymentData);
-
   // TODO: In production, send to backend API
   // Example: await fetch('/api/payments/record', { method: 'POST', body: JSON.stringify(paymentData) })
 
@@ -789,8 +785,6 @@ function initEventListeners() {
  * Initialize the payment record page
  */
 function initPaymentRecordPage() {
-  console.log('Landlord Payment Record: Initializing...');
-
   // Wait for DOM to be ready
   if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', () => {
