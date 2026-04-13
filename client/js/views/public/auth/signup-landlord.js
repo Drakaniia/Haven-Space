@@ -1286,7 +1286,7 @@ function showWelcomeModal(userData) {
     setTimeout(() => {
       modal.remove();
       const basePath = getBasePath();
-      window.location.href = `${basePath}views/landlord/index.html`;
+      window.location.href = `${basePath}landlord/index.html`;
     }, 200);
   });
 }
