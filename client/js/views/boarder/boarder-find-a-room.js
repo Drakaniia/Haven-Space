@@ -4,6 +4,7 @@
  */
 
 import { getIcon, getSolidIcon } from '../../shared/icons.js';
+import { updateBoarderStatus } from '../../shared/routing.js';
 
 // State management
 const state = {
@@ -17,6 +18,10 @@ const state = {
   view: 'grid',
   sort: 'recommended',
   loadedProperties: 4,
+  map: null,
+  markers: [],
+  mapVisible: false,
+  currentProperty: null,
 };
 
 // Sample property data (replace with API calls in production)
@@ -36,6 +41,36 @@ const properties = [
     badges: ['verified', 'new'],
     available: 'Now',
     roomTypes: 'Single & Shared',
+    lat: 14.6417,
+    lng: 121.0705,
+    phone: '0906 460 1570',
+    locationCode: '58GX+JM Quezon City',
+    propertyType: 'Boarding House',
+    photos: [
+      'https://images.unsplash.com/photo-1555854877-bab0e564b8d5?w=800&q=80',
+      'https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?w=800&q=80',
+      'https://images.unsplash.com/photo-1502672260266-1c1ef2d93688?w=800&q=80',
+    ],
+    reviewsList: [
+      {
+        username: 'Maria Santos',
+        initials: 'MS',
+        reviewsCount: 12,
+        photosCount: 8,
+        rating: 5,
+        time: '2 months ago',
+        text: 'Great place to stay! Very clean and the landlord is accommodating. The WiFi is fast and perfect for online classes. Highly recommended!',
+      },
+      {
+        username: 'Juan Dela Cruz',
+        initials: 'JD',
+        reviewsCount: 5,
+        photosCount: 3,
+        rating: 4,
+        time: '3 months ago',
+        text: 'Good value for money. The room is spacious and well-ventilated. Only minor issue is the occasional water interruption but overall a solid choice.',
+      },
+    ],
   },
   {
     id: 2,
@@ -52,6 +87,27 @@ const properties = [
     badges: ['verified'],
     available: 'Sept 1',
     roomTypes: 'Studio & 1 BHK',
+    lat: 14.6385,
+    lng: 121.0733,
+    phone: '0917 123 4567',
+    locationCode: '58FX+KP Quezon City',
+    propertyType: 'Apartment',
+    photos: [
+      'https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?w=800&q=80',
+      'https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?w=800&q=80',
+      'https://images.unsplash.com/photo-1555854877-bab0e564b8d5?w=800&q=80',
+    ],
+    reviewsList: [
+      {
+        username: 'Ana Reyes',
+        initials: 'AR',
+        reviewsCount: 8,
+        photosCount: 5,
+        rating: 5,
+        time: '1 month ago',
+        text: 'Amazing location! Walking distance to Ateneo and very safe area. The rooms are modern and clean.',
+      },
+    ],
   },
   {
     id: 3,
@@ -68,6 +124,27 @@ const properties = [
     badges: ['promo'],
     available: 'Now',
     roomTypes: 'Shared Rooms',
+    lat: 14.6502,
+    lng: 121.0612,
+    phone: '0918 987 6543',
+    locationCode: '58HX+MN Quezon City',
+    propertyType: 'Boarding House',
+    photos: [
+      'https://images.unsplash.com/photo-1502672260266-1c1ef2d93688?w=800&q=80',
+      'https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?w=800&q=80',
+      'https://images.unsplash.com/photo-1555854877-bab0e564b8d5?w=800&q=80',
+    ],
+    reviewsList: [
+      {
+        username: 'Carlos Garcia',
+        initials: 'CG',
+        reviewsCount: 3,
+        photosCount: 2,
+        rating: 4,
+        time: '2 weeks ago',
+        text: 'Affordable and decent place. The shared kitchen is well-equipped and the landlord is friendly.',
+      },
+    ],
   },
   {
     id: 4,
@@ -84,6 +161,36 @@ const properties = [
     badges: ['verified', 'new'],
     available: 'Aug 15',
     roomTypes: '1 BHK & Studio',
+    lat: 14.6352,
+    lng: 121.0661,
+    phone: '0920 555 1234',
+    locationCode: '58EW+QR Quezon City',
+    propertyType: 'Apartment',
+    photos: [
+      'https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?w=800&q=80',
+      'https://images.unsplash.com/photo-1555854877-bab0e564b8d5?w=800&q=80',
+      'https://images.unsplash.com/photo-1502672260266-1c1ef2d93688?w=800&q=80',
+    ],
+    reviewsList: [
+      {
+        username: 'Sofia Martinez',
+        initials: 'SM',
+        reviewsCount: 15,
+        photosCount: 10,
+        rating: 5,
+        time: '1 week ago',
+        text: 'Luxurious apartments with excellent amenities. The view is breathtaking and the security is top-notch. Worth every penny!',
+      },
+      {
+        username: 'Diego Torres',
+        initials: 'DT',
+        reviewsCount: 7,
+        photosCount: 4,
+        rating: 5,
+        time: '3 weeks ago',
+        text: 'Best boarding house I have stayed in. The management is professional and the facilities are well-maintained.',
+      },
+    ],
   },
 ];
 
@@ -94,6 +201,9 @@ export function initFindARoom() {
   if (!document.querySelector('.find-room-dashboard')) {
     return;
   }
+
+  // Update boarder status to 'browsing' when accessing find-a-room page
+  updateBoarderStatus('browsing');
 
   // Wait for DOM to be ready
   if (document.readyState === 'loading') {
@@ -232,7 +342,397 @@ function setupEventListeners() {
       }
     });
   });
+
+  // Map toggle button
+  const mapToggleBtn = document.getElementById('map-toggle-btn');
+  const mapCloseBtn = document.getElementById('map-close-btn');
+  const mapView = document.getElementById('map-view');
+
+  if (mapToggleBtn) {
+    mapToggleBtn.addEventListener('click', () => {
+      openMapView();
+    });
+  }
+
+  if (mapCloseBtn) {
+    mapCloseBtn.addEventListener('click', () => {
+      closeMapView();
+    });
+  }
+
+  // Detail panel close button
+  const detailPanelCloseBtn = document.getElementById('detail-panel-close-btn');
+  if (detailPanelCloseBtn) {
+    detailPanelCloseBtn.addEventListener('click', () => {
+      closeDetailPanel();
+    });
+  }
+
+  // Detail tabs
+  document.querySelectorAll('.detail-tab').forEach(tab => {
+    tab.addEventListener('click', () => {
+      switchDetailTab(tab.dataset.tab);
+    });
+  });
 }
+
+/**
+ * Open map view
+ */
+function openMapView() {
+  const mapView = document.getElementById('map-view');
+  if (mapView) {
+    mapView.style.display = 'flex';
+    state.mapVisible = true;
+
+    // Initialize map if not already done
+    if (!state.map) {
+      initMap();
+    } else {
+      // Invalidate size to ensure proper rendering
+      setTimeout(() => {
+        state.map.invalidateSize();
+      }, 100);
+    }
+  }
+}
+
+/**
+ * Close map view
+ */
+function closeMapView() {
+  const mapView = document.getElementById('map-view');
+  const detailPanel = document.getElementById('detail-panel');
+  if (mapView) {
+    mapView.style.display = 'none';
+    state.mapVisible = false;
+
+    // Close detail panel if open
+    if (detailPanel) {
+      detailPanel.style.display = 'none';
+    }
+  }
+}
+
+/**
+ * Initialize Leaflet map
+ */
+function initMap() {
+  // Check if Leaflet is loaded
+  if (typeof L === 'undefined') {
+    console.error('Leaflet is not loaded');
+    return;
+  }
+
+  // Create map centered at Malaybalay City
+  state.map = L.map('find-room-map').setView([8.1489, 125.125], 15);
+
+  // Add OpenStreetMap tiles
+  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    attribution:
+      '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+  }).addTo(state.map);
+
+  // Add property markers
+  addPropertyMarkers(properties);
+}
+
+/**
+ * Add property markers to map
+ */
+function addPropertyMarkers(propertiesList) {
+  // Clear existing markers
+  state.markers.forEach(marker => state.map.removeLayer(marker));
+  state.markers = [];
+
+  propertiesList.forEach(property => {
+    // Create custom icon
+    const icon = L.divIcon({
+      className: 'custom-marker',
+      html: `
+        <div style="
+          background: var(--primary-green);
+          width: 36px;
+          height: 36px;
+          border-radius: 50% 50% 50% 0;
+          transform: rotate(-45deg);
+          border: 3px solid white;
+          box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+          display: flex;
+          align-items: center;
+          justify-content: center;
+        ">
+          <div style="
+            transform: rotate(45deg);
+            color: white;
+            font-weight: bold;
+            font-size: 14px;
+          ">₱</div>
+        </div>
+      `,
+      iconSize: [36, 36],
+      iconAnchor: [18, 36],
+      popupAnchor: [0, -36],
+    });
+
+    // Create marker
+    const marker = L.marker([property.lat, property.lng], { icon })
+      .addTo(state.map)
+      .bindPopup(createPropertyPopup(property));
+
+    // Add click event to navigate to maps.html
+    marker.on('click', () => {
+      window.location.href = '../../views/public/maps.html?property=' + property.id;
+    });
+
+    state.markers.push(marker);
+  });
+}
+
+/**
+ * Create property popup content
+ */
+function createPropertyPopup(property) {
+  return `
+    <div class="property-popup">
+      <div class="property-popup-image" style="background-image: url('${
+        property.image
+      }'); background-size: cover; background-position: center;"></div>
+      <div class="property-popup-content">
+        <h3 class="property-popup-title">${property.title}</h3>
+        <div class="property-popup-location">
+          ${getIcon('location', { width: 12, height: 12 })}
+          ${property.address}
+        </div>
+        <div class="property-popup-meta">
+          <span class="popup-distance">📍 ${property.distance} km away</span>
+          <span class="popup-rating">⭐ ${property.rating} (${property.reviews})</span>
+        </div>
+        <div class="property-popup-price">₱${property.price.toLocaleString()}/month</div>
+        <div class="property-popup-amenities">
+          ${property.amenities
+            .slice(0, 3)
+            .map(a => `<span class="amenity-badge">${a}</span>`)
+            .join('')}
+        </div>
+        <div class="property-popup-actions">
+          <button class="popup-btn popup-btn-primary" onclick="window.openDetailPanelById(${
+            property.id
+          })">
+            View Details
+          </button>
+        </div>
+      </div>
+    </div>
+  `;
+}
+
+/**
+ * Open detail panel for a property
+ */
+function openDetailPanel(property) {
+  const detailPanel = document.getElementById('detail-panel');
+  if (detailPanel) {
+    detailPanel.style.display = 'block';
+    state.currentProperty = property;
+
+    // Populate detail panel
+    populateDetailPanel(property);
+  }
+}
+
+/**
+ * Close detail panel
+ */
+function closeDetailPanel() {
+  const detailPanel = document.getElementById('detail-panel');
+  if (detailPanel) {
+    detailPanel.style.display = 'none';
+    state.currentProperty = null;
+  }
+}
+
+/**
+ * Switch detail panel tab
+ */
+function switchDetailTab(tabName) {
+  // Update tab buttons
+  document.querySelectorAll('.detail-tab').forEach(tab => {
+    tab.classList.remove('active');
+    if (tab.dataset.tab === tabName) {
+      tab.classList.add('active');
+    }
+  });
+
+  // Update tab content
+  document.querySelectorAll('.detail-tab-content').forEach(content => {
+    content.classList.remove('active');
+  });
+
+  const activeContent = document.getElementById(`${tabName}-tab`);
+  if (activeContent) {
+    activeContent.classList.add('active');
+  }
+}
+
+/**
+ * Populate detail panel with property data
+ */
+function populateDetailPanel(property) {
+  // Set property image
+  const propertyImage = document.getElementById('detail-property-image');
+  if (propertyImage) {
+    propertyImage.src = property.image;
+    propertyImage.alt = property.title;
+  }
+
+  // Set property title
+  const propertyTitle = document.getElementById('detail-property-title');
+  if (propertyTitle) {
+    propertyTitle.textContent = property.title;
+  }
+
+  // Set rating
+  const ratingValue = document.getElementById('detail-rating-value');
+  if (ratingValue) {
+    ratingValue.textContent = property.rating;
+  }
+
+  // Set rating stars
+  const ratingStars = document.getElementById('detail-rating-stars');
+  if (ratingStars) {
+    ratingStars.innerHTML = generateStarRating(property.rating);
+  }
+
+  // Set review count
+  const ratingCount = document.getElementById('detail-rating-count');
+  if (ratingCount) {
+    ratingCount.textContent = `(${property.reviews})`;
+  }
+
+  // Set property type
+  const propertyType = document.getElementById('detail-property-type');
+  if (propertyType) {
+    propertyType.textContent = property.propertyType;
+  }
+
+  // Set address
+  const address = document.getElementById('detail-address');
+  if (address) {
+    address.textContent = property.address;
+  }
+
+  // Set phone
+  const phone = document.getElementById('detail-phone');
+  if (phone) {
+    phone.textContent = property.phone;
+  }
+
+  // Set location code
+  const locationCode = document.getElementById('detail-location-code');
+  if (locationCode) {
+    locationCode.textContent = property.locationCode;
+  }
+
+  // Set photos
+  const photosContainer = document.getElementById('detail-photos');
+  if (photosContainer) {
+    photosContainer.innerHTML = `
+      <div class="detail-photo-item active">
+        <img src="${property.photos[0]}" alt="All" />
+        <span>All</span>
+      </div>
+      <div class="detail-photo-item">
+        <img src="${property.photos[1] || property.photos[0]}" alt="Rooms" />
+        <span>Rooms</span>
+      </div>
+      <div class="detail-photo-item">
+        <img src="${property.photos[2] || property.photos[0]}" alt="Videos" />
+        <span>Videos</span>
+      </div>
+    `;
+  }
+
+  // Set rating number
+  const ratingNumber = document.getElementById('detail-rating-number');
+  if (ratingNumber) {
+    ratingNumber.textContent = property.rating;
+  }
+
+  // Set rating stars large
+  const ratingStarsLarge = document.getElementById('detail-rating-stars-large');
+  if (ratingStarsLarge) {
+    ratingStarsLarge.innerHTML = generateStarRating(property.rating, 20);
+  }
+
+  // Set review count
+  const reviewCount = document.getElementById('detail-review-count');
+  if (reviewCount) {
+    reviewCount.textContent = `${property.reviews} reviews`;
+  }
+
+  // Set reviews
+  const reviewsContainer = document.getElementById('detail-reviews-container');
+  if (reviewsContainer) {
+    reviewsContainer.innerHTML = property.reviewsList
+      .map(
+        review => `
+      <div class="detail-review-item">
+        <div class="detail-review-header">
+          <div class="detail-review-avatar">${review.initials}</div>
+          <div class="detail-review-user-info">
+            <p class="detail-review-username">${review.username}</p>
+            <p class="detail-review-meta">${review.reviewsCount} reviews · ${
+          review.photosCount
+        } photos</p>
+          </div>
+        </div>
+        <div class="detail-review-rating">
+          ${generateStarRating(review.rating, 14)}
+          <span class="detail-review-time">${review.time}</span>
+        </div>
+        <p class="detail-review-text">${review.text}</p>
+      </div>
+    `
+      )
+      .join('');
+  }
+}
+
+/**
+ * Generate star rating HTML
+ */
+function generateStarRating(rating, size = 16) {
+  const fullStars = Math.floor(rating);
+  const hasHalfStar = rating % 1 >= 0.5;
+  const emptyStars = 5 - fullStars - (hasHalfStar ? 1 : 0);
+
+  let starsHtml = '';
+
+  for (let i = 0; i < fullStars; i++) {
+    starsHtml += getSolidIcon('starSolid');
+  }
+
+  if (hasHalfStar) {
+    starsHtml += getSolidIcon('starHalf');
+  }
+
+  for (let i = 0; i < emptyStars; i++) {
+    starsHtml += getIcon('star', { width: size, height: size });
+  }
+
+  return starsHtml;
+}
+
+/**
+ * Global function to open detail panel by property ID
+ */
+window.openDetailPanelById = function (propertyId) {
+  const property = properties.find(p => p.id === parseInt(propertyId));
+  if (property) {
+    openDetailPanel(property);
+  }
+};
 
 /**
  * Handle search input
@@ -779,4 +1279,16 @@ function getAmenityIcon(amenity) {
 // Initialize on module load for single-page apps
 if (typeof window !== 'undefined') {
   window.initFindARoom = initFindARoom;
+}
+
+// Import and initialize enhanced features (map view, floating header, etc.)
+import { initFindARoomEnhanced } from '../public/find-a-room.js';
+
+// Initialize enhanced features when DOM is ready
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', () => {
+    initFindARoomEnhanced();
+  });
+} else {
+  initFindARoomEnhanced();
 }

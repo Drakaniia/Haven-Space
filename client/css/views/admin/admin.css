@@ -72,3 +72,221 @@
     padding: 16px;
   }
 }
+
+/* ===== Admin Buttons ===== */
+.admin-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 10px 20px;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  border: none;
+  font-family: var(--font-main);
+}
+
+.admin-btn-outline {
+  background-color: transparent;
+  border: 1px solid var(--dashboard-border);
+  color: var(--dashboard-text-primary);
+}
+
+.admin-btn-outline:hover {
+  background-color: var(--bg-green);
+  border-color: var(--primary-green);
+}
+
+.admin-btn-success {
+  background-color: var(--dashboard-success);
+  color: var(--white);
+}
+
+.admin-btn-success:hover {
+  background-color: #16a34a;
+}
+
+.admin-btn-danger {
+  background-color: var(--dashboard-red);
+  color: var(--white);
+}
+
+.admin-btn-danger:hover {
+  background-color: #dc2626;
+}
+
+.admin-btn-sm {
+  padding: 8px 16px;
+  font-size: 13px;
+}
+
+.admin-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* ===== Pending Landlords Panel ===== */
+.pending-landlords-panel {
+  margin-top: 24px;
+}
+
+.pending-landlords-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.pending-landlords-header h3 {
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--dashboard-text-primary);
+}
+
+.pending-landlords-list {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.pending-landlords-empty {
+  text-align: center;
+  padding: 40px 20px;
+  color: var(--dashboard-text-secondary);
+  font-size: 14px;
+}
+
+/* Pending Landlord Card */
+.pending-landlord-card {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background-color: var(--dashboard-surface);
+  border: 1px solid var(--dashboard-border);
+  border-radius: 12px;
+  padding: 20px;
+  transition: box-shadow 0.2s ease;
+  gap: 16px;
+}
+
+.pending-landlord-card:hover {
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+}
+
+.pending-landlord-info {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  flex: 1;
+}
+
+.pending-landlord-avatar {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+.pending-landlord-avatar-placeholder {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, var(--primary-green), var(--light-green));
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: 16px;
+  flex-shrink: 0;
+}
+
+.pending-landlord-details {
+  flex: 1;
+}
+
+.pending-landlord-name {
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--dashboard-text-primary);
+  margin: 0 0 4px 0;
+}
+
+.pending-landlord-email {
+  font-size: 13px;
+  color: var(--dashboard-text-secondary);
+  margin: 0 0 8px 0;
+}
+
+.pending-landlord-meta {
+  display: flex;
+  gap: 16px;
+  font-size: 12px;
+  color: var(--dashboard-text-secondary);
+  margin: 0 0 4px 0;
+  flex-wrap: wrap;
+}
+
+.pending-landlord-date {
+  font-size: 11px;
+  color: var(--dashboard-text-secondary);
+  margin: 0;
+  opacity: 0.7;
+}
+
+.pending-landlord-actions {
+  display: flex;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+/* ===== User Tabs ===== */
+.user-tabs {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 20px;
+  flex-wrap: wrap;
+}
+
+.user-tab {
+  padding: 8px 16px;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  border: 1px solid var(--dashboard-border);
+  background-color: transparent;
+  color: var(--dashboard-text-secondary);
+  font-family: var(--font-main);
+}
+
+.user-tab:hover {
+  background-color: var(--bg-green);
+  border-color: var(--primary-green);
+  color: var(--primary-green);
+}
+
+.user-tab.active {
+  background-color: var(--primary-green);
+  border-color: var(--primary-green);
+  color: white;
+}
+
+@media (max-width: 768px) {
+  .pending-landlord-card {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .pending-landlord-actions {
+    width: 100%;
+  }
+
+  .pending-landlord-actions .admin-btn {
+    flex: 1;
+    justify-content: center;
+  }
+}

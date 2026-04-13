@@ -3,6 +3,7 @@
  * Handles viewing, editing, and deleting landlord properties
  */
 
+import CONFIG from '../../config.js';
 import { getIcon } from '../../shared/icons.js';
 import { initSidebar } from '../../components/sidebar.js';
 import { initNavbar } from '../../components/navbar.js';
@@ -107,10 +108,27 @@ const amenityLabels = {
 let currentProperty = null;
 let propertiesData = [...sampleProperties];
 
+function loginPath() {
+  const pathname = window.location.pathname;
+  if (pathname.includes('github.io')) {
+    return '/Haven-Space/client/views/public/auth/login.html';
+  }
+  if (pathname.includes('/client/views/')) {
+    return '/client/views/public/auth/login.html';
+  }
+  return '/views/public/auth/login.html';
+}
+
+function initialsFrom(user) {
+  const a = (user.first_name || '').trim().charAt(0);
+  const b = (user.last_name || '').trim().charAt(0);
+  return (a + b || 'L').toUpperCase();
+}
+
 /**
  * Initialize the My Properties page
  */
-export function initMyProperties() {
+export async function initMyProperties() {
   const searchInput = document.getElementById('search-properties');
   const filterStatus = document.getElementById('filter-status');
   const sortBy = document.getElementById('sort-by');
@@ -119,21 +137,41 @@ export function initMyProperties() {
     return;
   }
 
+  // Fetch real user data
+  let user;
+  try {
+    const res = await fetch(`${CONFIG.API_BASE_URL}/api/auth/me.php`, { credentials: 'include' });
+    if (!res.ok) {
+      window.location.href = loginPath();
+      return;
+    }
+    const data = await res.json();
+    user = data.user;
+  } catch {
+    window.location.href = loginPath();
+    return;
+  }
+
+  const name = [user.first_name, user.last_name].filter(Boolean).join(' ').trim() || 'Landlord';
+  const initials = initialsFrom(user);
+
   // Initialize sidebar and navbar
   initSidebar({
     role: 'landlord',
     user: {
-      name: 'Juan Dela Cruz',
-      initials: 'JD',
+      name,
+      initials,
       role: 'Landlord',
+      email: user.email || '',
     },
   });
 
   initNavbar({
     user: {
-      name: 'Juan Dela Cruz',
-      initials: 'JD',
-      avatarUrl: '',
+      name,
+      initials,
+      avatarUrl: user.avatar_url || '',
+      email: user.email || '',
     },
     notificationCount: 5,
   });

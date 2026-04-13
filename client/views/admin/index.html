@@ -3,111 +3,165 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Admin Dashboard - Boarding House Management</title>
+    <link rel="icon" type="image/svg+xml" href="../../assets/favicon.svg" />
+    <title>Super Admin — Haven Space</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
     <link rel="stylesheet" href="../../css/global.css" />
-    <link rel="stylesheet" href="../../css/components/nav.css" />
-    <link rel="stylesheet" href="../../css/components/buttons.css" />
-    <link rel="stylesheet" href="../../css/components/cards.css" />
-    <link rel="stylesheet" href="../../css/components/forms.css" />
-    <link rel="stylesheet" href="../../css/views/admin/admin.css" />
+    <link rel="stylesheet" href="../../css/components/sidebar.css" />
+    <link rel="stylesheet" href="../../css/components/navbar.css" />
+    <link rel="stylesheet" href="../../css/views/admin/admin-shell.css" />
   </head>
   <body data-view="admin" data-dashboard-type="admin">
-    <!-- Navigation -->
-    <nav id="nav-container"></nav>
+    <div class="admin-dashboard">
+      <div id="sidebar-container"></div>
 
-    <!-- Header -->
-    <header id="header-container"></header>
+      <main class="admin-main">
+        <div id="navbar-container"></div>
 
-    <main class="dashboard">
-      <aside class="dashboard-sidebar">
-        <nav class="dashboard-nav">
-          <a href="#overview" class="dashboard-tab active">Overview</a>
-          <a href="#users" class="dashboard-tab">Users</a>
-          <a href="#properties" class="dashboard-tab">Properties</a>
-          <a href="#bookings" class="dashboard-tab">Bookings</a>
-          <a href="#analytics" class="dashboard-tab">Analytics</a>
-          <a href="#settings" class="dashboard-tab">Settings</a>
-        </nav>
-      </aside>
+        <div class="admin-shell-content">
+          <header class="admin-shell-header">
+            <span class="admin-badge">Super Admin</span>
+            <h1>Haven Space Control</h1>
+            <p id="admin-shell-greet">
+              Centralized oversight for verification, compliance, and platform health.
+            </p>
+            <p
+              id="admin-section-subtitle"
+              style="margin-top: 12px; color: #64748b; font-size: 0.9rem"
+            ></p>
+          </header>
 
-      <section class="dashboard-content">
-        <div class="dashboard-header">
-          <h1>Admin Dashboard</h1>
+          <section id="panel-overview" class="admin-panel">
+            <div id="admin-overview-root"></div>
+          </section>
+
+          <section id="panel-verification" class="admin-panel hidden">
+            <div class="admin-card">
+              <h2>Landlord verification queue</h2>
+              <p style="color: #94a3b8; font-size: 0.9rem; margin: -8px 0 16px">
+                Review boarding house details and map pins. Approve to grant write access; reject
+                keeps the account unverified.
+              </p>
+              <div id="admin-verification-list"></div>
+            </div>
+          </section>
+
+          <section id="panel-users" class="admin-panel hidden">
+            <div class="admin-card">
+              <h2>Users</h2>
+              <div class="admin-toolbar">
+                <input
+                  type="search"
+                  class="admin-input"
+                  id="admin-users-search"
+                  placeholder="Search name or email…"
+                />
+                <select class="admin-select" id="admin-users-role">
+                  <option value="">All roles</option>
+                  <option value="boarder">Boarder</option>
+                  <option value="landlord">Landlord</option>
+                  <option value="admin">Admin</option>
+                </select>
+                <button type="button" class="admin-btn admin-btn-ghost" id="admin-users-prev">
+                  Previous
+                </button>
+                <button type="button" class="admin-btn admin-btn-ghost" id="admin-users-next">
+                  Next
+                </button>
+                <span id="admin-users-pager" style="color: #64748b; font-size: 0.85rem"></span>
+              </div>
+              <div class="admin-table-wrap">
+                <table class="admin-table">
+                  <thead>
+                    <tr>
+                      <th>Name</th>
+                      <th>Email</th>
+                      <th>Role</th>
+                      <th>Landlord KYC</th>
+                      <th>Account</th>
+                      <th>Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody id="admin-users-tbody"></tbody>
+                </table>
+              </div>
+            </div>
+          </section>
+
+          <section id="panel-properties" class="admin-panel hidden">
+            <div class="admin-card">
+              <h2>Property moderation</h2>
+              <div class="admin-toolbar">
+                <label style="color: #94a3b8; font-size: 0.8rem">Queue</label>
+                <select class="admin-select" id="admin-prop-filter">
+                  <option value="pending_review">Pending review</option>
+                  <option value="published">Published</option>
+                  <option value="rejected">Rejected</option>
+                  <option value="all">All</option>
+                </select>
+              </div>
+              <div class="admin-table-wrap">
+                <table class="admin-table">
+                  <thead>
+                    <tr>
+                      <th>Listing</th>
+                      <th>Landlord</th>
+                      <th>Email</th>
+                      <th>Price</th>
+                      <th>Moderation</th>
+                      <th>Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody id="admin-properties-tbody"></tbody>
+                </table>
+              </div>
+            </div>
+          </section>
+
+          <section id="panel-applications" class="admin-panel hidden">
+            <div class="admin-card">
+              <h2>Application oversight</h2>
+              <p style="color: #94a3b8; font-size: 0.9rem; margin: -8px 0 16px">
+                Cross-tenant view of rental applications and conversion signals.
+              </p>
+              <div id="admin-applications-root"></div>
+            </div>
+          </section>
+
+          <section id="panel-analytics" class="admin-panel hidden">
+            <div id="admin-analytics-root"></div>
+          </section>
+
+          <section id="panel-reports" class="admin-panel hidden">
+            <div class="admin-card">
+              <h2>Property reports</h2>
+              <div id="admin-reports-prop"></div>
+            </div>
+            <div class="admin-card">
+              <h2>Disputes</h2>
+              <div id="admin-reports-disputes"></div>
+            </div>
+          </section>
+
+          <section id="panel-settings" class="admin-panel hidden">
+            <div class="admin-card">
+              <h2>System settings</h2>
+              <p style="color: #94a3b8; font-size: 0.9rem; margin: -8px 0 16px">
+                Operational toggles and policy version labels. Legal copy remains in your public
+                pages.
+              </p>
+              <div id="admin-settings-form"></div>
+            </div>
+          </section>
         </div>
+      </main>
+    </div>
 
-        <!-- Overview Section -->
-        <section id="overview" class="dashboard-section">
-          <h2>Overview</h2>
-          <div class="stats-grid">
-            <div class="stat-card">
-              <h3>Total Users</h3>
-              <p id="total-users" class="stat-value">0</p>
-            </div>
-            <div class="stat-card">
-              <h3>Total Properties</h3>
-              <p id="total-properties" class="stat-value">0</p>
-            </div>
-            <div class="stat-card">
-              <h3>Active Bookings</h3>
-              <p id="active-bookings" class="stat-value">0</p>
-            </div>
-            <div class="stat-card">
-              <h3>Revenue</h3>
-              <p id="revenue" class="stat-value">$0</p>
-            </div>
-          </div>
-        </section>
-
-        <!-- Users Management Section -->
-        <section id="users" class="dashboard-section hidden">
-          <h2>User Management</h2>
-          <div class="user-tabs">
-            <button class="user-tab active" data-type="all">All</button>
-            <button class="user-tab" data-type="landlords">Landlords</button>
-            <button class="user-tab" data-type="boarders">Boarders</button>
-            <button class="user-tab" data-type="admins">Admins</button>
-          </div>
-          <table class="data-table" id="users-table">
-            <thead>
-              <tr>
-                <th>Name</th>
-                <th>Email</th>
-                <th>Role</th>
-                <th>Status</th>
-                <th>Actions</th>
-              </tr>
-            </thead>
-            <tbody>
-              <!-- Users loaded dynamically -->
-            </tbody>
-          </table>
-        </section>
-
-        <!-- Pending Properties Section -->
-        <section id="properties" class="dashboard-section hidden">
-          <h2>Pending Property Approvals</h2>
-          <div id="pending-properties">
-            <!-- Properties loaded dynamically -->
-          </div>
-        </section>
-
-        <!-- Analytics Section -->
-        <section id="analytics" class="dashboard-section hidden">
-          <h2>Analytics</h2>
-          <div id="analytics-charts">
-            <!-- Charts rendered dynamically -->
-          </div>
-        </section>
-      </section>
-    </main>
-
-    <!-- Footer -->
-    <footer id="footer-container"></footer>
-
-    <!-- Theme Toggle -->
-    <button id="theme-toggle" class="theme-toggle">🌓</button>
-
-    <!-- ES Module Entry Point -->
     <script type="module" src="../../js/main.js"></script>
   </body>
 </html>

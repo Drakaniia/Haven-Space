@@ -1,4 +1,26 @@
 import CONFIG from '../config.js';
+import { getIcon } from '../shared/icons.js';
+import { getBoarderRedirectPath, updateBoarderStatus } from '../shared/routing.js';
+
+/**
+ * Inject icons from centralized library into elements with data-icon attributes
+ * Replaces inline SVGs with centralized icon library calls
+ */
+function injectIcons() {
+  const iconElements = document.querySelectorAll('[data-icon]');
+
+  iconElements.forEach(element => {
+    const iconName = element.dataset.icon;
+    const options = {
+      width: element.dataset.iconWidth || 24,
+      height: element.dataset.iconHeight || 24,
+      strokeWidth: element.dataset.iconStrokeWidth || '1.5',
+      className: element.dataset.iconClass || '',
+    };
+
+    element.innerHTML = getIcon(iconName, options);
+  });
+}
 
 document.addEventListener('DOMContentLoaded', function () {
   const passwordToggle = document.getElementById('passwordToggle');
@@ -6,6 +28,9 @@ document.addEventListener('DOMContentLoaded', function () {
   const eyeOpen = passwordToggle.querySelector('.eye-open');
   const eyeClosed = passwordToggle.querySelector('.eye-closed');
   const loginForm = document.getElementById('loginForm');
+
+  // Inject icons from centralized library
+  injectIcons();
 
   // Password visibility toggle
   passwordToggle.addEventListener('click', function () {
@@ -41,17 +66,38 @@ document.addEventListener('DOMContentLoaded', function () {
         // Store user info (token is now in httpOnly cookie)
         localStorage.setItem('user', JSON.stringify(result.user));
 
-        // Redirect based on role
-        if (result.user.role === 'landlord') {
-          window.location.href = '../../landlord/index.html';
+        // Redirect based on role - detect Apache setup vs GitHub Pages
+        const pathname = window.location.pathname;
+        let basePath;
+
+        if (pathname.includes('github.io')) {
+          // GitHub Pages deployment
+          basePath = '/Haven-Space/client/views/';
         } else {
-          window.location.href = '../../boarder/index.html';
+          // Apache setup: document root points to client folder
+          // OR local development with Apache
+          basePath = '/views/';
+        }
+
+        if (result.user.role === 'admin') {
+          window.location.href = `${basePath}admin/index.html`;
+        } else if (result.user.role === 'landlord') {
+          window.location.href = `${basePath}landlord/index.html`;
+        } else {
+          // Boarder: check status and redirect conditionally
+          const boarderStatus = result.user.boarder_status || 'new';
+          updateBoarderStatus(boarderStatus);
+
+          const redirectPath = getBoarderRedirectPath({
+            ...result.user,
+            boarderStatus,
+          });
+          window.location.href = redirectPath;
         }
       } else {
         alert(result.error || 'Login failed');
       }
     } catch (error) {
-      console.error('Error during login:', error);
       alert('An error occurred. Please try again.');
     }
   });
@@ -65,7 +111,6 @@ document.addEventListener('DOMContentLoaded', function () {
 
   // Apple login button (placeholder for future implementation)
   document.querySelector('.social-btn-apple')?.addEventListener('click', function () {
-    console.log('Apple login clicked');
     // TODO: Implement Apple OAuth
     alert('Apple login to be implemented');
   });

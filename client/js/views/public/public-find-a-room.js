@@ -4,6 +4,7 @@
  */
 
 import { getIcon, getSolidIcon } from '../../shared/icons.js';
+import { initFindARoomEnhanced } from './find-a-room.js';
 
 // State management
 const state = {
@@ -97,9 +98,15 @@ export function initPublicFindARoom() {
 
   // Wait for DOM to be ready
   if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', setupEventListeners);
+    document.addEventListener('DOMContentLoaded', () => {
+      setupEventListeners();
+      // Initialize enhanced features after basic setup
+      initFindARoomEnhanced();
+    });
   } else {
     setupEventListeners();
+    // Initialize enhanced features after basic setup
+    initFindARoomEnhanced();
   }
 }
 
@@ -480,7 +487,7 @@ function renderProperties(propertiesList) {
             <span class="find-room-card-price-amount">₱${property.price.toLocaleString()}</span>
             <span class="find-room-card-price-period">/month</span>
           </div>
-          <a href="auth/login.html" class="find-room-card-btn">
+          <a href="../rooms/detail.html?id=${property.id}" class="find-room-card-btn">
             View Details
             ${arrowIcon()}
           </a>
@@ -503,7 +510,7 @@ function renderProperties(propertiesList) {
     card.addEventListener('click', () => {
       const propertyId = card.dataset.propertyId;
       if (propertyId) {
-        window.location.href = 'auth/login.html';
+        window.location.href = `../rooms/detail.html?id=${propertyId}`;
       }
     });
   });

@@ -11,6 +11,7 @@ RUN apt-get update && apt-get install -y \
     git \
     unzip \
     libzip-dev \
+    libonig-dev \
     && rm -rf /var/lib/apt/lists/*
 
 # Install PHP extensions
@@ -36,8 +37,9 @@ COPY . .
 # Install dependencies (production only)
 RUN composer install --no-dev --optimize-autoloader --no-interaction
 
-# Set permissions
-RUN chown -R www-data:www-data /var/www/html \
+# Create required directories if they don't exist
+RUN mkdir -p /var/www/html/storage/{logs,profiles,properties} \
+    && chown -R www-data:www-data /var/www/html \
     && chmod -R 755 /var/www/html/storage
 
 # Health check

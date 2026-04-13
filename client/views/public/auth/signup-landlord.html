@@ -1,0 +1,570 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="icon" type="image/svg+xml" href="../../../assets/favicon.svg" />
+    <title>Landlord Signup - Haven Space</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap"
+      rel="stylesheet"
+    />
+    <link
+      rel="stylesheet"
+      href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+      integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY="
+      crossorigin=""
+    />
+    <link rel="stylesheet" href="../../../css/global.css" />
+    <link rel="stylesheet" href="../../../css/views/public/auth.css" />
+    <link rel="stylesheet" href="../../../css/views/public/auth/signup-landlord.css" />
+  </head>
+  <body>
+    <!-- Header -->
+    <header class="auth-header">
+      <div class="auth-header-content">
+        <a
+          href="../index.html"
+          class="auth-logo"
+          style="display: flex; align-items: center; text-decoration: none"
+        >
+          <img
+            src="../../../assets/images/Haven_Space_Logo.png"
+            alt="Haven Space"
+            style="height: 28px; width: auto"
+          />
+          <span
+            style="
+              font-family: 'Plus Jakarta Sans', sans-serif;
+              font-size: 20px;
+              font-weight: 700;
+              color: #333333;
+              margin-left: 8px;
+            "
+            >Haven Space</span
+          >
+        </a>
+      </div>
+    </header>
+
+    <!-- Progress Indicator -->
+    <div class="signup-progress">
+      <div class="signup-progress-bar">
+        <div class="signup-progress-step active" data-step="1">
+          <div class="signup-progress-circle">1</div>
+          <div class="signup-progress-label">Account</div>
+        </div>
+        <div class="signup-progress-line"></div>
+        <div class="signup-progress-step" data-step="2">
+          <div class="signup-progress-circle">2</div>
+          <div class="signup-progress-label">Location</div>
+        </div>
+        <div class="signup-progress-line"></div>
+        <div class="signup-progress-step" data-step="3">
+          <div class="signup-progress-circle">3</div>
+          <div class="signup-progress-label">Property</div>
+        </div>
+        <div class="signup-progress-line"></div>
+        <div class="signup-progress-step" data-step="4">
+          <div class="signup-progress-circle">4</div>
+          <div class="signup-progress-label">Payment</div>
+        </div>
+        <div class="signup-progress-line"></div>
+        <div class="signup-progress-step" data-step="5">
+          <div class="signup-progress-circle">5</div>
+          <div class="signup-progress-label">Review</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Step 1: Basic Account Info -->
+    <main class="auth-main signup-step" id="step1">
+      <div class="auth-container">
+        <button class="back-btn hidden" id="step1Back">
+          <span data-icon="chevronLeft" data-icon-width="20" data-icon-height="20"></span>
+          Back to role selection
+        </button>
+
+        <h1 class="auth-title">Create your landlord account</h1>
+
+        <form class="auth-form" id="step1Form">
+          <div class="form-row">
+            <div class="form-group">
+              <label for="firstName" class="form-label">First name</label>
+              <input type="text" id="firstName" name="firstName" class="form-input" required />
+            </div>
+            <div class="form-group">
+              <label for="lastName" class="form-label">Last name</label>
+              <input type="text" id="lastName" name="lastName" class="form-input" required />
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label for="email" class="form-label">Email address</label>
+            <input type="email" id="email" name="email" class="form-input" required />
+          </div>
+
+          <div class="form-group">
+            <label for="password" class="form-label">Password</label>
+            <div class="password-input-wrapper">
+              <input
+                type="password"
+                id="password"
+                name="password"
+                class="form-input"
+                placeholder="8 or more characters"
+                required
+                minlength="8"
+              />
+              <button
+                type="button"
+                class="password-toggle"
+                id="passwordToggle"
+                aria-label="Toggle password visibility"
+              >
+                <span
+                  class="eye-open"
+                  data-icon="eye"
+                  data-icon-width="20"
+                  data-icon-height="20"
+                  data-icon-stroke-width="2"
+                ></span>
+                <span
+                  class="eye-closed hidden"
+                  data-icon="eyeSlash"
+                  data-icon-width="20"
+                  data-icon-height="20"
+                  data-icon-stroke-width="2"
+                ></span>
+              </button>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label for="confirmPassword" class="form-label">Confirm password</label>
+            <div class="password-input-wrapper">
+              <input
+                type="password"
+                id="confirmPassword"
+                name="confirmPassword"
+                class="form-input"
+                placeholder="Confirm your password"
+                required
+                minlength="8"
+              />
+              <button
+                type="button"
+                class="password-toggle"
+                id="confirmPasswordToggle"
+                aria-label="Toggle password visibility"
+              >
+                <span
+                  class="eye-open"
+                  data-icon="eye"
+                  data-icon-width="20"
+                  data-icon-height="20"
+                  data-icon-stroke-width="2"
+                ></span>
+                <span
+                  class="eye-closed hidden"
+                  data-icon="eyeSlash"
+                  data-icon-width="20"
+                  data-icon-height="20"
+                  data-icon-stroke-width="2"
+                ></span>
+              </button>
+            </div>
+          </div>
+
+          <button type="submit" class="auth-btn-primary auth-btn-full">Continue to Location</button>
+        </form>
+      </div>
+    </main>
+
+    <!-- Step 2: Property Location (Map) -->
+    <main class="auth-main signup-step hidden" id="step2">
+      <div class="auth-container signup-map-container">
+        <button class="back-btn" id="step2Back">
+          <span data-icon="chevronLeft" data-icon-width="20" data-icon-height="20"></span>
+          Back to account info
+        </button>
+
+        <h1 class="auth-title auth-title-small">Where is your property located?</h1>
+
+        <div class="map-search-wrapper">
+          <div class="form-group">
+            <label for="addressSearch" class="form-label">Search for address</label>
+            <div class="address-search-wrapper">
+              <input
+                type="text"
+                id="addressSearch"
+                name="addressSearch"
+                class="form-input"
+                placeholder="Type an address or place..."
+                autocomplete="off"
+              />
+              <div class="address-search-results hidden"></div>
+            </div>
+          </div>
+        </div>
+
+        <div id="signup-map"></div>
+
+        <div class="map-location-info">
+          <div class="form-group">
+            <label for="fullAddress" class="form-label">Full address</label>
+            <input
+              type="text"
+              id="fullAddress"
+              name="fullAddress"
+              class="form-input"
+              placeholder="Click on the map to set location"
+              readonly
+            />
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label for="latitude" class="form-label">Latitude</label>
+              <input type="text" id="latitude" name="latitude" class="form-input" readonly />
+            </div>
+            <div class="form-group">
+              <label for="longitude" class="form-label">Longitude</label>
+              <input type="text" id="longitude" name="longitude" class="form-input" readonly />
+            </div>
+          </div>
+        </div>
+
+        <button type="button" class="auth-btn-primary auth-btn-full" id="step2Next" disabled>
+          Continue to Property Details
+        </button>
+      </div>
+    </main>
+
+    <!-- Step 3: Boarding House Details -->
+    <main class="auth-main signup-step hidden" id="step3">
+      <div class="auth-container">
+        <button class="back-btn" id="step3Back">
+          <span data-icon="chevronLeft" data-icon-width="20" data-icon-height="20"></span>
+          Back to location
+        </button>
+
+        <h1 class="auth-title auth-title-small">Tell us about your boarding house</h1>
+
+        <form class="auth-form" id="step3Form">
+          <div class="form-group">
+            <label for="boardingHouseName" class="form-label">Boarding house name *</label>
+            <input
+              type="text"
+              id="boardingHouseName"
+              name="boardingHouseName"
+              class="form-input"
+              placeholder="e.g., Sunrise Dormitory"
+              required
+            />
+          </div>
+
+          <div class="form-group">
+            <label for="propertyDescription" class="form-label">Description (optional)</label>
+            <textarea
+              id="propertyDescription"
+              name="propertyDescription"
+              class="form-input form-textarea"
+              placeholder="Brief description of your property..."
+              rows="3"
+            ></textarea>
+          </div>
+
+          <div class="form-group">
+            <label for="propertyType" class="form-label">Property type *</label>
+            <select id="propertyType" name="propertyType" class="form-input form-select" required>
+              <option value="">Select property type</option>
+              <option value="Single unit">Single unit</option>
+              <option value="Multi-unit">Multi-unit</option>
+              <option value="Apartment">Apartment</option>
+              <option value="Dormitory">Dormitory</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label for="totalRooms" class="form-label">Total number of rooms *</label>
+            <input
+              type="number"
+              id="totalRooms"
+              name="totalRooms"
+              class="form-input"
+              min="1"
+              placeholder="e.g., 10"
+              required
+            />
+          </div>
+
+          <button type="submit" class="auth-btn-primary auth-btn-full">
+            Continue to Payment Setup
+          </button>
+        </form>
+      </div>
+    </main>
+
+    <!-- Step 4: Payment Method Setup -->
+    <main class="auth-main signup-step hidden" id="step4">
+      <div class="auth-container">
+        <button class="back-btn" id="step4Back">
+          <span data-icon="chevronLeft" data-icon-width="20" data-icon-height="20"></span>
+          Back to property details
+        </button>
+
+        <h1 class="auth-title auth-title-small">How would you like to receive payments?</h1>
+        <p class="signup-payment-subtitle">
+          Boarders will use this payment method to send you rent payments. You can add more methods
+          later.
+        </p>
+
+        <form class="auth-form" id="step4Form">
+          <div class="form-group">
+            <label for="paymentMethodType" class="form-label">Payment method type *</label>
+            <select
+              id="paymentMethodType"
+              name="paymentMethodType"
+              class="form-input form-select"
+              required
+            >
+              <option value="">Select payment method</option>
+              <option value="GCash">GCash</option>
+              <option value="PayMaya">PayMaya</option>
+              <option value="Bank Transfer">Bank Transfer</option>
+              <option value="PayPal">PayPal</option>
+              <option value="GrabPay">GrabPay</option>
+              <option value="Other">Other e-wallet</option>
+            </select>
+          </div>
+
+          <!-- GCash/PayMaya Fields -->
+          <div class="payment-fields-group hidden" id="ewalletFields">
+            <div class="form-group">
+              <label for="ewalletNumber" class="form-label">Mobile number *</label>
+              <input
+                type="tel"
+                id="ewalletNumber"
+                name="ewalletNumber"
+                class="form-input"
+                placeholder="+63 9XX XXX XXXX"
+              />
+            </div>
+            <div class="form-group">
+              <label for="ewalletName" class="form-label">Account name *</label>
+              <input
+                type="text"
+                id="ewalletName"
+                name="ewalletName"
+                class="form-input"
+                placeholder="Name registered on e-wallet"
+              />
+            </div>
+          </div>
+
+          <!-- Bank Transfer Fields -->
+          <div class="payment-fields-group hidden" id="bankFields">
+            <div class="form-group">
+              <label for="bankName" class="form-label">Bank name *</label>
+              <select id="bankName" name="bankName" class="form-input form-select">
+                <option value="">Select bank</option>
+                <option value="BDO">BDO (Banco de Oro)</option>
+                <option value="BPI">BPI (Bank of the Philippine Islands)</option>
+                <option value="Metrobank">Metrobank</option>
+                <option value="Landbank">Landbank</option>
+                <option value="PNB">PNB (Philippine National Bank)</option>
+                <option value="UnionBank">UnionBank</option>
+                <option value="Security Bank">Security Bank</option>
+                <option value="RCBC">RCBC</option>
+                <option value="EastWest Bank">EastWest Bank</option>
+                <option value="China Bank">China Bank</option>
+                <option value="Other">Other</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label for="bankAccountNumber" class="form-label">Account number *</label>
+              <input
+                type="text"
+                id="bankAccountNumber"
+                name="bankAccountNumber"
+                class="form-input"
+                placeholder="Enter account number"
+              />
+            </div>
+            <div class="form-group">
+              <label for="bankAccountName" class="form-label">Account name *</label>
+              <input
+                type="text"
+                id="bankAccountName"
+                name="bankAccountName"
+                class="form-input"
+                placeholder="Name registered on bank account"
+              />
+            </div>
+          </div>
+
+          <!-- PayPal/Other Fields -->
+          <div class="payment-fields-group hidden" id="paypalFields">
+            <div class="form-group">
+              <label for="paypalEmail" class="form-label">PayPal email *</label>
+              <input
+                type="email"
+                id="paypalEmail"
+                name="paypalEmail"
+                class="form-input"
+                placeholder="your@email.com"
+              />
+            </div>
+          </div>
+
+          <div class="payment-fields-group hidden" id="otherFields">
+            <div class="form-group">
+              <label for="otherPaymentType" class="form-label">Payment type name *</label>
+              <input
+                type="text"
+                id="otherPaymentType"
+                name="otherPaymentType"
+                class="form-input"
+                placeholder="e.g., Maya, Coins.ph"
+              />
+            </div>
+            <div class="form-group">
+              <label for="otherPaymentAccount" class="form-label">Account details *</label>
+              <input
+                type="text"
+                id="otherPaymentAccount"
+                name="otherPaymentAccount"
+                class="form-input"
+                placeholder="Account number or email"
+              />
+            </div>
+            <div class="form-group">
+              <label for="otherPaymentName" class="form-label">Account name *</label>
+              <input
+                type="text"
+                id="otherPaymentName"
+                name="otherPaymentName"
+                class="form-input"
+                placeholder="Registered account name"
+              />
+            </div>
+          </div>
+
+          <button type="submit" class="auth-btn-primary auth-btn-full">Continue to Review</button>
+
+          <button type="button" class="auth-btn-secondary auth-btn-full" id="skipPaymentBtn">
+            Skip for now (add later in dashboard)
+          </button>
+        </form>
+      </div>
+    </main>
+
+    <!-- Step 5: Review & Submit -->
+    <main class="auth-main signup-step hidden" id="step5">
+      <div class="auth-container">
+        <button class="back-btn" id="step5Back">
+          <span data-icon="chevronLeft" data-icon-width="20" data-icon-height="20"></span>
+          Back to payment setup
+        </button>
+
+        <h1 class="auth-title auth-title-small">Review your information</h1>
+
+        <div class="signup-review">
+          <div class="review-section">
+            <div class="review-section-header">
+              <h3>Account Information</h3>
+              <button class="review-edit-btn" data-edit-step="1">Edit</button>
+            </div>
+            <div class="review-item">
+              <span class="review-label">Name:</span>
+              <span class="review-value" id="reviewName"></span>
+            </div>
+            <div class="review-item">
+              <span class="review-label">Email:</span>
+              <span class="review-value" id="reviewEmail"></span>
+            </div>
+          </div>
+
+          <div class="review-section">
+            <div class="review-section-header">
+              <h3>Property Location</h3>
+              <button class="review-edit-btn" data-edit-step="2">Edit</button>
+            </div>
+            <div class="review-item">
+              <span class="review-label">Address:</span>
+              <span class="review-value" id="reviewAddress"></span>
+            </div>
+          </div>
+
+          <div class="review-section">
+            <div class="review-section-header">
+              <h3>Boarding House Details</h3>
+              <button class="review-edit-btn" data-edit-step="3">Edit</button>
+            </div>
+            <div class="review-item">
+              <span class="review-label">Name:</span>
+              <span class="review-value" id="reviewPropertyName"></span>
+            </div>
+            <div class="review-item">
+              <span class="review-label">Type:</span>
+              <span class="review-value" id="reviewPropertyType"></span>
+            </div>
+            <div class="review-item">
+              <span class="review-label">Rooms:</span>
+              <span class="review-value" id="reviewRooms"></span>
+            </div>
+          </div>
+
+          <div class="review-section">
+            <div class="review-section-header">
+              <h3>Payment Method</h3>
+              <button class="review-edit-btn" data-edit-step="4">Edit</button>
+            </div>
+            <div class="review-item" id="reviewPaymentSection">
+              <span class="review-label">Method:</span>
+              <span class="review-value" id="reviewPaymentMethod"></span>
+            </div>
+          </div>
+        </div>
+
+        <form class="auth-form" id="step5Form">
+          <div class="form-checkbox-group">
+            <label class="checkbox-label">
+              <input type="checkbox" name="terms" required />
+              <span class="checkmark"></span>
+              <span class="checkbox-text"
+                >Yes, I understand and agree to the
+                <a href="../terms-of-service.html">Terms of Service</a>, including the
+                <a href="../user-agreement.html">User Agreement</a> and
+                <a href="../privacy-policy.html">Privacy Policy</a>.</span
+              >
+            </label>
+          </div>
+
+          <button type="submit" class="auth-btn-primary auth-btn-full">
+            Create Account & List Property
+          </button>
+        </form>
+      </div>
+    </main>
+
+    <!-- Decorative Corner Images -->
+    <div class="signup-decorative-images">
+      <div class="signup-decorative-left">
+        <img src="../../../assets/images/public/signup_lower_right.png" alt="" />
+      </div>
+      <div class="signup-decorative-right">
+        <img src="../../../assets/images/public/signup_lower_left.png" alt="" />
+      </div>
+    </div>
+
+    <script
+      src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+      integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo="
+      crossorigin=""
+    ></script>
+    <script type="module" src="../../../js/views/public/auth/signup-landlord.js"></script>
+  </body>
+</html>

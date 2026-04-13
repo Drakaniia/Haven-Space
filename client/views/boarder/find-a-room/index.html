@@ -3,6 +3,7 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="icon" type="image/svg+xml" href="../../../assets/favicon.svg" />
     <title>Find a Room - Haven Space</title>
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -14,6 +15,13 @@
     <link rel="stylesheet" href="../../../css/components/sidebar.css" />
     <link rel="stylesheet" href="../../../css/components/navbar.css" />
     <link rel="stylesheet" href="../../../css/views/boarder/boarder-find-a-room.css" />
+    <!-- Leaflet CSS -->
+    <link
+      rel="stylesheet"
+      href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+      integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY="
+      crossorigin=""
+    />
     <script type="module">
       import { getIcon } from '../../../js/shared/icons.js';
       window.getIcon = getIcon;
@@ -232,6 +240,11 @@
                   document.write(getIcon('list', { width: 24, height: 24 }));
                 </script>
               </button>
+              <button class="find-room-view-btn" data-view="map" title="Map View">
+                <script>
+                  document.write(getIcon('map', { width: 24, height: 24 }));
+                </script>
+              </button>
               <div class="find-room-sort-wrapper">
                 <label class="find-room-sort-label">Sort by:</label>
                 <select class="find-room-sort-select" id="sort-select">
@@ -246,8 +259,34 @@
             </div>
           </div>
 
-          <!-- Property Grid -->
-          <div class="find-room-properties-grid" id="properties-grid">
+          <!-- Map and Results Container -->
+          <div class="find-room-map-results-container" id="map-results-container">
+            <!-- Map Section -->
+            <div class="find-room-map-section" id="map-section" style="display: none;">
+              <div id="find-room-map"></div>
+              <!-- Map Controls -->
+              <div class="find-room-map-controls">
+                <button class="find-room-map-control-btn" id="locate-me" title="Use my location">
+                  <script>
+                    document.write(getIcon('target', { width: 24, height: 24 }));
+                  </script>
+                </button>
+                <button class="find-room-map-control-btn" id="zoom-in" title="Zoom in">
+                  <script>
+                    document.write(getIcon('plusLarge', { width: 24, height: 24 }));
+                  </script>
+                </button>
+                <button class="find-room-map-control-btn" id="zoom-out" title="Zoom out">
+                  <script>
+                    document.write(getIcon('minusLarge', { width: 24, height: 24 }));
+                  </script>
+                </button>
+              </div>
+            </div>
+
+            <!-- Property Grid -->
+            <div class="find-room-results-section" id="results-section">
+              <div class="find-room-properties-grid" id="properties-grid">
             <!-- Property Card 1 -->
             <div class="find-room-property-card" data-property-id="1">
               <div class="find-room-card-image-wrapper">
@@ -408,7 +447,7 @@
                     <span class="find-room-card-price-amount">₱6,500</span>
                     <span class="find-room-card-price-period">/month</span>
                   </div>
-                  <a href="../rooms/detail.html?id=2" class="find-room-card-btn">
+                  <a href="../find-a-room/index.html" class="find-room-card-btn">
                     View Details
                     <script>
                       document.write(getIcon('arrowRightSimple', { width: 20, height: 20 }));
@@ -741,20 +780,278 @@
                   d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
                 />
               </svg>
-              <h3>No Properties Found</h3>
-              <p>
-                We couldn't find any properties matching your criteria. Try adjusting your filters
-                or search area.
-              </p>
-              <button class="find-room-btn find-room-btn-primary" id="clear-filters-btn">
-                Clear All Filters
+              <h3>No properties found</h3>
+              <p>Try adjusting your filters or search criteria to find more results.</p>
+              <button class="find-room-reset-filters-btn" id="reset-filters-no-results">
+                <script>
+                  document.write(getIcon('refresh', { width: 20, height: 20 }));
+                </script>
+                Reset Filters
               </button>
             </div>
           </div>
         </div>
       </main>
+
+      <!-- Map View Container -->
+      <div class="find-room-map-view" id="map-view" style="display: none">
+        <div class="find-room-map-container">
+          <div id="find-room-map"></div>
+
+          <!-- Map Close Button -->
+          <button class="find-room-map-close-btn" id="map-close-btn" title="Close Map">
+            <script>
+              document.write(getIcon('close', { width: 24, height: 24 }));
+            </script>
+          </button>
+        </div>
+
+        <!-- Property Detail Panel -->
+        <div class="find-room-detail-panel" id="detail-panel" style="display: none">
+          <div class="detail-panel-header">
+            <button class="detail-panel-close-btn" id="detail-panel-close-btn">
+              <script>
+                document.write(getIcon('close', { width: 24, height: 24 }));
+              </script>
+            </button>
+          </div>
+
+          <div class="detail-panel-content">
+            <!-- Property Image -->
+            <div class="detail-panel-image">
+              <img id="detail-property-image" src="" alt="Property" />
+              <div class="detail-panel-badges" id="detail-badges"></div>
+            </div>
+
+            <!-- Property Info -->
+            <div class="detail-panel-info">
+              <h2 class="detail-property-title" id="detail-property-title"></h2>
+              <div class="detail-property-rating">
+                <span class="detail-rating-value" id="detail-rating-value"></span>
+                <div class="detail-rating-stars" id="detail-rating-stars"></div>
+                <span class="detail-rating-count" id="detail-rating-count"></span>
+                <span class="detail-property-type" id="detail-property-type"></span>
+              </div>
+
+              <!-- Tabs -->
+              <div class="detail-tabs">
+                <button class="detail-tab active" data-tab="overview">Overview</button>
+                <button class="detail-tab" data-tab="reviews">Reviews</button>
+              </div>
+
+              <!-- Overview Tab -->
+              <div class="detail-tab-content active" id="overview-tab">
+                <!-- Action Buttons -->
+                <div class="detail-action-buttons">
+                  <button class="detail-action-btn">
+                    <script>
+                      document.write(getIcon('navigation', { width: 24, height: 24 }));
+                    </script>
+                    <span>Directions</span>
+                  </button>
+                  <button class="detail-action-btn" id="save-property-btn">
+                    <script>
+                      document.write(getIcon('bookmark', { width: 24, height: 24 }));
+                    </script>
+                    <span>Saved</span>
+                  </button>
+                  <button class="detail-action-btn">
+                    <script>
+                      document.write(getIcon('map', { width: 24, height: 24 }));
+                    </script>
+                    <span>Nearby</span>
+                  </button>
+                  <button class="detail-action-btn">
+                    <script>
+                      document.write(getIcon('phone', { width: 24, height: 24 }));
+                    </script>
+                    <span>Send to phone</span>
+                  </button>
+                  <button class="detail-action-btn">
+                    <script>
+                      document.write(getIcon('share', { width: 24, height: 24 }));
+                    </script>
+                    <span>Share</span>
+                  </button>
+                </div>
+
+                <!-- Saved Status -->
+                <div class="detail-saved-status" id="saved-status">
+                  <script>
+                    document.write(getIcon('heartSolid', { width: 20, height: 20 }));
+                  </script>
+                  <span>Saved in Favorites</span>
+                  <script>
+                    document.write(getIcon('chevronDown', { width: 20, height: 20 }));
+                  </script>
+                </div>
+
+                <!-- Property Details -->
+                <div class="detail-property-details">
+                  <div class="detail-detail-item">
+                    <script>
+                      document.write(getIcon('location', { width: 24, height: 24 }));
+                    </script>
+                    <span id="detail-address"></span>
+                  </div>
+                  <div class="detail-detail-item">
+                    <script>
+                      document.write(getIcon('phone', { width: 24, height: 24 }));
+                    </script>
+                    <span id="detail-phone"></span>
+                  </div>
+                  <div class="detail-detail-item">
+                    <script>
+                      document.write(getIcon('mapPin', { width: 24, height: 24 }));
+                    </script>
+                    <span id="detail-location-code"></span>
+                  </div>
+                  <div class="detail-detail-item">
+                    <script>
+                      document.write(getIcon('clock', { width: 24, height: 24 }));
+                    </script>
+                    <span>Your Maps history</span>
+                  </div>
+                  <div class="detail-detail-item">
+                    <script>
+                      document.write(getIcon('tag', { width: 24, height: 24 }));
+                    </script>
+                    <span>Add a label</span>
+                  </div>
+                </div>
+
+                <button class="detail-suggest-edit-btn">
+                  <script>
+                    document.write(getIcon('pencil', { width: 20, height: 20 }));
+                  </script>
+                  Suggest an edit
+                </button>
+              </div>
+
+              <!-- Reviews Tab -->
+              <div class="detail-tab-content" id="reviews-tab">
+                <!-- Photos Section -->
+                <div class="detail-photos-section">
+                  <h3 class="detail-section-title">Photos & videos</h3>
+                  <div class="detail-photos-grid" id="detail-photos">
+                    <div class="detail-photo-item active">
+                      <img src="" alt="All" />
+                      <span>All</span>
+                    </div>
+                    <div class="detail-photo-item">
+                      <img src="" alt="Rooms" />
+                      <span>Rooms</span>
+                    </div>
+                    <div class="detail-photo-item">
+                      <img src="" alt="Videos" />
+                      <span>Videos</span>
+                    </div>
+                  </div>
+                  <button class="detail-add-photos-btn">
+                    <script>
+                      document.write(getIcon('plus', { width: 20, height: 20 }));
+                    </script>
+                    Add photos & videos
+                  </button>
+                </div>
+
+                <!-- Review Summary -->
+                <div class="detail-review-summary">
+                  <h3 class="detail-section-title">Review summary</h3>
+                  <div class="detail-rating-breakdown">
+                    <div class="detail-rating-bars">
+                      <div class="detail-rating-bar">
+                        <span>5</span>
+                        <div class="detail-bar-track">
+                          <div class="detail-bar-fill" style="width: 75%"></div>
+                        </div>
+                      </div>
+                      <div class="detail-rating-bar">
+                        <span>4</span>
+                        <div class="detail-bar-track">
+                          <div class="detail-bar-fill" style="width: 15%"></div>
+                        </div>
+                      </div>
+                      <div class="detail-rating-bar">
+                        <span>3</span>
+                        <div class="detail-bar-track">
+                          <div class="detail-bar-fill" style="width: 5%"></div>
+                        </div>
+                      </div>
+                      <div class="detail-rating-bar">
+                        <span>2</span>
+                        <div class="detail-bar-track">
+                          <div class="detail-bar-fill" style="width: 3%"></div>
+                        </div>
+                      </div>
+                      <div class="detail-rating-bar">
+                        <span>1</span>
+                        <div class="detail-bar-track">
+                          <div class="detail-bar-fill" style="width: 2%"></div>
+                        </div>
+                      </div>
+                    </div>
+                    <div class="detail-rating-overall">
+                      <span class="detail-rating-number" id="detail-rating-number"></span>
+                      <div class="detail-rating-stars-large" id="detail-rating-stars-large"></div>
+                      <span class="detail-review-count" id="detail-review-count"></span>
+                    </div>
+                  </div>
+                  <button class="detail-write-review-btn">
+                    <script>
+                      document.write(getIcon('chatBubble', { width: 20, height: 20 }));
+                    </script>
+                    Write a review
+                  </button>
+                </div>
+
+                <!-- Reviews List -->
+                <div class="detail-reviews-list">
+                  <div class="detail-reviews-header">
+                    <h3 class="detail-section-title">Reviews</h3>
+                    <div class="detail-reviews-controls">
+                      <button class="detail-search-review-btn">
+                        <script>
+                          document.write(getIcon('search', { width: 20, height: 20 }));
+                        </script>
+                      </button>
+                      <button class="detail-sort-reviews-btn">
+                        <script>
+                          document.write(getIcon('list', { width: 20, height: 20 }));
+                        </script>
+                        Sort
+                      </button>
+                    </div>
+                  </div>
+
+                  <div class="detail-review-filters">
+                    <button class="detail-review-filter active">
+                      <script>
+                        document.write(getIcon('check', { width: 16, height: 16 }));
+                      </script>
+                      All
+                    </button>
+                    <button class="detail-review-filter">customer service 2</button>
+                    <button class="detail-review-filter">price 2</button>
+                  </div>
+
+                  <div class="detail-reviews-container" id="detail-reviews-container">
+                    <!-- Reviews will be dynamically loaded here -->
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
 
+    <!-- Leaflet JS -->
+    <script
+      src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+      integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo="
+      crossorigin=""
+    ></script>
     <script type="module" src="../../../js/main.js"></script>
     <script type="module" src="../../../js/views/boarder/boarder-find-a-room.js"></script>
   </body>

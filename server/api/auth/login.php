@@ -44,11 +44,19 @@ try {
     $pdo = Connection::getInstance()->getPdo();
     $config = require __DIR__ . '/../../config/app.php';
 
-    $stmt = $pdo->prepare('SELECT id, first_name, last_name, email, password_hash, role FROM users WHERE email = ?');
+    $stmt = $pdo->prepare('SELECT id, first_name, last_name, email, password_hash, role, is_verified, account_status FROM users WHERE email = ?');
     $stmt->execute([$email]);
     $user = $stmt->fetch();
 
     if ($user && password_verify($password, $user['password_hash'])) {
+        $accountStatus = $user['account_status'] ?? 'active';
+        if ($accountStatus !== 'active') {
+            RateLimiter::registerFailure($ip);
+            http_response_code(403);
+            echo json_encode(['error' => 'This account is suspended or banned. Contact support if you believe this is a mistake.']);
+            exit;
+        }
+
         RateLimiter::reset($ip);
 
         $payload = [
@@ -56,7 +64,9 @@ try {
             'first_name' => $user['first_name'],
             'last_name' => $user['last_name'],
             'email' => $user['email'],
-            'role' => $user['role']
+            'role' => $user['role'],
+            'is_verified' => (bool) $user['is_verified'],
+            'account_status' => $accountStatus,
         ];
 
         $accessToken = JWT::generate($payload, $config['jwt_expiration']);
@@ -88,7 +98,9 @@ try {
                 'first_name' => $user['first_name'],
                 'last_name' => $user['last_name'],
                 'email' => $user['email'],
-                'role' => $user['role']
+                'role' => $user['role'],
+                'is_verified' => (bool) $user['is_verified'],
+                'account_status' => $accountStatus,
             ]
         ]);
     } else {

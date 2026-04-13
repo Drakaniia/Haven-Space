@@ -20,8 +20,6 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     exit;
 }
 
-session_start();
-
 try {
     // Get pending user data from session
     $pendingUser = $_SESSION['pending_google_user'] ?? null;
@@ -87,6 +85,8 @@ try {
         'last_name' => $pendingUser['last_name'],
         'email' => $pendingUser['email'],
         'role' => $role,
+        'is_verified' => (bool) ($pendingUser['email_verified'] ?? false),
+        'account_status' => 'active',
         'google_id' => $pendingUser['google_id'],
     ];
     

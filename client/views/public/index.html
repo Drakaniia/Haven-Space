@@ -4,6 +4,7 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Haven Space - Find Your Haven</title>
+    <link rel="icon" type="image/svg+xml" href="../../assets/favicon.svg" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
@@ -13,6 +14,14 @@
     <link rel="stylesheet" href="../../css/global.css" />
     <link rel="stylesheet" href="../../css/views/public/public.css" />
     <link rel="stylesheet" href="../../css/components/logo-cloud.css" />
+
+    <!-- Leaflet CSS -->
+    <link
+      rel="stylesheet"
+      href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+      integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY="
+      crossorigin=""
+    />
   </head>
   <body data-view="public">
     <!-- Navigation -->
@@ -23,8 +32,6 @@
         </div>
         <ul class="nav-links">
           <li><a href="#home" class="active">Home</a></li>
-          <li><a href="find-a-room.html">Find a Room</a></li>
-          <li><a href="maps.html">View Map</a></li>
           <li><a href="#about">About</a></li>
           <li><a href="#contact">Contact</a></li>
         </ul>
@@ -38,7 +45,7 @@
     <!-- Hero Section -->
     <main class="hero hero-background">
       <div class="hero-content">
-        <a href="#haven-ai" class="hero-announcement-pill">
+        <a href="haven-ai.html" class="hero-announcement-pill">
           <span class="announcement-badge">NEW</span>
           <span class="announcement-text">Introducing Haven AI</span>
           <span
@@ -201,6 +208,40 @@
           experience for boarders by integrating smart search, secure payments, and trusted landlord
           connections.
         </p>
+
+        <!-- Map Section -->
+        <div class="find-room-map-wrapper">
+          <div id="find-room-map" class="find-room-map"></div>
+
+          <!-- Map Controls -->
+          <div class="find-room-map-controls">
+            <button class="find-room-map-control-btn" id="locate-me" title="Use my location">
+              <span
+                data-icon="target"
+                data-icon-width="24"
+                data-icon-height="24"
+                data-icon-stroke-width="2"
+              ></span>
+            </button>
+            <button class="find-room-map-control-btn" id="zoom-in" title="Zoom in">
+              <span
+                data-icon="plusLarge"
+                data-icon-width="24"
+                data-icon-height="24"
+                data-icon-stroke-width="2"
+              ></span>
+            </button>
+            <button class="find-room-map-control-btn" id="zoom-out" title="Zoom out">
+              <span
+                data-icon="minusLarge"
+                data-icon-width="24"
+                data-icon-height="24"
+                data-icon-stroke-width="2"
+              ></span>
+            </button>
+          </div>
+        </div>
+
         <div class="find-room-image-wrapper">
           <img
             src="../../assets/images/public/find_illustratin.png"
@@ -519,9 +560,9 @@
             </p>
           </div>
           <div class="footer-legal">
-            <a href="#terms">T&C</a>
+            <a href="terms-of-service.html">T&C</a>
             <span class="separator">&bull;</span>
-            <a href="#privacy">Privacy Notice</a>
+            <a href="privacy-policy.html">Privacy Notice</a>
             <span class="separator">&bull;</span>
             <a href="#cookies">Cookie Notice</a>
             <span class="separator">&bull;</span>
@@ -532,6 +573,89 @@
         </div>
       </div>
     </footer>
+
+    <!-- Leaflet JS -->
+    <script
+      src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+      integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo="
+      crossorigin=""
+    ></script>
+
+    <!-- Map Initialization Script -->
+    <script>
+      // Initialize the map when page loads
+      document.addEventListener('DOMContentLoaded', () => {
+        // Default location (Malaybalay City, Mindanao, Philippines)
+        const defaultLocation = [8.1489, 125.125];
+
+        // Create map centered at default location
+        const map = L.map('find-room-map').setView(defaultLocation, 15);
+
+        // Add OpenStreetMap tiles
+        L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {}).addTo(map);
+
+        // Sample property data (replace with API call)
+        const sampleProperties = [
+          {
+            id: 1,
+            title: 'Sunrise Dormitory',
+            location: 'Sampaloc, Manila',
+            price: 5500,
+            lat: 8.15,
+            lng: 125.126,
+          },
+          {
+            id: 2,
+            title: 'Green Valley Boarding House',
+            location: 'Diliman, Quezon City',
+            price: 4500,
+            lat: 8.148,
+            lng: 125.124,
+          },
+          {
+            id: 3,
+            title: 'Cozy Student Dorm',
+            location: 'Near University Ave',
+            price: 6000,
+            lat: 8.151,
+            lng: 125.127,
+          },
+        ];
+
+        // Add property markers
+        sampleProperties.forEach(property => {
+          L.marker([property.lat, property.lng]).addTo(map).bindPopup(`
+              <div style="padding: 8px;">
+                <h3 style="margin: 0 0 8px 0;">${property.title}</h3>
+                <p style="margin: 0; color: #666;">${property.location}</p>
+                <p style="margin: 8px 0 0 0; font-weight: bold; color: #4a7c23;">₱${property.price.toLocaleString()}/month</p>
+              </div>
+            `);
+        });
+
+        // Zoom controls
+        document.getElementById('zoom-in')?.addEventListener('click', () => map.zoomIn());
+        document.getElementById('zoom-out')?.addEventListener('click', () => map.zoomOut());
+
+        // Locate me button
+        document.getElementById('locate-me')?.addEventListener('click', () => {
+          if (navigator.geolocation) {
+            navigator.geolocation.getCurrentPosition(
+              position => {
+                const userLocation = [position.coords.latitude, position.coords.longitude];
+                map.setView(userLocation, 16);
+                L.marker(userLocation).addTo(map).bindPopup('You are here').openPopup();
+              },
+              error => {
+                alert('Unable to get your location. Please enable location permissions.');
+              }
+            );
+          } else {
+            alert('Geolocation is not supported by your browser.');
+          }
+        });
+      });
+    </script>
 
     <!-- ES Module Entry Point -->
     <script type="module" src="../../js/main.js"></script>

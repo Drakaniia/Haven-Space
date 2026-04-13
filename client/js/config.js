@@ -8,18 +8,39 @@ function detectEnvironment() {
   const hostname = window.location.hostname;
 
   // Production environments
-  const productionHosts = ['havenspace.com', 'www.havenspace.com'];
-  if (productionHosts.includes(hostname) || hostname.includes('havenspace')) {
+  const productionHosts = [
+    'onrender.com',
+    'github.io', // GitHub Pages
+  ];
+
+  if (
+    productionHosts.includes(hostname) ||
+    hostname.includes('render') ||
+    hostname.includes('github.io')
+  ) {
     return 'production';
   }
 
   // Local development (XAMPP, Apache)
   if (hostname === 'localhost' || hostname === '127.0.0.1') {
-    // Check if running via PHP built-in server (:8000) or Apache (/haven-space/)
+    // Check if running via PHP built-in server (:8000) or Apache
+    const port = window.location.port;
     const pathname = window.location.pathname;
-    if (pathname.includes('haven-space') || pathname.includes('htdocs')) {
+
+    // PHP built-in server on port 8000
+    if (port === '8000') {
+      return 'local-dev';
+    }
+
+    // Apache setup typically uses paths like /views/ or /haven-space/
+    if (
+      pathname.includes('haven-space') ||
+      pathname.includes('htdocs') ||
+      pathname.includes('/views/')
+    ) {
       return 'local-apache';
     }
+
     return 'local-dev';
   }
 
@@ -34,8 +55,7 @@ function getApiBaseUrl() {
   const env = detectEnvironment();
 
   const apiUrls = {
-    production: 'https://your-production-domain.com/api', // Update with your production URL
-    'local-apache': 'http://localhost/haven-space/server/api', // XAMPP Apache
+    production: 'https://haven-space-api.onrender.com', // Production API on Render
     'local-dev': 'http://localhost:8000', // PHP built-in server
   };
 
@@ -61,13 +81,6 @@ const CONFIG = {
   isLocal: () => detectEnvironment().startsWith('local'),
 };
 
-// Log environment info in development
-if (CONFIG.isLocal()) {
-  console.log(
-    `%c🔧 Haven Space - ${CONFIG.ENV.toUpperCase()} Environment`,
-    'background: #4a7c23; color: white; padding: 4px 8px; font-weight: bold;',
-    `\nAPI Base URL: ${CONFIG.API_BASE_URL}`
-  );
-}
+// Environment info available via CONFIG.ENV
 
 export default CONFIG;

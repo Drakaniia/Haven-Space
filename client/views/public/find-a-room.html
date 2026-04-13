@@ -3,6 +3,7 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="icon" type="image/svg+xml" href="../../assets/favicon.svg" />
     <title>Find a Room - Haven Space</title>
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -12,31 +13,195 @@
     />
     <link rel="stylesheet" href="../../css/global.css" />
     <link rel="stylesheet" href="../../css/views/public/find-a-room.css" />
+
+    <!-- Leaflet CSS -->
+    <link
+      rel="stylesheet"
+      href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+      integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY="
+      crossorigin=""
+    />
+
     <script type="module">
-      import { getIcon } from '../../js/shared/icons.js';
-      window.getIcon = getIcon;
+      import { initIconElements } from '../../js/shared/icons.js';
+      document.addEventListener('DOMContentLoaded', () => {
+        initIconElements();
+      });
     </script>
   </head>
   <body data-view="public-find-room">
-    <!-- Navigation -->
-    <nav class="navbar">
-      <div class="nav-container">
-        <div class="nav-logo">
-          <span class="logo-text">Haven Space</span>
+    <!-- Floating Smart Header -->
+    <header class="find-room-floating-header hidden" id="find-room-floating-header">
+      <div class="find-room-floating-header-container">
+        <!-- Left Side: Logo/Brand -->
+        <div class="find-room-floating-header-left">
+          <a href="index.html" class="find-room-floating-header-logo">
+            <span class="find-room-floating-header-logo-text">Haven Space</span>
+          </a>
         </div>
-        <ul class="nav-links">
-          <li><a href="index.html">Home</a></li>
-          <li><a href="find-a-room.html" class="active">Find a Room</a></li>
-          <li><a href="maps.html">View Map</a></li>
-          <li><a href="#about">About</a></li>
-          <li><a href="#contact">Contact</a></li>
-        </ul>
-        <div class="nav-actions">
-          <a href="auth/login.html" class="btn-login">Log in</a>
-          <a href="auth/signup.html" class="btn-join">Join now</a>
+
+        <!-- Right Side: Controls -->
+        <div class="find-room-floating-header-right">
+          <!-- Status Dropdown -->
+          <div class="find-room-header-dropdown" id="status-dropdown">
+            <button class="find-room-header-dropdown-btn" id="status-dropdown-btn">
+              <span data-icon="clipboard" data-icon-width="18" data-icon-height="18"></span>
+              <span>Status</span>
+              <span class="find-room-status-badge" id="status-badge" style="display: none">0</span>
+              <span data-icon="chevronDown" data-icon-width="16" data-icon-height="16"></span>
+            </button>
+            <div class="find-room-header-dropdown-menu" id="status-dropdown-menu">
+              <div class="find-room-status-header">
+                <h4>My Applications</h4>
+                <button class="find-room-status-close" id="find-room-status-close">
+                  <span data-icon="close" data-icon-width="18" data-icon-height="18"></span>
+                </button>
+              </div>
+              <div class="find-room-status-tabs">
+                <button class="find-room-status-tab active" data-status="all">All</button>
+                <button class="find-room-status-tab" data-status="pending">Pending</button>
+                <button class="find-room-status-tab" data-status="accepted">Accepted</button>
+              </div>
+              <div class="find-room-applications-list" id="applications-list">
+                <!-- Applications will be injected here -->
+              </div>
+            </div>
+          </div>
+
+          <!-- Map View Button -->
+          <a href="maps.html" class="find-room-header-icon-btn" id="map-view-btn" title="View Map">
+            <span data-icon="map" data-icon-width="20" data-icon-height="20"></span>
+            <span class="find-room-header-btn-label">Map</span>
+          </a>
+
+          <!-- Profile Dropdown -->
+          <div class="find-room-header-dropdown" id="profile-dropdown">
+            <button class="find-room-header-profile-btn" id="profile-dropdown-btn">
+              <img
+                src="../../assets/images/sample.png"
+                alt="User Avatar"
+                class="find-room-header-profile-avatar"
+              />
+              <span class="find-room-header-profile-name">Juan Dela Cruz</span>
+              <span data-icon="chevronDown" data-icon-width="16" data-icon-height="16"></span>
+            </button>
+            <div
+              class="find-room-header-dropdown-menu find-room-profile-menu"
+              id="profile-dropdown-menu"
+            >
+              <div class="find-room-profile-menu-header">
+                <div class="find-room-profile-menu-avatar">JD</div>
+                <div class="find-room-profile-menu-info">
+                  <div class="find-room-profile-menu-name">Juan Dela Cruz</div>
+                  <div class="find-room-profile-menu-email">juan@example.com</div>
+                </div>
+              </div>
+              <div class="find-room-profile-menu-divider"></div>
+              <a
+                href="../boarder/profile/index.html"
+                class="find-room-profile-menu-item"
+                id="profile-menu-profile"
+              >
+                <span data-icon="user" data-icon-width="18" data-icon-height="18"></span>
+                <span>Profile</span>
+              </a>
+              <a href="#" class="find-room-profile-menu-item" id="profile-menu-settings">
+                <span data-icon="settings" data-icon-width="18" data-icon-height="18"></span>
+                <span>Settings</span>
+              </a>
+              <div class="find-room-profile-menu-divider"></div>
+              <a
+                href="#"
+                class="find-room-profile-menu-item find-room-profile-menu-logout"
+                id="profile-menu-logout"
+              >
+                <span data-icon="logout" data-icon-width="18" data-icon-height="18"></span>
+                <span>Log out</span>
+              </a>
+            </div>
+          </div>
         </div>
       </div>
-    </nav>
+    </header>
+
+    <!-- Confirmation Selection Modal -->
+    <div class="find-room-modal-overlay" id="confirmation-modal" style="display: none">
+      <div class="find-room-modal find-room-confirmation-modal">
+        <div class="find-room-modal-header">
+          <h3>Choose Your Boarding House</h3>
+          <button class="find-room-modal-close" id="confirmation-modal-close">
+            <span data-icon="close" data-icon-width="20" data-icon-height="20"></span>
+          </button>
+        </div>
+        <div class="find-room-modal-body">
+          <p class="find-room-confirmation-description">
+            Multiple landlords have accepted your application. Please select one boarding house to
+            proceed.
+          </p>
+          <div class="find-room-accepted-list" id="accepted-list">
+            <!-- Accepted boarding houses will be injected here -->
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Rejection Reason Modal -->
+    <div class="find-room-modal-overlay" id="rejection-modal" style="display: none">
+      <div class="find-room-modal find-room-rejection-modal">
+        <div class="find-room-modal-header">
+          <h3>Why are you rejecting this option?</h3>
+          <button class="find-room-modal-close" id="rejection-modal-close">
+            <span data-icon="close" data-icon-width="20" data-icon-height="20"></span>
+          </button>
+        </div>
+        <div class="find-room-modal-body">
+          <p class="find-room-rejection-description">
+            Please select a reason for rejecting <strong id="rejection-property-name"></strong>:
+          </p>
+          <div class="find-room-rejection-reasons" id="rejection-reasons">
+            <label class="find-room-reason-option">
+              <input type="radio" name="rejection-reason" value="too-expensive" />
+              <span>Too expensive</span>
+            </label>
+            <label class="find-room-reason-option">
+              <input type="radio" name="rejection-reason" value="location-not-ideal" />
+              <span>Location not ideal</span>
+            </label>
+            <label class="find-room-reason-option">
+              <input type="radio" name="rejection-reason" value="found-better" />
+              <span>Found better option</span>
+            </label>
+            <label class="find-room-reason-option">
+              <input type="radio" name="rejection-reason" value="not-responsive" />
+              <span>Not responsive landlord</span>
+            </label>
+            <label class="find-room-reason-option">
+              <input type="radio" name="rejection-reason" value="others" />
+              <span>Others (please specify)</span>
+            </label>
+          </div>
+          <div class="find-room-reason-other-input" id="reason-other-input" style="display: none">
+            <input
+              type="text"
+              class="find-room-reason-other-text"
+              id="rejection-other-text"
+              placeholder="Please specify your reason..."
+            />
+            <div class="find-room-reason-error" id="rejection-other-error">
+              Please enter your reason in the text field.
+            </div>
+          </div>
+          <div class="find-room-rejection-actions">
+            <button class="find-room-btn find-room-btn-secondary" id="rejection-cancel-btn">
+              Cancel
+            </button>
+            <button class="find-room-btn find-room-btn-danger" id="rejection-confirm-btn">
+              Confirm Rejection
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
 
     <!-- Main Content -->
     <main class="find-room-main">
@@ -53,9 +218,7 @@
             <!-- Main Search Bar -->
             <div class="find-room-search-wrapper">
               <div class="find-room-search-box">
-                <script>
-                  document.write(getIcon('search', { className: 'find-room-search-icon' }));
-                </script>
+                <span data-icon="search" class="find-room-search-icon"></span>
                 <input
                   type="text"
                   class="find-room-search-input"
@@ -64,31 +227,37 @@
                 />
                 <button class="find-room-search-btn" id="main-search-btn">
                   Search
-                  <script>
-                    document.write(getIcon('arrowRightSimple', { width: 20, height: 20 }));
-                  </script>
+                  <span
+                    data-icon="arrowRightSimple"
+                    data-icon-width="20"
+                    data-icon-height="20"
+                  ></span>
                 </button>
+                <!-- Map View Button (moved here) -->
+                <a
+                  href="maps.html"
+                  class="find-room-map-toggle-btn"
+                  id="map-view-btn-hero"
+                  title="View Map"
+                >
+                  <span data-icon="map" data-icon-width="20" data-icon-height="20"></span>
+                  <span class="find-room-map-toggle-label">Map</span>
+                </a>
               </div>
 
               <!-- Quick Location Chips -->
               <div class="find-room-location-chips">
                 <span class="find-room-chip-label">Popular:</span>
                 <button class="find-room-chip" data-location="University of the Philippines">
-                  <script>
-                    document.write(getIcon('location', { width: 16, height: 16 }));
-                  </script>
+                  <span data-icon="location" data-icon-width="16" data-icon-height="16"></span>
                   UP Area
                 </button>
                 <button class="find-room-chip" data-location="Ateneo de Manila">
-                  <script>
-                    document.write(getIcon('location', { width: 16, height: 16 }));
-                  </script>
+                  <span data-icon="location" data-icon-width="16" data-icon-height="16"></span>
                   Ateneo
                 </button>
                 <button class="find-room-chip" data-location="Miriam College">
-                  <script>
-                    document.write(getIcon('location', { width: 16, height: 16 }));
-                  </script>
+                  <span data-icon="location" data-icon-width="16" data-icon-height="16"></span>
                   Miriam
                 </button>
               </div>
@@ -109,9 +278,7 @@
             <!-- Filter Group 1: Price Range -->
             <div class="find-room-filter-group">
               <label class="find-room-filter-label">
-                <script>
-                  document.write(getIcon('currencyDollar', { width: 20, height: 20 }));
-                </script>
+                <span data-icon="currencyDollar" data-icon-width="20" data-icon-height="20"></span>
                 Price Range
               </label>
               <select class="find-room-filter-select" id="price-filter">
@@ -126,9 +293,7 @@
             <!-- Filter Group 2: Room Type -->
             <div class="find-room-filter-group">
               <label class="find-room-filter-label">
-                <script>
-                  document.write(getIcon('homeModern', { width: 20, height: 20 }));
-                </script>
+                <span data-icon="homeModern" data-icon-width="20" data-icon-height="20"></span>
                 Room Type
               </label>
               <select class="find-room-filter-select" id="room-type-filter">
@@ -143,17 +308,13 @@
             <!-- Filter Group 3: Amenities -->
             <div class="find-room-filter-group">
               <label class="find-room-filter-label">
-                <script>
-                  document.write(getIcon('wrench', { width: 20, height: 20 }));
-                </script>
+                <span data-icon="wrench" data-icon-width="20" data-icon-height="20"></span>
                 Amenities
               </label>
               <div class="find-room-amenities-dropdown">
                 <button class="find-room-amenities-btn" id="amenities-toggle">
                   Select Amenities
-                  <script>
-                    document.write(getIcon('chevronDown', { width: 20, height: 20 }));
-                  </script>
+                  <span data-icon="chevronDown" data-icon-width="20" data-icon-height="20"></span>
                 </button>
                 <div class="find-room-amenities-panel" id="amenities-panel">
                   <label class="find-room-amenity-checkbox">
@@ -195,9 +356,7 @@
             <!-- Filter Group 4: Distance -->
             <div class="find-room-filter-group">
               <label class="find-room-filter-label">
-                <script>
-                  document.write(getIcon('target', { width: 20, height: 20 }));
-                </script>
+                <span data-icon="target" data-icon-width="20" data-icon-height="20"></span>
                 Distance
               </label>
               <select class="find-room-filter-select" id="distance-filter">
@@ -211,9 +370,7 @@
 
             <!-- Reset Filters -->
             <button class="find-room-reset-btn" id="reset-filters-btn">
-              <script>
-                document.write(getIcon('history', { width: 20, height: 20 }));
-              </script>
+              <span data-icon="history" data-icon-width="20" data-icon-height="20"></span>
               Reset
             </button>
           </div>
@@ -236,14 +393,10 @@
           </div>
           <div class="find-room-view-toggle">
             <button class="find-room-view-btn active" data-view="grid" title="Grid View">
-              <script>
-                document.write(getIcon('grid2x2', { width: 24, height: 24 }));
-              </script>
+              <span data-icon="grid2x2" data-icon-width="24" data-icon-height="24"></span>
             </button>
             <button class="find-room-view-btn" data-view="list" title="List View">
-              <script>
-                document.write(getIcon('list', { width: 24, height: 24 }));
-              </script>
+              <span data-icon="list" data-icon-width="24" data-icon-height="24"></span>
             </button>
             <div class="find-room-sort-wrapper">
               <label class="find-room-sort-label">Sort by:</label>
@@ -271,33 +424,27 @@
               />
               <div class="find-room-card-badges">
                 <span class="find-room-badge find-room-badge-verified">
-                  <script>
-                    document.write(getIcon('badgeCheck', { width: 16, height: 16 }));
-                  </script>
+                  <span data-icon="badgeCheck" data-icon-width="16" data-icon-height="16"></span>
                   Verified
                 </span>
                 <span class="find-room-badge find-room-badge-new">New</span>
               </div>
               <button class="find-room-favorite-btn" data-favorite="false">
-                <script>
-                  document.write(getIcon('bookmark', { width: 24, height: 24 }));
-                </script>
+                <span data-icon="bookmark" data-icon-width="24" data-icon-height="24"></span>
               </button>
               <div class="find-room-card-amenities-preview">
                 <span class="find-room-amenity-icon" title="WiFi">
-                  <script>
-                    document.write(getIcon('sparkles', { width: 20, height: 20 }));
-                  </script>
+                  <span data-icon="sparkles" data-icon-width="20" data-icon-height="20"></span>
                 </span>
                 <span class="find-room-amenity-icon" title="Air Conditioning">
-                  <script>
-                    document.write(getIcon('computerDesktop', { width: 20, height: 20 }));
-                  </script>
+                  <span
+                    data-icon="computerDesktop"
+                    data-icon-width="20"
+                    data-icon-height="20"
+                  ></span>
                 </span>
                 <span class="find-room-amenity-icon" title="Parking">
-                  <script>
-                    document.write(getIcon('checkSimple', { width: 20, height: 20 }));
-                  </script>
+                  <span data-icon="checkSimple" data-icon-width="20" data-icon-height="20"></span>
                 </span>
                 <span class="find-room-amenity-more">+3</span>
               </div>
@@ -305,15 +452,11 @@
             <div class="find-room-card-content">
               <div class="find-room-card-header">
                 <div class="find-room-card-location">
-                  <script>
-                    document.write(getIcon('location', { width: 20, height: 20 }));
-                  </script>
+                  <span data-icon="location" data-icon-width="20" data-icon-height="20"></span>
                   <span class="find-room-card-distance">0.5 km from UP</span>
                 </div>
                 <div class="find-room-card-rating">
-                  <script>
-                    document.write(getIcon('starSolid', { width: 16, height: 16 }));
-                  </script>
+                  <span data-icon="starSolid" data-icon-width="16" data-icon-height="16"></span>
                   <span class="find-room-card-rating-value">4.8</span>
                   <span class="find-room-card-rating-count">(24)</span>
                 </div>
@@ -322,15 +465,11 @@
               <p class="find-room-card-address">Katipunan Avenue, Quezon City, Metro Manila</p>
               <div class="find-room-card-features">
                 <span class="find-room-feature">
-                  <script>
-                    document.write(getIcon('userCircle', { width: 20, height: 20 }));
-                  </script>
+                  <span data-icon="userCircle" data-icon-width="20" data-icon-height="20"></span>
                   Single & Shared
                 </span>
                 <span class="find-room-feature">
-                  <script>
-                    document.write(getIcon('calendar', { width: 20, height: 20 }));
-                  </script>
+                  <span data-icon="calendar" data-icon-width="20" data-icon-height="20"></span>
                   Available Now
                 </span>
               </div>
@@ -339,11 +478,13 @@
                   <span class="find-room-card-price-amount">₱4,500</span>
                   <span class="find-room-card-price-period">/month</span>
                 </div>
-                <a href="auth/login.html" class="find-room-card-btn">
+                <a href="./rooms/detail.html?id=1" class="find-room-card-btn">
                   View Details
-                  <script>
-                    document.write(getIcon('arrowRightSimple', { width: 20, height: 20 }));
-                  </script>
+                  <span
+                    data-icon="arrowRightSimple"
+                    data-icon-width="20"
+                    data-icon-height="20"
+                  ></span>
                 </a>
               </div>
             </div>
@@ -359,27 +500,19 @@
               />
               <div class="find-room-card-badges">
                 <span class="find-room-badge find-room-badge-verified">
-                  <script>
-                    document.write(getIcon('badgeCheck', { width: 16, height: 16 }));
-                  </script>
+                  <span data-icon="badgeCheck" data-icon-width="16" data-icon-height="16"></span>
                   Verified
                 </span>
               </div>
               <button class="find-room-favorite-btn" data-favorite="true">
-                <script>
-                  document.write(getIcon('heartSolid', { width: 24, height: 24 }));
-                </script>
+                <span data-icon="heartSolid" data-icon-width="24" data-icon-height="24"></span>
               </button>
               <div class="find-room-card-amenities-preview">
                 <span class="find-room-amenity-icon" title="WiFi">
-                  <script>
-                    document.write(getIcon('sparkles', { width: 20, height: 20 }));
-                  </script>
+                  <span data-icon="sparkles" data-icon-width="20" data-icon-height="20"></span>
                 </span>
                 <span class="find-room-amenity-icon" title="Furnished">
-                  <script>
-                    document.write(getIcon('checkSimple', { width: 20, height: 20 }));
-                  </script>
+                  <span data-icon="checkSimple" data-icon-width="20" data-icon-height="20"></span>
                 </span>
                 <span class="find-room-amenity-more">+2</span>
               </div>
@@ -387,15 +520,11 @@
             <div class="find-room-card-content">
               <div class="find-room-card-header">
                 <div class="find-room-card-location">
-                  <script>
-                    document.write(getIcon('location', { width: 20, height: 20 }));
-                  </script>
+                  <span data-icon="location" data-icon-width="20" data-icon-height="20"></span>
                   <span class="find-room-card-distance">1.2 km from Ateneo</span>
                 </div>
                 <div class="find-room-card-rating">
-                  <script>
-                    document.write(getIcon('starSolid', { width: 16, height: 16 }));
-                  </script>
+                  <span data-icon="starSolid" data-icon-width="16" data-icon-height="16"></span>
                   <span class="find-room-card-rating-value">4.6</span>
                   <span class="find-room-card-rating-count">(18)</span>
                 </div>
@@ -404,15 +533,11 @@
               <p class="find-room-card-address">Loyola Heights, Quezon City, Metro Manila</p>
               <div class="find-room-card-features">
                 <span class="find-room-feature">
-                  <script>
-                    document.write(getIcon('userCircle', { width: 20, height: 20 }));
-                  </script>
+                  <span data-icon="userCircle" data-icon-width="20" data-icon-height="20"></span>
                   Studio & 1 BHK
                 </span>
                 <span class="find-room-feature">
-                  <script>
-                    document.write(getIcon('calendar', { width: 20, height: 20 }));
-                  </script>
+                  <span data-icon="calendar" data-icon-width="20" data-icon-height="20"></span>
                   Available Sept 1
                 </span>
               </div>
@@ -421,11 +546,13 @@
                   <span class="find-room-card-price-amount">₱6,500</span>
                   <span class="find-room-card-price-period">/month</span>
                 </div>
-                <a href="auth/login.html" class="find-room-card-btn">
+                <a href="./rooms/detail.html?id=2" class="find-room-card-btn">
                   View Details
-                  <script>
-                    document.write(getIcon('arrowRightSimple', { width: 20, height: 20 }));
-                  </script>
+                  <span
+                    data-icon="arrowRightSimple"
+                    data-icon-width="20"
+                    data-icon-height="20"
+                  ></span>
                 </a>
               </div>
             </div>
@@ -443,25 +570,17 @@
                 <span class="find-room-badge find-room-badge-promo">Promo</span>
               </div>
               <button class="find-room-favorite-btn" data-favorite="false">
-                <script>
-                  document.write(getIcon('bookmark', { width: 24, height: 24 }));
-                </script>
+                <span data-icon="bookmark" data-icon-width="24" data-icon-height="24"></span>
               </button>
               <div class="find-room-card-amenities-preview">
                 <span class="find-room-amenity-icon" title="WiFi">
-                  <script>
-                    document.write(getIcon('sparkles', { width: 20, height: 20 }));
-                  </script>
+                  <span data-icon="sparkles" data-icon-width="20" data-icon-height="20"></span>
                 </span>
                 <span class="find-room-amenity-icon" title="Laundry">
-                  <script>
-                    document.write(getIcon('wrench', { width: 20, height: 20 }));
-                  </script>
+                  <span data-icon="wrench" data-icon-width="20" data-icon-height="20"></span>
                 </span>
                 <span class="find-room-amenity-icon" title="Kitchen">
-                  <script>
-                    document.write(getIcon('wrench', { width: 20, height: 20 }));
-                  </script>
+                  <span data-icon="wrench" data-icon-width="20" data-icon-height="20"></span>
                 </span>
                 <span class="find-room-amenity-more">+1</span>
               </div>
@@ -469,15 +588,11 @@
             <div class="find-room-card-content">
               <div class="find-room-card-header">
                 <div class="find-room-card-location">
-                  <script>
-                    document.write(getIcon('location', { width: 20, height: 20 }));
-                  </script>
+                  <span data-icon="location" data-icon-width="20" data-icon-height="20"></span>
                   <span class="find-room-card-distance">2.1 km from Miriam</span>
                 </div>
                 <div class="find-room-card-rating">
-                  <script>
-                    document.write(getIcon('starSolid', { width: 16, height: 16 }));
-                  </script>
+                  <span data-icon="starSolid" data-icon-width="16" data-icon-height="16"></span>
                   <span class="find-room-card-rating-value">4.5</span>
                   <span class="find-room-card-rating-count">(32)</span>
                 </div>
@@ -486,15 +601,11 @@
               <p class="find-room-card-address">Commonwealth Avenue, Quezon City, Metro Manila</p>
               <div class="find-room-card-features">
                 <span class="find-room-feature">
-                  <script>
-                    document.write(getIcon('userCircle', { width: 20, height: 20 }));
-                  </script>
+                  <span data-icon="userCircle" data-icon-width="20" data-icon-height="20"></span>
                   Shared Rooms
                 </span>
                 <span class="find-room-feature">
-                  <script>
-                    document.write(getIcon('calendar', { width: 20, height: 20 }));
-                  </script>
+                  <span data-icon="calendar" data-icon-width="20" data-icon-height="20"></span>
                   Available Now
                 </span>
               </div>
@@ -503,11 +614,13 @@
                   <span class="find-room-card-price-amount">₱3,200</span>
                   <span class="find-room-card-price-period">/month</span>
                 </div>
-                <a href="auth/login.html" class="find-room-card-btn">
+                <a href="./rooms/detail.html?id=3" class="find-room-card-btn">
                   View Details
-                  <script>
-                    document.write(getIcon('arrowRightSimple', { width: 20, height: 20 }));
-                  </script>
+                  <span
+                    data-icon="arrowRightSimple"
+                    data-icon-width="20"
+                    data-icon-height="20"
+                  ></span>
                 </a>
               </div>
             </div>
@@ -523,33 +636,27 @@
               />
               <div class="find-room-card-badges">
                 <span class="find-room-badge find-room-badge-verified">
-                  <script>
-                    document.write(getIcon('badgeCheck', { width: 16, height: 16 }));
-                  </script>
+                  <span data-icon="badgeCheck" data-icon-width="16" data-icon-height="16"></span>
                   Verified
                 </span>
                 <span class="find-room-badge find-room-badge-new">New</span>
               </div>
               <button class="find-room-favorite-btn" data-favorite="false">
-                <script>
-                  document.write(getIcon('bookmark', { width: 24, height: 24 }));
-                </script>
+                <span data-icon="bookmark" data-icon-width="24" data-icon-height="24"></span>
               </button>
               <div class="find-room-card-amenities-preview">
                 <span class="find-room-amenity-icon" title="WiFi">
-                  <script>
-                    document.write(getIcon('sparkles', { width: 20, height: 20 }));
-                  </script>
+                  <span data-icon="sparkles" data-icon-width="20" data-icon-height="20"></span>
                 </span>
                 <span class="find-room-amenity-icon" title="Air Conditioning">
-                  <script>
-                    document.write(getIcon('computerDesktop', { width: 20, height: 20 }));
-                  </script>
+                  <span
+                    data-icon="computerDesktop"
+                    data-icon-width="20"
+                    data-icon-height="20"
+                  ></span>
                 </span>
                 <span class="find-room-amenity-icon" title="Security">
-                  <script>
-                    document.write(getIcon('shieldCheck', { width: 20, height: 20 }));
-                  </script>
+                  <span data-icon="shieldCheck" data-icon-width="20" data-icon-height="20"></span>
                 </span>
                 <span class="find-room-amenity-more">+4</span>
               </div>
@@ -557,15 +664,11 @@
             <div class="find-room-card-content">
               <div class="find-room-card-header">
                 <div class="find-room-card-location">
-                  <script>
-                    document.write(getIcon('location', { width: 20, height: 20 }));
-                  </script>
+                  <span data-icon="location" data-icon-width="20" data-icon-height="20"></span>
                   <span class="find-room-card-distance">0.8 km from UP</span>
                 </div>
                 <div class="find-room-card-rating">
-                  <script>
-                    document.write(getIcon('starSolid', { width: 16, height: 16 }));
-                  </script>
+                  <span data-icon="starSolid" data-icon-width="16" data-icon-height="16"></span>
                   <span class="find-room-card-rating-value">4.9</span>
                   <span class="find-room-card-rating-count">(41)</span>
                 </div>
@@ -574,15 +677,11 @@
               <p class="find-room-card-address">Roxas Boulevard, Quezon City, Metro Manila</p>
               <div class="find-room-card-features">
                 <span class="find-room-feature">
-                  <script>
-                    document.write(getIcon('userCircle', { width: 20, height: 20 }));
-                  </script>
+                  <span data-icon="userCircle" data-icon-width="20" data-icon-height="20"></span>
                   1 BHK & Studio
                 </span>
                 <span class="find-room-feature">
-                  <script>
-                    document.write(getIcon('calendar', { width: 20, height: 20 }));
-                  </script>
+                  <span data-icon="calendar" data-icon-width="20" data-icon-height="20"></span>
                   Available Aug 15
                 </span>
               </div>
@@ -591,11 +690,13 @@
                   <span class="find-room-card-price-amount">₱7,800</span>
                   <span class="find-room-card-price-period">/month</span>
                 </div>
-                <a href="auth/login.html" class="find-room-card-btn">
+                <a href="./rooms/detail.html?id=4" class="find-room-card-btn">
                   View Details
-                  <script>
-                    document.write(getIcon('arrowRightSimple', { width: 20, height: 20 }));
-                  </script>
+                  <span
+                    data-icon="arrowRightSimple"
+                    data-icon-width="20"
+                    data-icon-height="20"
+                  ></span>
                 </a>
               </div>
             </div>
@@ -605,9 +706,7 @@
         <!-- Load More -->
         <div class="find-room-load-more">
           <button class="find-room-load-more-btn" id="load-more-btn">
-            <script>
-              document.write(getIcon('history', { width: 20, height: 20 }));
-            </script>
+            <span data-icon="history" data-icon-width="20" data-icon-height="20"></span>
             Load More Properties
           </button>
         </div>
@@ -615,9 +714,7 @@
         <!-- No Results State -->
         <div class="find-room-no-results" id="no-results" style="display: none">
           <div class="find-room-no-results-content">
-            <script>
-              document.write(getIcon('exclamationCircle', { width: 80, height: 80 }));
-            </script>
+            <span data-icon="exclamationCircle" data-icon-width="80" data-icon-height="80"></span>
             <h3>No Properties Found</h3>
             <p>
               We couldn't find any properties matching your criteria. Try adjusting your filters or
@@ -626,6 +723,151 @@
             <button class="find-room-btn find-room-btn-primary" id="clear-filters-btn">
               Clear All Filters
             </button>
+          </div>
+        </div>
+
+        <!-- Detail Panel Overlay -->
+        <div class="find-room-detail-overlay" id="detail-overlay" style="display: none">
+          <div class="find-room-detail-panel" id="detail-panel">
+            <!-- Detail Panel Header -->
+            <div class="find-room-detail-header">
+              <div class="find-room-detail-image-section">
+                <img
+                  id="detail-property-image"
+                  src=""
+                  alt="Property Image"
+                  class="find-room-detail-main-image"
+                />
+                <button class="find-room-detail-close-btn" id="detail-close-btn">
+                  <span data-icon="close" data-icon-width="24" data-icon-height="24"></span>
+                </button>
+              </div>
+            </div>
+
+            <!-- Detail Panel Content -->
+            <div class="find-room-detail-content">
+              <!-- Property Title Section -->
+              <div class="find-room-detail-title-section">
+                <h2 class="find-room-detail-title" id="detail-property-title"></h2>
+                <div class="find-room-detail-rating-section">
+                  <span class="find-room-detail-rating-value" id="detail-rating-value"></span>
+                  <div class="find-room-detail-stars" id="detail-rating-stars"></div>
+                  <span class="find-room-detail-rating-count" id="detail-rating-count"></span>
+                </div>
+                <p class="find-room-detail-property-type" id="detail-property-type"></p>
+              </div>
+
+              <!-- Tabs -->
+              <div class="find-room-detail-tabs">
+                <button class="find-room-detail-tab active" data-tab="overview">Overview</button>
+                <button class="find-room-detail-tab" data-tab="reviews">Reviews</button>
+              </div>
+
+              <!-- Tab Content -->
+              <div class="find-room-detail-tab-content active" id="overview-tab">
+                <!-- Property Details -->
+                <div class="find-room-detail-info">
+                  <div class="find-room-detail-info-item">
+                    <span data-icon="location" data-icon-width="20" data-icon-height="20"></span>
+                    <span id="detail-address"></span>
+                  </div>
+                  <div class="find-room-detail-info-item">
+                    <span data-icon="phone" data-icon-width="20" data-icon-height="20"></span>
+                    <span id="detail-phone"></span>
+                  </div>
+                  <div class="find-room-detail-info-item">
+                    <span data-icon="map" data-icon-width="20" data-icon-height="20"></span>
+                    <span id="detail-location-code"></span>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Reviews Tab Content -->
+              <div class="find-room-detail-tab-content" id="reviews-tab">
+                <!-- Photos Section -->
+                <div class="find-room-detail-photos">
+                  <h3 class="find-room-detail-photos-title">Photos & videos</h3>
+                  <div class="find-room-photos-grid" id="detail-photos"></div>
+                </div>
+
+                <!-- Review Summary -->
+                <div class="find-room-detail-review-summary">
+                  <h3 class="find-room-detail-review-summary-title">Review summary</h3>
+                  <div class="find-room-review-breakdown">
+                    <div class="find-room-review-bars">
+                      <div class="find-room-review-bar-item">
+                        <span class="find-room-review-bar-label">5</span>
+                        <div class="find-room-review-bar">
+                          <div class="find-room-review-bar-fill" style="width: 70%"></div>
+                        </div>
+                      </div>
+                      <div class="find-room-review-bar-item">
+                        <span class="find-room-review-bar-label">4</span>
+                        <div class="find-room-review-bar">
+                          <div class="find-room-review-bar-fill" style="width: 20%"></div>
+                        </div>
+                      </div>
+                      <div class="find-room-review-bar-item">
+                        <span class="find-room-review-bar-label">3</span>
+                        <div class="find-room-review-bar">
+                          <div class="find-room-review-bar-fill" style="width: 5%"></div>
+                        </div>
+                      </div>
+                      <div class="find-room-review-bar-item">
+                        <span class="find-room-review-bar-label">2</span>
+                        <div class="find-room-review-bar">
+                          <div class="find-room-review-bar-fill" style="width: 3%"></div>
+                        </div>
+                      </div>
+                      <div class="find-room-review-bar-item">
+                        <span class="find-room-review-bar-label">1</span>
+                        <div class="find-room-review-bar">
+                          <div class="find-room-review-bar-fill" style="width: 2%"></div>
+                        </div>
+                      </div>
+                    </div>
+                    <div class="find-room-review-overall">
+                      <div class="find-room-review-number" id="detail-rating-number"></div>
+                      <div class="find-room-review-stars" id="detail-rating-stars-large"></div>
+                      <div class="find-room-review-count" id="detail-review-count"></div>
+                    </div>
+                  </div>
+                  <button class="find-room-write-review-btn">
+                    <span data-icon="chatBubble" data-icon-width="20" data-icon-height="20"></span>
+                    Write a review
+                  </button>
+                </div>
+
+                <!-- Reviews List -->
+                <div class="find-room-detail-reviews">
+                  <div class="find-room-reviews-header">
+                    <h3 class="find-room-reviews-title">Reviews</h3>
+                    <div class="find-room-reviews-controls">
+                      <button class="find-room-reviews-search-btn">
+                        <span data-icon="search" data-icon-width="18" data-icon-height="18"></span>
+                      </button>
+                      <button class="find-room-reviews-sort-btn">
+                        <span data-icon="list" data-icon-width="18" data-icon-height="18"></span>
+                        <span>Sort</span>
+                      </button>
+                    </div>
+                  </div>
+
+                  <!-- Review Tags -->
+                  <div class="find-room-review-tags">
+                    <button class="find-room-review-tag active">
+                      <span data-icon="check" data-icon-width="16" data-icon-height="16"></span>
+                      All
+                    </button>
+                    <button class="find-room-review-tag">customer service 2</button>
+                    <button class="find-room-review-tag">price 2</button>
+                  </div>
+
+                  <!-- Reviews Container -->
+                  <div class="find-room-reviews-container" id="detail-reviews-container"></div>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
       </div>
@@ -733,8 +975,16 @@
       </div>
     </footer>
 
+    <!-- Leaflet JS -->
+    <script
+      src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+      integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo="
+      crossorigin=""
+    ></script>
+
     <!-- ES Module Entry Point -->
     <script type="module" src="../../js/main.js"></script>
     <script type="module" src="../../js/views/public/public-find-a-room.js"></script>
+    <script type="module" src="../../js/views/public/find-a-room.js"></script>
   </body>
 </html>

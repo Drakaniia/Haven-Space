@@ -115,8 +115,7 @@ function markAsRead(announcementItem) {
     markReadBtn.remove();
   }
 
-  // TODO: Connect to backend API to update read status
-  console.log('Marked announcement as read');
+  // Marked as read - backend integration pending
 }
 
 /**

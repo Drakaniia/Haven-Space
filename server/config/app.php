@@ -8,17 +8,18 @@
  * - .env.{APP_ENV} (e.g., .env.local, .env.production)
  * - .env (default)
  */
+if (!function_exists('loadEnv')) {
 function loadEnv($basePath)
 {
     $envFile = $basePath . '/.env';
     $envLocalFile = $basePath . '/.env.local';
-    
+
     // Priority: .env.local > .env
     // This allows overriding for local development
     if (file_exists($envLocalFile)) {
         $envFile = $envLocalFile;
     }
-    
+
     if (!file_exists($envFile)) {
         // Fallback to .env.example if no .env exists
         $envExample = $basePath . '/.env.example';
@@ -30,23 +31,23 @@ function loadEnv($basePath)
             return;
         }
     }
-    
+
     $lines = file($envFile, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES);
     foreach ($lines as $line) {
         // Skip comments
         if (strpos(trim($line), '#') === 0) {
             continue;
         }
-        
+
         // Parse key=value
         if (strpos($line, '=') !== false) {
             list($key, $value) = explode('=', $line, 2);
             $key = trim($key);
             $value = trim($value);
-            
+
             // Remove surrounding quotes
             $value = trim($value, '"\'');
-            
+
             // Set environment variable if not already set
             if (!isset($_ENV[$key]) && !getenv($key)) {
                 putenv("$key=$value");
@@ -55,17 +56,19 @@ function loadEnv($basePath)
         }
     }
 }
+}
 
 /**
  * Get environment value with default fallback
  */
+if (!function_exists('env')) {
 function env($key, $default = null)
 {
     $value = $_ENV[$key] ?? getenv($key);
     if ($value === false || $value === null || $value === '') {
         return $default;
     }
-    
+
     // Handle boolean strings
     if (strtolower($value) === 'true') {
         return true;
@@ -73,40 +76,50 @@ function env($key, $default = null)
     if (strtolower($value) === 'false') {
         return false;
     }
-    
+
     return $value;
+}
 }
 
 /**
  * Get current application environment
  * @return string 'local' or 'production'
  */
+if (!function_exists('getAppEnv')) {
 function getAppEnv()
 {
     return env('APP_ENV', 'local');
+}
 }
 
 /**
  * Check if application is in debug mode
  * @return bool
  */
+if (!function_exists('isDebugMode')) {
 function isDebugMode()
 {
     return (bool) env('APP_DEBUG', false);
+}
 }
 
 /**
  * Check if application is in production
  * @return bool
  */
+if (!function_exists('isProduction')) {
 function isProduction()
 {
     return getAppEnv() === 'production';
 }
+}
 
-// Auto-load environment on file inclusion
-$serverBasePath = dirname(__DIR__);
-loadEnv($serverBasePath);
+// Auto-load environment on file inclusion (only once)
+if (!defined('APP_CONFIG_LOADED')) {
+    define('APP_CONFIG_LOADED', true);
+    $serverBasePath = dirname(__DIR__);
+    loadEnv($serverBasePath);
+}
 
 return [
     'app_name' => 'Haven Space',
@@ -116,4 +129,5 @@ return [
     'jwt_expiration' => (int) env('JWT_EXPIRATION', 3600),
     'refresh_token_expiration' => (int) env('REFRESH_TOKEN_EXPIRATION', 604800),
     'api_prefix' => '/api',
+    'app_base_url' => env('APP_BASE_URL', 'http://localhost:8000'),
 ];

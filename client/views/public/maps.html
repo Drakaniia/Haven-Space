@@ -3,6 +3,7 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="icon" type="image/svg+xml" href="../../assets/favicon.svg" />
     <title>Find a Room - Map View - Haven Space</title>
     <!-- Leaflet CSS -->
     <link
@@ -88,114 +89,327 @@
 
       <!-- Search Panel (Right) -->
       <div class="search-panel">
-        <div class="search-panel-header">
-          <h1 class="search-panel-title">Find a Room</h1>
-          <p class="search-panel-subtitle">Browse available boarding houses</p>
+        <!-- Search State (Default) -->
+        <div class="search-state" id="search-state">
+          <div class="search-panel-header">
+            <h1 class="search-panel-title">Find a Room</h1>
+            <p class="search-panel-subtitle">Browse available boarding houses</p>
 
-          <!-- Search Input -->
-          <div class="search-input-wrapper">
-            <span
-              class="search-icon"
-              data-icon="search"
-              data-icon-width="24"
-              data-icon-height="24"
-              data-icon-stroke-width="2"
-            ></span>
-            <input
-              type="text"
-              class="search-panel-input"
-              id="search-input"
-              placeholder="Search by location, university, or landmark..."
-            />
-          </div>
-
-          <!-- Active Filter Tags -->
-          <div class="filter-tags" id="filter-tags">
-            <!-- Dynamically added when filters are selected -->
-          </div>
-        </div>
-
-        <div class="search-panel-body">
-          <!-- Filters -->
-          <div class="filter-section">
-            <label class="filter-label">Price Range</label>
-            <select class="filter-select" id="price-filter">
-              <option value="">Any Price</option>
-              <option value="0-3000">₱0 - ₱3,000</option>
-              <option value="3000-5000">₱3,000 - ₱5,000</option>
-              <option value="5000-8000">₱5,000 - ₱8,000</option>
-              <option value="8000+">₱8,000+</option>
-            </select>
-
-            <label class="filter-label">Property Type</label>
-            <select class="filter-select" id="type-filter">
-              <option value="">Any Type</option>
-              <option value="dorm">Dorm</option>
-              <option value="boarding-house">Boarding House</option>
-              <option value="apartment">Apartment</option>
-            </select>
-
-            <label class="filter-label">Amenities</label>
-            <div class="amenities-grid">
-              <label class="amenity-checkbox">
-                <input type="checkbox" value="wifi" />
-                <span>WiFi</span>
-              </label>
-              <label class="amenity-checkbox">
-                <input type="checkbox" value="ac" />
-                <span>Air Conditioning</span>
-              </label>
-              <label class="amenity-checkbox">
-                <input type="checkbox" value="kitchen" />
-                <span>Kitchen</span>
-              </label>
-              <label class="amenity-checkbox">
-                <input type="checkbox" value="laundry" />
-                <span>Laundry</span>
-              </label>
-              <label class="amenity-checkbox">
-                <input type="checkbox" value="parking" />
-                <span>Parking</span>
-              </label>
-              <label class="amenity-checkbox">
-                <input type="checkbox" value="security" />
-                <span>Security</span>
-              </label>
-            </div>
-
-            <button class="search-panel-btn" id="search-btn">Search</button>
-          </div>
-
-          <!-- Results -->
-          <div class="filter-section">
-            <div class="results-header">
-              <span class="results-count"
-                ><strong id="results-count">0</strong> properties found</span
-              >
-              <select class="sort-select" id="sort-select">
-                <option value="distance">Nearest</option>
-                <option value="price-low">Price: Low to High</option>
-                <option value="price-high">Price: High to Low</option>
-                <option value="rating">Top Rated</option>
-              </select>
-            </div>
-
-            <!-- Premium Feature Notice -->
-            <div class="premium-notice">
+            <!-- Search Input -->
+            <div class="search-input-wrapper">
               <span
-                data-icon="key"
+                class="search-icon"
+                data-icon="search"
                 data-icon-width="24"
                 data-icon-height="24"
                 data-icon-stroke-width="2"
               ></span>
-              <div>
-                <strong>Sign in to unlock features</strong><br />
-                Save favorites, track applications, and see distances from your school
+              <input
+                type="text"
+                class="search-panel-input"
+                id="search-input"
+                placeholder="Search by location, university, or landmark..."
+              />
+            </div>
+
+            <!-- Active Filter Tags -->
+            <div class="filter-tags" id="filter-tags">
+              <!-- Dynamically added when filters are selected -->
+            </div>
+          </div>
+
+          <div class="search-panel-body">
+            <!-- Filters -->
+            <div class="filter-section">
+              <label class="filter-label">Price Range</label>
+              <select class="filter-select" id="price-filter">
+                <option value="">Any Price</option>
+                <option value="0-3000">₱0 - 3,000</option>
+                <option value="3000-5000">₱3,000 - ₱5,000</option>
+                <option value="5000-8000">₱5,000 - ₱8,000</option>
+                <option value="8000+">₱8,000+</option>
+              </select>
+
+              <label class="filter-label">Property Type</label>
+              <select class="filter-select" id="type-filter">
+                <option value="">Any Type</option>
+                <option value="dorm">Dorm</option>
+                <option value="boarding-house">Boarding House</option>
+                <option value="apartment">Apartment</option>
+              </select>
+
+              <label class="filter-label">Amenities</label>
+              <div class="amenities-grid">
+                <label class="amenity-checkbox">
+                  <input type="checkbox" value="wifi" />
+                  <span>WiFi</span>
+                </label>
+                <label class="amenity-checkbox">
+                  <input type="checkbox" value="ac" />
+                  <span>Air Conditioning</span>
+                </label>
+                <label class="amenity-checkbox">
+                  <input type="checkbox" value="kitchen" />
+                  <span>Kitchen</span>
+                </label>
+                <label class="amenity-checkbox">
+                  <input type="checkbox" value="laundry" />
+                  <span>Laundry</span>
+                </label>
+                <label class="amenity-checkbox">
+                  <input type="checkbox" value="parking" />
+                  <span>Parking</span>
+                </label>
+                <label class="amenity-checkbox">
+                  <input type="checkbox" value="security" />
+                  <span>Security</span>
+                </label>
+              </div>
+
+              <button class="search-panel-btn" id="search-btn">Search</button>
+            </div>
+
+            <!-- Results -->
+            <div class="filter-section">
+              <div class="results-header">
+                <span class="results-count"
+                  ><strong id="results-count">0</strong> properties found</span
+                >
+                <select class="sort-select" id="sort-select">
+                  <option value="distance">Nearest</option>
+                  <option value="price-low">Price: Low to High</option>
+                  <option value="price-high">Price: High to Low</option>
+                  <option value="rating">Top Rated</option>
+                </select>
+              </div>
+
+              <!-- Premium Feature Notice -->
+              <div class="premium-notice">
+                <span
+                  data-icon="key"
+                  data-icon-width="24"
+                  data-icon-height="24"
+                  data-icon-stroke-width="2"
+                ></span>
+                <div>
+                  <strong>Sign in to unlock features</strong><br />
+                  Save favorites, track applications, and see distances from your school
+                </div>
+              </div>
+
+              <div class="properties-list" id="properties-list">
+                <!-- Property cards will be dynamically loaded here -->
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Property Detail State (Hidden by default) -->
+        <div class="property-detail-state" id="property-detail-state" style="display: none">
+          <!-- Back Button -->
+          <div class="detail-back-button">
+            <button class="back-btn" id="back-to-search">
+              <span
+                data-icon="arrowLeft"
+                data-icon-width="20"
+                data-icon-height="20"
+                data-icon-stroke-width="2"
+              ></span>
+              Back to search
+            </button>
+          </div>
+
+          <!-- Property Image -->
+          <div class="detail-image-container">
+            <div class="detail-image" id="detail-image"></div>
+            <div class="detail-image-overlay">
+              <div class="image-counter">1/5</div>
+            </div>
+          </div>
+
+          <!-- Property Header Info -->
+          <div class="detail-header">
+            <h1 class="detail-title" id="detail-title">Almani Mountain Resort</h1>
+            <div class="detail-rating-section">
+              <div class="detail-rating">
+                <span class="rating-number" id="detail-rating-number">4.7</span>
+                <span class="rating-stars" id="detail-rating-stars">
+                  <span
+                    data-icon="starSolid"
+                    data-icon-width="16"
+                    data-icon-height="16"
+                    style="color: #f59e0b"
+                  ></span>
+                  <span
+                    data-icon="starSolid"
+                    data-icon-width="16"
+                    data-icon-height="16"
+                    style="color: #f59e0b"
+                  ></span>
+                  <span
+                    data-icon="starSolid"
+                    data-icon-width="16"
+                    data-icon-height="16"
+                    style="color: #f59e0b"
+                  ></span>
+                  <span
+                    data-icon="starSolid"
+                    data-icon-width="16"
+                    data-icon-height="16"
+                    style="color: #f59e0b"
+                  ></span>
+                  <span
+                    data-icon="star"
+                    data-icon-width="16"
+                    data-icon-height="16"
+                    style="color: #f59e0b"
+                  ></span>
+                </span>
+                <span class="rating-count" id="detail-rating-count">(36)</span>
+              </div>
+              <div class="detail-property-type">Boarding House</div>
+            </div>
+          </div>
+
+          <!-- Overview/Reviews Tabs -->
+          <div class="detail-tabs">
+            <button class="detail-tab active" data-tab="overview">Overview</button>
+            <button class="detail-tab" data-tab="reviews">Reviews</button>
+          </div>
+
+          <!-- Tab Content Container -->
+          <div class="detail-tab-content">
+            <!-- Overview Tab -->
+            <div class="detail-tab-panel active" id="overview-panel">
+              <!-- Photos & Videos Section -->
+              <div class="photos-videos-section">
+                <h3 class="detail-section-title">Photos & videos</h3>
+                <div class="photo-video-grid" id="photo-video-grid">
+                  <!-- Photos will be dynamically added -->
+                </div>
+                <button class="add-photos-btn">
+                  <span
+                    data-icon="plus"
+                    data-icon-width="20"
+                    data-icon-height="20"
+                    data-icon-stroke-width="2"
+                  ></span>
+                  Add photos & videos
+                </button>
+              </div>
+
+              <!-- Review Summary Section -->
+              <div class="review-summary-section">
+                <h3 class="detail-section-title">Review summary</h3>
+                <div class="review-summary">
+                  <div class="review-summary-left">
+                    <div class="review-bar-container">
+                      <div class="review-bar-item">
+                        <span class="review-bar-label">5</span>
+                        <div class="review-bar-track">
+                          <div class="review-bar-fill" id="review-bar-5" style="width: 80%"></div>
+                        </div>
+                      </div>
+                      <div class="review-bar-item">
+                        <span class="review-bar-label">4</span>
+                        <div class="review-bar-track">
+                          <div class="review-bar-fill" id="review-bar-4" style="width: 15%"></div>
+                        </div>
+                      </div>
+                      <div class="review-bar-item">
+                        <span class="review-bar-label">3</span>
+                        <div class="review-bar-track">
+                          <div class="review-bar-fill" id="review-bar-3" style="width: 5%"></div>
+                        </div>
+                      </div>
+                      <div class="review-bar-item">
+                        <span class="review-bar-label">2</span>
+                        <div class="review-bar-track">
+                          <div class="review-bar-fill" id="review-bar-2" style="width: 0%"></div>
+                        </div>
+                      </div>
+                      <div class="review-bar-item">
+                        <span class="review-bar-label">1</span>
+                        <div class="review-bar-track">
+                          <div class="review-bar-fill" id="review-bar-1" style="width: 0%"></div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="review-summary-right">
+                    <div class="review-score" id="review-score">4.7</div>
+                    <div class="review-stars" id="review-stars">
+                      <span
+                        data-icon="starSolid"
+                        data-icon-width="16"
+                        data-icon-height="16"
+                        style="color: #f59e0b"
+                      ></span>
+                      <span
+                        data-icon="starSolid"
+                        data-icon-width="16"
+                        data-icon-height="16"
+                        style="color: #f59e0b"
+                      ></span>
+                      <span
+                        data-icon="starSolid"
+                        data-icon-width="16"
+                        data-icon-height="16"
+                        style="color: #f59e0b"
+                      ></span>
+                      <span
+                        data-icon="starSolid"
+                        data-icon-width="16"
+                        data-icon-height="16"
+                        style="color: #f59e0b"
+                      ></span>
+                      <span
+                        data-icon="star"
+                        data-icon-width="16"
+                        data-icon-height="16"
+                        style="color: #f59e0b"
+                      ></span>
+                    </div>
+                    <div class="review-total" id="review-total">36 reviews</div>
+                  </div>
+                </div>
+                <button class="write-review-btn">
+                  <span
+                    data-icon="chatBubbleLeft"
+                    data-icon-width="18"
+                    data-icon-height="18"
+                    data-icon-stroke-width="2"
+                  ></span>
+                  Write a review
+                </button>
               </div>
             </div>
 
-            <div class="properties-list" id="properties-list">
-              <!-- Property cards will be dynamically loaded here -->
+            <!-- Reviews Tab -->
+            <div class="detail-tab-panel" id="reviews-panel">
+              <!-- Review Filters -->
+              <div class="review-filters">
+                <button class="review-filter-btn active" data-filter="all">
+                  <span
+                    data-icon="check"
+                    data-icon-width="16"
+                    data-icon-height="16"
+                    data-icon-stroke-width="2"
+                  ></span>
+                  All
+                </button>
+                <button class="review-filter-btn" data-filter="customer-service">
+                  customer service <span class="filter-count">2</span>
+                </button>
+                <button class="review-filter-btn" data-filter="price">
+                  price <span class="filter-count">2</span>
+                </button>
+              </div>
+
+              <!-- Reviews List -->
+              <div class="reviews-list" id="reviews-list">
+                <!-- Reviews will be dynamically loaded -->
+              </div>
             </div>
           </div>
         </div>
@@ -224,8 +438,43 @@
           lat: 8.15,
           lng: 125.126,
           rating: 4.5,
+          reviewCount: 28,
           amenities: ['wifi', 'ac', 'laundry'],
           type: 'dorm',
+          phone: '0917 123 4567',
+          description:
+            'A modern dormitory with excellent amenities and a vibrant student community. Located near major universities with easy access to public transportation.',
+          photos: [
+            { url: '', category: 'All', label: 'All' },
+            { url: '', category: 'Rooms', label: 'Rooms' },
+            { url: '', category: 'Videos', label: 'Videos' },
+            { url: '', category: 'Exterior', label: 'Exterior' },
+          ],
+          reviews: [
+            {
+              author: 'Maria Santos',
+              initial: 'M',
+              date: '2 months ago',
+              rating: 5,
+              text: 'Amazing dormitory! Very clean rooms and friendly staff. The WiFi is fast and the laundry facilities are well-maintained.',
+              tags: ['customer-service'],
+            },
+            {
+              author: 'John Reyes',
+              initial: 'J',
+              date: '1 month ago',
+              rating: 4,
+              text: 'Good value for money. The air conditioning works perfectly and the location is very convenient.',
+              tags: ['price'],
+            },
+          ],
+          reviewSummary: {
+            5: 18,
+            4: 7,
+            3: 2,
+            2: 1,
+            1: 0,
+          },
         },
         {
           id: 2,
@@ -235,8 +484,35 @@
           lat: 8.148,
           lng: 125.124,
           rating: 4.3,
+          reviewCount: 22,
           amenities: ['wifi', 'kitchen', 'parking'],
           type: 'boarding-house',
+          phone: '0918 234 5678',
+          description:
+            'A peaceful boarding house surrounded by greenery. Perfect for students who want a quiet place to study with all the necessary amenities.',
+          photos: [
+            { url: '', category: 'All', label: 'All' },
+            { url: '', category: 'Rooms', label: 'Rooms' },
+            { url: '', category: 'Videos', label: 'Videos' },
+            { url: '', category: 'Common Areas', label: 'Common' },
+          ],
+          reviews: [
+            {
+              author: 'Anna Cruz',
+              initial: 'A',
+              date: '3 months ago',
+              rating: 4,
+              text: 'Very peaceful environment. The kitchen is fully equipped and the parking area is secure.',
+              tags: ['customer-service'],
+            },
+          ],
+          reviewSummary: {
+            5: 12,
+            4: 7,
+            3: 2,
+            2: 1,
+            1: 0,
+          },
         },
         {
           id: 3,
@@ -246,8 +522,43 @@
           lat: 8.151,
           lng: 125.127,
           rating: 4.7,
+          reviewCount: 36,
           amenities: ['wifi', 'ac', 'laundry', 'security'],
           type: 'dorm',
+          phone: '0919 345 6789',
+          description:
+            'A premium student dormitory with top-notch security and modern amenities. Walking distance to the university campus.',
+          photos: [
+            { url: '', category: 'All', label: 'All' },
+            { url: '', category: 'Rooms', label: 'Rooms' },
+            { url: '', category: 'Videos', label: 'Videos' },
+            { url: '', category: 'Facilities', label: 'Facilities' },
+          ],
+          reviews: [
+            {
+              author: 'Princess Nicole Mora',
+              initial: 'P',
+              date: '3 months ago',
+              rating: 5,
+              text: "Just booked our overnight stay with them and it was very good! Place and room is very spacious and the food is great especially for breakfast as well. You get the rest that you crave for and it's been a wonderful experience for me 10/10",
+              tags: ['customer-service', 'price'],
+            },
+            {
+              author: 'Carlos Mendoza',
+              initial: 'C',
+              date: '1 month ago',
+              rating: 4,
+              text: 'Great security features and the location is perfect. The amenities are well-maintained.',
+              tags: ['customer-service'],
+            },
+          ],
+          reviewSummary: {
+            5: 28,
+            4: 5,
+            3: 2,
+            2: 1,
+            1: 0,
+          },
         },
       ];
 
@@ -539,11 +850,195 @@
         }
       }
 
-      // View property (placeholder)
+      // View property (show detail sidebar)
       function viewProperty(id) {
-        console.log('View property:', id);
-        // Navigate to property detail page or open modal
-        // window.location.href = `../rooms/detail.html?id=${id}`;
+        const property = sampleProperties.find(p => p.id === id);
+        if (!property) return;
+
+        // Populate property details
+        document.getElementById('detail-title').textContent = property.title;
+        document.getElementById('detail-rating-number').textContent = property.rating;
+        document.getElementById('detail-rating-count').textContent = `(${
+          property.reviewCount || 36
+        })`;
+
+        // Populate photos/videos
+        const photoVideoGrid = document.getElementById('photo-video-grid');
+        photoVideoGrid.innerHTML = (property.photos || [])
+          .map(
+            photo => `
+            <div class="photo-video-item">
+              <div class="photo-placeholder"></div>
+              <div class="photo-label">${photo.label}</div>
+            </div>
+          `
+          )
+          .join('');
+
+        // Populate review summary
+        const reviewScore = document.getElementById('review-score');
+        const reviewTotal = document.getElementById('review-total');
+        reviewScore.textContent = property.rating;
+        reviewTotal.textContent = `${property.reviewCount || 36} reviews`;
+
+        // Update review bars
+        const reviewSummary = property.reviewSummary || {};
+        const totalReviews = property.reviewCount || 36;
+        for (let i = 1; i <= 5; i++) {
+          const bar = document.getElementById(`review-bar-${i}`);
+          if (bar) {
+            const count = reviewSummary[i] || 0;
+            const percentage = totalReviews > 0 ? (count / totalReviews) * 100 : 0;
+            bar.style.width = `${percentage}%`;
+          }
+        }
+
+        // Populate reviews
+        const reviewsContainer = document.getElementById('reviews-list');
+        const reviews = property.reviews || [
+          {
+            author: 'Princess Nicole Mora',
+            initial: 'P',
+            date: '3 months ago',
+            rating: 5,
+            text: "Just booked our overnight stay with them and it was very good! Place and room is very spacious and the food is great especially for breakfast as well. You get the rest that you crave for and it's been a wonderful experience for me 10/10",
+            tags: ['customer-service'],
+          },
+          {
+            author: 'Juan Dela Cruz',
+            initial: 'J',
+            date: '1 month ago',
+            rating: 4,
+            text: 'Great location near the university. The amenities are good and the landlord is responsive to concerns.',
+            tags: ['price'],
+          },
+        ];
+
+        reviewsContainer.innerHTML = reviews
+          .map(
+            review => `
+            <div class="review-item">
+              <div class="review-item-header">
+                <div class="review-author-avatar">${review.initial}</div>
+                <div class="review-author-info">
+                  <div class="review-author-name">${review.author}</div>
+                  <div class="review-date">${review.date}</div>
+                </div>
+                <div class="review-item-rating">
+                  ${Array.from(
+                    { length: 5 },
+                    (_, i) =>
+                      `<span data-icon="${
+                        i < review.rating ? 'starSolid' : 'star'
+                      }" data-icon-width="14" data-icon-height="14" style="color: ${
+                        i < review.rating ? '#f59e0b' : '#d1d5db'
+                      };"></span>`
+                  ).join('')}
+                </div>
+              </div>
+              <p class="review-text">${review.text}</p>
+            </div>
+          `
+          )
+          .join('');
+
+        // Switch to detail view
+        document.getElementById('search-state').style.display = 'none';
+        document.getElementById('property-detail-state').style.display = 'flex';
+
+        // Focus map on property
+        map.setView([property.lat, property.lng], 18);
+      }
+
+      // Switch back to search view
+      function switchToSearch() {
+        document.getElementById('property-detail-state').style.display = 'none';
+        document.getElementById('search-state').style.display = 'flex';
+      }
+
+      // Filter reviews based on selected filter
+      function filterReviews(filter) {
+        const reviewsContainer = document.getElementById('reviews-list');
+        const allReviews = reviewsContainer.querySelectorAll('.review-item');
+
+        allReviews.forEach(review => {
+          if (filter === 'all') {
+            review.style.display = 'block';
+          } else {
+            // In a real implementation, you would check the review's tags
+            // For now, just show all reviews
+            review.style.display = 'block';
+          }
+        });
+      }
+
+      // Tab switching functionality
+      function setupTabSwitching() {
+        document.querySelectorAll('.detail-tab').forEach(tab => {
+          tab.addEventListener('click', () => {
+            // Remove active class from all tabs
+            document.querySelectorAll('.detail-tab').forEach(t => t.classList.remove('active'));
+            document
+              .querySelectorAll('.detail-tab-panel')
+              .forEach(p => p.classList.remove('active'));
+
+            // Add active class to clicked tab
+            tab.classList.add('active');
+
+            // Show corresponding panel
+            const tabName = tab.dataset.tab;
+            document.getElementById(`${tabName}-panel`).classList.add('active');
+          });
+        });
+      }
+
+      // Setup event listeners
+      function setupEventListeners() {
+        // Search button
+        document.getElementById('search-btn').addEventListener('click', performSearch);
+
+        // Search input enter key
+        document.getElementById('search-input').addEventListener('keypress', e => {
+          if (e.key === 'Enter') performSearch();
+        });
+
+        // Locate me button
+        document.getElementById('locate-me').addEventListener('click', getUserLocation);
+
+        // Zoom controls
+        document.getElementById('zoom-in').addEventListener('click', () => map.zoomIn());
+        document.getElementById('zoom-out').addEventListener('click', () => map.zoomOut());
+
+        // Filter changes
+        document.getElementById('price-filter').addEventListener('change', updateFilterTags);
+        document.getElementById('type-filter').addEventListener('change', updateFilterTags);
+        document.querySelectorAll('.amenity-checkbox input').forEach(cb => {
+          cb.addEventListener('change', updateFilterTags);
+        });
+
+        // Sort change
+        document.getElementById('sort-select').addEventListener('change', sortProperties);
+
+        // Back to search button
+        document.getElementById('back-to-search')?.addEventListener('click', switchToSearch);
+
+        // Tab switching
+        setupTabSwitching();
+
+        // Review filter buttons
+        document.querySelectorAll('.review-filter-btn').forEach(btn => {
+          btn.addEventListener('click', () => {
+            // Remove active class from all buttons
+            document
+              .querySelectorAll('.review-filter-btn')
+              .forEach(b => b.classList.remove('active'));
+            // Add active class to clicked button
+            btn.classList.add('active');
+            // Filter reviews based on selected filter
+            const filter = btn.dataset.filter;
+            filterReviews(filter);
+          });
+        });
       }
 
       // Dismiss login CTA

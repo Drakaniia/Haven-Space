@@ -3,7 +3,8 @@
  * Reusable sidebar with role-based navigation
  */
 
-import { getIcon, ICON_PATHS } from '../shared/icons.js';
+import { getIcon } from '../shared/icons.js';
+import { showToast } from '../shared/toast.js';
 
 // Navigation configurations per role
 const NAV_CONFIG = {
@@ -90,27 +91,16 @@ const NAV_CONFIG = {
   ],
   admin: [
     {
-      group: 'Main',
+      group: 'Operations',
       items: [
-        { label: 'Dashboard', href: '../admin/index.html', icon: 'home' },
-        {
-          label: 'Management',
-          icon: 'list',
-          dropdown: true,
-          children: [
-            { label: 'Users', href: '../admin/users/index.html', icon: 'users' },
-            { label: 'Properties', href: '../admin/properties/index.html', icon: 'list' },
-            { label: 'Bookings', href: '../admin/bookings/index.html', icon: 'calendar' },
-          ],
-        },
-        { label: 'Analytics', href: '../admin/analytics/index.html', icon: 'analytics' },
-      ],
-    },
-    {
-      group: 'System',
-      items: [
-        { label: 'Settings', href: '../admin/settings/index.html', icon: 'settings' },
-        { label: 'Logs', href: '../admin/logs/index.html', icon: 'announcement' },
+        { label: 'Overview', href: '../admin/index.html#overview', icon: 'home' },
+        { label: 'Landlord verification', href: '../admin/index.html#verification', icon: 'users' },
+        { label: 'Users', href: '../admin/index.html#users', icon: 'users' },
+        { label: 'Properties', href: '../admin/index.html#properties', icon: 'list' },
+        { label: 'Applications', href: '../admin/index.html#applications', icon: 'application' },
+        { label: 'Analytics', href: '../admin/index.html#analytics', icon: 'analytics' },
+        { label: 'Reports & disputes', href: '../admin/index.html#reports', icon: 'announcement' },
+        { label: 'System settings', href: '../admin/index.html#settings', icon: 'settings' },
       ],
     },
   ],
@@ -127,6 +117,7 @@ export function initSidebar(options = {}) {
   const {
     role = 'boarder',
     containerId = 'sidebar-container',
+    onAfterRender,
     user = {
       name: 'Juan Dela Cruz',
       initials: 'JD',
@@ -164,6 +155,9 @@ export function initSidebar(options = {}) {
       setupNavbarSidebarToggle();
       setupLogoutHandler();
       restoreCollapsedState();
+      if (typeof onAfterRender === 'function') {
+        onAfterRender();
+      }
     })
     .catch(err => {
       console.error('Failed to load sidebar template:', err);
@@ -442,8 +436,31 @@ function setupLogoutHandler() {
       // Clear authentication data
       localStorage.removeItem('user');
 
-      const basePath = resolveBasePath();
-      window.location.href = `${basePath}/views/public/auth/login.html`;
+      // Show success toast before redirect
+      showToast('You have successfully logged out', 'success', 3000);
+
+      // Redirect to login page after short delay to show toast
+      setTimeout(() => {
+        const pathname = window.location.pathname;
+
+        // Determine correct login path based on current URL structure
+        if (pathname.includes('/dist/')) {
+          // Production mode (dist): auth folder is at root
+          window.location.href = '/auth/login.html';
+        } else if (pathname.includes('/client/views/')) {
+          // Development mode with /client path
+          window.location.href = '/client/views/public/auth/login.html';
+        } else if (pathname.includes('/frontend/views/')) {
+          // Development mode with /frontend path
+          window.location.href = '/frontend/views/public/auth/login.html';
+        } else if (pathname.includes('/views/')) {
+          // Direct /views access
+          window.location.href = '/views/public/auth/login.html';
+        } else {
+          // Fallback: try development path
+          window.location.href = '/client/views/public/auth/login.html';
+        }
+      }, 500);
     });
   }
 }

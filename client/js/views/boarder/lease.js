@@ -3,30 +3,63 @@
  * Handles lease details, documents, payment history, and maintenance history
  */
 
+import CONFIG from '../../config.js';
 import { initSidebar } from '../../components/sidebar.js';
 import { initNavbar } from '../../components/navbar.js';
 
 // TODO: Integrate with backend API for lease data
 const API_BASE_URL = 'http://localhost:8000'; // TODO: Replace with actual API base URL
 
+function loginPath() {
+  const pathname = window.location.pathname;
+  if (pathname.includes('github.io')) {
+    return '/Haven-Space/client/views/public/auth/login.html';
+  }
+  if (pathname.includes('/client/views/')) {
+    return '/client/views/public/auth/login.html';
+  }
+  return '/views/public/auth/login.html';
+}
+
+function initialsFrom(user) {
+  const a = (user.first_name || '').trim().charAt(0);
+  const b = (user.last_name || '').trim().charAt(0);
+  return (a + b || 'B').toUpperCase();
+}
+
 /**
  * Initialize Lease Page
  * Sets up sidebar, navbar, and lease page functionality
  */
-export function initLeasePage() {
-  const user = {
-    name: 'Juan Dela Cruz',
-    initials: 'JD',
-    role: 'Boarder',
-    email: 'juan@example.com',
-  };
+export async function initLeasePage() {
+  let user;
+  try {
+    const res = await fetch(`${CONFIG.API_BASE_URL}/api/auth/me.php`, { credentials: 'include' });
+    if (!res.ok) {
+      window.location.href = loginPath();
+      return;
+    }
+    const data = await res.json();
+    user = data.user;
+  } catch {
+    window.location.href = loginPath();
+    return;
+  }
+
+  const name = [user.first_name, user.last_name].filter(Boolean).join(' ').trim() || 'Boarder';
+  const initials = initialsFrom(user);
 
   // Initialize sidebar
   const sidebarContainer = document.getElementById('sidebar-container');
   if (sidebarContainer) {
     initSidebar({
       role: 'boarder',
-      user,
+      user: {
+        name,
+        initials,
+        role: 'Boarder',
+        email: user.email || '',
+      },
     });
   }
 
@@ -35,10 +68,10 @@ export function initLeasePage() {
   if (navbarContainer) {
     initNavbar({
       user: {
-        name: user.name,
-        initials: user.initials,
-        avatarUrl: '',
-        email: user.email,
+        name,
+        initials,
+        avatarUrl: user.avatar_url || '',
+        email: user.email || '',
       },
       notificationCount: 3,
     });

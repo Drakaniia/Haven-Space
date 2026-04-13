@@ -4,13 +4,11 @@
   "type": "module",
   "scripts": {
     "build": "node scripts/build.js",
-    "client:dev": "npm run build && npx http-server dist -p 3000 -a localhost -o",
-    "client:serve": "npm run build && npx http-server dist -p 3000 -a localhost",
-    "client:start": "npm run build && npx http-server dist -p 3000 -a localhost -o",
-    "boarder": "node scripts/serve-boarder.js",
-    "landlord": "node scripts/serve-landlord.js",
-    "server:dev": "php -S localhost:8000 -t server/api",
-    "server": "php -S localhost:8000 -t server/api",
+    "server": "php -S localhost:8000 -t server server/router.php",
+    "client": "php scripts/start-apache.php",
+    "mysql": "php scripts/start-mysql.php",
+    "db:setup": "php scripts/setup-database.php",
+    "db:seed": "php scripts/setup-database.php --seed",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
     "lint": "eslint client/js/**/*.js --no-error-on-unmatched-pattern",
@@ -34,6 +32,7 @@
     "eslint-plugin-prettier": "4.2.1",
     "http-server": "^14.1.1",
     "husky": "^9.1.7",
+    "leaflet": "^1.9.4",
     "lint-staged": "^16.4.0",
     "prettier": "^2.8.8"
   }

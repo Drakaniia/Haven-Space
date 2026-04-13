@@ -16,8 +16,7 @@ document.addEventListener('DOMContentLoaded', function () {
     const email = this.querySelector('#email').value;
     emailDisplay.textContent = email;
 
-    console.log('Reset code sent to:', email);
-    // TODO: Send to backend to generate and email reset code
+    // Reset code will be sent to backend to generate and email
 
     // Switch to step 2
     step1.classList.add('hidden');
@@ -53,15 +52,7 @@ document.addEventListener('DOMContentLoaded', function () {
       }
 
       // Check if all inputs are filled
-      const allFilled = Array.from(codeInputs).every(input => input.value.length === 1);
-      if (allFilled) {
-        console.log(
-          'Code entered:',
-          Array.from(codeInputs)
-            .map(input => input.value)
-            .join('')
-        );
-      }
+      Array.from(codeInputs).every(input => input.value.length === 1);
     });
 
     input.addEventListener('keydown', function (e) {
@@ -105,7 +96,6 @@ document.addEventListener('DOMContentLoaded', function () {
       return;
     }
 
-    console.log('Verification code:', code);
     // TODO: Send to backend to verify code
 
     alert('Code verification to be implemented with backend. Redirect to reset password page...');
@@ -117,8 +107,6 @@ document.addEventListener('DOMContentLoaded', function () {
   resendLink.addEventListener('click', function (e) {
     e.preventDefault();
 
-    const email = document.getElementById('email').value;
-    console.log('Resending code to:', email);
     // TODO: Send to backend to resend code
 
     alert('Reset code resent!');

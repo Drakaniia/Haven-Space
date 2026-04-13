@@ -1,0 +1,664 @@
+/**
+ * Confirm Booking Page Styles
+ * Styles for the final booking confirmation step
+ */
+
+/* Standalone page layout (without sidebar) */
+.confirm-booking-standalone {
+  min-height: 100vh;
+  background: var(--bg-cream);
+}
+
+/* Confirm Booking Container */
+.confirm-booking-container {
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 2rem;
+}
+
+/* Page Header */
+.confirm-booking-header {
+  margin-bottom: 2rem;
+}
+
+.confirm-booking-header-content {
+  border-bottom: 1px solid var(--border-color);
+  padding-bottom: 1.5rem;
+}
+
+.confirm-booking-title {
+  font-size: 2rem;
+  font-weight: 700;
+  color: var(--text-dark);
+  margin: 0 0 0.5rem 0;
+}
+
+.confirm-booking-subtitle {
+  font-size: 1rem;
+  color: var(--text-gray);
+  margin: 0;
+}
+
+/* Card Styles */
+.confirm-booking-card {
+  background: var(--white);
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  margin-bottom: 2rem;
+  overflow: hidden;
+}
+
+.confirm-card-header {
+  padding: 1.5rem;
+  border-bottom: 1px solid var(--border-color);
+  background: var(--bg-cream);
+}
+
+.confirm-card-title {
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: var(--text-dark);
+  margin: 0;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.confirm-card-title svg {
+  color: var(--primary-green);
+}
+
+/* Property Details */
+.confirm-property-details {
+  padding: 1.5rem;
+}
+
+.confirm-property-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.75rem 0;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.confirm-property-row:last-child {
+  border-bottom: none;
+}
+
+.confirm-property-label {
+  font-size: 0.95rem;
+  color: var(--text-gray);
+  font-weight: 500;
+}
+
+.confirm-property-value {
+  font-size: 0.95rem;
+  color: var(--text-dark);
+  font-weight: 600;
+}
+
+.confirm-property-price {
+  font-size: 1.25rem;
+  color: var(--primary-green);
+  font-weight: 700;
+}
+
+/* Agreement Section */
+.confirm-agreement-content {
+  padding: 1.5rem;
+}
+
+.confirm-agreement-text {
+  margin-bottom: 1.5rem;
+}
+
+.confirm-agreement-text h3 {
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: var(--text-dark);
+  margin: 0 0 1rem 0;
+}
+
+.confirm-agreement-text p {
+  font-size: 0.95rem;
+  color: var(--text-gray);
+  line-height: 1.6;
+  margin: 0 0 1rem 0;
+}
+
+.confirm-agreement-list {
+  margin: 1rem 0;
+  padding-left: 1.5rem;
+}
+
+.confirm-agreement-list li {
+  font-size: 0.95rem;
+  color: var(--text-gray);
+  line-height: 1.8;
+  margin-bottom: 0.5rem;
+}
+
+.confirm-agreement-note {
+  background: var(--bg-green);
+  padding: 1rem;
+  border-radius: 8px;
+  border-left: 4px solid var(--primary-green);
+  margin-top: 1.5rem !important;
+}
+
+.confirm-agreement-note strong {
+  color: var(--dark-green);
+}
+
+/* Checkbox Styles */
+.confirm-agreement-checkbox {
+  margin-top: 1.5rem;
+}
+
+.confirm-checkbox-label {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.75rem;
+  cursor: pointer;
+  user-select: none;
+}
+
+.confirm-checkbox-input {
+  position: absolute;
+  opacity: 0;
+  cursor: pointer;
+  height: 0;
+  width: 0;
+}
+
+.confirm-checkbox-mark {
+  height: 22px;
+  width: 22px;
+  min-width: 22px;
+  background-color: var(--white);
+  border: 2px solid var(--border-color);
+  border-radius: 4px;
+  position: relative;
+  transition: all 0.2s ease;
+  margin-top: 2px;
+}
+
+.confirm-checkbox-label:hover .confirm-checkbox-mark {
+  border-color: var(--primary-green);
+}
+
+.confirm-checkbox-input:checked ~ .confirm-checkbox-mark {
+  background-color: var(--primary-green);
+  border-color: var(--primary-green);
+}
+
+.confirm-checkbox-input:checked ~ .confirm-checkbox-mark::after {
+  content: '';
+  position: absolute;
+  display: block;
+  left: 6px;
+  top: 2px;
+  width: 5px;
+  height: 10px;
+  border: solid white;
+  border-width: 0 2px 2px 0;
+  transform: rotate(45deg);
+}
+
+.confirm-checkbox-text {
+  font-size: 0.95rem;
+  color: var(--text-dark);
+  line-height: 1.5;
+}
+
+/* Payment Section */
+.confirm-payment-content {
+  padding: 1.5rem;
+}
+
+/* Payment Summary */
+.confirm-payment-summary {
+  margin-bottom: 2rem;
+}
+
+.confirm-payment-summary-title {
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: var(--text-dark);
+  margin: 0 0 1rem 0;
+}
+
+.confirm-payment-breakdown {
+  background: var(--bg-cream);
+  padding: 1.5rem;
+  border-radius: 8px;
+}
+
+.confirm-payment-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.75rem 0;
+}
+
+.confirm-payment-label {
+  font-size: 0.95rem;
+  color: var(--text-gray);
+}
+
+.confirm-payment-value {
+  font-size: 1rem;
+  color: var(--text-dark);
+  font-weight: 600;
+}
+
+.confirm-payment-divider {
+  height: 1px;
+  background: var(--border-color);
+  margin: 0.75rem 0;
+}
+
+.confirm-payment-total {
+  padding-top: 0.75rem;
+}
+
+.confirm-payment-total .confirm-payment-label {
+  font-weight: 600;
+  color: var(--text-dark);
+}
+
+.confirm-payment-total .confirm-payment-value {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: var(--primary-green);
+}
+
+/* Payment Due Date */
+.confirm-payment-due-date {
+  display: flex;
+  align-items: flex-start;
+  gap: 1rem;
+  background: var(--bg-green);
+  padding: 1.5rem;
+  border-radius: 8px;
+  margin-bottom: 2rem;
+}
+
+.confirm-due-date-icon svg {
+  color: var(--primary-green);
+}
+
+.confirm-due-date-content {
+  flex: 1;
+}
+
+.confirm-due-date-title {
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--text-dark);
+  margin: 0 0 0.5rem 0;
+}
+
+.confirm-due-date-value {
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: var(--primary-green);
+  margin: 0 0 0.25rem 0;
+}
+
+.confirm-due-date-note {
+  font-size: 0.85rem;
+  color: var(--text-gray);
+  margin: 0;
+}
+
+/* Payment Methods */
+.confirm-payment-methods {
+  margin-top: 2rem;
+}
+
+.confirm-payment-methods-title {
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: var(--text-dark);
+  margin: 0 0 1rem 0;
+}
+
+.confirm-payment-method-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 1rem;
+}
+
+.confirm-payment-method-option {
+  position: relative;
+  cursor: pointer;
+}
+
+.confirm-payment-method-input {
+  position: absolute;
+  opacity: 0;
+  cursor: pointer;
+  height: 0;
+  width: 0;
+}
+
+.confirm-payment-method-content {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 1.25rem;
+  background: var(--white);
+  border: 2px solid var(--border-color);
+  border-radius: 8px;
+  transition: all 0.2s ease;
+}
+
+.confirm-payment-method-option:hover .confirm-payment-method-content {
+  border-color: var(--primary-green);
+}
+
+.confirm-payment-method-input:checked + .confirm-payment-method-content {
+  border-color: var(--primary-green);
+  background: var(--bg-green);
+}
+
+.confirm-payment-method-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 48px;
+  height: 48px;
+  min-width: 48px;
+  border-radius: 8px;
+  background: var(--bg-cream);
+}
+
+.confirm-payment-method-icon svg {
+  color: var(--primary-green);
+}
+
+.confirm-payment-method-info {
+  flex: 1;
+}
+
+.confirm-payment-method-name {
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--text-dark);
+  margin: 0 0 0.25rem 0;
+}
+
+.confirm-payment-method-desc {
+  font-size: 0.85rem;
+  color: var(--text-gray);
+  margin: 0;
+}
+
+.confirm-payment-method-check {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: var(--primary-green);
+  opacity: 0;
+  transition: opacity 0.2s ease;
+}
+
+.confirm-payment-method-input:checked
+  + .confirm-payment-method-content
+  .confirm-payment-method-check {
+  opacity: 1;
+}
+
+.confirm-payment-method-check svg {
+  color: var(--white);
+}
+
+/* Action Buttons */
+.confirm-booking-actions {
+  display: flex;
+  gap: 1rem;
+  justify-content: flex-end;
+  padding-top: 1rem;
+}
+
+.confirm-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 0.875rem 1.5rem;
+  font-size: 1rem;
+  font-weight: 600;
+  border-radius: 8px;
+  border: none;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-family: var(--font-main);
+}
+
+.confirm-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.confirm-btn-primary {
+  background: var(--primary-green);
+  color: var(--white);
+}
+
+.confirm-btn-primary:hover:not(:disabled) {
+  background: var(--dark-green);
+}
+
+.confirm-btn-secondary {
+  background: var(--white);
+  color: var(--text-gray);
+  border: 2px solid var(--border-color);
+}
+
+.confirm-btn-secondary:hover {
+  border-color: var(--text-gray);
+  color: var(--text-dark);
+}
+
+.confirm-btn svg {
+  flex-shrink: 0;
+}
+
+/* Success Modal */
+.confirm-modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+
+.confirm-modal {
+  background: var(--white);
+  border-radius: 16px;
+  padding: 2.5rem;
+  max-width: 500px;
+  width: 90%;
+  text-align: center;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+}
+
+.confirm-modal-icon {
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 1.5rem;
+}
+
+.confirm-modal-icon.success {
+  background: var(--bg-green);
+}
+
+.confirm-modal-icon.success svg {
+  color: var(--primary-green);
+}
+
+.confirm-modal-title {
+  font-size: 1.75rem;
+  font-weight: 700;
+  color: var(--text-dark);
+  margin: 0 0 1rem 0;
+}
+
+.confirm-modal-message {
+  font-size: 1rem;
+  color: var(--text-gray);
+  line-height: 1.6;
+  margin: 0 0 1.5rem 0;
+}
+
+.confirm-modal-details {
+  background: var(--bg-cream);
+  padding: 1.5rem;
+  border-radius: 8px;
+  margin-bottom: 1.5rem;
+  text-align: left;
+}
+
+.confirm-modal-row {
+  display: flex;
+  justify-content: space-between;
+  padding: 0.5rem 0;
+}
+
+.confirm-modal-row:not(:last-child) {
+  border-bottom: 1px solid var(--border-color);
+}
+
+.confirm-modal-label {
+  font-size: 0.9rem;
+  color: var(--text-gray);
+  font-weight: 500;
+}
+
+.confirm-modal-value {
+  font-size: 0.9rem;
+  color: var(--text-dark);
+  font-weight: 600;
+}
+
+.confirm-modal .confirm-btn {
+  width: 100%;
+}
+
+/* Error State */
+.confirm-booking-error {
+  text-align: center;
+  padding: 4rem 2rem;
+}
+
+.confirm-booking-error-icon {
+  color: #f59e0b;
+  margin-bottom: 1.5rem;
+}
+
+.confirm-booking-error h2 {
+  font-size: 1.75rem;
+  font-weight: 700;
+  color: var(--text-dark);
+  margin: 0 0 1rem 0;
+}
+
+.confirm-booking-error p {
+  font-size: 1rem;
+  color: var(--text-gray);
+  margin: 0 0 2rem 0;
+}
+
+.confirm-booking-error-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.875rem 1.5rem;
+  background: var(--primary-green);
+  color: var(--white);
+  border-radius: 8px;
+  text-decoration: none;
+  font-weight: 600;
+  transition: background 0.2s ease;
+}
+
+.confirm-booking-error-btn:hover {
+  background: var(--dark-green);
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .confirm-booking-container {
+    padding: 1rem;
+  }
+
+  .confirm-booking-title {
+    font-size: 1.5rem;
+  }
+
+  .confirm-card-header {
+    padding: 1rem;
+  }
+
+  .confirm-card-title {
+    font-size: 1.1rem;
+  }
+
+  .confirm-property-details,
+  .confirm-agreement-content,
+  .confirm-payment-content {
+    padding: 1rem;
+  }
+
+  .confirm-payment-method-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .confirm-booking-actions {
+    flex-direction: column-reverse;
+  }
+
+  .confirm-booking-actions .confirm-btn {
+    width: 100%;
+  }
+
+  .confirm-modal {
+    padding: 2rem 1.5rem;
+  }
+
+  .confirm-modal-title {
+    font-size: 1.5rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .confirm-property-row {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.25rem;
+  }
+
+  .confirm-payment-row {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.25rem;
+  }
+
+  .confirm-payment-due-date {
+    flex-direction: column;
+  }
+}

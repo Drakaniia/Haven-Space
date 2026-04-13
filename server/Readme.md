@@ -170,6 +170,20 @@ DB_USER=root
 DB_PASS=your_password
 ```
 
+### 5. Set Up Database
+
+Run the automated setup script:
+
+```bash
+# Create database and import schema
+php setup-database.php
+
+# Or create database with sample seed data
+php setup-database.php --seed
+```
+
+This automatically creates the database, imports the schema, and runs any pending migrations. See [Database Setup](#database-setup) for details.
+
 ---
 
 ## Configuration
@@ -235,13 +249,43 @@ Frontend will be available at `http://localhost:3000`
 
 ## Database Setup
 
-### 1. Create Database
+### Option 1: Automated Setup (Recommended)
+
+The database setup script automatically creates the database, imports the schema, runs migrations, and optionally seeds sample data.
+
+```bash
+# Basic setup (creates database + imports schema)
+php setup-database.php
+
+# Setup with sample data (creates database + schema + seeders)
+php setup-database.php --seed
+```
+
+**What the script does:**
+
+1. ✅ Connects to MySQL using `.env` credentials
+2. ✅ Creates database if it doesn't exist
+3. ✅ Imports `database/schema.sql`
+4. ✅ Runs any pending migrations in `database/migrations/`
+5. ✅ (Optional) Runs seeders when using `--seed` flag
+
+**Troubleshooting:**
+
+- If you get connection errors, verify MySQL is running
+- Check database credentials in your `.env` file
+- Ensure port 3306 (or your custom port) is correct
+
+### Option 2: Manual Setup
+
+If you prefer manual setup or need more control:
+
+#### 1. Create Database
 
 ```bash
 mysql -u root -p -e "CREATE DATABASE havenspace_db CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;"
 ```
 
-### 2. Run Migrations
+#### 2. Run Migrations
 
 ```bash
 # Import schema

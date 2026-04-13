@@ -4,6 +4,7 @@
  */
 
 import { getIcon } from '../shared/icons.js';
+import { showToast } from '../shared/toast.js';
 
 /**
  * Initialize navbar component
@@ -61,8 +62,8 @@ export function initNavbar(options = {}) {
       setupDocumentClickHandler();
       setupSidebarToggle();
     })
-    .catch(err => {
-      console.error('Failed to load navbar template:', err);
+    .catch(() => {
+      // Failed to load navbar template
     });
 }
 
@@ -150,7 +151,6 @@ function updateUserInfo(user, basePath) {
         ? user.avatarUrl
         : `${basePath}/assets/images/sample.png`;
     avatarImg.src = avatarSource;
-    console.log('Navbar: Avatar image source:', avatarSource);
   }
 }
 
@@ -176,12 +176,8 @@ function setupThemeToggle() {
   const themeToggle = document.getElementById('navbar-theme-toggle');
   if (themeToggle) {
     themeToggle.addEventListener('click', () => {
-      // Emit custom event for theme toggle
+      // Theme toggle event dispatched
       window.dispatchEvent(new CustomEvent('navbar:theme:toggle'));
-
-      // Optional: Add your theme toggle logic here
-      // For now, just log the action
-      console.log('Theme toggle clicked');
     });
   }
 }
@@ -193,11 +189,8 @@ function setupNotificationHandler() {
   const notificationsBtn = document.getElementById('navbar-notifications');
   if (notificationsBtn) {
     notificationsBtn.addEventListener('click', () => {
-      // Emit custom event for notifications
+      // Notifications event dispatched
       window.dispatchEvent(new CustomEvent('navbar:notifications:click'));
-
-      // Optional: Navigate to notifications page or open dropdown
-      console.log('Notifications clicked');
     });
   }
 }
@@ -229,7 +222,6 @@ function setupNotificationPopup() {
     clearBtn.addEventListener('click', e => {
       e.stopPropagation();
       markAllAsRead();
-      console.log('All notifications marked as read');
     });
   }
 
@@ -238,7 +230,6 @@ function setupNotificationPopup() {
   if (viewAllLink) {
     viewAllLink.addEventListener('click', e => {
       e.preventDefault();
-      console.log('View all notifications clicked');
       window.dispatchEvent(new CustomEvent('navbar:notification:view:click'));
       closeNotificationMenu();
     });
@@ -300,7 +291,6 @@ function renderNotifications(notifications) {
   list.querySelectorAll('.navbar-notification-item').forEach(item => {
     item.addEventListener('click', () => {
       const notificationId = parseInt(item.dataset.id);
-      console.log('Notification clicked:', notificationId);
       window.dispatchEvent(
         new CustomEvent('navbar:notification:click', {
           detail: { id: notificationId },
@@ -411,7 +401,6 @@ function setupUserMenuHandlers(user) {
   if (profileBtn) {
     profileBtn.addEventListener('click', e => {
       e.preventDefault();
-      console.log('Profile clicked');
       window.dispatchEvent(new CustomEvent('navbar:user:profile:click'));
       closeUserMenu();
     });
@@ -422,7 +411,6 @@ function setupUserMenuHandlers(user) {
   if (settingsBtn) {
     settingsBtn.addEventListener('click', e => {
       e.preventDefault();
-      console.log('Settings clicked');
       window.dispatchEvent(new CustomEvent('navbar:user:settings:click'));
       closeUserMenu();
     });
@@ -433,7 +421,6 @@ function setupUserMenuHandlers(user) {
   if (logoutBtn) {
     logoutBtn.addEventListener('click', async e => {
       e.preventDefault();
-      console.log('Logout clicked');
 
       try {
         const basePath = resolveBasePath();
@@ -445,7 +432,7 @@ function setupUserMenuHandlers(user) {
           credentials: 'include',
         });
       } catch (error) {
-        console.error('Logout request failed:', error);
+        // Logout request failed - continue with local cleanup anyway
       }
 
       window.dispatchEvent(new CustomEvent('navbar:user:logout:click'));
@@ -454,15 +441,31 @@ function setupUserMenuHandlers(user) {
       // Clear authentication data
       localStorage.removeItem('user');
 
-      const basePath = resolveBasePath();
-      // Use correct path for production vs development mode
-      if (basePath === '') {
-        // Production mode (dist): auth folder is at root
-        window.location.href = '/auth/login.html';
-      } else {
-        // Development mode (client): auth folder is in views/public
-        window.location.href = `${basePath}/views/public/auth/login.html`;
-      }
+      // Show success toast before redirect
+      showToast('You have successfully logged out', 'success', 3000);
+
+      // Redirect to login page after short delay to show toast
+      setTimeout(() => {
+        const pathname = window.location.pathname;
+
+        // Determine correct login path based on current URL structure
+        if (pathname.includes('/dist/')) {
+          // Production mode (dist): auth folder is at root
+          window.location.href = '/auth/login.html';
+        } else if (pathname.includes('/client/views/')) {
+          // Development mode with /client path
+          window.location.href = '/client/views/public/auth/login.html';
+        } else if (pathname.includes('/frontend/views/')) {
+          // Development mode with /frontend path
+          window.location.href = '/frontend/views/public/auth/login.html';
+        } else if (pathname.includes('/views/')) {
+          // Direct /views access
+          window.location.href = '/views/public/auth/login.html';
+        } else {
+          // Fallback: try development path
+          window.location.href = '/client/views/public/auth/login.html';
+        }
+      }, 500);
     });
   }
 }
@@ -520,6 +523,3 @@ function setupSidebarToggle() {
 /**
  * Setup keyboard shortcuts
  */
-function setupKeyboardShortcuts() {
-  // Keyboard shortcuts removed - search bar no longer in navbar
-}

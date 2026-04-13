@@ -1,5 +1,103 @@
 /* Auth Pages (Login/Signup) Styles */
 
+/* Toast Notifications */
+.toast-notification {
+  position: fixed;
+  top: 80px;
+  right: 20px;
+  z-index: 10000;
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  max-width: 400px;
+  padding: 16px;
+  background: var(--white);
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15), 0 0 0 1px rgba(0, 0, 0, 0.05);
+  opacity: 0;
+  transform: translateX(100%);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.toast-notification.toast-visible {
+  opacity: 1;
+  transform: translateX(0);
+}
+
+.toast-notification.toast-error {
+  border-left: 4px solid #ef4444;
+}
+
+.toast-notification.toast-success {
+  border-left: 4px solid #10b981;
+}
+
+.toast-notification.toast-warning {
+  border-left: 4px solid #f59e0b;
+}
+
+.toast-icon {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.toast-notification.toast-error .toast-icon {
+  color: #ef4444;
+}
+
+.toast-notification.toast-success .toast-icon {
+  color: #10b981;
+}
+
+.toast-notification.toast-warning .toast-icon {
+  color: #f59e0b;
+}
+
+.toast-content {
+  flex: 1;
+  font-size: 0.9rem;
+  color: var(--text-dark);
+  line-height: 1.4;
+}
+
+.toast-close {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 4px;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  color: var(--text-gray);
+  border-radius: 4px;
+  transition: all 0.2s ease;
+}
+
+.toast-close:hover {
+  background: #f5f5f5;
+  color: var(--text-dark);
+}
+
+/* Inline Field Errors */
+.field-error {
+  margin-top: 6px;
+  font-size: 0.85rem;
+  color: #ef4444;
+  line-height: 1.4;
+}
+
+.form-input.input-error {
+  border-color: #ef4444;
+}
+
+.form-input.input-error:focus {
+  border-color: #ef4444;
+  box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.1);
+}
+
 /* Utility Classes */
 .hidden {
   display: none !important;
@@ -546,12 +644,13 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  background: var(--bg-cream);
+  background: transparent;
 }
 
 .auth-split-image {
-  width: 100%;
-  height: 100%;
+  width: 75%;
+  height: auto;
+  max-height: 85vh;
   object-fit: contain;
   display: block;
 }
@@ -646,6 +745,137 @@
   color: var(--text-dark);
 }
 
+/* Signup Decorative Corner Images */
+.signup-decorative-images {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  pointer-events: none;
+  z-index: 1;
+}
+
+.signup-decorative-left,
+.signup-decorative-right {
+  position: absolute;
+  bottom: 0;
+}
+
+.signup-decorative-left {
+  left: 0;
+}
+
+.signup-decorative-right {
+  right: 0;
+}
+
+.signup-decorative-left img,
+.signup-decorative-right img {
+  height: auto;
+  max-width: 300px;
+  display: block;
+}
+
+/* Welcome Modal */
+.welcome-modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.6);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 10001;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.welcome-modal-overlay.welcome-modal-overlay-visible {
+  opacity: 1;
+}
+
+.welcome-modal {
+  background: var(--white);
+  border-radius: 16px;
+  padding: 3rem 2.5rem;
+  max-width: 500px;
+  width: 90%;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+  text-align: center;
+  transform: scale(0.9);
+  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.welcome-modal-overlay-visible .welcome-modal {
+  transform: scale(1);
+}
+
+.welcome-modal-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 1.5rem;
+  color: var(--primary-green);
+}
+
+.welcome-modal-icon svg {
+  width: 64px;
+  height: 64px;
+}
+
+.welcome-modal-title {
+  font-size: 1.75rem;
+  font-weight: 700;
+  color: var(--text-dark);
+  margin-bottom: 1rem;
+  line-height: 1.3;
+}
+
+.welcome-modal-message {
+  font-size: 1rem;
+  color: var(--text-gray);
+  line-height: 1.6;
+  margin-bottom: 2rem;
+}
+
+.welcome-modal-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.welcome-modal-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 0.875rem 1.5rem;
+  border: none;
+  border-radius: 8px;
+  font-size: 0.95rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-family: var(--font-main);
+}
+
+.welcome-modal-btn-primary {
+  background: var(--primary-green);
+  color: var(--white);
+}
+
+.welcome-modal-btn-primary:hover {
+  background: var(--dark-green);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(74, 124, 35, 0.3);
+}
+
+.welcome-modal-btn-primary:active {
+  transform: translateY(0);
+}
+
 /* Responsive Design */
 @media (max-width: 1024px) {
   .auth-split-container {
@@ -714,5 +944,38 @@
 
   .code-input-container {
     gap: 0.5rem;
+  }
+
+  .signup-decorative-left img,
+  .signup-decorative-right img {
+    max-width: 200px;
+  }
+
+  /* Toast responsive */
+  .toast-notification {
+    top: auto;
+    bottom: 20px;
+    right: 10px;
+    left: 10px;
+    max-width: none;
+  }
+
+  /* Welcome modal responsive */
+  .welcome-modal {
+    padding: 2rem 1.5rem;
+    max-width: 90%;
+  }
+
+  .welcome-modal-title {
+    font-size: 1.5rem;
+  }
+
+  .welcome-modal-message {
+    font-size: 0.95rem;
+  }
+
+  .welcome-modal-icon svg {
+    width: 48px;
+    height: 48px;
   }
 }

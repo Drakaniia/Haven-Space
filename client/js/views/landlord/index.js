@@ -4,6 +4,7 @@
  * Initializes sidebar, navbar, and landlord dashboard for landlord views
  */
 
+import CONFIG from '../../config.js';
 import { initSidebar } from '../../components/sidebar.js';
 import { initNavbar } from '../../components/navbar.js';
 import { initLandlordDashboard } from './landlord.js';
@@ -11,25 +12,58 @@ import { initMessages } from './messages.js';
 import { initLandlordSettings } from './settings.js';
 import { initAnnouncements } from './announcements.js';
 import { initReports } from './reports.js';
+import { initLandlordPermissions } from '../../shared/permissions.js';
+
+function loginPath() {
+  const pathname = window.location.pathname;
+  if (pathname.includes('github.io')) {
+    return '/Haven-Space/client/views/public/auth/login.html';
+  }
+  if (pathname.includes('/client/views/')) {
+    return '/client/views/public/auth/login.html';
+  }
+  return '/views/public/auth/login.html';
+}
+
+function initialsFrom(user) {
+  const a = (user.first_name || '').trim().charAt(0);
+  const b = (user.last_name || '').trim().charAt(0);
+  return (a + b || 'L').toUpperCase();
+}
 
 /**
  * Initialize Landlord Dashboard
  * Sets up sidebar, navbar, and initializes landlord dashboard
  */
-export function initLandlordDashboardEntry() {
-  const user = {
-    name: 'Juan Dela Cruz',
-    initials: 'JD',
-    role: 'Landlord',
-    email: 'juan@example.com',
-  };
+export async function initLandlordDashboardEntry() {
+  let user;
+  try {
+    const res = await fetch(`${CONFIG.API_BASE_URL}/api/auth/me.php`, { credentials: 'include' });
+    if (!res.ok) {
+      window.location.href = loginPath();
+      return;
+    }
+    const data = await res.json();
+    user = data.user;
+  } catch {
+    window.location.href = loginPath();
+    return;
+  }
+
+  const name = [user.first_name, user.last_name].filter(Boolean).join(' ').trim() || 'Landlord';
+  const initials = initialsFrom(user);
 
   // Initialize sidebar
   const sidebarContainer = document.getElementById('sidebar-container');
   if (sidebarContainer) {
     initSidebar({
       role: 'landlord',
-      user,
+      user: {
+        name,
+        initials,
+        role: 'Landlord',
+        email: user.email || '',
+      },
     });
   }
 
@@ -38,10 +72,10 @@ export function initLandlordDashboardEntry() {
   if (navbarContainer) {
     initNavbar({
       user: {
-        name: user.name,
-        initials: user.initials,
-        avatarUrl: '',
-        email: user.email,
+        name,
+        initials,
+        avatarUrl: user.avatar_url || '',
+        email: user.email || '',
       },
       notificationCount: 3,
     });
@@ -50,11 +84,14 @@ export function initLandlordDashboardEntry() {
   // Initialize landlord dashboard
   initLandlordDashboard({
     user: {
-      name: user.name,
-      initials: user.initials,
-      role: user.role,
+      name,
+      initials,
+      role: 'Landlord',
     },
   });
+
+  // Check landlord verification status and apply read-only restrictions if pending
+  initLandlordPermissions();
 
   // Initialize specific pages based on current view
   const currentPath = window.location.pathname;

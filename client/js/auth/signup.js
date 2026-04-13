@@ -1,4 +1,84 @@
 import CONFIG from '../config.js';
+import { getIcon } from '../shared/icons.js';
+import { getBasePath, getBoarderRedirectPath, updateBoarderStatus } from '../shared/routing.js';
+
+/**
+ * Show toast notification
+ * @param {string} message - Message to display
+ * @param {string} type - Toast type: 'error', 'success', 'warning'
+ */
+function showToast(message, type = 'error') {
+  // Remove existing toast
+  const existingToast = document.querySelector('.toast-notification');
+  if (existingToast) {
+    existingToast.remove();
+  }
+
+  const toast = document.createElement('div');
+  toast.className = `toast-notification toast-${type}`;
+
+  const iconMap = {
+    error: 'exclamationCircle',
+    success: 'checkCircle',
+    warning: 'exclamationTriangle',
+  };
+
+  toast.innerHTML = `
+    <div class="toast-icon">
+      ${getIcon(iconMap[type] || 'exclamationCircle', { width: 20, height: 20, strokeWidth: '2' })}
+    </div>
+    <div class="toast-content">${message}</div>
+    <button class="toast-close" aria-label="Close notification">
+      ${getIcon('xMark', { width: 16, height: 16, strokeWidth: '2' })}
+    </button>
+  `;
+
+  document.body.appendChild(toast);
+
+  // Trigger animation
+  requestAnimationFrame(() => {
+    toast.classList.add('toast-visible');
+  });
+
+  // Auto remove after 5 seconds
+  const autoRemoveTimeout = setTimeout(() => {
+    removeToast(toast);
+  }, 5000);
+
+  // Close button handler
+  const closeBtn = toast.querySelector('.toast-close');
+  closeBtn.addEventListener('click', () => {
+    clearTimeout(autoRemoveTimeout);
+    removeToast(toast);
+  });
+}
+
+function removeToast(toast) {
+  toast.classList.remove('toast-visible');
+  setTimeout(() => {
+    toast.remove();
+  }, 300);
+}
+
+/**
+ * Inject icons from centralized library into elements with data-icon attributes
+ * Replaces inline SVGs with centralized icon library calls
+ */
+function injectIcons() {
+  const iconElements = document.querySelectorAll('[data-icon]');
+
+  iconElements.forEach(element => {
+    const iconName = element.dataset.icon;
+    const options = {
+      width: element.dataset.iconWidth || 24,
+      height: element.dataset.iconHeight || 24,
+      strokeWidth: element.dataset.iconStrokeWidth || '1.5',
+      className: element.dataset.iconClass || '',
+    };
+
+    element.innerHTML = getIcon(iconName, options);
+  });
+}
 
 document.addEventListener('DOMContentLoaded', function () {
   const step1 = document.getElementById('step1');
@@ -15,41 +95,67 @@ document.addEventListener('DOMContentLoaded', function () {
   const passwordInput = document.getElementById('password');
   const eyeOpen = passwordToggle.querySelector('.eye-open');
   const eyeClosed = passwordToggle.querySelector('.eye-closed');
+  const confirmPasswordToggle = document.getElementById('confirmPasswordToggle');
+  const confirmPasswordInput = document.getElementById('confirmPassword');
+  const confirmEyeOpen = confirmPasswordToggle.querySelector('.eye-open');
+  const confirmEyeClosed = confirmPasswordToggle.querySelector('.eye-closed');
 
   let selectedRole = null;
 
+  // Inject icons from centralized library
+  injectIcons();
+
   // Check for pending Google OAuth signup
   const urlParams = new URLSearchParams(window.location.search);
-  const oauthPending = urlParams.get('oauth') === 'pending';
+  const oauthStatus = urlParams.get('oauth');
+  const oauthPending = oauthStatus === 'pending';
+  const oauthNew = oauthStatus === 'new';
 
-  if (oauthPending) {
-    // User is coming from Google OAuth, skip to step 2
-    step1.classList.add('hidden');
-    step2.classList.remove('hidden');
-    headerLinkContainer.classList.remove('hidden');
-
+  if (oauthPending || oauthNew) {
     // Fetch pending user data from session
     fetch(`${CONFIG.API_BASE_URL}/auth/google/get-pending-user.php`, {
       credentials: 'include',
     })
       .then(res => res.json())
       .then(result => {
-        if (result.success && result.data) {
-          const pendingUser = result.data;
-          if (pendingUser.first_name) {
-            document.getElementById('firstName').value = pendingUser.first_name;
-          }
-          if (pendingUser.last_name) {
-            document.getElementById('lastName').value = pendingUser.last_name;
-          }
-          if (pendingUser.email) {
-            document.getElementById('email').value = pendingUser.email;
-            document.getElementById('email').readOnly = true; // Email from Google is verified
-          }
+        if (!result.success || !result.data) {
+          // No pending user data - user might already exist, redirect to login
+          console.warn('No pending user data found, redirecting to login');
+          window.location.href = 'login.html?error=Session%20expired.%20Please%20login%20again.';
+          return;
+        }
+
+        const pendingUser = result.data;
+
+        if (oauthPending) {
+          // User is coming from Google OAuth signup (with role), skip to step 2
+          step1.classList.add('hidden');
+          step2.classList.remove('hidden');
+          headerLinkContainer.classList.remove('hidden');
+        } else if (oauthNew) {
+          // User is coming from Google OAuth login (no account), show step 1 for role selection
+          // Keep step 1 visible, hide step 2
+          step1.classList.remove('hidden');
+          step2.classList.add('hidden');
+          headerLinkContainer.classList.add('hidden');
+        }
+
+        // Pre-fill form if on step 2
+        if (pendingUser.first_name) {
+          document.getElementById('firstName').value = pendingUser.first_name;
+        }
+        if (pendingUser.last_name) {
+          document.getElementById('lastName').value = pendingUser.last_name;
+        }
+        if (pendingUser.email) {
+          document.getElementById('email').value = pendingUser.email;
+          document.getElementById('email').readOnly = true; // Email from Google is verified
         }
       })
       .catch(err => {
         console.error('Error fetching pending user data:', err);
+        window.location.href =
+          'login.html?error=Error%20loading%20signup%20data.%20Please%20try%20again.';
       });
   }
 
@@ -88,12 +194,22 @@ document.addEventListener('DOMContentLoaded', function () {
     });
   });
 
-  // Continue to step 2
+  // Continue to step 2 or redirect for landlords
   continueBtn.addEventListener('click', function () {
     if (selectedRole) {
+      // Redirect landlords to multi-step signup flow
+      if (selectedRole === 'landlord') {
+        window.location.href = 'signup-landlord.html';
+        return;
+      }
+
+      // Boarders continue to step 2 (original flow)
       step1.classList.add('hidden');
       step2.classList.remove('hidden');
       headerLinkContainer.classList.remove('hidden');
+
+      // Check if this is an OAuth user to pre-fill form
+      const isOAuthUser = oauthPending || oauthNew;
 
       // Update title and header link based on role
       if (selectedRole === 'landlord') {
@@ -116,6 +232,32 @@ document.addEventListener('DOMContentLoaded', function () {
           e.preventDefault();
           switchRole('landlord');
         };
+      }
+
+      // If OAuth user, fetch and pre-fill data after showing step 2
+      if (isOAuthUser) {
+        fetch(`${CONFIG.API_BASE_URL}/auth/google/get-pending-user.php`, {
+          credentials: 'include',
+        })
+          .then(res => res.json())
+          .then(result => {
+            if (result.success && result.data) {
+              const pendingUser = result.data;
+              if (pendingUser.first_name) {
+                document.getElementById('firstName').value = pendingUser.first_name;
+              }
+              if (pendingUser.last_name) {
+                document.getElementById('lastName').value = pendingUser.last_name;
+              }
+              if (pendingUser.email) {
+                document.getElementById('email').value = pendingUser.email;
+                document.getElementById('email').readOnly = true;
+              }
+            }
+          })
+          .catch(err => {
+            console.error('Error fetching pending user data:', err);
+          });
       }
     }
   });
@@ -168,6 +310,14 @@ document.addEventListener('DOMContentLoaded', function () {
     eyeClosed.classList.toggle('hidden');
   });
 
+  // Confirm password visibility toggle
+  confirmPasswordToggle.addEventListener('click', function () {
+    const isPassword = confirmPasswordInput.type === 'password';
+    confirmPasswordInput.type = isPassword ? 'text' : 'password';
+    confirmEyeOpen.classList.toggle('hidden');
+    confirmEyeClosed.classList.toggle('hidden');
+  });
+
   // Google OAuth signup - works from step 1 or step 2
   document.querySelectorAll('.social-btn-google').forEach(btn => {
     btn.addEventListener('click', function () {
@@ -176,17 +326,18 @@ document.addEventListener('DOMContentLoaded', function () {
         alert('Please select your role first (Boarder or Landlord)');
         return;
       }
+
+      // If user selected role on step 1, include it in the OAuth flow
+      const roleForOAuth = selectedRole || '';
+
       // Redirect to Google OAuth authorize endpoint with role preference
-      const authUrl = `${CONFIG.API_BASE_URL}/auth/google/authorize.php?action=signup&role=${
-        selectedRole || ''
-      }`;
+      const authUrl = `${CONFIG.API_BASE_URL}/auth/google/authorize.php?action=signup&role=${roleForOAuth}`;
       window.location.href = authUrl;
     });
   });
 
   // Apple signup button (placeholder for future implementation)
   document.querySelector('.social-btn-apple')?.addEventListener('click', function () {
-    console.log('Apple signup clicked');
     // TODO: Implement Apple OAuth
     alert('Apple signup to be implemented');
   });
@@ -194,6 +345,26 @@ document.addEventListener('DOMContentLoaded', function () {
   // Form submission
   document.getElementById('signupForm').addEventListener('submit', async function (e) {
     e.preventDefault();
+
+    // Validate terms checkbox
+    const termsCheckbox = e.target.terms;
+    if (!termsCheckbox.checked) {
+      showToast(
+        'Please agree to the Terms of Service, including the User Agreement and Privacy Policy to continue.',
+        'warning'
+      );
+      return;
+    }
+
+    // Validate password confirmation
+    const password = e.target.password.value;
+    const confirmPassword = e.target.confirmPassword.value;
+
+    if (password !== confirmPassword) {
+      alert('Passwords do not match. Please try again.');
+      e.target.confirmPassword.focus();
+      return;
+    }
 
     // Check if this is a Google OAuth pending user completing signup
     if (oauthPending) {
@@ -218,10 +389,13 @@ document.addEventListener('DOMContentLoaded', function () {
           localStorage.setItem('user', JSON.stringify(result.user));
 
           // Redirect based on role
+          const basePath = getBasePath();
+
           if (result.user.role === 'landlord') {
-            window.location.href = '../../landlord/index.html';
+            window.location.href = `${basePath}landlord/index.html`;
           } else {
-            window.location.href = '../../boarder/index.html';
+            // New boarder - redirect to find a room page
+            window.location.href = `${basePath}public/find-a-room.html`;
           }
         } else {
           alert(result.error || 'Signup failed');
@@ -257,13 +431,28 @@ document.addEventListener('DOMContentLoaded', function () {
       const result = await response.json();
 
       if (response.ok) {
-        alert('Registration successful! Please login.');
-        window.location.href = 'login.html';
+        // Auto-login boarders and redirect based on conditional routing
+        if (selectedRole === 'boarder') {
+          // Store user info to auto-login
+          const userInfo = {
+            ...result.user,
+            boarderStatus: 'new', // New signup, set to 'new'
+          };
+          localStorage.setItem('user', JSON.stringify(userInfo));
+          updateBoarderStatus('new');
+
+          // Redirect using conditional routing logic
+          const redirectPath = getBoarderRedirectPath(userInfo);
+          window.location.href = redirectPath;
+        } else {
+          // Landlord: redirect to login page to verify email
+          alert('Registration successful! Please check your email for verification, then login.');
+          window.location.href = 'login.html';
+        }
       } else {
         alert(result.error || 'Registration failed');
       }
     } catch (error) {
-      console.error('Error during signup:', error);
       alert('An error occurred. Please try again.');
     }
   });

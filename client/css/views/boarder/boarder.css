@@ -301,6 +301,8 @@
   justify-content: space-between;
   align-items: center;
   margin-bottom: 20px;
+  flex-wrap: nowrap;
+  gap: 12px;
 }
 
 .boarder-section-title {
@@ -310,6 +312,9 @@
   display: flex;
   align-items: center;
   gap: 8px;
+  white-space: nowrap;
+  flex-shrink: 1;
+  min-width: 0;
 }
 
 .boarder-section-title svg {
@@ -327,6 +332,8 @@
   align-items: center;
   gap: 4px;
   cursor: pointer;
+  white-space: nowrap;
+  flex-shrink: 0;
 }
 
 .boarder-view-all:hover {

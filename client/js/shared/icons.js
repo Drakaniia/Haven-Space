@@ -77,6 +77,8 @@ export const ICON_PATHS = {
     'M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126ZM12 15.75h.007v.008H12v-.008Z',
   checkCircle: 'M9 12.75 11.25 15 15 9.75M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z',
   xCircle: 'm9.75 9.75 4.5 4.5m0-4.5-4.5 4.5M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z',
+  dashboard:
+    'M3.75 6A2.25 2.25 0 0 1 6 3.75h2.25A2.25 2.25 0 0 1 10.5 6v2.25a2.25 2.25 0 0 1-2.25 2.25H6a2.25 2.25 0 0 1-2.25-2.25V6ZM3.75 15.75A2.25 2.25 0 0 1 6 13.5h2.25a2.25 2.25 0 0 1 2.25 2.25V18a2.25 2.25 0 0 1-2.25 2.25H6A2.25 2.25 0 0 1 3.75 18v-2.25ZM13.5 6a2.25 2.25 0 0 1 2.25-2.25H18A2.25 2.25 0 0 1 20.25 6v2.25A2.25 2.25 0 0 1 18 10.5h-2.25a2.25 2.25 0 0 1-2.25-2.25V6ZM13.5 15.75a2.25 2.25 0 0 1 2.25-2.25H18a2.25 2.25 0 0 1 2.25 2.25V18A2.25 2.25 0 0 1 18 20.25h-2.25A2.25 2.25 0 0 1 13.5 18v-2.25Z',
   spinner:
     'M12 3v3m6.364-.364-2.12 2.12M21 12h-3m.364 6.364-2.12-2.12M12 21v-3m-6.364.364 2.12-2.12M3 12h3m-.364-6.364 2.12 2.12',
 
@@ -108,7 +110,7 @@ export const ICON_PATHS = {
     'M2.25 8.25h19.5M2.25 9h19.5m-16.5 5.25h6m-6 2.25h3m-3.75 3h15a2.25 2.25 0 0 0 2.25-2.25V6.75A2.25 2.25 0 0 0 19.5 4.5h-15a2.25 2.25 0 0 0-2.25 2.25v10.5A2.25 2.25 0 0 0 4.5 19.5Z',
 
   // Accessibility
-  eye: 'M2.036 12.322a1.012 1.012 0 0 1 0-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178Z',
+  eye: 'M2.036 12.322a1.012 1.012 0 0 1 0-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178Z M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z',
   eyeSlash:
     'M3.98 8.223A10.477 10.477 0 0 0 1.934 12C3.226 16.338 7.244 19.5 12 19.5c.993 0 1.953-.138 2.863-.395M6.228 6.228A10.451 10.451 0 0 1 12 4.5c4.756 0 8.773 3.162 10.065 7.498a10.522 10.522 0 0 1-4.293 5.774M6.228 6.228 3 3m3.228 3.228 3.65 3.65m7.894 7.894L21 21m-3.228-3.228-3.65-3.65m0 0a3 3 0 1 0-4.243-4.243m4.242 4.242L9.88 9.88',
 
@@ -269,4 +271,33 @@ export function getIconWithAttrs(iconName, attributes = {}) {
  */
 export function getAvailableIcons() {
   return Object.keys(ICON_PATHS);
+}
+
+/**
+ * Initialize all data-icon spans on the page
+ * Finds all <span data-icon="..."> elements and replaces them with SVG icons
+ * Call this on DOMContentLoaded for pages that use data-icon attributes
+ */
+export function initIconElements() {
+  const iconSpans = document.querySelectorAll('[data-icon]');
+
+  iconSpans.forEach(span => {
+    const iconName = span.getAttribute('data-icon');
+    const width = parseInt(span.getAttribute('data-icon-width')) || 24;
+    const height = parseInt(span.getAttribute('data-icon-height')) || 24;
+    const strokeWidth = span.getAttribute('data-icon-stroke-width') || '1.5';
+    const className = span.getAttribute('class') || '';
+
+    // Remove data attributes but keep other classes
+    span.removeAttribute('data-icon');
+    span.removeAttribute('data-icon-width');
+    span.removeAttribute('data-icon-height');
+    span.removeAttribute('data-icon-stroke-width');
+
+    // Generate SVG icon
+    const svgIcon = getIcon(iconName, { width, height, strokeWidth, className });
+
+    // Replace span content with SVG
+    span.innerHTML = svgIcon;
+  });
 }
