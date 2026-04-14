@@ -586,6 +586,14 @@
         markers.forEach(marker => map.removeLayer(marker));
         markers = [];
 
+        // Create custom pin icon
+        const pinIcon = L.icon({
+          iconUrl: '../../assets/images/pin.png',
+          iconSize: [40, 50],
+          iconAnchor: [20, 50],
+          popupAnchor: [0, -50],
+        });
+
         properties.forEach(property => {
           // Create custom popup content
           const popupContent = `
@@ -608,8 +616,10 @@
             </div>
           `;
 
-          // Create marker
-          const marker = L.marker([property.lat, property.lng]).addTo(map).bindPopup(popupContent);
+          // Create marker with pin icon
+          const marker = L.marker([property.lat, property.lng], { icon: pinIcon })
+            .addTo(map)
+            .bindPopup(popupContent);
 
           markers.push(marker);
         });
