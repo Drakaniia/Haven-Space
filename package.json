@@ -9,6 +9,8 @@
     "mysql": "php scripts/start-mysql.php",
     "db:setup": "php scripts/setup-database.php",
     "db:seed": "php scripts/setup-database.php --seed",
+    "db:reset": "php scripts/reset-database.php",
+    "db:reset:force": "php scripts/reset-database.php --force --no-backup",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
     "lint": "eslint client/js/**/*.js --no-error-on-unmatched-pattern",
