@@ -445,9 +445,32 @@ document.addEventListener('DOMContentLoaded', function () {
           const redirectPath = getBoarderRedirectPath(userInfo);
           window.location.href = redirectPath;
         } else {
-          // Landlord: redirect to login page to verify email
-          alert('Registration successful! Please check your email for verification, then login.');
-          window.location.href = 'login.html';
+          // Landlord: auto-login and redirect to dashboard
+          const loginResponse = await fetch(`${CONFIG.API_BASE_URL}/auth/login.php`, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            credentials: 'include',
+            body: JSON.stringify({
+              email: data.email,
+              password: data.password,
+            }),
+          });
+
+          if (loginResponse.ok) {
+            const loginResult = await loginResponse.json();
+            localStorage.setItem('user', JSON.stringify(loginResult.user));
+
+            // Redirect to landlord dashboard
+            const basePath = getBasePath();
+            window.location.href = `${basePath}landlord/index.html`;
+          } else {
+            // Fallback: redirect to login if auto-login fails
+            const basePath = getBasePath();
+            alert('Registration successful! Please login to continue.');
+            window.location.href = `${basePath}public/auth/login.html`;
+          }
         }
       } else {
         alert(result.error || 'Registration failed');

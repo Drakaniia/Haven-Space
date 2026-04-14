@@ -6,7 +6,11 @@
 
 // Include centralized CORS configuration FIRST (before any headers)
 require_once __DIR__ . '/../cors.php';
-require_once __DIR__ . '/../../config/database.php';
+
+// Include database configuration
+if (!function_exists('getDB')) {
+    require_once __DIR__ . '/../../config/database.php';
+}
 
 // Set content type AFTER CORS headers
 header('Content-Type: application/json');

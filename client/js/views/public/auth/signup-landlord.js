@@ -1220,21 +1220,57 @@ async function submitSignup() {
       }
     }
 
-    // Success - auto-login landlord and show welcome modal
+    // Success - auto-login landlord and redirect to dashboard
     clearState();
 
-    // Store user info in localStorage for auto-login
-    const userData = {
+    // Auto-login by calling login endpoint to get JWT tokens and establish session
+    try {
+      const loginResponse = await fetch(`${CONFIG.API_BASE_URL}/auth/login.php`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        credentials: 'include',
+        body: JSON.stringify({
+          email: signupState.step1.email,
+          password: signupState.step1.password,
+        }),
+      });
+
+      if (loginResponse.ok) {
+        const loginResult = await loginResponse.json();
+        // Store user info in localStorage
+        localStorage.setItem('user', JSON.stringify(loginResult.user));
+
+        // Immediately redirect to dashboard
+        const basePath = getBasePath();
+        window.location.href = `${basePath}landlord/index.html`;
+        return;
+      }
+    } catch (loginError) {
+      console.error('Auto-login failed:', loginError);
+    }
+
+    // Fallback: if auto-login fails, store user info manually and show welcome modal
+    localStorage.setItem(
+      'user',
+      JSON.stringify({
+        id: userId,
+        first_name: signupState.step1.firstName,
+        last_name: signupState.step1.lastName,
+        email: signupState.step1.email,
+        role: 'landlord',
+      })
+    );
+
+    // Show welcome modal with manual login option
+    showWelcomeModal({
       id: userId,
-      firstName: signupState.step1.firstName,
-      lastName: signupState.step1.lastName,
+      first_name: signupState.step1.firstName,
+      last_name: signupState.step1.lastName,
       email: signupState.step1.email,
       role: 'landlord',
-    };
-    localStorage.setItem('user', JSON.stringify(userData));
-
-    // Show welcome modal
-    showWelcomeModal(userData);
+    });
   } catch (error) {
     console.error('Error during signup:', error);
     showToast(error.message || 'An error occurred. Please try again.', 'error');
@@ -1257,12 +1293,14 @@ function showWelcomeModal(_userData) {
       </div>
       <h2 class="welcome-modal-title">Welcome to Haven Space!</h2>
       <p class="welcome-modal-message">
-        Thank you for applying, Landlord! We are now verifying your application. 
-        You can browse your dashboard while you wait.
+        Thank you for signing up, Landlord! Your account has been created successfully.
+      </p>
+      <p class="welcome-modal-message" style="font-size: 14px; color: var(--text-gray); margin-top: 8px;">
+        Your account is ready. Access your dashboard to manage your properties.
       </p>
       <div class="welcome-modal-actions">
         <button class="welcome-modal-btn welcome-modal-btn-primary" id="goToDashboardBtn">
-          ${getIcon('dashboard', { width: 20, height: 20, strokeWidth: '2' })}
+          ${getIcon('arrowRightOnRectangle', { width: 20, height: 20, strokeWidth: '2' })}
           Go to Dashboard
         </button>
       </div>

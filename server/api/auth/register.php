@@ -66,6 +66,12 @@ if ($stmt->fetch()) {
 $passwordHash = password_hash($password, PASSWORD_BCRYPT);
 
 try {
+    // TODO: Implement email verification for landlords (optional, non-blocking)
+    // - Generate verification token
+    // - Send verification email with link
+    // - Set email_verified_at after clicking link
+    // Note: Landlords can access dashboard immediately without email verification
+    
     $stmt = $pdo->prepare('INSERT INTO users (first_name, last_name, email, password_hash, role, country) VALUES (?, ?, ?, ?, ?, ?)');
     $stmt->execute([$firstName, $lastName, $email, $passwordHash, $role, $country]);
     
