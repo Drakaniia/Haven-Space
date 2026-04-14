@@ -15,8 +15,8 @@ function loginPath() {
   if (pathname.includes('github.io')) {
     return '/Haven-Space/client/views/public/auth/login.html';
   }
-  if (pathname.includes('/client/views/')) {
-    return '/client/views/public/auth/login.html';
+  if (pathname.includes('/views/')) {
+    return '/views/public/auth/login.html';
   }
   return '/views/public/auth/login.html';
 }

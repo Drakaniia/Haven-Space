@@ -109,8 +109,8 @@ function getDefaultNotifications() {
  */
 function resolveBasePath() {
   const path = window.location.pathname;
-  if (path.includes('/client/views/')) {
-    return '/client';
+  if (path.includes('/views/')) {
+    return '';
   }
   if (path.includes('/frontend/views/')) {
     return '/frontend';
@@ -452,18 +452,12 @@ function setupUserMenuHandlers(user) {
         if (pathname.includes('/dist/')) {
           // Production mode (dist): auth folder is at root
           window.location.href = '/auth/login.html';
-        } else if (pathname.includes('/client/views/')) {
-          // Development mode with /client path
-          window.location.href = '/client/views/public/auth/login.html';
-        } else if (pathname.includes('/frontend/views/')) {
-          // Development mode with /frontend path
-          window.location.href = '/frontend/views/public/auth/login.html';
         } else if (pathname.includes('/views/')) {
           // Direct /views access
           window.location.href = '/views/public/auth/login.html';
         } else {
           // Fallback: try development path
-          window.location.href = '/client/views/public/auth/login.html';
+          window.location.href = '/views/public/auth/login.html';
         }
       }, 500);
     });

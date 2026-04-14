@@ -73,7 +73,7 @@ if (isset($_GET['error'])) {
     error_log('Google OAuth error: ' . $errorMessage);
 
     // Redirect to login with error
-    $redirectUrl = buildRedirectUrl($baseUrl, '/client/views/public/auth/login.html?error=' . urlencode($errorMessage));
+    $redirectUrl = buildRedirectUrl($baseUrl, '/views/public/auth/login.html?error=' . urlencode($errorMessage));
     header('Location: ' . $redirectUrl);
     exit;
 }
@@ -82,7 +82,7 @@ if (isset($_GET['error'])) {
 $code = $_GET['code'] ?? null;
 if (!$code) {
     error_log('Google OAuth callback: No authorization code received');
-    header('Location: ' . buildRedirectUrl($baseUrl, '/client/views/public/auth/login.html?error=No%20authorization%20code%20received'));
+    header('Location: ' . buildRedirectUrl($baseUrl, '/views/public/auth/login.html?error=No%20authorization%20code%20received'));
     exit;
 }
 
@@ -94,7 +94,7 @@ if (!$state || !$storedState || $state !== $storedState) {
     error_log('Google OAuth callback: Invalid state parameter - possible CSRF attack');
     error_log('State from Google: ' . substr($state ?? '', 0, 20) . '...');
     error_log('State from session: ' . substr($storedState ?? '', 0, 20) . '...');
-    header('Location: ' . buildRedirectUrl($baseUrl, '/client/views/public/auth/login.html?error=Invalid%20state%20parameter'));
+    header('Location: ' . buildRedirectUrl($baseUrl, '/views/public/auth/login.html?error=Invalid%20state%20parameter'));
     exit;
 }
 
@@ -154,7 +154,7 @@ try {
                 $userRole = $user['role'];
             } else {
                 // Ask user to login with existing method first
-                header('Location: ' . buildRedirectUrl($baseUrl, '/client/views/public/auth/login.html?error=Email%20already%20registered.%20Please%20login%20with%20your%20existing%20account%20and%20link%20Google%20from%20your%20profile.'));
+                header('Location: ' . buildRedirectUrl($baseUrl, '/views/public/auth/login.html?error=Email%20already%20registered.%20Please%20login%20with%20your%20existing%20account%20and%20link%20Google%20from%20your%20profile.'));
                 exit;
             }
         } else {
@@ -178,7 +178,7 @@ try {
                 // Redirect to signup page for role selection
                 // If came from login, show step 1 (role selection), otherwise show step 2
                 $oauthParam = $action === 'login' ? 'oauth=new' : 'oauth=pending';
-                header('Location: ' . buildRedirectUrl($baseUrl, '/client/views/public/auth/signup.html?' . $oauthParam));
+                header('Location: ' . buildRedirectUrl($baseUrl, '/views/public/auth/signup.html?' . $oauthParam));
                 exit;
             }
 
@@ -221,7 +221,7 @@ try {
     $accountStatus = $verifiedRow['account_status'] ?? 'active';
 
     if ($accountStatus !== 'active') {
-        header('Location: ' . buildRedirectUrl($baseUrl, '/client/views/public/auth/login.html?error=' . urlencode('Your account is not active. Contact support.')));
+        header('Location: ' . buildRedirectUrl($baseUrl, '/views/public/auth/login.html?error=' . urlencode('Your account is not active. Contact support.')));
         exit;
     }
 
@@ -276,13 +276,13 @@ try {
     // Redirect to appropriate dashboard
     // Build full absolute URL to prevent redirect loops
     if ($userRole === 'admin') {
-        $redirectPath = '/client/views/admin/index.html';
+        $redirectPath = '/views/admin/index.html';
     } else if ($userRole === 'landlord') {
-        $redirectPath = '/client/views/landlord/index.html';
+        $redirectPath = '/views/landlord/index.html';
     } else {
         // Boarder - use routing logic based on status
         // For now, redirect to find-a-room (default for new/boarders)
-        $redirectPath = '/client/views/public/find-a-room.html';
+        $redirectPath = '/views/public/find-a-room.html';
     }
 
     // Ensure we're using the correct base URL
@@ -307,6 +307,6 @@ try {
 
     // Redirect to login with error
     $errorMessage = urlencode('Google authentication failed: ' . $e->getMessage());
-    header('Location: ' . buildRedirectUrl($baseUrl, '/client/views/public/auth/login.html?error=' . $errorMessage));
+    header('Location: ' . buildRedirectUrl($baseUrl, '/views/public/auth/login.html?error=' . $errorMessage));
     exit;
 }

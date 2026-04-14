@@ -21,7 +21,7 @@ try {
     $protocol = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') ? 'https' : 'http';
     $host = $_SERVER['HTTP_HOST'];
     $baseUrl = $protocol . '://' . $host;
-    header('Location: ' . $baseUrl . '/client/views/public/auth/login.html?error=Please%20login%20first%20to%20link%20Google%20account');
+    header('Location: ' . $baseUrl . '/views/public/auth/login.html?error=Please%20login%20first%20to%20link%20Google%20account');
     exit;
 }
 
