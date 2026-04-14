@@ -624,6 +624,121 @@ map.on('click', e => {
 
 ---
 
+# IMPLEMENTED: Landlord Account Verification Flow
+
+## Feature Overview
+
+Implement a verification workflow where new landlords see a welcome message + pending verification notification, have read-only access until admin approval, and receive a success notification once verified.
+
+## Implementation Date
+
+April 14, 2026
+
+## Current State
+
+- ✅ Database already has `is_verified` (BOOLEAN) and `account_status` fields
+- ✅ Backend middleware (`authorizeVerifiedLandlord()`) already blocks write operations for unverified landlords
+- ✅ Frontend permissions system (`permissions.js`) already has banner and disable-write-actions logic
+- ✅ Welcome modal now mentions pending verification
+- ✅ Automatic verification check/notification on dashboard load
+- ✅ Auto-refresh polling every 30 seconds to detect when verified
+- ✅ Success notification when verification status changes
+- ✅ Backend verification status endpoint created
+
+## Features Implemented
+
+### 1. Welcome Modal After Signup (`signup-landlord.js`)
+
+- Changed message from "Your account is ready" to inform about pending verification
+- Visual indication that account is under review
+- Updated modal text: "Your account is currently under verification. You have read-only access until a superadmin approves your account."
+
+### 2. Enhanced Permissions System (`permissions.js`)
+
+- Updated the pending verification banner with "Check Status" refresh button
+- Implemented auto-refresh polling (every 30 seconds) to detect when verified
+- Show success notification when verification status changes
+- Enable write actions automatically when account becomes verified
+
+### 3. Verification Status Check on Dashboard Load (`landlord/index.js`)
+
+- On dashboard initialization, checks `is_verified` status via `/auth/me.php`
+- If not verified, shows pending banner + applies read-only restrictions
+- If already verified (after admin approval), shows success notification
+- Stores last checked status to detect changes
+
+### 4. Success Notification Component (`permissions.js`)
+
+- Reusable notification for verification success
+- Display: "🎉 Your account has been verified! You now have full access to manage your properties."
+- Auto-dismiss after 10 seconds
+- Remove pending banner when shown
+- Re-enable all write actions
+
+### 5. CSS Styles (`landlord.css`)
+
+- Styled the pending verification banner (amber/yellow theme)
+- Styled the success notification (green theme)
+- Added animations for banner and notification appearance
+- Styled disabled buttons/links with opacity and cursor changes
+- Added refresh button styles with spinning animation
+- Added toast notification styles for info/success/error/warning
+
+### 6. Backend Verification Status Endpoint (`server/api/landlord/verification-status.php`)
+
+- New endpoint: `GET /api/landlord/verification-status.php`
+- Returns current verification status for authenticated user
+- Used by frontend polling to detect when admin approves account
+- Includes user_id, role, is_verified, account_status, and timestamps
+
+## Files Modified
+
+1. `client/js/views/public/auth/signup-landlord.js` - Welcome modal message
+2. `client/js/shared/permissions.js` - Enhanced banner + auto-refresh + success notification
+3. `client/css/views/landlord/landlord.css` - Banner & notification styles
+4. `server/api/landlord/verification-status.php` - New endpoint (created)
+
+## Testing Strategy
+
+- [ ] Sign up as new landlord → verify welcome modal shows pending message
+- [ ] Navigate dashboard → confirm read-only restrictions apply
+- [ ] Manually set `is_verified=TRUE` in database → refresh dashboard → confirm success notification
+- [ ] Verify write actions are enabled after verification
+- [ ] Test auto-refresh polling by signing up and waiting for admin approval
+- [ ] Test "Check Status" button to manually trigger verification check
+
+## Admin Approval Mechanism
+
+**Note**: Admin approval UI is still needed. The admin dashboard should have:
+
+- List of pending landlord accounts awaiting verification
+- Approve/Reject buttons for each pending account
+- Update `is_verified` field via admin panel
+- This should be added to `client/js/views/admin/admin-dashboard.js` and related admin endpoints
+
+## Priority
+
+**HIGH** - Essential for maintaining platform quality and preventing fraudulent landlord accounts
+
+## Dependencies
+
+- Existing authentication system (`/auth/me.php`)
+- Database `is_verified` field on users table
+- Admin dashboard for approval workflow (future)
+- Email notification system for status updates (future)
+
+## Future Enhancements
+
+- Email notification when account is verified
+- Email notification when account is rejected with reason
+- Admin dashboard UI for approving/rejecting landlord accounts
+- Automatic rejection after X days if not reviewed
+- SMS notification for verification status
+- Document upload for verification (business permit, DTI registration)
+- Re-verification flow for suspended accounts
+
+---
+
 # TODO: Conditional Boarder Routing After Login/Signup
 
 ## Feature Overview

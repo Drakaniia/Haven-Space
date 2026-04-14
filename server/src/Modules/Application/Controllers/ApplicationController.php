@@ -87,7 +87,7 @@ class ApplicationController
      */
     public function updateStatus($request, $id)
     {
-        $user = Middleware::authorize(['landlord']);
+        $user = Middleware::authorizeVerifiedLandlord();
         $userId = $user['user_id'];
 
         $data = json_decode(file_get_contents('php://input'), true);

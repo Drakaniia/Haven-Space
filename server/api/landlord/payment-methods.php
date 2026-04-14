@@ -12,7 +12,45 @@ if (!function_exists('getDB')) {
     require_once __DIR__ . '/../../config/database.php';
 }
 
+// Include middleware for authentication
+require_once __DIR__ . '/../middleware.php';
+
+use App\Api\Middleware;
+
 header('Content-Type: application/json');
+
+/**
+ * Helper: authenticate and verify landlord ownership
+ * Validates the JWT token and ensures the authenticated user matches the requested userId.
+ * Returns the authenticated user payload or exits with an error response.
+ */
+function authenticateLandlord($requestedUserId) {
+    $user = Middleware::authenticate();
+
+    // Ensure the authenticated user is requesting their own data
+    if ((int) $user['user_id'] !== (int) $requestedUserId) {
+        http_response_code(403);
+        echo json_encode([
+            'success' => false,
+            'error' => 'Forbidden: You can only access your own payment methods'
+        ]);
+        exit;
+    }
+
+    // For write operations, require verified landlord
+    $method = $_SERVER['REQUEST_METHOD'];
+    $writeMethods = ['POST', 'PUT', 'PATCH', 'DELETE'];
+    if (in_array($method, $writeMethods) && empty($user['is_verified'])) {
+        http_response_code(403);
+        echo json_encode([
+            'success' => false,
+            'error' => 'Your account is pending verification. Write operations are not allowed until an admin approves your account.'
+        ]);
+        exit;
+    }
+
+    return $user;
+}
 
 /**
  * POST /api/landlord/payment-methods.php
@@ -32,7 +70,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $input = json_decode(file_get_contents('php://input'), true);
 
     // Validate required fields
-    if (!isset($input['userId']) || !isset($input['methodType']) || 
+    if (!isset($input['userId']) || !isset($input['methodType']) ||
         !isset($input['accountNumber']) || !isset($input['accountName'])) {
         http_response_code(400);
         echo json_encode([
@@ -41,6 +79,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         ]);
         exit;
     }
+
+    // Authenticate and verify ownership + verification status
+    authenticateLandlord($input['userId']);
 
     $userId = intval($input['userId']);
     $methodType = $input['methodType'];
@@ -167,6 +208,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
         exit;
     }
 
+    // Authenticate and verify ownership
+    authenticateLandlord($_GET['userId']);
+
     $userId = intval($_GET['userId']);
 
     try {
@@ -236,6 +280,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'PATCH') {
         ]);
         exit;
     }
+
+    // Authenticate and verify ownership + verification status
+    authenticateLandlord($input['userId']);
 
     $userId = intval($input['userId']);
     $paymentMethodId = intval($input['paymentMethodId']);
@@ -356,6 +403,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'DELETE') {
         ]);
         exit;
     }
+
+    // Authenticate and verify ownership + verification status
+    authenticateLandlord($input['userId']);
 
     $userId = intval($input['userId']);
     $paymentMethodId = intval($input['paymentMethodId']);

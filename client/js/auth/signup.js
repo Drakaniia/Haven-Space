@@ -462,6 +462,9 @@ document.addEventListener('DOMContentLoaded', function () {
             const loginResult = await loginResponse.json();
             localStorage.setItem('user', JSON.stringify(loginResult.user));
 
+            // Mark as new landlord for welcome message display
+            localStorage.setItem('landlordStatus', 'new');
+
             // Redirect to landlord dashboard
             const basePath = getBasePath();
             window.location.href = `${basePath}landlord/index.html`;

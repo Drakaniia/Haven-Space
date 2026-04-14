@@ -3,6 +3,7 @@
  * Handles dashboard-specific interactions and dynamic content loading
  */
 
+import CONFIG from '../../config.js';
 import { getIcon } from '../../shared/icons.js';
 
 /**
@@ -44,6 +45,9 @@ export function initLandlordDashboard(config = {}) {
 
   // Load dashboard data (placeholder for API integration)
   loadDashboardData();
+
+  // Load payment overview data
+  loadPaymentOverview();
 }
 
 /**
@@ -70,37 +74,111 @@ function updateGreeting(name) {
 
 /**
  * Load dashboard data from API
- * Placeholder for future API integration
  */
 async function loadDashboardData() {
-  // TODO: Implement API calls to fetch:
-  // - Occupancy rate
-  // - Monthly revenue
-  // - Upcoming renewals
-  // - Payment alerts (yellow/red status)
-  // - Recent applications
-  // - Recent activity feed
-  // - Property listings
-  // Example structure for API integration:
-  // try {
-  //   const response = await fetch('/api/landlord/dashboard');
-  //   const data = await response.json();
-  //   updateDashboardStats(data);
-  // } catch (error) {
-  //   console.error('Failed to load dashboard data:', error);
-  // }
+  try {
+    const response = await fetch(`${CONFIG.API_BASE_URL}/api/landlord/dashboard-stats.php`, {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      credentials: 'include',
+    });
+
+    if (!response.ok) {
+      throw new Error('Failed to fetch dashboard data');
+    }
+
+    const result = await response.json();
+
+    if (result.data) {
+      _updateDashboardStats(result.data);
+    }
+  } catch (error) {
+    console.error('Failed to load dashboard data:', error);
+    // Show error state in UI
+    _showErrorState();
+  }
 }
 
 /**
  * Update dashboard stats with fetched data
- * @param {Object} _data - Dashboard data from API
+ * @param {Object} data - Dashboard data from API
  */
-function _updateDashboardStats(_data) {
-  // TODO: Update stat cards with real data
-  // - Occupancy rate
-  // - Monthly revenue
-  // - Upcoming renewals count
-  // - Payment alerts count
+function _updateDashboardStats(data) {
+  // Update Occupancy Rate
+  const occupancyElement = document.querySelector('[data-stat="occupancy-rate"]');
+  if (occupancyElement && data.occupancy) {
+    occupancyElement.textContent = `${data.occupancy.rate}%`;
+
+    // Update trend indicator
+    const trendElement = occupancyElement.parentElement.querySelector(
+      '[data-stat="occupancy-trend"]'
+    );
+    if (trendElement) {
+      const trend = data.occupancy.trend;
+      const trendClass = trend > 0 ? 'trend-up' : trend < 0 ? 'trend-down' : 'trend-neutral';
+      const trendSymbol = trend > 0 ? '↑' : trend < 0 ? '↓' : '•';
+      trendElement.className = `trend-indicator ${trendClass}`;
+      trendElement.textContent = `${trendSymbol} ${Math.abs(trend)}%`;
+    }
+  }
+
+  // Update Monthly Revenue
+  const revenueElement = document.querySelector('[data-stat="monthly-revenue"]');
+  if (revenueElement && data.revenue) {
+    const formattedRevenue = new Intl.NumberFormat('en-PH', {
+      style: 'currency',
+      currency: 'PHP',
+      minimumFractionDigits: 0,
+      maximumFractionDigits: 0,
+    }).format(data.revenue.monthly);
+    revenueElement.textContent = formattedRevenue.replace('PHP', '₱');
+
+    // Update trend indicator
+    const trendElement = revenueElement.parentElement.querySelector('[data-stat="revenue-trend"]');
+    if (trendElement) {
+      const trend = data.revenue.trend;
+      const trendClass = trend > 0 ? 'trend-up' : trend < 0 ? 'trend-down' : 'trend-neutral';
+      const trendSymbol = trend > 0 ? '↑' : trend < 0 ? '↓' : '•';
+      trendElement.className = `trend-indicator ${trendClass}`;
+      trendElement.textContent = `${trendSymbol} ${Math.abs(trend)}%`;
+    }
+  }
+
+  // Update Upcoming Renewals
+  const renewalsElement = document.querySelector('[data-stat="upcoming-renewals"]');
+  if (renewalsElement && data.renewals) {
+    renewalsElement.textContent = data.renewals.upcoming_count;
+  }
+
+  // Update Payment Alerts
+  const dueSoonElement = document.querySelector('[data-stat="due-soon-count"]');
+  const overdueElement = document.querySelector('[data-stat="overdue-count"]');
+  const paymentAlertsTextElement = document.querySelector('[data-stat="payment-alerts-text"]');
+  if (dueSoonElement && overdueElement && data.payment_alerts) {
+    dueSoonElement.textContent = data.payment_alerts.due_soon;
+    overdueElement.textContent = data.payment_alerts.overdue;
+
+    // Update the payment alerts description text
+    if (paymentAlertsTextElement) {
+      paymentAlertsTextElement.textContent = `${data.payment_alerts.due_soon} due soon, ${data.payment_alerts.overdue} overdue`;
+    }
+  }
+}
+
+/**
+ * Show error state when data fails to load
+ */
+function _showErrorState() {
+  // Optionally show error indicators in stat cards
+  const statValues = document.querySelectorAll('.landlord-stat-value');
+  statValues.forEach(element => {
+    if (!element.dataset.error) {
+      element.dataset.error = 'true';
+      element.style.opacity = '0.5';
+    }
+  });
 }
 
 /**
@@ -260,3 +338,267 @@ document.addEventListener('DOMContentLoaded', () => {
   initPaymentReminderButtons();
   initApplicationActionButtons();
 });
+
+/**
+ * Load payment overview data from API
+ * Falls back to sample data if API is unavailable
+ */
+async function loadPaymentOverview() {
+  const container = document.getElementById('payment-overview-container');
+  if (!container) return;
+
+  try {
+    const response = await fetch(`${CONFIG.API_BASE_URL}/api/landlord/payment-overview.php`, {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      credentials: 'include',
+    });
+
+    if (!response.ok) {
+      throw new Error('Failed to fetch payment overview');
+    }
+
+    const result = await response.json();
+
+    if (result.data) {
+      renderPaymentOverview(result.data, container);
+    }
+  } catch (error) {
+    console.error('Failed to load payment overview:', error);
+    container.innerHTML = `
+      <div class="landlord-payment-status-card">
+        <p style="text-align: center; color: var(--text-gray); padding: 2rem;">
+          No payment data available yet.
+        </p>
+      </div>
+    `;
+  }
+}
+
+/**
+ * Render payment overview data
+ * @param {Object} data - Payment overview data from API
+ * @param {HTMLElement} container - Container element to render into
+ */
+function renderPaymentOverview(data, container) {
+  const { on_track, due_soon, overdue } = data;
+
+  let html = '';
+
+  // Render On Track Payments
+  if (on_track.count > 0) {
+    html += `
+      <div class="landlord-payment-status-card landlord-payment-green">
+        <div class="landlord-payment-status-header">
+          <div class="landlord-payment-status-indicator">
+            <span class="landlord-traffic-light landlord-light-green"></span>
+            <span class="landlord-payment-status-label">On Track</span>
+          </div>
+          <span class="landlord-payment-count">${on_track.count} payment${
+      on_track.count !== 1 ? 's' : ''
+    }</span>
+        </div>
+        <div class="landlord-payment-status-body">
+          ${on_track.payments
+            .slice(0, 3)
+            .map(payment => renderPaymentCard(payment, 'green'))
+            .join('')}
+        </div>
+      </div>
+    `;
+  }
+
+  // Render Due Soon Payments
+  if (due_soon.count > 0) {
+    html += `
+      <div class="landlord-payment-status-card landlord-payment-yellow">
+        <div class="landlord-payment-status-header">
+          <div class="landlord-payment-status-indicator">
+            <span class="landlord-traffic-light landlord-light-yellow"></span>
+            <span class="landlord-payment-status-label">Due Soon</span>
+          </div>
+          <span class="landlord-payment-count">7-14 days</span>
+        </div>
+        <div class="landlord-payment-status-body">
+          ${due_soon.payments
+            .slice(0, 3)
+            .map(payment => renderPaymentCard(payment, 'yellow'))
+            .join('')}
+        </div>
+      </div>
+    `;
+  }
+
+  // Render Overdue Payments
+  if (overdue.count > 0) {
+    html += `
+      <div class="landlord-payment-status-card landlord-payment-red">
+        <div class="landlord-payment-status-header">
+          <div class="landlord-payment-status-indicator">
+            <span class="landlord-traffic-light landlord-light-red"></span>
+            <span class="landlord-payment-status-label">Overdue</span>
+          </div>
+          <span class="landlord-payment-count">${
+            overdue.payments[0]?.days_overdue || 0
+          } days late</span>
+        </div>
+        <div class="landlord-payment-status-body">
+          ${overdue.payments
+            .slice(0, 3)
+            .map(payment => renderPaymentCard(payment, 'red'))
+            .join('')}
+        </div>
+      </div>
+    `;
+  }
+
+  // Show empty state if no payments
+  if (!html) {
+    html = `
+      <div class="landlord-payment-status-card">
+        <p style="text-align: center; color: var(--text-gray); padding: 2rem;">
+          No payment records found. Payments will appear here once boarders have active rentals.
+        </p>
+      </div>
+    `;
+  }
+
+  container.innerHTML = html;
+
+  // Inject icons after rendering
+  injectIcons();
+
+  // Attach event listeners to buttons
+  attachPaymentActionListeners();
+}
+
+/**
+ * Render individual payment card
+ * @param {Object} payment - Payment data
+ * @param {string} status - Payment status (green, yellow, red)
+ * @returns {string} HTML string
+ */
+function renderPaymentCard(payment, status) {
+  const dueDate = new Date(payment.due_date);
+  const formattedDueDate = dueDate.toLocaleDateString('en-US', {
+    month: 'short',
+    day: 'numeric',
+    year: 'numeric',
+  });
+
+  const formattedAmount = new Intl.NumberFormat('en-PH', {
+    style: 'currency',
+    currency: 'PHP',
+    minimumFractionDigits: 0,
+  })
+    .format(payment.total_amount)
+    .replace('PHP', '₱');
+
+  let html = `
+    <div class="landlord-payment-row">
+      <div class="landlord-payment-info">
+        <h4 class="landlord-payment-tenant-name">${escapeHtml(payment.full_name)}</h4>
+        <p class="landlord-payment-property">${escapeHtml(payment.property_title)} - ${escapeHtml(
+    payment.room_title
+  )}</p>
+      </div>
+      <div class="landlord-payment-meta">
+        <span class="landlord-payment-amount">${formattedAmount}</span>
+  `;
+
+  if (status === 'red') {
+    html += `<span class="landlord-payment-due">Was due: ${formattedDueDate}</span>`;
+  } else {
+    html += `<span class="landlord-payment-due">Due: ${formattedDueDate}</span>`;
+  }
+
+  html += `</div></div>`;
+
+  // Add overdue notice
+  if (status === 'red' && payment.late_fee > 0) {
+    const formattedLateFee = new Intl.NumberFormat('en-PH', {
+      style: 'currency',
+      currency: 'PHP',
+      minimumFractionDigits: 0,
+    })
+      .format(payment.late_fee)
+      .replace('PHP', '₱');
+
+    html += `
+      <div class="landlord-overdue-notice">
+        <span
+          data-icon="info"
+          data-icon-width="24"
+          data-icon-height="24"
+          data-icon-stroke-width="2"
+        ></span>
+        <div>
+          <strong>Late fee applied:</strong> ${formattedLateFee} | <strong>Total due:</strong> ${formattedAmount}
+        </div>
+      </div>
+    `;
+  }
+
+  // Add action buttons for yellow and red status
+  if (status === 'yellow' || status === 'red') {
+    html += `
+      <div class="landlord-payment-actions">
+        <button class="landlord-btn landlord-btn-outline landlord-btn-sm" data-action="send-reminder" data-payment-id="${
+          payment.id
+        }" data-tenant-name="${escapeHtml(payment.full_name)}">
+          ${status === 'yellow' ? 'Send Reminder' : 'Send Notice'}
+        </button>
+        <button class="landlord-btn landlord-btn-primary landlord-btn-sm" data-action="record-payment" data-payment-id="${
+          payment.id
+        }">
+          Record Payment
+        </button>
+      </div>
+    `;
+  }
+
+  return html;
+}
+
+/**
+ * Escape HTML to prevent XSS
+ * @param {string} text - Text to escape
+ * @returns {string} Escaped text
+ */
+function escapeHtml(text) {
+  if (!text) return '';
+  const div = document.createElement('div');
+  div.textContent = text;
+  return div.innerHTML;
+}
+
+/**
+ * Attach event listeners to payment action buttons
+ */
+function attachPaymentActionListeners() {
+  const reminderButtons = document.querySelectorAll('[data-action="send-reminder"]');
+  const recordPaymentButtons = document.querySelectorAll('[data-action="record-payment"]');
+
+  reminderButtons.forEach(button => {
+    button.addEventListener('click', async () => {
+      const paymentId = button.dataset.paymentId;
+      const tenantName = button.dataset.tenantName;
+
+      if (paymentId && tenantName) {
+        await sendPaymentReminder(parseInt(paymentId), tenantName);
+      }
+    });
+  });
+
+  recordPaymentButtons.forEach(button => {
+    button.addEventListener('click', () => {
+      const paymentId = button.dataset.paymentId;
+      if (paymentId) {
+        // Navigate to payment record page
+        window.location.href = `../payments/record.html?id=${paymentId}`;
+      }
+    });
+  });
+}

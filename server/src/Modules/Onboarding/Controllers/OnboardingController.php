@@ -42,7 +42,7 @@ class OnboardingController
      */
     public function saveWelcomeTemplate($request)
     {
-        $user = Middleware::authorize(['landlord']);
+        $user = Middleware::authorizeVerifiedLandlord();
         $userId = $user['user_id'];
 
         $data = json_decode(file_get_contents('php://input'), true);
@@ -86,7 +86,7 @@ class OnboardingController
      */
     public function uploadDocument($request)
     {
-        $user = Middleware::authorize(['landlord']);
+        $user = Middleware::authorizeVerifiedLandlord();
         $userId = $user['user_id'];
 
         if (!isset($_FILES['document'])) {
@@ -116,7 +116,7 @@ class OnboardingController
      */
     public function toggleAutoSend($request)
     {
-        $user = Middleware::authorize(['landlord']);
+        $user = Middleware::authorizeVerifiedLandlord();
         $userId = $user['user_id'];
 
         $data = json_decode(file_get_contents('php://input'), true);
@@ -158,7 +158,7 @@ class OnboardingController
      */
     public function deleteDocument($request, $id)
     {
-        $user = Middleware::authorize(['landlord']);
+        $user = Middleware::authorizeVerifiedLandlord();
         $userId = $user['user_id'];
 
         try {
@@ -217,7 +217,7 @@ class OnboardingController
      */
     public function triggerWelcome($request)
     {
-        $user = Middleware::authorize(['landlord']);
+        $user = Middleware::authorizeVerifiedLandlord();
         $userId = $user['user_id'];
 
         $data = json_decode(file_get_contents('php://input'), true);

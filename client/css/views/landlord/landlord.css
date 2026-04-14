@@ -957,6 +957,190 @@
   margin: 0;
 }
 
+/* ===== Welcome Banner for New Landlords ===== */
+.landlord-welcome-banner {
+  background: linear-gradient(135deg, #dbeafe 0%, #bfdbfe 100%);
+  border: 1px solid #3b82f6;
+  border-radius: 12px;
+  padding: 24px;
+  margin-bottom: 24px;
+  animation: bannerSlideIn 0.4s ease-out;
+  position: relative;
+}
+
+.landlord-welcome-banner.banner-closing {
+  animation: bannerSlideOut 0.3s ease-in;
+  opacity: 0;
+}
+
+@keyframes bannerSlideOut {
+  from {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  to {
+    opacity: 0;
+    transform: translateY(-12px);
+  }
+}
+
+.landlord-welcome-banner-content {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.landlord-welcome-banner-header {
+  display: flex;
+  gap: 16px;
+  align-items: flex-start;
+}
+
+.landlord-welcome-banner-icon {
+  flex-shrink: 0;
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  background-color: rgba(59, 130, 246, 0.2);
+  color: #2563eb;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.landlord-welcome-banner-icon svg {
+  width: 28px;
+  height: 28px;
+}
+
+.landlord-welcome-banner-text {
+  flex: 1;
+}
+
+.landlord-welcome-banner-text h3 {
+  font-size: 18px;
+  font-weight: 700;
+  color: #1e40af;
+  margin: 0 0 8px 0;
+}
+
+.landlord-welcome-banner-text p {
+  font-size: 14px;
+  color: #1e3a8a;
+  line-height: 1.5;
+  margin: 0;
+}
+
+.landlord-welcome-banner-body {
+  margin-top: 8px;
+}
+
+.landlord-welcome-features {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.landlord-welcome-feature {
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+  background-color: rgba(255, 255, 255, 0.6);
+  padding: 12px;
+  border-radius: 8px;
+}
+
+.landlord-welcome-feature-icon {
+  flex-shrink: 0;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background-color: rgba(59, 130, 246, 0.15);
+  color: #2563eb;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.landlord-welcome-feature-icon svg {
+  width: 18px;
+  height: 18px;
+}
+
+.landlord-welcome-feature-text {
+  flex: 1;
+}
+
+.landlord-welcome-feature-text strong {
+  font-size: 14px;
+  font-weight: 600;
+  color: #1e40af;
+  display: block;
+  margin-bottom: 4px;
+}
+
+.landlord-welcome-feature-text p {
+  font-size: 13px;
+  color: #1e3a8a;
+  line-height: 1.5;
+  margin: 0;
+}
+
+.landlord-welcome-banner-close {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  width: 32px;
+  height: 32px;
+  border: none;
+  background-color: rgba(255, 255, 255, 0.8);
+  border-radius: 50%;
+  color: #2563eb;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+}
+
+.landlord-welcome-banner-close:hover {
+  background-color: #ffffff;
+  transform: scale(1.1);
+}
+
+.landlord-welcome-banner-close:active {
+  transform: scale(0.95);
+}
+
+.landlord-welcome-banner-close svg {
+  width: 18px;
+  height: 18px;
+}
+
+/* Responsive welcome banner */
+@media (max-width: 768px) {
+  .landlord-welcome-banner {
+    padding: 20px;
+  }
+
+  .landlord-welcome-banner-header {
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+  }
+
+  .landlord-welcome-banner-icon {
+    width: 40px;
+    height: 40px;
+  }
+
+  .landlord-welcome-feature {
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+  }
+}
+
 /* ===== Disabled Action State (read-only mode) ===== */
 .landlord-action-disabled {
   opacity: 0.45;
@@ -969,4 +1153,264 @@
 .landlord-action-disabled:hover {
   transform: none !important;
   box-shadow: none !important;
+}
+
+/* ===== Verification Success Notification ===== */
+.verification-success-notification {
+  background: linear-gradient(135deg, #d1fae5 0%, #a7f3d0 100%);
+  border: 1px solid #10b981;
+  border-radius: 12px;
+  padding: 16px 20px;
+  margin-bottom: 24px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 16px;
+  animation: notificationSlideIn 0.4s ease-out;
+  box-shadow: 0 4px 12px rgba(16, 185, 129, 0.15);
+}
+
+@keyframes notificationSlideIn {
+  from {
+    opacity: 0;
+    transform: translateY(-12px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.verification-success-notification.notification-dismissed {
+  animation: notificationSlideOut 0.3s ease-in;
+  opacity: 0;
+}
+
+@keyframes notificationSlideOut {
+  from {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  to {
+    opacity: 0;
+    transform: translateY(-12px);
+  }
+}
+
+.verification-success-content {
+  display: flex;
+  gap: 16px;
+  align-items: flex-start;
+  flex: 1;
+}
+
+.verification-success-icon {
+  flex-shrink: 0;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background-color: rgba(16, 185, 129, 0.2);
+  color: #059669;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.verification-success-icon svg {
+  width: 22px;
+  height: 22px;
+}
+
+.verification-success-text {
+  flex: 1;
+}
+
+.verification-success-text strong {
+  font-size: 15px;
+  font-weight: 700;
+  color: #064e3b;
+  display: block;
+  margin-bottom: 4px;
+}
+
+.verification-success-text p {
+  font-size: 13px;
+  color: #065f46;
+  line-height: 1.5;
+  margin: 0;
+}
+
+.verification-success-close {
+  flex-shrink: 0;
+  width: 32px;
+  height: 32px;
+  border-radius: 6px;
+  border: none;
+  background-color: rgba(16, 185, 129, 0.1);
+  color: #059669;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+}
+
+.verification-success-close:hover {
+  background-color: rgba(16, 185, 129, 0.2);
+}
+
+.verification-success-close svg {
+  width: 16px;
+  height: 16px;
+}
+
+/* ===== Pending Banner Refresh Button ===== */
+.landlord-pending-banner-refresh {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 16px;
+  border-radius: 8px;
+  border: 1px solid #d97706;
+  background-color: rgba(217, 119, 6, 0.1);
+  color: #92400e;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.landlord-pending-banner-refresh:hover:not(:disabled) {
+  background-color: rgba(217, 119, 6, 0.2);
+  border-color: #b45309;
+}
+
+.landlord-pending-banner-refresh:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.landlord-pending-banner-refresh.refreshing svg {
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.landlord-pending-banner-refresh svg {
+  width: 20px;
+  height: 20px;
+}
+
+/* ===== Toast Notification Styles ===== */
+.toast-notification {
+  position: fixed;
+  top: 24px;
+  right: 24px;
+  max-width: 400px;
+  background-color: var(--dashboard-surface);
+  border-radius: 12px;
+  padding: 16px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+  z-index: 10000;
+  opacity: 0;
+  transform: translateX(100%);
+  transition: all 0.3s ease;
+}
+
+.toast-notification.toast-visible {
+  opacity: 1;
+  transform: translateX(0);
+}
+
+.toast-notification.toast-error {
+  border: 1px solid var(--dashboard-red);
+}
+
+.toast-notification.toast-success {
+  border: 1px solid var(--dashboard-success);
+}
+
+.toast-notification.toast-warning {
+  border: 1px solid var(--dashboard-warning);
+}
+
+.toast-notification.toast-info {
+  border: 1px solid var(--dashboard-info);
+}
+
+.toast-icon {
+  flex-shrink: 0;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.toast-error .toast-icon {
+  background-color: rgba(239, 68, 68, 0.1);
+  color: var(--dashboard-red);
+}
+
+.toast-success .toast-icon {
+  background-color: rgba(34, 197, 94, 0.1);
+  color: var(--dashboard-success);
+}
+
+.toast-warning .toast-icon {
+  background-color: rgba(245, 158, 11, 0.1);
+  color: var(--dashboard-warning);
+}
+
+.toast-info .toast-icon {
+  background-color: rgba(59, 130, 246, 0.1);
+  color: var(--dashboard-info);
+}
+
+.toast-icon svg {
+  width: 20px;
+  height: 20px;
+}
+
+.toast-content {
+  flex: 1;
+  font-size: 14px;
+  color: var(--dashboard-text-primary);
+  line-height: 1.5;
+}
+
+.toast-close {
+  flex-shrink: 0;
+  width: 24px;
+  height: 24px;
+  border-radius: 6px;
+  border: none;
+  background-color: transparent;
+  color: var(--dashboard-text-secondary);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+}
+
+.toast-close:hover {
+  background-color: rgba(0, 0, 0, 0.05);
+}
+
+.toast-close svg {
+  width: 16px;
+  height: 16px;
 }
