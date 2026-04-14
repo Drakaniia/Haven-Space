@@ -20,6 +20,24 @@ PREPARE alterIfNotExists FROM @preparedStatement;
 EXECUTE alterIfNotExists;
 DEALLOCATE PREPARE alterIfNotExists;
 
+-- Add deleted_at to users table (soft-delete support)
+SET @tablename = 'users';
+SET @columnname = 'deleted_at';
+SET @preparedStatement = (SELECT IF(
+  (
+    SELECT COUNT(*) FROM INFORMATION_SCHEMA.COLUMNS
+    WHERE
+      (table_name = @tablename)
+      AND (table_schema = @dbname)
+      AND (column_name = @columnname)
+  ) > 0,
+  "SELECT 1",
+  CONCAT("ALTER TABLE ", @tablename, " ADD COLUMN ", @columnname, " TIMESTAMP NULL DEFAULT NULL AFTER updated_at")
+));
+PREPARE alterIfNotExists FROM @preparedStatement;
+EXECUTE alterIfNotExists;
+DEALLOCATE PREPARE alterIfNotExists;
+
 -- Add listing_moderation_status to properties if it doesn't exist
 SET @tablename = 'properties';
 SET @columnname = 'listing_moderation_status';
@@ -33,6 +51,42 @@ SET @preparedStatement = (SELECT IF(
   ) > 0,
   "SELECT 1",
   CONCAT("ALTER TABLE ", @tablename, " ADD COLUMN ", @columnname, " ENUM('pending_review', 'published', 'rejected') NOT NULL DEFAULT 'published' AFTER status")
+));
+PREPARE alterIfNotExists FROM @preparedStatement;
+EXECUTE alterIfNotExists;
+DEALLOCATE PREPARE alterIfNotExists;
+
+-- Add moderation_status alias to properties (API uses this name)
+SET @tablename = 'properties';
+SET @columnname = 'moderation_status';
+SET @preparedStatement = (SELECT IF(
+  (
+    SELECT COUNT(*) FROM INFORMATION_SCHEMA.COLUMNS
+    WHERE
+      (table_name = @tablename)
+      AND (table_schema = @dbname)
+      AND (column_name = @columnname)
+  ) > 0,
+  "SELECT 1",
+  CONCAT("ALTER TABLE ", @tablename, " ADD COLUMN ", @columnname, " ENUM('pending_review', 'published', 'rejected', 'flagged') NOT NULL DEFAULT 'published' AFTER listing_moderation_status")
+));
+PREPARE alterIfNotExists FROM @preparedStatement;
+EXECUTE alterIfNotExists;
+DEALLOCATE PREPARE alterIfNotExists;
+
+-- Add deleted_at to properties table (soft-delete support)
+SET @tablename = 'properties';
+SET @columnname = 'deleted_at';
+SET @preparedStatement = (SELECT IF(
+  (
+    SELECT COUNT(*) FROM INFORMATION_SCHEMA.COLUMNS
+    WHERE
+      (table_name = @tablename)
+      AND (table_schema = @dbname)
+      AND (column_name = @columnname)
+  ) > 0,
+  "SELECT 1",
+  CONCAT("ALTER TABLE ", @tablename, " ADD COLUMN ", @columnname, " TIMESTAMP NULL DEFAULT NULL AFTER updated_at")
 ));
 PREPARE alterIfNotExists FROM @preparedStatement;
 EXECUTE alterIfNotExists;
@@ -54,16 +108,18 @@ CREATE TABLE IF NOT EXISTS landlord_verification_log (
 CREATE TABLE IF NOT EXISTS property_reports (
     id INT AUTO_INCREMENT PRIMARY KEY,
     property_id INT NOT NULL,
-    reporter_user_id INT NOT NULL,
+    reporter_id INT NOT NULL,
     reason VARCHAR(64) NOT NULL,
     details TEXT,
     status ENUM('open', 'reviewing', 'resolved', 'dismissed') NOT NULL DEFAULT 'open',
-    admin_notes TEXT,
+    resolution_notes TEXT,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    deleted_at TIMESTAMP NULL DEFAULT NULL,
     FOREIGN KEY (property_id) REFERENCES properties(id) ON DELETE CASCADE,
-    FOREIGN KEY (reporter_user_id) REFERENCES users(id) ON DELETE CASCADE,
-    INDEX idx_status (status)
+    FOREIGN KEY (reporter_id) REFERENCES users(id) ON DELETE CASCADE,
+    INDEX idx_status (status),
+    INDEX idx_deleted_at (deleted_at)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 CREATE TABLE IF NOT EXISTS disputes (
@@ -71,17 +127,19 @@ CREATE TABLE IF NOT EXISTS disputes (
     type ENUM('payment', 'tenancy', 'property', 'other') NOT NULL,
     title VARCHAR(255) NOT NULL,
     description TEXT,
-    opened_by_user_id INT NOT NULL,
+    opened_by INT NOT NULL,
     related_user_id INT NULL,
     related_property_id INT NULL,
     status ENUM('open', 'in_review', 'resolved', 'escalated') NOT NULL DEFAULT 'open',
     resolution_notes TEXT,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-    FOREIGN KEY (opened_by_user_id) REFERENCES users(id) ON DELETE CASCADE,
+    deleted_at TIMESTAMP NULL DEFAULT NULL,
+    FOREIGN KEY (opened_by) REFERENCES users(id) ON DELETE CASCADE,
     FOREIGN KEY (related_user_id) REFERENCES users(id) ON DELETE SET NULL,
     FOREIGN KEY (related_property_id) REFERENCES properties(id) ON DELETE SET NULL,
-    INDEX idx_dispute_status (status)
+    INDEX idx_dispute_status (status),
+    INDEX idx_deleted_at (deleted_at)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 CREATE TABLE IF NOT EXISTS platform_settings (
@@ -115,6 +173,7 @@ CREATE TABLE IF NOT EXISTS applications (
     status VARCHAR(32) NOT NULL DEFAULT 'pending',
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    deleted_at TIMESTAMP NULL DEFAULT NULL,
     FOREIGN KEY (boarder_id) REFERENCES users(id) ON DELETE CASCADE,
     FOREIGN KEY (landlord_id) REFERENCES users(id) ON DELETE CASCADE,
     FOREIGN KEY (room_id) REFERENCES rooms(id) ON DELETE CASCADE,
@@ -122,8 +181,13 @@ CREATE TABLE IF NOT EXISTS applications (
     INDEX idx_boarder (boarder_id),
     INDEX idx_landlord (landlord_id),
     INDEX idx_status (status),
-    INDEX idx_created (created_at)
+    INDEX idx_created (created_at),
+    INDEX idx_deleted_at (deleted_at)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- Add indexes for deleted_at columns (performance)
+CREATE INDEX IF NOT EXISTS idx_users_deleted_at ON users(deleted_at);
+CREATE INDEX IF NOT EXISTS idx_properties_deleted_at ON properties(deleted_at);
 
 INSERT IGNORE INTO platform_settings (setting_key, setting_value) VALUES
     ('maintenance_message', ''),
