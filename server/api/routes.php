@@ -165,6 +165,12 @@ Router::post('/api/boarder/documents/acknowledge', [OnboardingController::class,
 Router::post('/api/onboarding/welcome', [OnboardingController::class, 'triggerWelcome']);
 
 // ============================================
+// LANDLORD DASHBOARD ROUTES
+// ============================================
+// Dashboard stats endpoint (handled directly by file)
+// GET /api/landlord/dashboard/stats -> /server/api/landlord/dashboard-stats.php
+
+// ============================================
 // DISPATCH THE REQUEST
 // ============================================
 $method = $_SERVER['REQUEST_METHOD'];

@@ -70,9 +70,9 @@
                   ></span>
                 </div>
               </div>
-              <div class="landlord-stat-value">85%</div>
+              <div class="landlord-stat-value" data-stat="occupancy-rate">--%</div>
               <div class="landlord-stat-description">
-                <span class="trend-indicator trend-up">↑ 12%</span>
+                <span class="trend-indicator trend-up" data-stat="occupancy-trend">--</span>
                 vs. last month
               </div>
             </div>
@@ -89,9 +89,9 @@
                   ></span>
                 </div>
               </div>
-              <div class="landlord-stat-value">₱47,500</div>
+              <div class="landlord-stat-value" data-stat="monthly-revenue">--</div>
               <div class="landlord-stat-description">
-                <span class="trend-indicator trend-up">↑ 8%</span>
+                <span class="trend-indicator trend-up" data-stat="revenue-trend">--</span>
                 vs. last month
               </div>
             </div>
@@ -108,7 +108,7 @@
                   ></span>
                 </div>
               </div>
-              <div class="landlord-stat-value">4</div>
+              <div class="landlord-stat-value" data-stat="upcoming-renewals">--</div>
               <div class="landlord-stat-description">
                 <span class="trend-indicator trend-neutral">•</span>
                 This month
@@ -128,12 +128,12 @@
                 </div>
               </div>
               <div class="landlord-stat-value">
-                <span class="alert-count-yellow">2</span> /
-                <span class="alert-count-red">1</span>
+                <span class="alert-count-yellow" data-stat="due-soon-count">--</span> /
+                <span class="alert-count-red" data-stat="overdue-count">--</span>
               </div>
               <div class="landlord-stat-description">
                 <span class="trend-indicator trend-warning">⚠</span>
-                2 due soon, 1 overdue
+                <span data-stat="payment-alerts-text">-- due soon, -- overdue</span>
               </div>
             </div>
           </div>
@@ -162,101 +162,10 @@
                   ></span>
                 </a>
               </div>
-              <div class="landlord-payment-status-list">
-                <!-- Green Status - On Track -->
-                <div class="landlord-payment-status-card landlord-payment-green">
-                  <div class="landlord-payment-status-header">
-                    <div class="landlord-payment-status-indicator">
-                      <span class="landlord-traffic-light landlord-light-green"></span>
-                      <span class="landlord-payment-status-label">On Track</span>
-                    </div>
-                    <span class="landlord-payment-count">12 payments</span>
-                  </div>
-                  <div class="landlord-payment-status-body">
-                    <div class="landlord-payment-row">
-                      <div class="landlord-payment-info">
-                        <h4 class="landlord-payment-tenant-name">Maria Santos</h4>
-                        <p class="landlord-payment-property">Sunrise Dormitory - Room 201</p>
-                      </div>
-                      <div class="landlord-payment-meta">
-                        <span class="landlord-payment-amount">₱5,500</span>
-                        <span class="landlord-payment-due">Due: Feb 15, 2025</span>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-
-                <!-- Yellow Status - Due Soon (Warning) -->
-                <div class="landlord-payment-status-card landlord-payment-yellow">
-                  <div class="landlord-payment-status-header">
-                    <div class="landlord-payment-status-indicator">
-                      <span class="landlord-traffic-light landlord-light-yellow"></span>
-                      <span class="landlord-payment-status-label">Due Soon</span>
-                    </div>
-                    <span class="landlord-payment-count">7-14 days</span>
-                  </div>
-                  <div class="landlord-payment-status-body">
-                    <div class="landlord-payment-row">
-                      <div class="landlord-payment-info">
-                        <h4 class="landlord-payment-tenant-name">Jose Reyes</h4>
-                        <p class="landlord-payment-property">Green Valley - Room 105</p>
-                      </div>
-                      <div class="landlord-payment-meta">
-                        <span class="landlord-payment-amount">₱4,500</span>
-                        <span class="landlord-payment-due">Due: Jan 31, 2025</span>
-                      </div>
-                    </div>
-                    <div class="landlord-payment-actions">
-                      <button class="landlord-btn landlord-btn-outline landlord-btn-sm">
-                        Send Reminder
-                      </button>
-                      <button class="landlord-btn landlord-btn-primary landlord-btn-sm">
-                        Record Payment
-                      </button>
-                    </div>
-                  </div>
-                </div>
-
-                <!-- Red Status - Overdue -->
-                <div class="landlord-payment-status-card landlord-payment-red">
-                  <div class="landlord-payment-status-header">
-                    <div class="landlord-payment-status-indicator">
-                      <span class="landlord-traffic-light landlord-light-red"></span>
-                      <span class="landlord-payment-status-label">Overdue</span>
-                    </div>
-                    <span class="landlord-payment-count">3 days late</span>
-                  </div>
-                  <div class="landlord-payment-status-body">
-                    <div class="landlord-payment-row">
-                      <div class="landlord-payment-info">
-                        <h4 class="landlord-payment-tenant-name">Pedro Cruz</h4>
-                        <p class="landlord-payment-property">Metro Boarding - Room 302</p>
-                      </div>
-                      <div class="landlord-payment-meta">
-                        <span class="landlord-payment-amount">₱5,000</span>
-                        <span class="landlord-payment-due">Was due: Jan 20, 2025</span>
-                      </div>
-                    </div>
-                    <div class="landlord-overdue-notice">
-                      <span
-                        data-icon="info"
-                        data-icon-width="24"
-                        data-icon-height="24"
-                        data-icon-stroke-width="2"
-                      ></span>
-                      <div>
-                        <strong>Late fee applied:</strong> ₱250 | <strong>Total due:</strong> ₱5,250
-                      </div>
-                    </div>
-                    <div class="landlord-payment-actions">
-                      <button class="landlord-btn landlord-btn-outline landlord-btn-sm">
-                        Send Notice
-                      </button>
-                      <button class="landlord-btn landlord-btn-primary landlord-btn-sm">
-                        Record Payment
-                      </button>
-                    </div>
-                  </div>
+              <div id="payment-overview-container" class="landlord-payment-status-list">
+                <!-- Payment data will be dynamically loaded here from backend -->
+                <div class="landlord-loading-state" style="text-align: center; padding: 2rem">
+                  <p style="color: var(--text-gray)">Loading payment data...</p>
                 </div>
               </div>
             </div>

@@ -1296,7 +1296,7 @@ function showWelcomeModal(_userData) {
         Thank you for signing up, Landlord! Your account has been created successfully.
       </p>
       <p class="welcome-modal-message" style="font-size: 14px; color: var(--text-gray); margin-top: 8px;">
-        Your account is ready. Access your dashboard to manage your properties.
+        Your account is currently under verification. You have read-only access until a superadmin approves your account.
       </p>
       <div class="welcome-modal-actions">
         <button class="welcome-modal-btn welcome-modal-btn-primary" id="goToDashboardBtn">
