@@ -13,9 +13,18 @@ class UploadHandler
     private int $maxFileSize;
     private array $errors = [];
 
-    public function __construct(string $uploadPath = 'storage/uploads', array $allowedTypes = [], int $maxFileSize = 10485760)
+    public function __construct(string $uploadPath = '', array $allowedTypes = [], int $maxFileSize = 10485760)
     {
-        $this->uploadPath = rtrim($uploadPath, '/');
+        if (empty($uploadPath)) {
+            // Default to absolute path relative to project root
+            $this->uploadPath = realpath(__DIR__ . '/../../../../storage/uploads');
+            if (!$this->uploadPath) {
+                // If realpath fails (dir doesn't exist yet), construct it
+                $this->uploadPath = __DIR__ . '/../../../../storage/uploads';
+            }
+        } else {
+            $this->uploadPath = rtrim($uploadPath, '/');
+        }
         $this->allowedTypes = $allowedTypes ?: ['image/jpeg', 'image/png', 'image/gif', 'image/webp', 'application/pdf'];
         $this->maxFileSize = $maxFileSize; // Default: 10MB
 

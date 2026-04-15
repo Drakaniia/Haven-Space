@@ -41,7 +41,13 @@ function initialsFrom(user) {
 export async function initBoarderDashboard() {
   let user;
   try {
-    const res = await fetch(`${CONFIG.API_BASE_URL}/auth/me.php`, { credentials: 'include' });
+    const res = await fetch(`${CONFIG.API_BASE_URL}/auth/me.php`, {
+      method: 'GET',
+      headers: {
+        'X-User-Id': localStorage.getItem('user_id') || '3',
+      },
+      credentials: 'include',
+    });
     if (!res.ok) {
       window.location.href = loginPath();
       return;

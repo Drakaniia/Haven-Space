@@ -25,27 +25,27 @@ class Router
 {
     private static array $routes = [];
 
-    public static function get(string $path, array $handler): void
+    public static function get(string $path, array|callable $handler): void
     {
         self::$routes['GET'][$path] = $handler;
     }
 
-    public static function post(string $path, array $handler): void
+    public static function post(string $path, array|callable $handler): void
     {
         self::$routes['POST'][$path] = $handler;
     }
 
-    public static function put(string $path, array $handler): void
+    public static function put(string $path, array|callable $handler): void
     {
         self::$routes['PUT'][$path] = $handler;
     }
 
-    public static function patch(string $path, array $handler): void
+    public static function patch(string $path, array|callable $handler): void
     {
         self::$routes['PATCH'][$path] = $handler;
     }
 
-    public static function delete(string $path, array $handler): void
+    public static function delete(string $path, array|callable $handler): void
     {
         self::$routes['DELETE'][$path] = $handler;
     }
@@ -59,6 +59,10 @@ class Router
         $routeKey = $uri;
         if (isset(self::$routes[$method][$routeKey])) {
             $handler = self::$routes[$method][$routeKey];
+            if (is_callable($handler)) {
+                $handler();
+                return;
+            }
             $controller = new $handler[0]();
             $controller->{$handler[1]}([], null);
             return;
@@ -72,6 +76,11 @@ class Router
             if (preg_match($pattern, $uri, $matches)) {
                 array_shift($matches); // Remove full match
                 $id = $matches[0] ?? null;
+                
+                if (is_callable($handler)) {
+                    $handler($id);
+                    return;
+                }
                 
                 $controller = new $handler[0]();
                 $controller->{$handler[1]}([], $id);
@@ -92,15 +101,21 @@ Router::delete('/api/upload/{fileUrl}', [UploadController::class, 'delete']);
 
 // ============================================
 // MESSAGE ROUTES
-// TODO: Implement MessageController methods for full messaging functionality
-// Currently routes are defined but controllers need implementation
 // ============================================
-Router::get('/api/messages/conversations', [MessageController::class, 'index']); // TODO: Implement - Fetch user conversations
-Router::get('/api/messages/conversations/{id}', [MessageController::class, 'show']); // TODO: Implement - Get conversation with messages
-Router::post('/api/messages', [MessageController::class, 'store']); // TODO: Implement - Send a message
-Router::put('/api/messages/conversations/{id}/read', [MessageController::class, 'markAsRead']); // TODO: Implement - Mark conversation as read
-Router::get('/api/messages/search', [MessageController::class, 'search']); // TODO: Implement - Search messages
-Router::get('/api/messages/unread-count', [MessageController::class, 'unreadCount']); // TODO: Implement - Get unread message count
+Router::get('/api/messages/conversations', [MessageController::class, 'index']);
+Router::get('/api/messages/conversations/{id}', [MessageController::class, 'show']);
+Router::post('/api/messages', [MessageController::class, 'store']);
+Router::post('/api/messages/new', [MessageController::class, 'startNew']); // New endpoint for modal
+Router::put('/api/messages/conversations/{id}/read', [MessageController::class, 'markAsRead']);
+Router::get('/api/messages/search', [MessageController::class, 'search']);
+Router::get('/api/messages/unread-count', [MessageController::class, 'unreadCount']);
+
+// ============================================
+// USER ROUTES
+// ============================================
+Router::get('/api/users/search', function() {
+    require_once __DIR__ . '/users/search.php';
+});
 
 // ============================================
 // MAINTENANCE ROUTES - LANDLORD

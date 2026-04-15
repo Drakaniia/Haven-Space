@@ -46,9 +46,12 @@ class MessageRepository
             'SELECT c.*, u.first_name, u.last_name
              FROM conversations c
              JOIN users u ON c.created_by = u.id
-             WHERE c.id = ?'
+             INNER JOIN conversation_participants cp ON c.id = cp.conversation_id
+             WHERE c.id = :conversation_id AND cp.user_id = :user_id AND cp.is_active = 1'
         );
-        $stmt->execute([$conversationId]);
+        $stmt->bindValue(':conversation_id', $conversationId, PDO::PARAM_INT);
+        $stmt->bindValue(':user_id', $userId, PDO::PARAM_INT);
+        $stmt->execute();
         $conversation = $stmt->fetch();
 
         if (!$conversation) {
@@ -59,9 +62,10 @@ class MessageRepository
             'SELECT cp.*, u.first_name, u.last_name, u.email
              FROM conversation_participants cp
              JOIN users u ON cp.user_id = u.id
-             WHERE cp.conversation_id = ?'
+             WHERE cp.conversation_id = :conversation_id'
         );
-        $stmt->execute([$conversationId]);
+        $stmt->bindValue(':conversation_id', $conversationId, PDO::PARAM_INT);
+        $stmt->execute();
         $conversation['participants'] = $stmt->fetchAll();
 
         return $conversation;
@@ -72,15 +76,18 @@ class MessageRepository
      */
     public function getConversationMessages(int $conversationId, int $limit = 50, int $offset = 0): array
     {
-        $sql = 'SELECT m.*, u.first_name, u.last_name
+        $sql = 'SELECT m.*, CONCAT(u.first_name, " ", u.last_name) as sender_name
                 FROM messages m
                 JOIN users u ON m.sender_id = u.id
-                WHERE m.conversation_id = ?
+                WHERE m.conversation_id = :conversation_id
                 ORDER BY m.created_at DESC
-                LIMIT ? OFFSET ?';
+                LIMIT :limit OFFSET :offset';
 
         $stmt = $this->pdo->prepare($sql);
-        $stmt->execute([$conversationId, $limit, $offset]);
+        $stmt->bindValue(':conversation_id', $conversationId, PDO::PARAM_INT);
+        $stmt->bindValue(':limit', (int) $limit, PDO::PARAM_INT);
+        $stmt->bindValue(':offset', (int) $offset, PDO::PARAM_INT);
+        $stmt->execute();
         $messages = $stmt->fetchAll();
 
         foreach ($messages as &$message) {
@@ -100,15 +107,15 @@ class MessageRepository
     public function createConversation(array $data): int
     {
         $sql = 'INSERT INTO conversations (title, type, property_id, created_by, is_system_thread) 
-                VALUES (?, ?, ?, ?, ?)';
+                VALUES (:title, :type, :property_id, :created_by, :is_system_thread)';
         
-        $this->pdo->prepare($sql)->execute([
-            $data['title'],
-            $data['type'] ?? 'direct',
-            $data['property_id'] ?? null,
-            $data['created_by'],
-            $data['is_system_thread'] ?? false,
-        ]);
+        $stmt = $this->pdo->prepare($sql);
+        $stmt->bindValue(':title', $data['title']);
+        $stmt->bindValue(':type', $data['type'] ?? 'direct');
+        $stmt->bindValue(':property_id', $data['property_id'] ?? null, PDO::PARAM_INT);
+        $stmt->bindValue(':created_by', $data['created_by'], PDO::PARAM_INT);
+        $stmt->bindValue(':is_system_thread', (int)($data['is_system_thread'] ?? false), PDO::PARAM_INT);
+        $stmt->execute();
 
         return (int) $this->pdo->lastInsertId();
     }
@@ -119,9 +126,13 @@ class MessageRepository
     public function addParticipant(int $conversationId, int $userId, string $role): bool
     {
         $sql = 'INSERT IGNORE INTO conversation_participants (conversation_id, user_id, role) 
-                VALUES (?, ?, ?)';
+                VALUES (:conversation_id, :user_id, :role)';
         
-        return $this->pdo->prepare($sql)->execute([$conversationId, $userId, $role]);
+        $stmt = $this->pdo->prepare($sql);
+        $stmt->bindValue(':conversation_id', $conversationId, PDO::PARAM_INT);
+        $stmt->bindValue(':user_id', $userId, PDO::PARAM_INT);
+        $stmt->bindValue(':role', $role);
+        return $stmt->execute();
     }
 
     /**
@@ -130,14 +141,14 @@ class MessageRepository
     public function createMessage(array $data): int
     {
         $sql = 'INSERT INTO messages (conversation_id, sender_id, message_text, has_attachment) 
-                VALUES (?, ?, ?, ?)';
+                VALUES (:conversation_id, :sender_id, :message_text, :has_attachment)';
         
-        $this->pdo->prepare($sql)->execute([
-            $data['conversation_id'],
-            $data['sender_id'],
-            $data['message_text'] ?? null,
-            $data['has_attachment'] ?? false,
-        ]);
+        $stmt = $this->pdo->prepare($sql);
+        $stmt->bindValue(':conversation_id', $data['conversation_id'], PDO::PARAM_INT);
+        $stmt->bindValue(':sender_id', $data['sender_id'], PDO::PARAM_INT);
+        $stmt->bindValue(':message_text', $data['message_text'] ?? null);
+        $stmt->bindValue(':has_attachment', (int) ($data['has_attachment'] ?? false), PDO::PARAM_INT);
+        $stmt->execute();
 
         return (int) $this->pdo->lastInsertId();
     }
@@ -148,17 +159,17 @@ class MessageRepository
     public function addAttachment(int $messageId, int $conversationId, string $fileUrl, string $fileName, string $fileType, int $fileSize, int $uploadedBy): bool
     {
         $sql = 'INSERT INTO message_attachments (message_id, conversation_id, file_url, file_name, file_type, file_size, uploaded_by) 
-                VALUES (?, ?, ?, ?, ?, ?, ?)';
+                VALUES (:message_id, :conversation_id, :file_url, :file_name, :file_type, :file_size, :uploaded_by)';
         
-        return $this->pdo->prepare($sql)->execute([
-            $messageId,
-            $conversationId,
-            $fileUrl,
-            $fileName,
-            $fileType,
-            $fileSize,
-            $uploadedBy,
-        ]);
+        $stmt = $this->pdo->prepare($sql);
+        $stmt->bindValue(':message_id', $messageId, PDO::PARAM_INT);
+        $stmt->bindValue(':conversation_id', $conversationId, PDO::PARAM_INT);
+        $stmt->bindValue(':file_url', $fileUrl);
+        $stmt->bindValue(':file_name', $fileName);
+        $stmt->bindValue(':file_type', $fileType);
+        $stmt->bindValue(':file_size', $fileSize, PDO::PARAM_INT);
+        $stmt->bindValue(':uploaded_by', $uploadedBy, PDO::PARAM_INT);
+        return $stmt->execute();
     }
 
     /**
@@ -167,9 +178,12 @@ class MessageRepository
     public function markAsRead(int $conversationId, int $userId): bool
     {
         $sql = 'UPDATE messages SET is_read = 1 
-                WHERE conversation_id = ? AND sender_id != ? AND is_read = 0';
+                WHERE conversation_id = :conversation_id AND sender_id != :user_id AND is_read = 0';
         
-        return $this->pdo->prepare($sql)->execute([$conversationId, $userId]);
+        $stmt = $this->pdo->prepare($sql);
+        $stmt->bindValue(':conversation_id', $conversationId, PDO::PARAM_INT);
+        $stmt->bindValue(':user_id', $userId, PDO::PARAM_INT);
+        return $stmt->execute();
     }
 
     /**
@@ -178,9 +192,12 @@ class MessageRepository
     public function updateLastRead(int $conversationId, int $userId): bool
     {
         $sql = 'UPDATE conversation_participants SET last_read_at = NOW() 
-                WHERE conversation_id = ? AND user_id = ?';
+                WHERE conversation_id = :conversation_id AND user_id = :user_id';
         
-        return $this->pdo->prepare($sql)->execute([$conversationId, $userId]);
+        $stmt = $this->pdo->prepare($sql);
+        $stmt->bindValue(':conversation_id', $conversationId, PDO::PARAM_INT);
+        $stmt->bindValue(':user_id', $userId, PDO::PARAM_INT);
+        return $stmt->execute();
     }
 
     /**
@@ -190,10 +207,12 @@ class MessageRepository
     {
         $sql = 'SELECT COUNT(*) as count FROM messages m
                 INNER JOIN conversation_participants cp ON m.conversation_id = cp.conversation_id
-                WHERE cp.user_id = ? AND m.sender_id != ? AND m.is_read = 0';
+                WHERE cp.user_id = :user_id AND m.sender_id != :user_id_2 AND m.is_read = 0';
         
         $stmt = $this->pdo->prepare($sql);
-        $stmt->execute([$userId, $userId]);
+        $stmt->bindValue(':user_id', $userId, PDO::PARAM_INT);
+        $stmt->bindValue(':user_id_2', $userId, PDO::PARAM_INT);
+        $stmt->execute();
         $result = $stmt->fetch();
         
         return (int) ($result['count'] ?? 0);
@@ -204,7 +223,7 @@ class MessageRepository
      */
     public function searchMessages(int $userId, string $searchTerm): array
     {
-        $sql = 'SELECT m.*, c.title as conversation_title, u.first_name, u.last_name
+        $sql = 'SELECT m.*, c.title as conversation_title, CONCAT(u.first_name, " ", u.last_name) as sender_name
                 FROM messages m
                 JOIN conversations c ON m.conversation_id = c.id
                 JOIN users u ON m.sender_id = u.id
@@ -219,11 +238,33 @@ class MessageRepository
     }
 
     /**
-     * Get last insert ID
+     * Find a direct conversation between two users
      */
-    public function getLastInsertId(): int
+    public function findDirectConversation(int $user1Id, int $user2Id): ?int
     {
-        return (int) $this->pdo->lastInsertId();
+        $sql = 'SELECT cp1.conversation_id 
+                FROM conversation_participants cp1
+                JOIN conversation_participants cp2 ON cp1.conversation_id = cp2.conversation_id
+                JOIN conversations c ON cp1.conversation_id = c.id
+                WHERE cp1.user_id = ? AND cp2.user_id = ? AND c.type = "direct"
+                LIMIT 1';
+        
+        $stmt = $this->pdo->prepare($sql);
+        $stmt->execute([$user1Id, $user2Id]);
+        $result = $stmt->fetch();
+        
+        return $result ? (int)$result['conversation_id'] : null;
+    }
+
+    /**
+     * Get user details
+     */
+    public function getUserDetails(int $userId): ?array
+    {
+        $stmt = $this->pdo->prepare('SELECT id, first_name, last_name, role FROM users WHERE id = ?');
+        $stmt->execute([$userId]);
+        $result = $stmt->fetch();
+        return $result ?: null;
     }
 
     /**

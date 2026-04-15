@@ -4,9 +4,16 @@
  */
 
 import { getIcon } from '../../shared/icons.js';
+import CONFIG from '../../config.js';
 
+const API_BASE_URL = CONFIG.API_BASE_URL;
 let currentConversationId = null;
 let conversations = [];
+
+// Simulation bypass for user ID
+if (!localStorage.getItem('user_id')) {
+  localStorage.setItem('user_id', '3'); // Simulated Boarder ID
+}
 
 document.addEventListener('DOMContentLoaded', async () => {
   await loadConversations();
@@ -15,48 +22,37 @@ document.addEventListener('DOMContentLoaded', async () => {
   initSendMessage();
   initNewMessageModal();
   initAttachmentDownload();
+  
+  // Refresh conversations periodically
+  setInterval(loadConversations, 10000);
 });
 
 /**
  * Load conversations from API
- * TODO: Implement backend API endpoint for fetching conversations
- * For now, using mock data to display the UI
  */
 async function loadConversations() {
   const sidebar = document.getElementById('conversations-list');
   if (!sidebar) return;
 
-  // TODO: Replace with actual API call when backend is ready
-  // const response = await fetch(`${API_BASE_URL}/api/messages/conversations`, {
-  //   method: 'GET',
-  //   headers: { 'Content-Type': 'application/json' },
-  // });
-  // if (!response.ok) throw new Error('Failed to load conversations');
-  // const result = await response.json();
-  // conversations = result.data || [];
+  try {
+    const response = await fetch(`${API_BASE_URL}/api/messages/conversations`, {
+      method: 'GET',
+      headers: { 
+        'Content-Type': 'application/json',
+        'X-User-Id': getCurrentUserId()
+      },
+    });
+    
+    if (!response.ok) throw new Error('Failed to load conversations');
+    
+    const result = await response.json();
+    conversations = result.data || [];
 
-  // Mock data for UI display
-  conversations = [
-    {
-      id: 1,
-      title: 'Welcome Thread',
-      last_message: 'Welcome to your new boarding house!',
-      last_message_at: new Date().toISOString(),
-      unread_count: 1,
-      type: 'welcome',
-    },
-    {
-      id: 2,
-      title: 'Landlord - John Smith',
-      last_message: 'The room is ready for viewing.',
-      last_message_at: new Date(Date.now() - 3600000).toISOString(),
-      unread_count: 0,
-      type: 'direct',
-    },
-  ];
-
-  renderConversations(conversations);
-  updateNotificationBadge();
+    renderConversations(conversations);
+    updateNotificationBadge();
+  } catch (error) {
+    console.error('Error loading conversations:', error);
+  }
 }
 
 /**
@@ -76,9 +72,15 @@ function renderConversations(conversations) {
     return;
   }
 
+  // Preserve active state if re-rendering
+  const activeId = currentConversationId;
+
   sidebar.innerHTML = '';
   conversations.forEach(conv => {
     const item = createConversationItem(conv);
+    if (activeId && parseInt(conv.id) === parseInt(activeId)) {
+      item.classList.add('active');
+    }
     sidebar.appendChild(item);
   });
 }
@@ -106,7 +108,7 @@ function createConversationItem(conv) {
       </div>
       <div class="conversation-last-message">
         ${conv.unread_count > 0 ? `<span class="unread-badge">${conv.unread_count}</span>` : ''}
-        ${escapeHtml(lastMessage)}
+        <span class="message-preview">${escapeHtml(lastMessage)}</span>
       </div>
     </div>
   `;
@@ -117,66 +119,55 @@ function createConversationItem(conv) {
 
 /**
  * Load a specific conversation with messages
- * TODO: Implement backend API endpoint for fetching conversation messages
- * For now, using mock data to display the UI
  */
 async function loadConversation(conversationId) {
   currentConversationId = conversationId;
 
-  // Update active state
+  // Update active state in UI
   document.querySelectorAll('.conversation-item').forEach(item => {
-    item.classList.toggle('active', parseInt(item.dataset.conversationId) === conversationId);
+    item.classList.toggle('active', parseInt(item.dataset.conversationId) === parseInt(conversationId));
   });
 
   const chatMessages = document.getElementById('chat-messages');
   if (!chatMessages) return;
 
-  // TODO: Replace with actual API call when backend is ready
-  // const response = await fetch(
-  //   `${API_BASE_URL}/api/messages/conversations/${conversationId}`,
-  //   {
-  //     method: 'GET',
-  //     headers: { 'Content-Type': 'application/json' },
-  //   }
-  // );
-  // if (!response.ok) throw new Error('Failed to load conversation');
-  // const result = await response.json();
-  // const conv = result.data;
-
-  // Mock data for UI display
-  const mockConversation = {
-    id: conversationId,
-    title: conversationId === 1 ? 'Welcome Thread' : 'Landlord - John Smith',
-    type: conversationId === 1 ? 'welcome' : 'direct',
-    messages: [
+  try {
+    const response = await fetch(
+      `${API_BASE_URL}/api/messages/conversations/${conversationId}`,
       {
-        id: 1,
-        sender_id: conversationId === 1 ? 999 : 2,
-        message_text:
-          conversationId === 1
-            ? 'Welcome to your new boarding house! Feel free to ask any questions.'
-            : 'The room is ready for viewing.',
-        created_at: new Date(Date.now() - 7200000).toISOString(),
-        attachments: [],
-      },
-      {
-        id: 2,
-        sender_id: 1,
-        message_text: "Thank you! I'd love to schedule a viewing.",
-        created_at: new Date(Date.now() - 3600000).toISOString(),
-        attachments: [],
-      },
-    ],
-  };
+        method: 'GET',
+        headers: { 
+          'Content-Type': 'application/json',
+          'X-User-Id': getCurrentUserId()
+        },
+      }
+    );
+    
+    if (!response.ok) throw new Error('Failed to load conversation');
+    
+    const result = await response.json();
+    const conv = result.data;
 
-  // Update header
-  updateChatHeader(mockConversation);
+    // Update header
+    updateChatHeader(conv);
 
-  // Render messages
-  renderMessages(mockConversation.messages || []);
+    // Render messages
+    renderMessages(conv.messages || []);
 
-  // Mark as read
-  await markAsRead(conversationId);
+    // Scroll to bottom
+    scrollToBottom();
+
+    // Mark as read in UI immediately, backend handles DB update during load
+    const convItem = document.querySelector(`[data-conversation-id="${conversationId}"]`);
+    if (convItem) {
+      convItem.classList.remove('unread');
+      const badge = convItem.querySelector('.unread-badge');
+      if (badge) badge.remove();
+    }
+  } catch (error) {
+    console.error('Error loading conversation:', error);
+    showError('Failed to load messages');
+  }
 }
 
 /**
@@ -187,7 +178,7 @@ function updateChatHeader(conv) {
   const chatStatus = document.querySelector('.chat-status');
 
   if (chatName) chatName.textContent = conv.title;
-  if (chatStatus) chatStatus.textContent = conv.type === 'welcome' ? 'Welcome Thread' : 'Online';
+  if (chatStatus) chatStatus.textContent = conv.is_system_thread ? 'System Thread' : 'Online';
 }
 
 /**
@@ -209,15 +200,13 @@ function renderMessages(messages) {
     const messageItem = createMessageElement(msg);
     chatMessages.appendChild(messageItem);
   });
-
-  scrollToBottom();
 }
 
 /**
  * Create message element
  */
 function createMessageElement(msg) {
-  const isSent = msg.sender_id === getCurrentUserId();
+  const isSent = parseInt(msg.sender_id) === getCurrentUserId();
   const messageItem = document.createElement('div');
   messageItem.className = `message-item ${isSent ? 'message-sent' : 'message-received'}`;
 
@@ -231,6 +220,7 @@ function createMessageElement(msg) {
         : ''
     }
     <div class="message-content ${isSent ? 'message-content-sent' : ''}">
+      ${!isSent && msg.sender_name ? `<span class="sender-name">${escapeHtml(msg.sender_name)}</span>` : ''}
       <div class="message-bubble ${isSent ? 'message-bubble-sent' : ''}">
         ${msg.message_text ? `<p>${escapeHtml(msg.message_text)}</p>` : ''}
         ${attachmentsHtml}
@@ -256,7 +246,7 @@ function renderAttachments(attachments) {
           att => `
         <div class="message-attachment">
           ${getIcon('paperClip', { strokeWidth: '2' })}
-          <a href="/server/storage/uploads/${
+          <a href="${API_BASE_URL}/server/storage/uploads/${
             att.file_url
           }" download class="message-attachment-download">
             ${escapeHtml(att.file_name)}
@@ -271,33 +261,26 @@ function renderAttachments(attachments) {
 
 /**
  * Mark conversation as read
- * TODO: Implement backend API endpoint for marking messages as read
  */
 async function markAsRead(conversationId) {
-  // TODO: Replace with actual API call when backend is ready
-  // try {
-  //   await fetch(`${API_BASE_URL}/api/messages/conversations/${conversationId}/read`, {
-  //     method: 'PUT',
-  //     headers: { 'Content-Type': 'application/json' },
-  //   });
-
-  // Update UI
-  const convItem = document.querySelector(`[data-conversation-id="${conversationId}"]`);
-  if (convItem) {
-    convItem.classList.remove('unread');
-    const badge = convItem.querySelector('.unread-badge');
-    if (badge) badge.remove();
+  try {
+    await fetch(`${API_BASE_URL}/api/messages/conversations/${conversationId}/read`, {
+      method: 'PUT',
+      headers: { 
+        'Content-Type': 'application/json',
+        'X-User-Id': getCurrentUserId()
+      },
+    });
+  } catch (error) {
+    console.error('Error marking as read:', error);
   }
-  // } catch (error) {
-  //   console.error('Error marking as read:', error);
-  // }
 }
 
 /**
  * Handle conversation switching
  */
 function initConversationSwitching() {
-  // Already handled by loadConversation click handler
+  // Handled by loadConversation click handler
 }
 
 /**
@@ -351,7 +334,6 @@ function initSendMessage() {
 
 /**
  * Send a message
- * TODO: Implement backend API endpoint for sending messages
  */
 async function sendMessage() {
   const chatInput = document.getElementById('chat-input');
@@ -363,56 +345,42 @@ async function sendMessage() {
   // Disable input while sending
   chatInput.disabled = true;
 
-  // TODO: Replace with actual API call when backend is ready
-  // try {
-  //   const response = await fetch(`${API_BASE_URL}/api/messages`, {
-  //     method: 'POST',
-  //     headers: { 'Content-Type': 'application/json' },
-  //     body: JSON.stringify({
-  //       conversation_id: currentConversationId,
-  //       message_text: messageText,
-  //     }),
-  //   });
-  //
-  //   if (!response.ok) {
-  //     const error = await response.json();
-  //     throw new Error(error.error || 'Failed to send message');
-  //   }
-  //
-  //   const result = await response.json();
-  //
-  //   // Reload conversation to show the sent message
-  //   await loadConversation(currentConversationId);
-  //
-  //   chatInput.value = '';
-  // } catch (error) {
-  //   console.error('Error sending message:', error);
-  //   showError('Failed to send message. Please try again.');
-  // } finally {
-  //   chatInput.disabled = false;
-  //   chatInput.focus();
-  // }
-
-  // Mock: Simulate sending a message
-  const mockMessage = {
-    id: Date.now(),
-    sender_id: getCurrentUserId(),
-    message_text: messageText,
-    created_at: new Date().toISOString(),
-    attachments: [],
-  };
-
-  // Add message to UI
-  const chatMessages = document.getElementById('chat-messages');
-  if (chatMessages) {
-    const messageItem = createMessageElement(mockMessage);
-    chatMessages.appendChild(messageItem);
+  try {
+    const response = await fetch(`${API_BASE_URL}/api/messages`, {
+      method: 'POST',
+      headers: { 
+        'Content-Type': 'application/json',
+        'X-User-Id': getCurrentUserId()
+      },
+      body: JSON.stringify({
+        conversation_id: currentConversationId,
+        message_text: messageText,
+      }),
+    });
+  
+    if (!response.ok) {
+      const error = await response.json();
+      throw new Error(error.error || 'Failed to send message');
+    }
+  
+    const result = await response.json();
+  
+    // Update local UI immediately for responsiveness
+    // (Actual re-fetch will happen via the service result)
+    renderMessages(result.data.messages || []);
     scrollToBottom();
+  
+    chatInput.value = '';
+    
+    // Refresh conversation list to update last message
+    loadConversations();
+  } catch (error) {
+    console.error('Error sending message:', error);
+    showError('Failed to send message. Please try again.');
+  } finally {
+    chatInput.disabled = false;
+    chatInput.focus();
   }
-
-  chatInput.value = '';
-  chatInput.disabled = false;
-  chatInput.focus();
 }
 
 /**
@@ -424,16 +392,23 @@ function initNewMessageModal() {
   const closeBtn = document.getElementById('modal-close-btn');
   const cancelBtn = document.getElementById('modal-cancel-btn');
   const form = document.getElementById('new-message-form');
-
+  const recipientInput = document.getElementById('message-recipient');
+  
   if (!newMessageBtn || !modal) return;
+
+  // State for selected recipient
+  let selectedRecipientId = null;
 
   newMessageBtn.addEventListener('click', () => {
     modal.style.display = 'flex';
+    selectedRecipientId = null;
   });
 
   function closeModal() {
     modal.style.display = 'none';
     form?.reset();
+    const existingDropdown = document.querySelector('.search-results-dropdown');
+    if (existingDropdown) existingDropdown.remove();
   }
 
   closeBtn?.addEventListener('click', closeModal);
@@ -443,21 +418,111 @@ function initNewMessageModal() {
     if (e.target === modal) closeModal();
   });
 
-  form?.addEventListener('submit', async e => {
-    e.preventDefault();
+  // User search logic
+  if (recipientInput) {
+    let debounceTimer;
+    recipientInput.addEventListener('input', e => {
+      const query = e.target.value.trim();
+      clearTimeout(debounceTimer);
+      
+      if (query.length < 2) {
+        const existingDropdown = document.querySelector('.search-results-dropdown');
+        if (existingDropdown) existingDropdown.remove();
+        return;
+      }
 
-    const recipient = document.getElementById('message-recipient')?.value;
-    const messageBody = document.getElementById('message-body')?.value;
+      debounceTimer = setTimeout(async () => {
+        try {
+          const roleToSearch = 'landlord'; // Boarders search for landlords
+          const response = await fetch(`${API_BASE_URL}/api/users/search?q=${encodeURIComponent(query)}&role=${roleToSearch}`, {
+            headers: { 'X-User-Id': getCurrentUserId() }
+          });
+          const result = await response.json();
+          renderSearchResults(result.data, recipientInput);
+        } catch (error) {
+          console.error('Error searching users:', error);
+        }
+      }, 300);
+    });
+  }
 
-    if (!recipient || !messageBody) {
-      showError('Please fill in all fields');
+  function renderSearchResults(users, input) {
+    let dropdown = document.querySelector('.search-results-dropdown');
+    if (!dropdown) {
+      dropdown = document.createElement('div');
+      dropdown.className = 'search-results-dropdown';
+      input.parentNode.appendChild(dropdown);
+    }
+
+    if (users.length === 0) {
+      dropdown.innerHTML = '<div class="search-result-item no-results">No users found</div>';
       return;
     }
 
-    // TODO: Create new conversation with recipient
-    // For now, this would need a separate endpoint
-    closeModal();
-    showSuccess('Message sent successfully!');
+    dropdown.innerHTML = users.map(user => `
+      <div class="search-result-item" data-id="${user.id}">
+        <div class="search-result-avatar">
+          <img src="${user.avatar_url || '../../../assets/images/default-avatar.png'}" alt="">
+        </div>
+        <div class="search-result-info">
+          <div class="search-result-name">${escapeHtml(user.name)}</div>
+          <div class="search-result-email">${escapeHtml(user.email)}</div>
+        </div>
+      </div>
+    `).join('');
+
+    dropdown.querySelectorAll('.search-result-item').forEach(item => {
+      item.addEventListener('click', () => {
+        selectedRecipientId = item.dataset.id;
+        input.value = item.querySelector('.search-result-name').textContent;
+        dropdown.remove();
+      });
+    });
+  }
+
+  form?.addEventListener('submit', async e => {
+    e.preventDefault();
+
+    const messageBody = document.getElementById('message-body')?.value;
+
+    if (!selectedRecipientId || !messageBody) {
+      showError('Please select a recipient and type a message');
+      return;
+    }
+
+    const submitBtn = form.querySelector('button[type="submit"]');
+    if (submitBtn) submitBtn.disabled = true;
+
+    try {
+      const response = await fetch(`${API_BASE_URL}/api/messages/new`, {
+        method: 'POST',
+        headers: { 
+          'Content-Type': 'application/json',
+          'X-User-Id': getCurrentUserId()
+        },
+        body: JSON.stringify({
+          recipient_id: selectedRecipientId,
+          message_text: messageBody,
+        }),
+      });
+
+      if (!response.ok) throw new Error('Failed to start conversation');
+
+      const result = await response.json();
+      showSuccess('Message sent successfully!');
+      closeModal();
+      
+      // Load the new conversation
+      await loadConversations();
+      if (result.data && result.data.id) {
+        loadConversation(result.data.id);
+      }
+    } catch (error) {
+      console.error('Error starting conversation:', error);
+      showError('Failed to send message');
+    } finally {
+      if (submitBtn) submitBtn.disabled = false;
+    }
   });
 }
 
@@ -470,36 +535,29 @@ function initAttachmentDownload() {
 
 /**
  * Update notification badge with unread count
- * TODO: Implement backend API endpoint for unread count
  */
 async function updateNotificationBadge() {
-  // TODO: Replace with actual API call when backend is ready
-  // try {
-  //   const response = await fetch(`${API_BASE_URL}/api/messages/unread-count`, {
-  //     method: 'GET',
-  //     headers: { 'Content-Type': 'application/json' },
-  //   });
-  //
-  //   if (response.ok) {
-  //     const result = await response.json();
-  //     const count = result.data?.unread_count || 0;
-  //
-  //     const badge = document.getElementById('notification-badge');
-  //     if (badge) {
-  //       badge.textContent = count;
-  //       badge.style.display = count > 0 ? 'block' : 'none';
-  //     }
-  //   }
-  // } catch (error) {
-  //   console.error('Error updating notification badge:', error);
-  // }
-
-  // Mock: Calculate total unread from mock data
-  const totalUnread = conversations.reduce((sum, conv) => sum + (conv.unread_count || 0), 0);
-  const badge = document.getElementById('notification-badge');
-  if (badge) {
-    badge.textContent = totalUnread;
-    badge.style.display = totalUnread > 0 ? 'block' : 'none';
+  try {
+    const response = await fetch(`${API_BASE_URL}/api/messages/unread-count`, {
+      method: 'GET',
+      headers: { 
+        'Content-Type': 'application/json',
+        'X-User-Id': getCurrentUserId()
+      },
+    });
+  
+    if (response.ok) {
+      const result = await response.json();
+      const count = result.data?.unread_count || 0;
+  
+      const badge = document.getElementById('notification-badge');
+      if (badge) {
+        badge.textContent = count;
+        badge.style.display = count > 0 ? 'block' : 'none';
+      }
+    }
+  } catch (error) {
+    console.error('Error updating notification badge:', error);
   }
 }
 
@@ -507,6 +565,7 @@ async function updateNotificationBadge() {
  * Format message time
  */
 function formatMessageTime(dateString) {
+  if (!dateString) return '';
   const date = new Date(dateString);
   const now = new Date();
   const isToday = date.toDateString() === now.toDateString();
@@ -527,6 +586,7 @@ function formatMessageTime(dateString) {
  * Format relative time
  */
 function formatRelativeTime(dateString) {
+  if (!dateString) return '';
   const date = new Date(dateString);
   const now = new Date();
   const diffMs = now - date;
@@ -546,7 +606,6 @@ function formatRelativeTime(dateString) {
  * Get current user ID from state
  */
 function getCurrentUserId() {
-  // TODO: Get from auth state or JWT token
   return parseInt(localStorage.getItem('user_id') || '0');
 }
 
@@ -588,6 +647,7 @@ function scrollToBottom() {
  * Escape HTML to prevent XSS
  */
 function escapeHtml(text) {
+  if (!text) return '';
   const div = document.createElement('div');
   div.textContent = text;
   return div.innerHTML;

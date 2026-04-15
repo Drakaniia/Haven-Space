@@ -33,7 +33,12 @@ try {
     ");
 
     // Get list of migration files
-    $migrationsDir = __DIR__;
+    $migrationsDir = __DIR__ . DIRECTORY_SEPARATOR . 'migrations';
+    if (!is_dir($migrationsDir)) {
+        echo "Migrations directory not found: $migrationsDir\n";
+        exit(1);
+    }
+    
     $migrationFiles = array_filter(scandir($migrationsDir), function($file) {
         return preg_match('/^\d+.*\.sql$/', $file);
     });

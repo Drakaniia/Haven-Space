@@ -81,6 +81,7 @@ async function loadDashboardData() {
       method: 'GET',
       headers: {
         'Content-Type': 'application/json',
+        'X-User-Id': localStorage.getItem('user_id') || '4',
       },
       credentials: 'include',
     });

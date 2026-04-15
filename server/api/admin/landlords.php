@@ -16,7 +16,10 @@ if (!function_exists('json_response')) {
     require_once __DIR__ . '/../cors.php';
 }
 
+require_once __DIR__ . '/../middleware.php';
+
 use App\Core\Database\Connection;
+use App\Api\Middleware;
 
 $method = $_SERVER['REQUEST_METHOD'];
 $pdo = Connection::getInstance()->getPdo();
@@ -24,10 +27,12 @@ $pdo = Connection::getInstance()->getPdo();
 try {
     switch ($method) {
         case 'GET':
+            Middleware::authorize(['admin']);
             handleGet($pdo);
             break;
         case 'POST':
-            handlePost($pdo);
+            $admin = Middleware::authorize(['admin']);
+            handlePost($pdo, $admin['user_id']);
             break;
         default:
             json_response(405, ['error' => 'Method not allowed']);
@@ -127,7 +132,7 @@ function handleGet($pdo) {
     json_response(200, ['data' => $landlords]);
 }
 
-function handlePost($pdo) {
+function handlePost($pdo, $adminId = null) {
     $input = json_decode(file_get_contents('php://input'), true);
     
     if (!isset($input['landlordId']) || !isset($input['action'])) {
@@ -137,7 +142,6 @@ function handlePost($pdo) {
     $landlordId = intval($input['landlordId']);
     $action = $input['action']; // 'approve' or 'reject'
     $comment = $input['comment'] ?? '';
-    $adminId = $_SESSION['user_id'] ?? null;
 
     if ($action === 'approve') {
         $stmt = $pdo->prepare("UPDATE users SET is_verified = 1 WHERE id = ? AND role = 'landlord'");
