@@ -76,13 +76,17 @@ public function show($id) {
 ## Project Structure
 
 ```
-backend/
-├── api/
-│   ├── config/          # Database configuration
-│   ├── controllers/     # Request handlers (keep these simple)
-│   ├── middleware/      # Auth, validation middleware
-│   ├── models/          # Database models
-│   └── routes.php       # API route definitions
+server/
+├── api/                 # REST endpoints (auth, admin, landlord, geocode)
+│   ├── auth/           # Login, register, logout, Google OAuth
+│   ├── admin/          # Admin endpoints
+│   ├── landlord/       # Landlord endpoints
+│   └── routes.php      # Route definitions
+├── config/             # App, auth, database, Google OAuth config
+├── database/           # Schema, migrations, seeds
+├── src/                # Core framework
+│   └── Core/           # Auth (JWT, GoogleOAuth, Middleware), Database, HTTP
+└── router.php          # Unified router (serves client + API)
 ```
 
 ## Getting Started
@@ -91,61 +95,55 @@ backend/
 
 - PHP 8.0+
 - MySQL or MariaDB
-- Composer
-
-### Installation
-
-```bash
-cd backend
-composer install
-cp .env.example .env
-# Configure database in .env
-php migrate
-```
+- Composer (for dependencies)
 
 ### Running the Server
 
 ```bash
-php -S localhost:8000 -t api
+# Start PHP server
+php -S localhost:8000 -t server server/router.php
+
+# Or use npm scripts
+npm run server
 ```
 
-## API Endpoints (Draft)
+## API Endpoints
 
-### Authentication
+### Authentication (`/auth/`)
 
-- `POST /api/auth/login` - User login
-- `POST /api/auth/signup` - User registration
-- `POST /api/auth/forgot-password` - Request password reset
+- `POST /auth/login.php` - User login
+- `POST /auth/register.php` - User registration
+- `POST /auth/logout.php` - Logout user
+- `GET /auth/me.php` - Get current user
+- `POST /auth/refresh-token.php` - Refresh access token
 
-### Rooms
+### Google OAuth (`/auth/google/`)
 
-- `GET /api/rooms` - List all rooms
-- `GET /api/rooms/{id}` - Get room details
-- `POST /api/rooms` - Create room (landlord only)
-- `PUT /api/rooms/{id}` - Update room (landlord only)
-- `DELETE /api/rooms/{id}` - Delete room (landlord only)
+- `GET /auth/google/authorize.php` - Initiate Google OAuth
+- `GET /auth/google/callback.php` - Handle OAuth callback
+- `POST /auth/google/finalize-signup.php` - Complete Google signup
 
-### Applications
+### Users (`/users/`)
 
-- `GET /api/applications` - List applications
-- `POST /api/applications` - Submit application
-- `GET /api/applications/{id}` - Get application details
-- `PUT /api/applications/{id}` - Update application status
+- `GET /users/profile.php` - Get user profile
+- `PUT /users/profile.php` - Update profile
+- `PUT /users/change-password.php` - Change password
 
-### Payments
+### Admin (`/admin/`)
 
-- `GET /api/payments` - List payments
-- `POST /api/payments` - Record payment
-- `GET /api/payments/{id}` - Get payment details
+- Admin endpoints for platform management
 
-### Maintenance
+### Landlord (`/landlord/`)
 
-- `GET /api/maintenance` - List maintenance requests
-- `POST /api/maintenance` - Create maintenance request
-- `PUT /api/maintenance/{id}` - Update request status
+- Property management, boarder management, payments, maintenance
 
 ## Contributing
 
 See [CONTRIBUTING.md](../.github/CONTRIBUTING.md) for contribution guidelines.
 
 Remember: **Simple code is maintainable code.**
+
+## Notes
+
+- Phone validation: Philippine format `+63 9XX XXX XXXX`
+- CORS origins configured per environment (see config/cors.php)
