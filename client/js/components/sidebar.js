@@ -58,7 +58,6 @@ const NAV_CONFIG = {
           dropdown: true,
           children: [
             { label: 'My Listings', href: '../landlord/listings/index.html', icon: 'list' },
-            { label: 'My Properties', href: '../landlord/myproperties/index.html', icon: 'list' },
             { label: 'Map View', href: '../landlord/maps/index.html', icon: 'map' },
             {
               label: 'Applications',

@@ -3,12 +3,7 @@
  * Public Room Listings API
  * GET /api/rooms/public
  * 
- * Returns all published properties (no authentication required):
- * - Property details with images
- * - Room information
- * - Amenities
- * - Location data
- * - Pricing
+ * Returns all published properties (no authentication required)
  */
 
 require_once __DIR__ . '/../cors.php';
@@ -30,18 +25,16 @@ if ($_SERVER['REQUEST_METHOD'] !== 'GET') {
 try {
     $pdo = Connection::getInstance()->getPdo();
 
-    // Get query parameters for filtering
+    // Get query parameters
     $search = $_GET['search'] ?? '';
     $priceMin = $_GET['price_min'] ?? null;
     $priceMax = $_GET['price_max'] ?? null;
-    $roomType = $_GET['room_type'] ?? '';
-    $amenities = $_GET['amenities'] ?? '';
-    $sortBy = $_GET['sort_by'] ?? 'recommended';
-    $limit = intval($_GET['limit'] ?? 20);
+    $sortBy = $_GET['sort_by'] ?? 'newest';
+    $limit = min(intval($_GET['limit'] ?? 20), 50);
     $offset = intval($_GET['offset'] ?? 0);
 
-    // Base query - only get published properties
-    $baseQuery = "
+    // Build query - simple version that works with existing schema
+    $query = "
         SELECT 
             p.id,
             p.title,
@@ -52,24 +45,19 @@ try {
             p.longitude,
             p.listing_moderation_status,
             p.created_at,
-            l.id as landlord_id,
-            l.first_name as landlord_first_name,
-            l.last_name as landlord_last_name
+            p.landlord_id,
+            u.first_name as landlord_first_name,
+            u.last_name as landlord_last_name
         FROM properties p
-        LEFT JOIN landlords l ON p.landlord_id = l.id
+        LEFT JOIN users u ON p.landlord_id = u.id
         WHERE p.deleted_at IS NULL 
           AND p.listing_moderation_status = 'published'
     ";
-
     $params = [];
 
     // Apply search filter
     if (!empty($search)) {
-        $baseQuery .= " AND (
-            p.title LIKE ? 
-            OR p.address LIKE ? 
-            OR p.description LIKE ?
-        )";
+        $query .= " AND (p.title LIKE ? OR p.address LIKE ? OR p.description LIKE ?)";
         $searchParam = "%{$search}%";
         $params[] = $searchParam;
         $params[] = $searchParam;
@@ -78,119 +66,96 @@ try {
 
     // Apply price filters
     if ($priceMin !== null) {
-        $baseQuery .= " AND p.price >= ?";
+        $query .= " AND p.price >= ?";
         $params[] = floatval($priceMin);
     }
     if ($priceMax !== null) {
-        $baseQuery .= " AND p.price <= ?";
+        $query .= " AND p.price <= ?";
         $params[] = floatval($priceMax);
-    }
-
-    // Apply room type filter (will be handled in application layer)
-    // For now, we filter by property title/description containing the room type
-    if (!empty($roomType) && $roomType !== 'any') {
-        $baseQuery .= " AND (
-            p.title LIKE ? 
-            OR p.description LIKE ?
-        )";
-        $roomTypeParam = "%{$roomType}%";
-        $params[] = $roomTypeParam;
-        $params[] = $roomTypeParam;
     }
 
     // Apply sorting
     switch ($sortBy) {
         case 'price-low':
-            $baseQuery .= " ORDER BY p.price ASC";
+            $query .= " ORDER BY p.price ASC";
             break;
         case 'price-high':
-            $baseQuery .= " ORDER BY p.price DESC";
+            $query .= " ORDER BY p.price DESC";
             break;
         case 'newest':
-            $baseQuery .= " ORDER BY p.created_at DESC";
+            $query .= " ORDER BY p.created_at DESC";
             break;
         default:
-            $baseQuery .= " ORDER BY p.created_at DESC";
-            break;
+            $query .= " ORDER BY p.created_at DESC";
     }
 
     // Get total count
-    $countQuery = "SELECT COUNT(*) FROM ($baseQuery) as count_table";
-    $countStmt = $pdo->prepare($countQuery);
-    $countStmt->execute($params);
-    $totalCount = $countStmt->fetchColumn();
+    $countQuery = str_replace('SELECT 
+            p.id,
+            p.title,
+            p.description,
+            p.address,
+            p.price,
+            p.latitude,
+            p.longitude,
+            p.listing_moderation_status,
+            p.created_at,
+            p.landlord_id,
+            u.first_name as landlord_first_name,
+            u.last_name as landlord_last_name', 'SELECT COUNT(*)', $query);
+    $countQuery = preg_replace('/ORDER BY.*/', '', $countQuery);
+    
+    try {
+        $countStmt = $pdo->prepare($countQuery);
+        $countStmt->execute($params);
+        $totalCount = $countStmt->fetchColumn();
+    } catch (PDOException $e) {
+        $totalCount = 0;
+    }
 
     // Apply pagination
-    $baseQuery .= " LIMIT ? OFFSET ?";
-    $params[] = $limit;
-    $params[] = $offset;
+    $query .= " LIMIT " . intval($limit) . " OFFSET " . intval($offset);
 
     // Execute main query
-    $stmt = $pdo->prepare($baseQuery);
+    $stmt = $pdo->prepare($query);
     $stmt->execute($params);
     $properties = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
-    // Enrich each property with additional data
+    // Build simplified response using use() to pass PDO
     $enrichedProperties = array_map(function($property) use ($pdo) {
         $propertyId = $property['id'];
-
-        // Get rooms for this property
-        $roomsStmt = $pdo->prepare("
-            SELECT id, title, price, status
-            FROM rooms
-            WHERE property_id = ? AND deleted_at IS NULL
-            ORDER BY price ASC
-        ");
-        $roomsStmt->execute([$propertyId]);
-        $rooms = $roomsStmt->fetchAll(PDO::FETCH_ASSOC);
-
-        // Get amenities (assuming there's a property_amenities table or similar)
-        // For now, we'll return empty array - this can be enhanced later
+        
+        // Get property details for amenities (if table exists)
         $amenities = [];
+        $city = '';
+        $province = '';
+        try {
+            $detailStmt = $pdo->prepare("SELECT amenities, city, province, property_type FROM property_details WHERE property_id = ?");
+            $detailStmt->execute([$propertyId]);
+            $detailData = $detailStmt->fetch(PDO::FETCH_ASSOC);
+            if ($detailData) {
+                if (!empty($detailData['amenities'])) {
+                    $amenities = json_decode($detailData['amenities'], true) ?: [];
+                }
+                $city = $detailData['city'] ?? '';
+                $province = $detailData['province'] ?? '';
+            }
+        } catch (PDOException $e) {
+            // property_details table doesn't exist
+        }
 
-        // Get property images (assuming there's a property_images table)
-        // For now, we'll use a placeholder or first image
-        $imageStmt = $pdo->prepare("
-            SELECT image_url
-            FROM property_images
-            WHERE property_id = ? AND is_primary = 1
-            LIMIT 1
-        ");
-        $imageStmt->execute([$propertyId]);
-        $primaryImage = $imageStmt->fetch(PDO::FETCH_ASSOC);
-
-        // Get all images for gallery
-        $allImagesStmt = $pdo->prepare("
-            SELECT image_url
-            FROM property_images
-            WHERE property_id = ?
-            ORDER BY sort_order ASC
-        ");
-        $allImagesStmt->execute([$propertyId]);
-        $allImages = $allImagesStmt->fetchAll(PDO::FETCH_COLUMN);
-
-        // Calculate rating (if you have a reviews/ratings table)
-        // For now, use placeholder
-        $ratingStmt = $pdo->prepare("
-            SELECT AVG(rating) as avg_rating, COUNT(*) as review_count
-            FROM property_reviews
-            WHERE property_id = ? AND is_approved = 1
-        ");
-        $ratingStmt->execute([$propertyId]);
-        $ratingData = $ratingStmt->fetch(PDO::FETCH_ASSOC);
-
-        $avgRating = $ratingData['avg_rating'] ? round(floatval($ratingData['avg_rating']), 1) : 0;
-        $reviewCount = intval($ratingData['review_count']);
-
-        // Get location data if available
-        $locationStmt = $pdo->prepare("
-            SELECT address_line_1, city, province
-            FROM property_locations
-            WHERE property_id = ? AND is_primary = 1
-            LIMIT 1
-        ");
-        $locationStmt->execute([$propertyId]);
-        $locationData = $locationStmt->fetch(PDO::FETCH_ASSOC);
+        // Get property photo
+        $image = '/assets/images/Haven_Space_Logo.png';
+        try {
+            $photoStmt = $pdo->prepare("SELECT photo_url FROM property_photos WHERE property_id = ? AND is_cover = 1 LIMIT 1");
+            $photoStmt->execute([$propertyId]);
+            $photoData = $photoStmt->fetch(PDO::FETCH_ASSOC);
+            if ($photoData && !empty($photoData['photo_url'])) {
+                $image = $photoData['photo_url'];
+            }
+        } catch (PDOException $e) {
+            // property_photos table doesn't exist
+        }
 
         // Determine badges
         $badges = [];
@@ -199,49 +164,38 @@ try {
         }
         
         // Check if newly created (within last 7 days)
-        $createdAt = new DateTime($property['created_at']);
-        $now = new DateTime();
-        $daysDiff = $now->diff($createdAt)->days;
-        if ($daysDiff <= 7) {
-            $badges[] = 'new';
+        if (!empty($property['created_at'])) {
+            $createdAt = new DateTime($property['created_at']);
+            $now = new DateTime();
+            $daysDiff = $now->diff($createdAt)->days;
+            if ($daysDiff <= 7) {
+                $badges[] = 'new';
+            }
         }
-
-        // Build room types string
-        $roomTypes = array_map(function($room) {
-            return $room['title'];
-        }, $rooms);
-        $roomTypesString = implode(' & ', array_unique($roomTypes));
 
         return [
             'id' => intval($property['id']),
             'title' => htmlspecialchars($property['title']),
             'description' => htmlspecialchars($property['description'] ?? ''),
             'address' => htmlspecialchars($property['address']),
-            'city' => $locationData ? htmlspecialchars($locationData['city'] ?? '') : '',
-            'province' => $locationData ? htmlspecialchars($locationData['province'] ?? '') : '',
+            'city' => $city,
+            'province' => $province,
             'price' => floatval($property['price']),
             'latitude' => $property['latitude'] ? floatval($property['latitude']) : null,
             'longitude' => $property['longitude'] ? floatval($property['longitude']) : null,
-            'rating' => $avgRating > 0 ? $avgRating : 4.5, // Default rating for now
-            'reviews' => $reviewCount > 0 ? $reviewCount : 0,
-            'roomTypes' => $roomTypesString ?: 'Available',
-            'availableRooms' => count($rooms),
-            'totalRooms' => count($rooms),
+            'rating' => 4.5,
+            'reviews' => 0,
+            'roomTypes' => 'Available',
+            'availableRooms' => 0,
+            'totalRooms' => 0,
             'amenities' => $amenities,
-            'image' => $primaryImage ? $primaryImage['image_url'] : '/assets/images/placeholder-room.jpg',
-            'images' => $allImages,
+            'image' => $image,
+            'images' => [],
             'badges' => $badges,
-            'rooms' => array_map(function($room) {
-                return [
-                    'id' => intval($room['id']),
-                    'type' => htmlspecialchars($room['title']),
-                    'price' => floatval($room['price']),
-                    'availability' => $room['status'] === 'available' ? 'Available' : 'Occupied',
-                ];
-            }, $rooms),
+            'rooms' => [],
             'landlord' => [
                 'id' => intval($property['landlord_id']),
-                'name' => htmlspecialchars($property['landlord_first_name'] . ' ' . $property['landlord_last_name']),
+                'name' => htmlspecialchars(($property['landlord_first_name'] ?? '') . ' ' . ($property['landlord_last_name'] ?? '')),
             ],
             'createdAt' => $property['created_at'],
         ];
@@ -259,5 +213,5 @@ try {
 } catch (Exception $e) {
     error_log('Public rooms API error: ' . $e->getMessage());
     error_log('Stack trace: ' . $e->getTraceAsString());
-    json_response(500, ['error' => 'Failed to load properties: ' . $e->getMessage()]);
+    json_response(500, ['error' => 'Failed to load properties', 'debug' => $e->getMessage()]);
 }

@@ -72,7 +72,7 @@ export function initEditProperty() {
 
   if (!propertyId) {
     alert('No property specified. Redirecting to properties list.');
-    window.location.href = '../myproperties/index.html';
+    window.location.href = '../listings/index.html';
     return;
   }
 
@@ -91,7 +91,7 @@ function loadPropertyData(id) {
 
   if (!property) {
     alert('Property not found. Redirecting to properties list.');
-    window.location.href = '../myproperties/index.html';
+    window.location.href = '../listings/index.html';
     return;
   }
 
@@ -171,10 +171,10 @@ function setupFormHandlers() {
     cancelBtn.addEventListener('click', () => {
       if (hasUnsavedChanges()) {
         if (confirm('You have unsaved changes. Are you sure you want to cancel?')) {
-          window.location.href = '../myproperties/index.html';
+          window.location.href = '../listings/index.html';
         }
       } else {
-        window.location.href = '../myproperties/index.html';
+        window.location.href = '../listings/index.html';
       }
     });
   }

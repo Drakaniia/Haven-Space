@@ -37,6 +37,7 @@ try {
         SELECT 
             p.id,
             p.title,
+            p.description,
             p.address,
             p.price,
             p.status,
@@ -44,18 +45,43 @@ try {
             p.created_at,
             COUNT(DISTINCT r.id) as total_rooms,
             COALESCE(SUM(CASE WHEN r.status = 'occupied' THEN 1 ELSE 0 END), 0) as occupied_rooms,
-            COALESCE(SUM(CASE WHEN r.status = 'occupied' THEN r.price ELSE 0 END), 0) as monthly_revenue
+            COALESCE(SUM(CASE WHEN r.status = 'occupied' THEN r.price ELSE 0 END), 0) as monthly_revenue,
+            lp.property_type,
+            pl.city,
+            pl.province
         FROM properties p
         LEFT JOIN rooms r ON p.id = r.property_id
+        LEFT JOIN landlord_profiles lp ON lp.user_id = p.landlord_id
+        LEFT JOIN property_locations pl ON pl.landlord_id = lp.id AND pl.is_primary = TRUE
         WHERE p.landlord_id = ? AND p.deleted_at IS NULL
-        GROUP BY p.id, p.title, p.address, p.price, p.status, p.listing_moderation_status, p.created_at
+        GROUP BY p.id, p.title, p.description, p.address, p.price, p.status, p.listing_moderation_status, p.created_at, lp.property_type, pl.city, pl.province
         ORDER BY p.created_at DESC
     ");
     $stmt->execute([$landlordId]);
     $properties = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
+    // Get amenities for all properties
+    $propertyIds = array_column($properties, 'id');
+    $amenitiesMap = [];
+    if (!empty($propertyIds)) {
+        $placeholders = implode(',', array_fill(0, count($propertyIds), '?'));
+        $amenitiesStmt = $pdo->prepare("
+            SELECT property_id, amenity_name 
+            FROM property_amenities 
+            WHERE property_id IN ($placeholders)
+        ");
+        $amenitiesStmt->execute($propertyIds);
+        $amenitiesRows = $amenitiesStmt->fetchAll(PDO::FETCH_ASSOC);
+        foreach ($amenitiesRows as $row) {
+            if (!isset($amenitiesMap[$row['property_id']])) {
+                $amenitiesMap[$row['property_id']] = [];
+            }
+            $amenitiesMap[$row['property_id']][] = $row['amenity_name'];
+        }
+    }
+
     // Transform data for frontend
-    $transformedProperties = array_map(function($property) {
+    $transformedProperties = array_map(function($property) use ($amenitiesMap) {
         $totalRooms = intval($property['total_rooms']);
         $occupiedRooms = intval($property['occupied_rooms']);
         $occupancyRate = $totalRooms > 0 ? round(($occupiedRooms / $totalRooms) * 100) : 0;
@@ -68,18 +94,32 @@ try {
             $displayStatus = 'full';
         }
 
+        // Map property_type from landlord_profiles to frontend format
+        $typeMapping = [
+            'Single unit' => 'boarding-house',
+            'Multi-unit' => 'boarding-house',
+            'Apartment' => 'apartment',
+            'Dormitory' => 'dormitory',
+        ];
+        $type = isset($typeMapping[$property['property_type']]) 
+            ? $typeMapping[$property['property_type']] 
+            : 'boarding-house';
+
         return [
             'id' => intval($property['id']),
             'name' => htmlspecialchars($property['title']),
+            'type' => $type,
+            'description' => htmlspecialchars($property['description'] ?? ''),
             'address' => htmlspecialchars($property['address']),
-            'city' => '',
-            'province' => '',
+            'city' => htmlspecialchars($property['city'] ?? ''),
+            'province' => htmlspecialchars($property['province'] ?? ''),
             'price' => floatval($property['price']),
             'status' => $displayStatus,
             'total_rooms' => $totalRooms,
             'occupied_rooms' => $occupiedRooms,
             'monthly_revenue' => floatval($property['monthly_revenue']),
             'created_at' => $property['created_at'],
+            'amenities' => $amenitiesMap[$property['id']] ?? [],
         ];
     }, $properties);
 

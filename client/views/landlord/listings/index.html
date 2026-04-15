@@ -160,19 +160,7 @@
               data-icon-stroke-width="2"
             ></span>
             <h2>No Properties Found</h2>
-            <p>
-              No properties match your search criteria. Try adjusting your filters or add a new
-              property.
-            </p>
-            <a href="create.html" class="btn-primary">
-              <span
-                data-icon="plus"
-                data-icon-width="24"
-                data-icon-height="24"
-                data-icon-stroke-width="2"
-              ></span>
-              Add Your First Property
-            </a>
+            <p>No properties match your search criteria. Try adjusting your filters.</p>
           </div>
 
           <!-- Loading State -->
@@ -275,6 +263,185 @@
           <button type="button" class="btn-outline" id="delete-cancel">Cancel</button>
           <button type="button" class="btn-danger" id="delete-confirm">Delete Property</button>
         </div>
+      </div>
+    </div>
+
+    <!-- Edit Property Modal -->
+    <div id="edit-property-modal" class="edit-property-modal">
+      <div class="modal-overlay"></div>
+      <div class="edit-modal-content">
+        <div class="modal-header">
+          <h2>Edit Property</h2>
+          <button type="button" class="modal-close" id="edit-modal-close">
+            <span
+              data-icon="close"
+              data-icon-width="24"
+              data-icon-height="24"
+              data-icon-stroke-width="2"
+            ></span>
+          </button>
+        </div>
+        <form id="edit-property-form" class="edit-property-form">
+          <div class="modal-body">
+            <!-- Basic Information -->
+            <div class="edit-form-section">
+              <h3 class="edit-section-title">Basic Information</h3>
+              <div class="form-row">
+                <div class="form-group">
+                  <label for="edit-property-name">Property Name *</label>
+                  <input
+                    type="text"
+                    id="edit-property-name"
+                    name="propertyName"
+                    placeholder="e.g. Sunrise Boarding House"
+                    required
+                  />
+                </div>
+                <div class="form-group">
+                  <label for="edit-property-type">Property Type *</label>
+                  <select id="edit-property-type" name="propertyType" required>
+                    <option value="">Select type</option>
+                    <option value="boarding-house">Boarding House</option>
+                    <option value="dormitory">Dormitory</option>
+                    <option value="apartment">Apartment</option>
+                    <option value="studio">Studio Unit</option>
+                    <option value="others">Others</option>
+                  </select>
+                </div>
+              </div>
+              <div class="form-group">
+                <label for="edit-property-description">Description *</label>
+                <textarea
+                  id="edit-property-description"
+                  name="propertyDescription"
+                  rows="3"
+                  placeholder="Describe your property..."
+                  required
+                ></textarea>
+              </div>
+              <div class="form-row">
+                <div class="form-group">
+                  <label for="edit-property-price">Monthly Rent (₱) *</label>
+                  <input
+                    type="number"
+                    id="edit-property-price"
+                    name="propertyPrice"
+                    placeholder="5000"
+                    min="0"
+                    required
+                  />
+                </div>
+                <div class="form-group">
+                  <label for="edit-property-rooms">Number of Rooms *</label>
+                  <input
+                    type="number"
+                    id="edit-property-rooms"
+                    name="propertyRooms"
+                    placeholder="5"
+                    min="1"
+                    required
+                  />
+                </div>
+              </div>
+              <div class="form-group">
+                <label for="edit-property-status">Status</label>
+                <select id="edit-property-status" name="propertyStatus">
+                  <option value="active">Active</option>
+                  <option value="inactive">Inactive</option>
+                  <option value="full">Fully Occupied</option>
+                </select>
+              </div>
+            </div>
+
+            <!-- Location -->
+            <div class="edit-form-section">
+              <h3 class="edit-section-title">Location</h3>
+              <div class="form-group">
+                <label for="edit-property-address">Complete Address *</label>
+                <textarea
+                  id="edit-property-address"
+                  name="propertyAddress"
+                  rows="2"
+                  placeholder="Street, Barangay, City, Province"
+                  required
+                ></textarea>
+              </div>
+              <div class="form-row">
+                <div class="form-group">
+                  <label for="edit-property-city">City *</label>
+                  <input
+                    type="text"
+                    id="edit-property-city"
+                    name="propertyCity"
+                    placeholder="e.g. Manila"
+                    required
+                  />
+                </div>
+                <div class="form-group">
+                  <label for="edit-property-province">Province *</label>
+                  <input
+                    type="text"
+                    id="edit-property-province"
+                    name="propertyProvince"
+                    placeholder="e.g. Metro Manila"
+                    required
+                  />
+                </div>
+              </div>
+            </div>
+
+            <!-- Amenities -->
+            <div class="edit-form-section">
+              <h3 class="edit-section-title">Amenities</h3>
+              <div class="amenities-grid">
+                <label class="amenity-checkbox">
+                  <input type="checkbox" name="editAmenities" value="wifi" />
+                  <span class="amenity-label">WiFi</span>
+                </label>
+                <label class="amenity-checkbox">
+                  <input type="checkbox" name="editAmenities" value="aircon" />
+                  <span class="amenity-label">Air Conditioning</span>
+                </label>
+                <label class="amenity-checkbox">
+                  <input type="checkbox" name="editAmenities" value="furnished" />
+                  <span class="amenity-label">Fully Furnished</span>
+                </label>
+                <label class="amenity-checkbox">
+                  <input type="checkbox" name="editAmenities" value="parking" />
+                  <span class="amenity-label">Parking</span>
+                </label>
+                <label class="amenity-checkbox">
+                  <input type="checkbox" name="editAmenities" value="laundry" />
+                  <span class="amenity-label">Laundry</span>
+                </label>
+                <label class="amenity-checkbox">
+                  <input type="checkbox" name="editAmenities" value="kitchen" />
+                  <span class="amenity-label">Kitchen Access</span>
+                </label>
+                <label class="amenity-checkbox">
+                  <input type="checkbox" name="editAmenities" value="cr" />
+                  <span class="amenity-label">CR Inside Room</span>
+                </label>
+                <label class="amenity-checkbox">
+                  <input type="checkbox" name="editAmenities" value="cctv" />
+                  <span class="amenity-label">CCTV Security</span>
+                </label>
+              </div>
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn-outline" id="edit-cancel">Cancel</button>
+            <button type="submit" class="btn-primary">
+              <span
+                data-icon="check"
+                data-icon-width="24"
+                data-icon-height="24"
+                data-icon-stroke-width="2"
+              ></span>
+              Save Changes
+            </button>
+          </div>
+        </form>
       </div>
     </div>
 

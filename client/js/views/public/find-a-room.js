@@ -32,9 +32,12 @@ const enhancedState = {
   },
 };
 
-// API configuration
 const API_BASE_URL = window.location.origin.includes('github.io')
   ? 'https://havenspace.com/server/api'
+  : window.location.origin.includes('localhost') ||
+    window.location.origin.includes('127.0.0.1') ||
+    window.location.hostname === 'localhost'
+  ? 'http://localhost:8000'
   : '/server/api';
 
 /**
@@ -75,7 +78,7 @@ async function fetchProperties(reset = false) {
       params.append('amenities', enhancedState.filters.amenities.join(','));
     }
 
-    const response = await fetch(`${API_BASE_URL}/rooms/public?${params.toString()}`);
+    const response = await fetch(`${API_BASE_URL}/api/rooms/public?${params.toString()}`);
 
     if (!response.ok) {
       throw new Error(`HTTP error! status: ${response.status}`);
@@ -185,7 +188,7 @@ function createPropertyCard(property) {
         src="${property.image}"
         alt="${property.title}"
         class="find-room-card-image"
-        onerror="this.src='../../assets/images/placeholder-room.jpg'"
+        onerror="this.src='../../assets/images/placeholder-room.svg'"
       />
       <div class="find-room-card-badges">
         ${badgesHtml}
@@ -278,11 +281,18 @@ function updateResultsCount(totalCount) {
   const countEl = document.getElementById('results-count');
   const subtitleEl = document.getElementById('results-subtitle');
 
+  const count = typeof totalCount === 'number' ? totalCount : 0;
+  const displayedCount = enhancedState.properties.length;
+
   if (countEl) {
-    countEl.textContent = totalCount;
+    countEl.textContent = count;
   }
   if (subtitleEl) {
-    subtitleEl.textContent = `Showing ${enhancedState.properties.length} of ${totalCount} properties`;
+    if (count === 0) {
+      subtitleEl.textContent = 'No properties found';
+    } else {
+      subtitleEl.textContent = `Showing ${displayedCount} of ${count} properties`;
+    }
   }
 }
 

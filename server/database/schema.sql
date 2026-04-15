@@ -95,6 +95,16 @@ CREATE TABLE IF NOT EXISTS payment_methods (
     FOREIGN KEY (landlord_id) REFERENCES landlord_profiles(id) ON DELETE CASCADE
 );
 
+-- Property Amenities Table
+CREATE TABLE IF NOT EXISTS property_amenities (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    property_id INT NOT NULL,
+    amenity_name VARCHAR(100) NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    UNIQUE KEY unique_property_amenity (property_id, amenity_name),
+    FOREIGN KEY (property_id) REFERENCES properties(id) ON DELETE CASCADE
+);
+
 -- Rooms (listings under a property)
 CREATE TABLE IF NOT EXISTS rooms (
     id INT AUTO_INCREMENT PRIMARY KEY,

@@ -321,11 +321,13 @@ async function handleFormSubmit(e) {
       throw new Error(result.error || result.message || 'Failed to create listing');
     }
 
-    if (uploadedPhotos.length > 0) {
-      await uploadPhotos(result.data?.id);
+    const propertyId = result.data?.id;
+
+    if (uploadedPhotos.length > 0 && propertyId) {
+      await uploadPhotos(propertyId);
     }
 
-    window.location.href = 'index.html';
+    showSuccessModal(propertyId, data.propertyName, data.propertyPrice);
   } catch (error) {
     showError(error.message || 'Failed to create listing. Please try again.');
 
@@ -351,6 +353,56 @@ async function uploadPhotos(propertyId) {
   } catch (error) {
     console.error('Failed to upload photos:', error);
   }
+}
+
+function showSuccessModal(propertyId, propertyName, propertyPrice) {
+  const modal = document.getElementById('listing-success-modal');
+  const detailsContainer = document.getElementById('listing-success-details');
+  const viewBtn = document.getElementById('listing-view-btn');
+  const dashboardBtn = document.getElementById('listing-dashboard-btn');
+
+  if (!modal) return;
+
+  if (detailsContainer) {
+    detailsContainer.innerHTML = `
+      <div class="listing-success-row">
+        <span class="listing-success-label">Property Name:</span>
+        <span class="listing-success-value">${escapeHtml(propertyName)}</span>
+      </div>
+      <div class="listing-success-row">
+        <span class="listing-success-label">Monthly Rent:</span>
+        <span class="listing-success-value">₱${parseFloat(propertyPrice).toLocaleString()}</span>
+      </div>
+      <div class="listing-success-row">
+        <span class="listing-success-label">Status:</span>
+        <span class="listing-success-value listing-success-status">Published</span>
+      </div>
+    `;
+  }
+
+  if (viewBtn && propertyId) {
+    viewBtn.onclick = () => {
+      window.location.href = `view.html?id=${propertyId}`;
+    };
+  } else if (viewBtn) {
+    viewBtn.style.display = 'none';
+  }
+
+  if (dashboardBtn) {
+    dashboardBtn.onclick = () => {
+      window.location.href = '../index.html';
+    };
+  }
+
+  modal.style.display = 'flex';
+  modal.classList.add('show');
+  injectIcons();
+}
+
+function escapeHtml(text) {
+  const div = document.createElement('div');
+  div.textContent = text;
+  return div.innerHTML;
 }
 
 /**

@@ -418,6 +418,32 @@
       </main>
     </div>
 
+    <!-- Success Confirmation Modal -->
+    <div class="listing-success-overlay" id="listing-success-modal" style="display: none">
+      <div class="listing-success-modal">
+        <div class="listing-success-icon">
+          <span data-icon="check" data-icon-width="48" data-icon-height="48"></span>
+        </div>
+        <h2 class="listing-success-title">Listing Published!</h2>
+        <p class="listing-success-message">
+          Your property listing has been successfully created and is now live.
+        </p>
+        <div class="listing-success-details" id="listing-success-details">
+          <!-- Populated by JavaScript -->
+        </div>
+        <div class="listing-success-actions">
+          <button type="button" class="listing-success-btn-secondary" id="listing-view-btn">
+            <span data-icon="eye" data-icon-width="20" data-icon-height="20"></span>
+            View Listing
+          </button>
+          <button type="button" class="listing-success-btn-primary" id="listing-dashboard-btn">
+            <span data-icon="home" data-icon-width="20" data-icon-height="20"></span>
+            Back to Dashboard
+          </button>
+        </div>
+      </div>
+    </div>
+
     <script type="module" src="../../../js/views/landlord/create-listing.js"></script>
   </body>
 </html>

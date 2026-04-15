@@ -51,6 +51,7 @@ async function fetchPropertiesFromApi() {
       return result.data.properties.map(p => ({
         id: p.id,
         name: p.name || p.title,
+        type: p.type || 'boarding-house',
         address: p.address || '',
         location: p.address || '',
         city: p.city || '',
@@ -61,9 +62,9 @@ async function fetchPropertiesFromApi() {
         status: p.status || 'active',
         monthlyRevenue: p.monthly_revenue || 0,
         createdAt: p.created_at || new Date().toISOString(),
-        photos: [],
-        description: '',
-        amenities: [],
+        photos: p.photos || [],
+        description: p.description || '',
+        amenities: p.amenities || [],
       }));
     }
 
@@ -322,7 +323,98 @@ function openPropertyModal(property) {
 }
 
 function editProperty(property) {
-  window.location.href = `edit.html?id=${property.id}`;
+  openEditModal(property);
+}
+
+function openEditModal(property) {
+  const modal = document.getElementById('edit-property-modal');
+  if (!modal) {
+    return;
+  }
+
+  currentProperty = property;
+
+  document.getElementById('edit-property-name').value = property.name || '';
+  document.getElementById('edit-property-type').value = property.type || 'boarding-house';
+  document.getElementById('edit-property-description').value = property.description || '';
+  document.getElementById('edit-property-price').value = property.price || 0;
+  document.getElementById('edit-property-rooms').value =
+    property.total_rooms || property.rooms || 0;
+  document.getElementById('edit-property-status').value = property.status || 'active';
+  document.getElementById('edit-property-address').value = property.address || '';
+  document.getElementById('edit-property-city').value = property.city || '';
+  document.getElementById('edit-property-province').value = property.province || '';
+
+  const amenityCheckboxes = modal.querySelectorAll('input[name="editAmenities"]');
+  const currentAmenities = property.amenities || [];
+  amenityCheckboxes.forEach(checkbox => {
+    checkbox.checked = currentAmenities.includes(checkbox.value);
+  });
+
+  modal.classList.add('active');
+  document.body.style.overflow = 'hidden';
+}
+
+function closeEditModal() {
+  const modal = document.getElementById('edit-property-modal');
+  if (!modal) {
+    return;
+  }
+  modal.classList.remove('active');
+  document.body.style.overflow = '';
+  currentProperty = null;
+}
+
+async function savePropertyChanges(event) {
+  event.preventDefault();
+
+  if (!currentProperty) {
+    return;
+  }
+
+  const form = event.target;
+  const formData = new FormData(form);
+
+  const amenityCheckboxes = form.querySelectorAll('input[name="editAmenities"]:checked');
+  const selectedAmenities = Array.from(amenityCheckboxes).map(cb => cb.value);
+
+  const updatedData = {
+    name: formData.get('propertyName'),
+    type: formData.get('propertyType'),
+    description: formData.get('propertyDescription'),
+    price: parseFloat(formData.get('propertyPrice')) || 0,
+    total_rooms: parseInt(formData.get('propertyRooms')) || 0,
+    status: formData.get('propertyStatus'),
+    address: formData.get('propertyAddress'),
+    city: formData.get('propertyCity'),
+    province: formData.get('propertyProvince'),
+    amenities: selectedAmenities,
+  };
+
+  try {
+    const response = await fetch(
+      `${CONFIG.API_BASE_URL}/api/landlord/properties.php?id=${currentProperty.id}`,
+      {
+        method: 'PUT',
+        credentials: 'include',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(updatedData),
+      }
+    );
+
+    if (!response.ok) {
+      throw new Error(`API error: ${response.status}`);
+    }
+
+    closeEditModal();
+    loadProperties();
+    alert(`Property "${updatedData.name}" has been updated successfully.`);
+  } catch (error) {
+    console.error('Failed to update property:', error);
+    alert('Failed to update property. Please try again.');
+  }
 }
 
 function confirmDelete(property) {
@@ -372,10 +464,35 @@ function setupModalHandlers() {
     }
   }
 
+  const editModal = document.getElementById('edit-property-modal');
+  if (editModal) {
+    const closeBtn = document.getElementById('edit-modal-close');
+    const cancelBtn = document.getElementById('edit-cancel');
+    const overlay = editModal.querySelector('.modal-overlay');
+    const form = document.getElementById('edit-property-form');
+
+    if (closeBtn) {
+      closeBtn.addEventListener('click', closeEditModal);
+    }
+
+    if (cancelBtn) {
+      cancelBtn.addEventListener('click', closeEditModal);
+    }
+
+    if (overlay) {
+      overlay.addEventListener('click', closeEditModal);
+    }
+
+    if (form) {
+      form.addEventListener('submit', savePropertyChanges);
+    }
+  }
+
   document.addEventListener('keydown', e => {
     if (e.key === 'Escape') {
       closeModal(propertyModal);
       closeModal(deleteModal);
+      closeEditModal();
     }
   });
 }
