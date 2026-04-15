@@ -1,8 +1,4 @@
-/**
- * Create Listing - Photo Upload Feature
- * Handles property form submission and photo upload functionality
- */
-
+import CONFIG from '../../config.js';
 import { getIcon } from '../../shared/icons.js';
 
 /**
@@ -298,14 +294,63 @@ async function handleFormSubmit(e) {
     propertyLatitude: formData.get('propertyLatitude'),
     propertyLongitude: formData.get('propertyLongitude'),
     amenities: [...formData.getAll('amenities'), ...customAmenities],
-    photos: uploadedPhotos.map(photo => photo.file),
   };
 
-  // Show success message
-  alert('Listing created successfully! (This is a demo - backend integration required)');
+  const submitBtn = e.target.querySelector('button[type="submit"]');
+  const originalBtnText = submitBtn ? submitBtn.innerHTML : '';
 
-  // Redirect to listings page
-  window.location.href = 'index.html';
+  try {
+    if (submitBtn) {
+      submitBtn.disabled = true;
+      submitBtn.innerHTML = 'Creating...';
+    }
+
+    const response = await fetch(`${CONFIG.API_BASE_URL}/api/landlord/listings`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-User-Id': localStorage.getItem('user_id') || '4',
+      },
+      body: JSON.stringify(data),
+      credentials: 'include',
+    });
+
+    const result = await response.json();
+
+    if (!response.ok) {
+      throw new Error(result.error || result.message || 'Failed to create listing');
+    }
+
+    if (uploadedPhotos.length > 0) {
+      await uploadPhotos(result.data?.id);
+    }
+
+    window.location.href = 'index.html';
+  } catch (error) {
+    showError(error.message || 'Failed to create listing. Please try again.');
+
+    if (submitBtn) {
+      submitBtn.disabled = false;
+      submitBtn.innerHTML = originalBtnText;
+    }
+  }
+}
+
+async function uploadPhotos(propertyId) {
+  const photoFormData = new FormData();
+  uploadedPhotos.forEach(photo => {
+    photoFormData.append('propertyPhotos[]', photo.file);
+  });
+
+  try {
+    await fetch(`${CONFIG.API_BASE_URL}/api/landlord/listings/${propertyId}/photos`, {
+      method: 'POST',
+      body: photoFormData,
+      credentials: 'include',
+    });
+  } catch (error) {
+    console.error('Failed to upload photos:', error);
+  }
 }
 
 /**

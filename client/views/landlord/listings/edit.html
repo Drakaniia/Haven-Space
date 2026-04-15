@@ -12,21 +12,13 @@
       rel="stylesheet"
     />
     <link rel="stylesheet" href="../../../css/global.css" />
-    <link rel="stylesheet" href="../../../css/components/sidebar.css" />
-    <link rel="stylesheet" href="../../../css/components/navbar.css" />
     <link rel="stylesheet" href="../../../css/views/landlord/create-listing.css" />
     <link rel="stylesheet" href="../../../css/views/landlord/edit-property.css" />
   </head>
   <body>
     <div class="edit-property-page">
-      <!-- Sidebar Container -->
-      <div id="sidebar-container"></div>
-
       <!-- Main Content -->
       <main class="edit-property-main">
-        <!-- Navbar Container -->
-        <div id="navbar-container"></div>
-
         <!-- Content -->
         <div class="edit-property-content">
           <div class="edit-property-header">
@@ -478,7 +470,7 @@
     <div id="image-preview-modal" class="image-preview-modal">
       <div class="modal-overlay"></div>
       <div class="image-preview-content">
-        <button class="image-modal-close" id="image-modal-close">
+        <button type="button" class="image-modal-close" id="image-modal-close">
           <span
             data-icon="xMark"
             data-icon-width="24"
@@ -488,7 +480,7 @@
         </button>
         <img id="image-preview-source" src="" alt="Room preview" />
         <div class="image-preview-actions">
-          <button class="btn-danger" id="delete-room-image">
+          <button type="button" class="btn-danger" id="delete-room-image">
             <span
               data-icon="trash"
               data-icon-width="24"

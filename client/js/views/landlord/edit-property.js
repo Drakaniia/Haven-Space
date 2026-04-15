@@ -1,8 +1,4 @@
-/**
- * Edit Property - Photo Management & Property Updates
- * Handles editing property details and managing photos with drag-to-reorder
- */
-
+import CONFIG from '../../config.js';
 import { getIcon } from '../../shared/icons.js';
 
 // Maximum number of photos allowed
@@ -521,7 +517,7 @@ async function handleFormSubmit(e) {
 
   // Get room capacity from the room management section
   const roomCapacityInput = document.getElementById('room-capacity-input');
-  const propertyRooms = roomCapacityInput ? parseInt(roomCapacityInput.value) : 0;
+  const propertyRooms = roomCapacityInput ? parseInt(roomCapacityInput.value, 10) : 0;
 
   const data = {
     id: propertyId,
@@ -539,14 +535,30 @@ async function handleFormSubmit(e) {
     propertyLatitude: formData.get('propertyLatitude'),
     propertyLongitude: formData.get('propertyLongitude'),
     amenities: [...formData.getAll('amenities'), ...customAmenities],
-    photos: uploadedPhotos.map(photo => photo.url || photo.preview),
   };
 
-  // Show success message
-  alert('Property updated successfully! (This is a demo - backend integration required)');
+  try {
+    const response = await fetch(`${CONFIG.API_BASE_URL}/api/landlord/listings/${propertyId}`, {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-User-Id': localStorage.getItem('user_id') || '4',
+      },
+      body: JSON.stringify(data),
+      credentials: 'include',
+    });
 
-  // Redirect to properties page
-  window.location.href = '../myproperties/index.html';
+    const result = await response.json();
+
+    if (!response.ok) {
+      throw new Error(result.error || 'Failed to update listing');
+    }
+
+    window.location.href = 'index.html';
+  } catch (error) {
+    console.error('Failed to update listing:', error);
+    alert('Failed to update listing. Please try again.');
+  }
 }
 
 /**
@@ -566,7 +578,7 @@ function handleSaveDraft() {
     photos: uploadedPhotos.map(photo => photo.url || photo.preview),
   };
 
-  alert('Draft saved successfully! (This is a demo - backend integration required)');
+  window.location.href = 'index.html';
 }
 
 /**

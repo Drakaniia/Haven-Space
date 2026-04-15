@@ -1,7 +1,7 @@
 document.addEventListener('DOMContentLoaded', () => {
-  // Initialize the map, centered optionally on a default location
-  const defaultLat = 8.15;
-  const defaultLng = 125.126; // Coordinates similar to your maps
+  // Initialize the map, centered on Malaybalay City, Bukidnon
+  const defaultLat = 7.8183;
+  const defaultLng = 125.1333;
 
   const map = L.map('map').setView([defaultLat, defaultLng], 15);
 
@@ -35,6 +35,24 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // Initial values
   updateInputs(marker.getLatLng());
+
+  // Auto-detect user location on load
+  if (navigator.geolocation) {
+    navigator.geolocation.getCurrentPosition(
+      position => {
+        const latlng = {
+          lat: position.coords.latitude,
+          lng: position.coords.longitude,
+        };
+        marker.setLatLng(latlng);
+        updateInputs(latlng);
+        map.flyTo(latlng, 16);
+      },
+      () => {
+        // Silently fail - stay on default Malaybalay City
+      }
+    );
+  }
 
   // Update inputs when marker gets dragged
   marker.on('dragend', function (_e) {
@@ -78,40 +96,6 @@ document.addEventListener('DOMContentLoaded', () => {
       }
     });
   }
-
-  // Auto-detect location on page load
-  function autoDetectLocation() {
-    if (!navigator.geolocation) {
-      return;
-    }
-
-    locateBtn?.classList.add('loading');
-
-    navigator.geolocation.getCurrentPosition(
-      position => {
-        const latlng = {
-          lat: position.coords.latitude,
-          lng: position.coords.longitude,
-        };
-        marker.setLatLng(latlng);
-        updateInputs(latlng);
-        map.flyTo(latlng, 16);
-        locateBtn?.classList.remove('loading');
-      },
-      () => {
-        // Silently fail - user can still drag or click button
-        locateBtn?.classList.remove('loading');
-      },
-      {
-        enableHighAccuracy: false,
-        timeout: 5000,
-        maximumAge: 0,
-      }
-    );
-  }
-
-  // Trigger auto-detection after setup
-  autoDetectLocation();
 
   // Handle Form Submit
   if (form) {

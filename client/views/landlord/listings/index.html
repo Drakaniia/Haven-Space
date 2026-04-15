@@ -1,0 +1,285 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="icon" type="image/svg+xml" href="../../../assets/favicon.svg" />
+    <title>Manage All Properties - Haven Space</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="../../../css/global.css" />
+    <link rel="stylesheet" href="../../../css/components/sidebar.css" />
+    <link rel="stylesheet" href="../../../css/components/navbar.css" />
+    <link rel="stylesheet" href="../../../css/views/landlord/landlord-listings.css" />
+  </head>
+  <body data-view="landlord" data-dashboard-type="landlord">
+    <div class="landlord-listings-page">
+      <!-- Sidebar Container -->
+      <div id="sidebar-container"></div>
+
+      <!-- Main Content -->
+      <main class="landlord-listings-main">
+        <!-- Navbar Container -->
+        <div id="navbar-container"></div>
+
+        <!-- Content -->
+        <div class="landlord-listings-content">
+          <!-- Header -->
+          <div class="landlord-listings-header">
+            <div class="header-left">
+              <h1>Manage All Properties</h1>
+              <p>View, edit, and manage all your boarding houses and properties in one place.</p>
+            </div>
+            <div class="header-actions">
+              <a href="create.html" class="btn-primary">
+                <span
+                  data-icon="plus"
+                  data-icon-width="24"
+                  data-icon-height="24"
+                  data-icon-stroke-width="2"
+                ></span>
+                Add New Property
+              </a>
+            </div>
+          </div>
+
+          <!-- Stats Overview -->
+          <div class="listings-stats-row">
+            <div class="listings-stat-card">
+              <div class="stat-icon green">
+                <span
+                  data-icon="building"
+                  data-icon-width="20"
+                  data-icon-height="20"
+                  data-icon-stroke-width="2"
+                ></span>
+              </div>
+              <div class="stat-info">
+                <span class="stat-value" data-total="properties">--</span>
+                <span class="stat-label">Total Properties</span>
+              </div>
+            </div>
+            <div class="listings-stat-card">
+              <div class="stat-icon blue">
+                <span
+                  data-icon="home"
+                  data-icon-width="20"
+                  data-icon-height="20"
+                  data-icon-stroke-width="2"
+                ></span>
+              </div>
+              <div class="stat-info">
+                <span class="stat-value" data-total="rooms">--</span>
+                <span class="stat-label">Total Rooms</span>
+              </div>
+            </div>
+            <div class="listings-stat-card">
+              <div class="stat-icon purple">
+                <span
+                  data-icon="userGroup"
+                  data-icon-width="20"
+                  data-icon-height="20"
+                  data-icon-stroke-width="2"
+                ></span>
+              </div>
+              <div class="stat-info">
+                <span class="stat-value" data-total="boarders">--</span>
+                <span class="stat-label">Current Boarders</span>
+              </div>
+            </div>
+            <div class="listings-stat-card">
+              <div class="stat-icon orange">
+                <span
+                  data-icon="currencyDollar"
+                  data-icon-width="20"
+                  data-icon-height="20"
+                  data-icon-stroke-width="2"
+                ></span>
+              </div>
+              <div class="stat-info">
+                <span class="stat-value" data-total="revenue">--</span>
+                <span class="stat-label">Monthly Revenue</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Search and Filter Bar -->
+          <div class="listings-toolbar">
+            <div class="search-box">
+              <span
+                data-icon="magnifier"
+                data-icon-width="24"
+                data-icon-height="24"
+                data-icon-stroke-width="2"
+              ></span>
+              <input
+                type="text"
+                id="search-properties"
+                placeholder="Search by property name or location..."
+              />
+            </div>
+            <div class="filter-group">
+              <select id="filter-type">
+                <option value="all">All Types</option>
+                <option value="boarding-house">Boarding House</option>
+                <option value="dormitory">Dormitory</option>
+                <option value="apartment">Apartment</option>
+              </select>
+              <select id="filter-status">
+                <option value="all">All Status</option>
+                <option value="active">Active</option>
+                <option value="inactive">Inactive</option>
+                <option value="full">Fully Occupied</option>
+              </select>
+              <select id="sort-by">
+                <option value="newest">Newest First</option>
+                <option value="oldest">Oldest First</option>
+                <option value="name">Name (A-Z)</option>
+                <option value="occupancy">Occupancy Rate</option>
+                <option value="price-high">Price (High-Low)</option>
+                <option value="price-low">Price (Low-High)</option>
+              </select>
+            </div>
+          </div>
+
+          <!-- Properties Grid -->
+          <div id="properties-grid" class="properties-grid">
+            <!-- Property cards will be dynamically loaded here -->
+          </div>
+
+          <!-- Empty State -->
+          <div id="empty-state" class="empty-state" style="display: none">
+            <span
+              data-icon="building"
+              data-icon-width="48"
+              data-icon-height="48"
+              data-icon-stroke-width="2"
+            ></span>
+            <h2>No Properties Found</h2>
+            <p>
+              No properties match your search criteria. Try adjusting your filters or add a new
+              property.
+            </p>
+            <a href="create.html" class="btn-primary">
+              <span
+                data-icon="plus"
+                data-icon-width="24"
+                data-icon-height="24"
+                data-icon-stroke-width="2"
+              ></span>
+              Add Your First Property
+            </a>
+          </div>
+
+          <!-- Loading State -->
+          <div id="loading-state" class="loading-state">
+            <div class="spinner"></div>
+            <p>Loading your properties...</p>
+          </div>
+        </div>
+      </main>
+    </div>
+
+    <!-- Property Detail Modal -->
+    <div id="property-modal" class="property-modal">
+      <div class="modal-overlay"></div>
+      <div class="modal-content">
+        <div class="modal-header">
+          <h2 id="modal-property-name">Property Name</h2>
+          <button type="button" class="modal-close" id="modal-close">
+            <span
+              data-icon="close"
+              data-icon-width="24"
+              data-icon-height="24"
+              data-icon-stroke-width="2"
+            ></span>
+          </button>
+        </div>
+        <div class="modal-body">
+          <div class="modal-property-images">
+            <img id="modal-cover-image" src="" alt="Property cover" class="cover-image" />
+            <div id="modal-image-thumbs" class="image-thumbs"></div>
+          </div>
+          <div class="modal-property-info">
+            <div class="info-row">
+              <span class="info-label">Type:</span>
+              <span id="modal-property-type" class="info-value">Boarding House</span>
+            </div>
+            <div class="info-row">
+              <span class="info-label">Location:</span>
+              <span id="modal-property-location" class="info-value">Manila, Metro Manila</span>
+            </div>
+            <div class="info-row">
+              <span class="info-label">Price Range:</span>
+              <span id="modal-property-price" class="info-value">₱5,000 - ₱8,000/month</span>
+            </div>
+            <div class="info-row">
+              <span class="info-label">Rooms:</span>
+              <span id="modal-property-rooms" class="info-value">10 rooms</span>
+            </div>
+            <div class="info-row">
+              <span class="info-label">Occupancy:</span>
+              <span id="modal-property-occupancy" class="info-value">85%</span>
+            </div>
+            <div class="info-row">
+              <span class="info-label">Status:</span>
+              <span id="modal-property-status" class="status-badge status-active">Active</span>
+            </div>
+            <div class="amenities-list">
+              <h4>Amenities</h4>
+              <div id="modal-amenities" class="amenities-tags"></div>
+            </div>
+            <div class="description-section">
+              <h4>Description</h4>
+              <p id="modal-property-description">Property description here...</p>
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn-outline" id="modal-cancel">Close</button>
+          <button type="button" class="btn-primary" id="modal-edit">
+            <span
+              data-icon="edit"
+              data-icon-width="24"
+              data-icon-height="24"
+              data-icon-stroke-width="2"
+            ></span>
+            Edit Property
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Delete Confirmation Modal -->
+    <div id="delete-modal" class="delete-modal">
+      <div class="modal-overlay"></div>
+      <div class="delete-modal-content">
+        <div class="delete-icon">
+          <span
+            data-icon="exclamation"
+            data-icon-width="48"
+            data-icon-height="48"
+            data-icon-stroke-width="2"
+          ></span>
+        </div>
+        <h3>Delete Property?</h3>
+        <p>
+          Are you sure you want to delete <strong id="delete-property-name">Property Name</strong>?
+          This action cannot be undone.
+        </p>
+        <div class="delete-actions">
+          <button type="button" class="btn-outline" id="delete-cancel">Cancel</button>
+          <button type="button" class="btn-danger" id="delete-confirm">Delete Property</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ES Module Entry Point -->
+    <script type="module" src="../../../js/main.js"></script>
+    <script type="module" src="../../../js/views/landlord/landlord-listings.js"></script>
+  </body>
+</html>

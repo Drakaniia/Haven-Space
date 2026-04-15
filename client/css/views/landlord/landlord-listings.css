@@ -1,12 +1,12 @@
-/* Your Properties Page Styles */
+/* Landlord Listings - Manage All Properties Page Styles */
 
-.your-properties-page {
+.landlord-listings-page {
   display: flex;
   min-height: 100vh;
   background-color: var(--bg-cream);
 }
 
-.your-properties-main {
+.landlord-listings-main {
   flex: 1;
   margin-left: 280px;
   display: flex;
@@ -15,19 +15,19 @@
   transition: margin-left 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-.your-properties-main.sidebar-collapsed {
+.landlord-listings-main.sidebar-collapsed {
   margin-left: 80px;
 }
 
-.your-properties-content {
+.landlord-listings-content {
   flex: 1;
-  padding: 1.5rem;
+  padding: 1.5rem 2rem;
   width: 100%;
   max-width: 100%;
 }
 
 /* Header */
-.your-properties-header {
+.landlord-listings-header {
   display: flex;
   justify-content: space-between;
   align-items: flex-start;
@@ -35,29 +35,88 @@
   gap: 2rem;
 }
 
-.header-left {
-  flex: 1;
-}
-
-.your-properties-header h1 {
+.landlord-listings-header .header-left h1 {
   font-size: 1.75rem;
   font-weight: 700;
   color: var(--text-dark);
   margin-bottom: 0.5rem;
 }
 
-.your-properties-header p {
+.landlord-listings-header .header-left p {
   color: var(--text-gray);
   font-size: 0.95rem;
 }
 
-.header-actions {
+.landlord-listings-header .header-actions {
   display: flex;
   gap: 1rem;
 }
 
+/* Stats Row */
+.listings-stats-row {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.listings-stat-card {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 1.25rem;
+  background: var(--white);
+  border-radius: 12px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+}
+
+.listings-stat-card .stat-icon {
+  width: 48px;
+  height: 48px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 10px;
+}
+
+.listings-stat-card .stat-icon.green {
+  background-color: #d1fae5;
+  color: #22c55e;
+}
+
+.listings-stat-card .stat-icon.blue {
+  background-color: #dbeafe;
+  color: #3b82f6;
+}
+
+.listings-stat-card .stat-icon.purple {
+  background-color: #ede9fe;
+  color: #8b5cf6;
+}
+
+.listings-stat-card .stat-icon.orange {
+  background-color: #fef3c7;
+  color: #f59e0b;
+}
+
+.listings-stat-card .stat-info {
+  display: flex;
+  flex-direction: column;
+}
+
+.listings-stat-card .stat-value {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--text-dark);
+}
+
+.listings-stat-card .stat-label {
+  font-size: 0.85rem;
+  color: var(--text-gray);
+}
+
 /* Toolbar */
-.properties-toolbar {
+.listings-toolbar {
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -88,10 +147,12 @@
   box-shadow: 0 0 0 3px rgba(74, 124, 35, 0.1);
 }
 
-.search-box svg {
+.search-box svg,
+.search-box [data-icon] {
   width: 20px;
   height: 20px;
   color: var(--text-gray);
+  flex-shrink: 0;
   vertical-align: middle;
 }
 
@@ -104,12 +165,12 @@
   color: var(--text-dark);
 }
 
-.filter-box {
+.filter-group {
   display: flex;
   gap: 0.75rem;
 }
 
-.filter-box select {
+.filter-group select {
   padding: 0.625rem 1rem;
   border: 1px solid var(--border-color);
   border-radius: 8px;
@@ -121,7 +182,7 @@
   transition: border-color 0.2s ease;
 }
 
-.filter-box select:focus {
+.filter-group select:focus {
   outline: none;
   border-color: var(--primary-green);
 }
@@ -151,72 +212,60 @@
 
 .property-card-image {
   position: relative;
-  height: 220px;
-  overflow: hidden;
+  height: 180px;
+  background-color: #f3f4f6;
 }
 
 .property-card-image img {
   width: 100%;
   height: 100%;
   object-fit: cover;
-  transition: transform 0.3s ease;
-}
-
-.property-card:hover .property-card-image img {
-  transform: scale(1.05);
 }
 
 .property-card-status {
   position: absolute;
   top: 12px;
-  right: 12px;
-  padding: 0.375rem 0.75rem;
-  border-radius: 20px;
+  left: 12px;
+  padding: 0.25rem 0.75rem;
+  border-radius: 9999px;
   font-size: 0.75rem;
   font-weight: 600;
   text-transform: uppercase;
+  letter-spacing: 0.025em;
 }
 
-.status-active {
-  background-color: var(--dashboard-green-light);
-  color: var(--dashboard-success);
+.property-card-status.status-active {
+  background-color: #d1fae5;
+  color: #22c55e;
 }
 
-.status-inactive {
-  background-color: var(--dashboard-red-light);
-  color: var(--dashboard-red);
+.property-card-status.status-inactive {
+  background-color: #fee2e2;
+  color: #ef4444;
 }
 
-.status-full {
-  background-color: var(--dashboard-yellow-light);
-  color: var(--dashboard-warning);
+.property-card-status.status-full {
+  background-color: #fef3c7;
+  color: #f59e0b;
 }
 
 .property-card-photo-count {
   position: absolute;
   bottom: 12px;
-  left: 12px;
-  background-color: rgba(0, 0, 0, 0.7);
-  color: var(--white);
-  padding: 0.375rem 0.75rem;
-  border-radius: 6px;
-  font-size: 0.8rem;
-  font-weight: 500;
+  right: 12px;
   display: flex;
   align-items: center;
-  gap: 0.375rem;
-}
-
-.property-card-photo-count svg {
-  width: 14px;
-  height: 14px;
+  gap: 4px;
+  padding: 0.25rem 0.5rem;
+  background: rgba(0, 0, 0, 0.6);
+  color: var(--white);
+  border-radius: 6px;
+  font-size: 0.75rem;
 }
 
 .property-card-body {
   padding: 1.25rem;
   flex: 1;
-  display: flex;
-  flex-direction: column;
 }
 
 .property-card-name {
@@ -229,153 +278,122 @@
 .property-card-location {
   display: flex;
   align-items: center;
-  gap: 0.5rem;
-  color: var(--text-gray);
+  gap: 0.375rem;
   font-size: 0.875rem;
+  color: var(--text-gray);
   margin-bottom: 1rem;
 }
 
-.property-card-location svg {
-  width: 16px;
-  height: 16px;
-}
-
 .property-card-stats {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
+  display: flex;
+  justify-content: space-between;
   gap: 0.5rem;
-  padding-top: 0.75rem;
-  border-top: 1px solid var(--border-color);
-  margin-top: auto;
 }
 
 .property-card-stat {
   text-align: center;
+  flex: 1;
 }
 
 .property-card-stat-value {
-  font-size: 1.25rem;
-  font-weight: 700;
+  font-size: 1rem;
+  font-weight: 600;
   color: var(--text-dark);
 }
 
 .property-card-stat-label {
-  font-size: 0.7rem;
+  font-size: 0.75rem;
   color: var(--text-gray);
-  margin-top: 0.25rem;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
 }
 
 .property-card-actions {
   display: flex;
-  gap: 0.5rem;
-  padding: 0.875rem 1.25rem;
-  background-color: var(--bg-cream);
   border-top: 1px solid var(--border-color);
 }
 
 .property-card-actions button {
   flex: 1;
-  display: inline-flex;
+  display: flex;
   align-items: center;
   justify-content: center;
   gap: 0.375rem;
-  padding: 0.5rem 0.75rem;
-  border-radius: 6px;
-  font-size: 0.8rem;
-  font-weight: 600;
-  cursor: pointer;
-  transition: all 0.2s ease;
+  padding: 0.875rem;
   border: none;
+  background: transparent;
+  font-size: 0.875rem;
+  font-weight: 500;
+  font-family: var(--font-main);
+  color: var(--text-gray);
+  cursor: pointer;
+  transition: background-color 0.2s ease, color 0.2s ease;
 }
 
-.btn-view {
-  background-color: var(--white);
-  color: var(--text-dark);
-  border: 1px solid var(--border-color);
+.property-card-actions button:not(:last-child) {
+  border-right: 1px solid var(--border-color);
 }
 
-.btn-view:hover {
-  border-color: var(--primary-green);
+.property-card-actions button:hover {
+  background-color: var(--bg-green);
   color: var(--primary-green);
 }
 
-.btn-edit {
-  background-color: var(--primary-green);
-  color: var(--white);
+.property-card-actions .btn-delete:hover {
+  background-color: #fee2e2;
+  color: #ef4444;
 }
 
-.btn-edit:hover {
-  background-color: var(--dark-green);
-}
-
-.btn-delete {
-  background-color: var(--white);
-  color: var(--dashboard-red);
-  border: 1px solid var(--dashboard-red);
-}
-
-.btn-delete:hover {
-  background-color: var(--dashboard-red);
-  color: var(--white);
-}
-
-.property-card-actions button svg {
+.property-card-actions svg {
   width: 16px;
   height: 16px;
 }
 
 /* Empty State */
 .empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 4rem 2rem;
   text-align: center;
-  padding: 5rem 2rem;
-  background: var(--white);
-  border-radius: 16px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
 }
 
 .empty-state svg {
-  width: 96px;
-  height: 96px;
-  color: var(--text-gray);
+  width: 64px;
+  height: 64px;
+  color: #d1d5db;
   margin-bottom: 1.5rem;
-  opacity: 0.5;
 }
 
 .empty-state h2 {
-  font-size: 1.75rem;
-  font-weight: 700;
+  font-size: 1.25rem;
+  font-weight: 600;
   color: var(--text-dark);
-  margin-bottom: 0.75rem;
+  margin-bottom: 0.5rem;
 }
 
 .empty-state p {
   color: var(--text-gray);
-  font-size: 1rem;
-  margin-bottom: 2rem;
-  max-width: 400px;
-  margin-left: auto;
-  margin-right: auto;
+  max-width: 320px;
+  margin-bottom: 1.5rem;
 }
 
 /* Loading State */
 .loading-state {
-  text-align: center;
-  padding: 5rem 2rem;
-  background: var(--white);
-  border-radius: 16px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 4rem 2rem;
 }
 
 .spinner {
-  width: 56px;
-  height: 56px;
-  border: 4px solid var(--border-color);
+  width: 40px;
+  height: 40px;
+  border: 3px solid #e5e5e5;
   border-top-color: var(--primary-green);
   border-radius: 50%;
-  animation: spin 1s linear infinite;
-  margin: 0 auto 1.5rem;
+  animation: spin 0.8s linear infinite;
+  margin-bottom: 1rem;
 }
 
 @keyframes spin {
@@ -386,21 +404,20 @@
 
 .loading-state p {
   color: var(--text-gray);
-  font-size: 0.95rem;
 }
 
-/* Modal Styles */
+/* Modal Base */
 .property-modal,
 .delete-modal {
   position: fixed;
   top: 0;
   left: 0;
-  right: 0;
-  bottom: 0;
-  z-index: 1000;
+  width: 100%;
+  height: 100%;
   display: none;
   align-items: center;
   justify-content: center;
+  z-index: 2000;
 }
 
 .property-modal.active,
@@ -412,11 +429,12 @@
   position: absolute;
   top: 0;
   left: 0;
-  right: 0;
-  bottom: 0;
-  background-color: rgba(0, 0, 0, 0.5);
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.5);
 }
 
+/* Modal Content */
 .modal-content {
   position: relative;
   background: var(--white);
@@ -424,61 +442,50 @@
   width: 90%;
   max-width: 800px;
   max-height: 90vh;
-  overflow-y: auto;
-  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
-  animation: modalSlideIn 0.3s ease;
-}
-
-@keyframes modalSlideIn {
-  from {
-    opacity: 0;
-    transform: translateY(-20px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
 }
 
 .modal-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 1.5rem 2rem;
+  padding: 1.25rem 1.5rem;
   border-bottom: 1px solid var(--border-color);
 }
 
 .modal-header h2 {
-  font-size: 1.5rem;
+  font-size: 1.25rem;
   font-weight: 600;
   color: var(--text-dark);
 }
 
 .modal-close {
-  background: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
   border: none;
-  cursor: pointer;
-  padding: 0.5rem;
+  background: transparent;
   border-radius: 8px;
+  cursor: pointer;
   transition: background-color 0.2s ease;
 }
 
 .modal-close:hover {
-  background-color: var(--bg-cream);
-}
-
-.modal-close svg {
-  width: 24px;
-  height: 24px;
-  color: var(--text-gray);
+  background-color: #f3f4f6;
 }
 
 .modal-body {
-  padding: 2rem;
+  flex: 1;
+  overflow-y: auto;
+  padding: 1.5rem;
 }
 
 .modal-property-images {
-  margin-bottom: 2rem;
+  margin-bottom: 1.5rem;
 }
 
 .modal-property-images .cover-image {
@@ -486,68 +493,68 @@
   height: 300px;
   object-fit: cover;
   border-radius: 12px;
-  margin-bottom: 1rem;
 }
 
-.image-thumbs {
+.modal-property-images .image-thumbs {
   display: flex;
-  gap: 0.75rem;
-  overflow-x: auto;
-  padding-bottom: 0.5rem;
+  gap: 0.5rem;
+  margin-top: 0.75rem;
 }
 
-.image-thumbs img {
-  width: 80px;
-  height: 80px;
+.modal-property-images .image-thumbs img {
+  width: 64px;
+  height: 64px;
   object-fit: cover;
   border-radius: 8px;
   cursor: pointer;
-  border: 2px solid transparent;
-  transition: border-color 0.2s ease;
+  opacity: 0.7;
+  transition: opacity 0.2s ease;
 }
 
-.image-thumbs img:hover {
-  border-color: var(--primary-green);
+.modal-property-images .image-thumbs img:hover {
+  opacity: 1;
 }
 
-.modal-property-info {
+.modal-property-info .info-row {
   display: flex;
-  flex-direction: column;
-  gap: 1.25rem;
+  justify-content: space-between;
+  padding: 0.75rem 0;
+  border-bottom: 1px solid var(--border-color);
 }
 
-.info-row {
-  display: flex;
-  gap: 1rem;
-}
-
-.info-label {
-  font-weight: 600;
-  color: var(--text-dark);
-  min-width: 120px;
-}
-
-.info-value {
+.modal-property-info .info-label {
+  font-weight: 500;
   color: var(--text-gray);
 }
 
-.status-badge {
-  display: inline-block;
-  padding: 0.375rem 0.75rem;
-  border-radius: 20px;
+.modal-property-info .info-value {
+  color: var(--text-dark);
+}
+
+.modal-property-info .status-badge {
+  padding: 0.25rem 0.75rem;
+  border-radius: 9999px;
   font-size: 0.8rem;
-  font-weight: 600;
-  text-transform: uppercase;
+  font-weight: 500;
 }
 
 .status-badge.status-active {
-  background-color: var(--dashboard-green-light);
-  color: var(--dashboard-success);
+  background-color: #d1fae5;
+  color: #22c55e;
 }
 
 .status-badge.status-inactive {
-  background-color: var(--dashboard-red-light);
-  color: var(--dashboard-red);
+  background-color: #fee2e2;
+  color: #ef4444;
+}
+
+.status-badge.status-full {
+  background-color: #fef3c7;
+  color: #f59e0b;
+}
+
+.amenities-list {
+  margin-top: 1rem;
 }
 
 .amenities-list h4,
@@ -565,12 +572,15 @@
 }
 
 .amenity-tag {
-  padding: 0.5rem 1rem;
-  background-color: var(--bg-green);
-  color: var(--primary-green);
-  border-radius: 20px;
-  font-size: 0.85rem;
-  font-weight: 500;
+  padding: 0.375rem 0.75rem;
+  background-color: #f3f4f6;
+  border-radius: 6px;
+  font-size: 0.8rem;
+  color: var(--text-dark);
+}
+
+.description-section {
+  margin-top: 1rem;
 }
 
 .description-section p {
@@ -581,59 +591,71 @@
 .modal-footer {
   display: flex;
   justify-content: flex-end;
-  gap: 1rem;
-  padding: 1.5rem 2rem;
+  gap: 0.75rem;
+  padding: 1.25rem 1.5rem;
   border-top: 1px solid var(--border-color);
 }
 
-.btn-outline,
-.btn-primary,
-.btn-danger {
+/* Buttons */
+.btn-primary {
   display: inline-flex;
   align-items: center;
   gap: 0.5rem;
-  padding: 0.75rem 1.5rem;
-  border-radius: 8px;
-  font-size: 0.95rem;
-  font-weight: 500;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  border: none;
-}
-
-.btn-outline {
-  background-color: var(--white);
-  color: var(--text-gray);
-  border: 1px solid var(--border-color);
-}
-
-.btn-outline:hover {
-  border-color: var(--text-gray);
-}
-
-.btn-primary {
+  padding: 0.625rem 1.25rem;
   background-color: var(--primary-green);
   color: var(--white);
+  border: none;
+  border-radius: 9999px;
+  font-size: 0.95rem;
+  font-weight: 600;
+  font-family: var(--font-main);
+  text-decoration: none;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
 }
 
 .btn-primary:hover {
   background-color: var(--dark-green);
 }
 
+.btn-outline {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.625rem 1.25rem;
+  background-color: transparent;
+  color: var(--text-dark);
+  border: 1px solid var(--border-color);
+  border-radius: 9999px;
+  font-size: 0.95rem;
+  font-weight: 600;
+  font-family: var(--font-main);
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.btn-outline:hover {
+  background-color: #f3f4f6;
+}
+
 .btn-danger {
-  background-color: var(--dashboard-red);
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.625rem 1.25rem;
+  background-color: #ef4444;
   color: var(--white);
+  border: none;
+  border-radius: 9999px;
+  font-size: 0.95rem;
+  font-weight: 600;
+  font-family: var(--font-main);
+  cursor: pointer;
+  transition: background-color 0.2s ease;
 }
 
 .btn-danger:hover {
   background-color: #dc2626;
-}
-
-.btn-outline svg,
-.btn-primary svg,
-.btn-danger svg {
-  width: 18px;
-  height: 18px;
 }
 
 /* Delete Modal */
@@ -641,135 +663,76 @@
   position: relative;
   background: var(--white);
   border-radius: 16px;
-  width: 90%;
-  max-width: 450px;
   padding: 2rem;
   text-align: center;
-  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
-  animation: modalSlideIn 0.3s ease;
+  max-width: 400px;
 }
 
 .delete-icon {
   width: 64px;
   height: 64px;
-  margin: 0 auto 1.5rem;
-  background-color: var(--dashboard-red-light);
-  border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
-}
-
-.delete-icon svg {
-  width: 32px;
-  height: 32px;
-  color: var(--dashboard-red);
+  margin: 0 auto 1.5rem;
+  background-color: #fee2e2;
+  border-radius: 50%;
+  color: #ef4444;
 }
 
 .delete-modal-content h3 {
   font-size: 1.25rem;
   font-weight: 600;
   color: var(--text-dark);
-  margin-bottom: 0.75rem;
+  margin-bottom: 0.5rem;
 }
 
 .delete-modal-content p {
   color: var(--text-gray);
-  font-size: 0.95rem;
-  margin-bottom: 2rem;
-}
-
-.delete-modal-content strong {
-  color: var(--text-dark);
+  margin-bottom: 1.5rem;
 }
 
 .delete-actions {
   display: flex;
-  gap: 1rem;
-  justify-content: center;
-}
-
-.delete-actions button {
-  min-width: 120px;
+  gap: 0.75rem;
   justify-content: center;
 }
 
 /* Responsive */
+@media (max-width: 1024px) {
+  .listings-stats-row {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
 @media (max-width: 768px) {
-  .your-properties-main {
+  .landlord-listings-main {
     margin-left: 0;
   }
 
-  .your-properties-content {
+  .landlord-listings-content {
     padding: 1rem;
   }
 
-  .your-properties-header {
-    flex-direction: column;
+  .listings-stats-row {
+    grid-template-columns: 1fr;
   }
 
-  .header-actions {
-    width: 100%;
-  }
-
-  .header-actions .btn-primary {
-    width: 100%;
-    justify-content: center;
-  }
-
-  .properties-toolbar {
+  .listings-toolbar {
     flex-direction: column;
     align-items: stretch;
   }
 
-  .search-box {
-    min-width: 100%;
-  }
-
-  .filter-box {
-    flex-direction: column;
-  }
-
-  .filter-box select {
-    width: 100%;
+  .filter-group {
+    flex-wrap: wrap;
   }
 
   .properties-grid {
     grid-template-columns: 1fr;
   }
 
-  .property-card-stats {
-    grid-template-columns: repeat(3, 1fr);
-  }
-
-  .property-card-actions {
-    flex-direction: column;
-  }
-
   .modal-content {
     width: 95%;
     max-height: 95vh;
-  }
-
-  .modal-body {
-    padding: 1.5rem;
-  }
-
-  .info-row {
-    flex-direction: column;
-    gap: 0.25rem;
-  }
-
-  .info-label {
-    min-width: auto;
-  }
-
-  .modal-footer {
-    flex-direction: column;
-  }
-
-  .modal-footer button {
-    width: 100%;
-    justify-content: center;
   }
 }

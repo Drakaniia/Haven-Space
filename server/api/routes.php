@@ -194,6 +194,14 @@ Router::get('/api/landlord/properties', function() {
     require_once __DIR__ . '/landlord/properties.php';
 });
 
+Router::post('/api/landlord/listings', function() {
+    require_once __DIR__ . '/landlord/create-listing.php';
+});
+
+Router::put('/api/landlord/listings/{id}', function($id) {
+    require_once __DIR__ . '/landlord/update-listing.php';
+});
+
 // ============================================
 // PUBLIC ROOM LISTINGS ROUTES
 // ============================================
