@@ -2,10 +2,13 @@
  * Public Views Entry Point
  *
  * Initializes homepage components (logo cloud, floating header, FAQ accordion)
+ * Handles authenticated user state for logged-in boarders
  */
 
 import { initLogoCloud } from '../../components/logo-cloud.js';
 import { initPublicFindARoom } from './public-find-a-room.js';
+import { getState } from '../../shared/state.js';
+import { getIcon } from '../../shared/icons.js';
 
 /**
  * Floating Header - Scroll-triggered transition
@@ -134,9 +137,115 @@ export function initPublicViews() {
 }
 
 /**
+ * Update navigation for authenticated users
+ * Shows user menu instead of login/signup buttons
+ */
+function updateNavigationForAuthenticatedUser() {
+  const state = getState();
+
+  if (!state.isAuthenticated || !state.user) {
+    return; // User not logged in, keep default login buttons
+  }
+
+  const navActions = document.querySelector('.nav-actions');
+  if (!navActions) return;
+
+  const user = state.user;
+  const userName = `${user.first_name || ''} ${user.last_name || ''}`.trim() || 'User';
+  const initials = (user.first_name?.[0] || user.last_name?.[0] || 'U').toUpperCase();
+
+  // Replace login/signup buttons with user avatar dropdown
+  navActions.innerHTML = `
+    <div class="nav-user-menu">
+      <button class="nav-user-button" id="nav-user-btn" aria-label="User menu">
+        <div class="nav-user-avatar">${initials}</div>
+        <span class="nav-user-name">${userName.split(' ')[0]}</span>
+        <span data-icon="chevronDown" data-icon-width="16" data-icon-height="16" data-icon-stroke-width="2" class="nav-chevron"></span>
+      </button>
+      <div class="nav-user-dropdown" id="nav-user-dropdown">
+        <div class="nav-user-info">
+          <div class="nav-user-info-name">${userName}</div>
+          <div class="nav-user-info-email">${user.email || ''}</div>
+          <div class="nav-user-info-role">${user.role || 'Boarder'}</div>
+        </div>
+        <div class="nav-user-divider"></div>
+        <a href="../boarder/applications/index.html" class="nav-user-menu-item">
+          <span data-icon="documentText" data-icon-width="18" data-icon-height="18"></span>
+          My Applications
+        </a>
+        <a href="../boarder/payments/index.html" class="nav-user-menu-item">
+          <span data-icon="creditCard" data-icon-width="18" data-icon-height="18"></span>
+          Payments
+        </a>
+        <div class="nav-user-divider"></div>
+        <button class="nav-user-menu-item nav-user-logout" id="nav-logout-btn">
+          <span data-icon="arrowRightOnRectangle" data-icon-width="18" data-icon-height="18"></span>
+          Logout
+        </button>
+      </div>
+    </div>
+  `;
+
+  // Inject icons
+  navActions.querySelectorAll('[data-icon]').forEach(iconElement => {
+    const iconName = iconElement.dataset.icon;
+    const options = {
+      width: parseInt(iconElement.dataset.iconWidth) || 24,
+      height: parseInt(iconElement.dataset.iconHeight) || 24,
+      strokeWidth: parseInt(iconElement.dataset.iconStrokeWidth) || 1.5,
+      className: iconElement.className,
+    };
+    iconElement.outerHTML = getIcon(iconName, options);
+  });
+
+  // Setup dropdown toggle
+  const userBtn = document.getElementById('nav-user-btn');
+  const dropdown = document.getElementById('nav-user-dropdown');
+
+  if (userBtn && dropdown) {
+    userBtn.addEventListener('click', e => {
+      e.stopPropagation();
+      dropdown.classList.toggle('show');
+    });
+  }
+
+  // Setup logout button
+  const logoutBtn = document.getElementById('nav-logout-btn');
+  if (logoutBtn) {
+    logoutBtn.addEventListener('click', async () => {
+      try {
+        const { default: CONFIG } = await import('../../config.js');
+        await fetch(`${CONFIG.API_BASE_URL}/auth/logout.php`, {
+          method: 'POST',
+          credentials: 'include',
+        });
+      } catch (error) {
+        // Continue with local cleanup even if logout fails
+      }
+
+      // Clear authentication data
+      localStorage.removeItem('user');
+
+      // Redirect to login page
+      window.location.href = 'auth/login.html';
+    });
+  }
+
+  // Close dropdown when clicking outside
+  document.addEventListener('click', e => {
+    if (dropdown && !dropdown.contains(e.target) && userBtn && !userBtn.contains(e.target)) {
+      dropdown.classList.remove('show');
+    }
+  });
+}
+
+/**
  * Initialize public components after DOM is ready
  */
 function initPublicComponents() {
+  // Check if user is authenticated and update navigation
+  updateNavigationForAuthenticatedUser();
+
   // Initialize floating header (homepage only)
   initFloatingHeader();
 

@@ -17,9 +17,443 @@ const enhancedState = {
   selectedProperty: null,
   currentStatusFilter: 'all',
   currentProperty: null,
+  properties: [], // Will be loaded from backend
+  isLoading: false,
+  hasMore: true,
+  limit: 20,
+  offset: 0,
+  filters: {
+    search: '',
+    priceMin: null,
+    priceMax: null,
+    roomType: '',
+    amenities: [],
+    sortBy: 'recommended',
+  },
 };
 
-// Sample applications data (replace with API calls in production)
+// API configuration
+const API_BASE_URL = window.location.origin.includes('github.io')
+  ? 'https://havenspace.com/server/api'
+  : '/server/api';
+
+/**
+ * Fetch properties from backend API
+ */
+async function fetchProperties(reset = false) {
+  if (enhancedState.isLoading) return;
+
+  if (reset) {
+    enhancedState.offset = 0;
+    enhancedState.properties = [];
+    enhancedState.hasMore = true;
+  }
+
+  enhancedState.isLoading = true;
+
+  try {
+    const params = new URLSearchParams();
+    params.append('limit', enhancedState.limit);
+    params.append('offset', enhancedState.offset);
+
+    if (enhancedState.filters.search) {
+      params.append('search', enhancedState.filters.search);
+    }
+    if (enhancedState.filters.priceMin !== null) {
+      params.append('price_min', enhancedState.filters.priceMin);
+    }
+    if (enhancedState.filters.priceMax !== null) {
+      params.append('price_max', enhancedState.filters.priceMax);
+    }
+    if (enhancedState.filters.roomType && enhancedState.filters.roomType !== 'any') {
+      params.append('room_type', enhancedState.filters.roomType);
+    }
+    if (enhancedState.filters.sortBy && enhancedState.filters.sortBy !== 'recommended') {
+      params.append('sort_by', enhancedState.filters.sortBy);
+    }
+    if (enhancedState.filters.amenities.length > 0) {
+      params.append('amenities', enhancedState.filters.amenities.join(','));
+    }
+
+    const response = await fetch(`${API_BASE_URL}/rooms/public?${params.toString()}`);
+
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+
+    const result = await response.json();
+
+    if (result.data && result.data.properties) {
+      const newProperties = result.data.properties;
+      enhancedState.properties = reset
+        ? newProperties
+        : [...enhancedState.properties, ...newProperties];
+
+      enhancedState.offset += newProperties.length;
+      enhancedState.hasMore = newProperties.length === enhancedState.limit;
+
+      renderProperties(newProperties, reset);
+      updateResultsCount(result.data.total_count);
+    }
+  } catch (error) {
+    console.error('Failed to fetch properties:', error);
+    showErrorState();
+  } finally {
+    enhancedState.isLoading = false;
+  }
+}
+
+/**
+ * Render properties to the grid
+ */
+function renderProperties(properties, reset = false) {
+  const grid = document.getElementById('properties-grid');
+  if (!grid) return;
+
+  if (reset) {
+    grid.innerHTML = '';
+  }
+
+  if (properties.length === 0 && reset) {
+    showNoResultsState();
+    return;
+  }
+
+  hideNoResultsState();
+
+  properties.forEach(property => {
+    const card = createPropertyCard(property);
+    grid.appendChild(card);
+  });
+
+  if (window.renderIcons) {
+    setTimeout(() => window.renderIcons(), 100);
+  }
+}
+
+/**
+ * Create a property card element
+ */
+function createPropertyCard(property) {
+  const card = document.createElement('div');
+  card.className = 'find-room-property-card';
+  card.dataset.propertyId = property.id;
+
+  const badgesHtml = property.badges
+    .map(badge => {
+      if (badge === 'verified') {
+        return `<span class="find-room-badge find-room-badge-verified">
+        <span data-icon="badgeCheck" data-icon-width="16" data-icon-height="16"></span>
+        Verified
+      </span>`;
+      } else if (badge === 'new') {
+        return `<span class="find-room-badge find-room-badge-new">New</span>`;
+      } else if (badge === 'promo') {
+        return `<span class="find-room-badge find-room-badge-promo">Promo</span>`;
+      }
+      return '';
+    })
+    .join('');
+
+  const amenityIcons = {
+    wifi: 'sparkles',
+    ac: 'computerDesktop',
+    parking: 'checkSimple',
+    laundry: 'wrench',
+    security: 'shieldCheck',
+    cctv: 'cctvCamera',
+    kitchen: 'wrench',
+    furnished: 'checkSimple',
+  };
+
+  const amenitiesPreview = property.amenities
+    .slice(0, 3)
+    .map(amenity => {
+      const icon = amenityIcons[amenity] || 'checkSimple';
+      return `<span class="find-room-amenity-icon" title="${amenity}">
+      <span data-icon="${icon}" data-icon-width="20" data-icon-height="20"></span>
+    </span>`;
+    })
+    .join('');
+
+  const moreCount = Math.max(0, property.amenities.length - 3);
+  const moreHtml = moreCount > 0 ? `<span class="find-room-amenity-more">+${moreCount}</span>` : '';
+
+  card.innerHTML = `
+    <div class="find-room-card-image-wrapper">
+      <img
+        src="${property.image}"
+        alt="${property.title}"
+        class="find-room-card-image"
+        onerror="this.src='../../assets/images/placeholder-room.jpg'"
+      />
+      <div class="find-room-card-badges">
+        ${badgesHtml}
+      </div>
+      <button class="find-room-favorite-btn" data-favorite="false" data-property-id="${
+        property.id
+      }">
+        <span data-icon="bookmark" data-icon-width="24" data-icon-height="24"></span>
+      </button>
+      <div class="find-room-card-amenities-preview">
+        ${amenitiesPreview}
+        ${moreHtml}
+      </div>
+    </div>
+    <div class="find-room-card-content">
+      <div class="find-room-card-header">
+        <div class="find-room-card-location">
+          <span data-icon="location" data-icon-width="20" data-icon-height="20"></span>
+          <span class="find-room-card-distance">${property.city || property.address}</span>
+        </div>
+        <div class="find-room-card-rating">
+          <span data-icon="starSolid" data-icon-width="16" data-icon-height="16"></span>
+          <span class="find-room-card-rating-value">${property.rating}</span>
+          <span class="find-room-card-rating-count">(${property.reviews})</span>
+        </div>
+      </div>
+      <h3 class="find-room-card-title">${property.title}</h3>
+      <p class="find-room-card-address">${property.address}</p>
+      <div class="find-room-card-features">
+        <span class="find-room-feature">
+          <span data-icon="userCircle" data-icon-width="20" data-icon-height="20"></span>
+          ${property.roomTypes}
+        </span>
+        <span class="find-room-feature">
+          <span data-icon="calendar" data-icon-width="20" data-icon-height="20"></span>
+          ${property.availableRooms > 0 ? 'Available Now' : 'No Availability'}
+        </span>
+      </div>
+      <div class="find-room-card-footer">
+        <div class="find-room-card-price">
+          <span class="find-room-card-price-amount">₱${property.price.toLocaleString()}</span>
+          <span class="find-room-card-price-period">/month</span>
+        </div>
+        <a href="./rooms/detail.html?id=${property.id}" class="find-room-card-btn">
+          View Details
+          <span data-icon="arrowRightSimple" data-icon-width="20" data-icon-height="20"></span>
+        </a>
+      </div>
+    </div>
+  `;
+
+  card.addEventListener('click', e => {
+    // Don't open detail panel if clicking the View Details button (it's a link)
+    if (e.target.closest('.find-room-card-btn')) return;
+    if (e.target.closest('.find-room-favorite-btn')) return;
+    openDetailPanel(property);
+  });
+
+  const favoriteBtn = card.querySelector('.find-room-favorite-btn');
+  if (favoriteBtn) {
+    favoriteBtn.addEventListener('click', e => {
+      e.stopPropagation();
+      toggleFavorite(property.id, favoriteBtn);
+    });
+  }
+
+  return card;
+}
+
+/**
+ * Toggle favorite for a property
+ */
+function toggleFavorite(propertyId, button) {
+  const isFavorite = button.dataset.favorite === 'true';
+  const newState = !isFavorite;
+  button.dataset.favorite = newState.toString();
+
+  const icon = button.querySelector('[data-icon]');
+  if (icon) {
+    icon.dataset.icon = newState ? 'heartSolid' : 'bookmark';
+  }
+
+  console.log(`Property ${propertyId} favorite: ${newState}`);
+}
+
+/**
+ * Update results count display
+ */
+function updateResultsCount(totalCount) {
+  const countEl = document.getElementById('results-count');
+  const subtitleEl = document.getElementById('results-subtitle');
+
+  if (countEl) {
+    countEl.textContent = totalCount;
+  }
+  if (subtitleEl) {
+    subtitleEl.textContent = `Showing ${enhancedState.properties.length} of ${totalCount} properties`;
+  }
+}
+
+/**
+ * Show no results state
+ */
+function showNoResultsState() {
+  const noResults = document.getElementById('no-results');
+  const grid = document.getElementById('properties-grid');
+  const loadMore = document.querySelector('.find-room-load-more');
+
+  if (noResults) noResults.style.display = 'block';
+  if (grid) grid.innerHTML = '';
+  if (loadMore) loadMore.style.display = 'none';
+}
+
+/**
+ * Hide no results state
+ */
+function hideNoResultsState() {
+  const noResults = document.getElementById('no-results');
+  if (noResults) noResults.style.display = 'none';
+}
+
+/**
+ * Show error state
+ */
+function showErrorState() {
+  const grid = document.getElementById('properties-grid');
+  if (grid) {
+    grid.innerHTML = `
+      <div class="find-room-error-state">
+        <span data-icon="exclamationCircle" data-icon-width="80" data-icon-height="80"></span>
+        <h3>Failed to Load Properties</h3>
+        <p>Please try again later or refresh the page.</p>
+        <button class="find-room-btn find-room-btn-primary" id="retry-btn">
+          Retry
+        </button>
+      </div>
+    `;
+
+    const retryBtn = document.getElementById('retry-btn');
+    if (retryBtn) {
+      retryBtn.addEventListener('click', () => {
+        fetchProperties(true);
+      });
+    }
+
+    if (window.renderIcons) {
+      setTimeout(() => window.renderIcons(), 100);
+    }
+  }
+}
+
+/**
+ * Setup filter and search event listeners
+ */
+function setupFilterListeners() {
+  // Search input
+  const searchInput = document.getElementById('main-search-input');
+  if (searchInput) {
+    let searchTimeout;
+    searchInput.addEventListener('input', () => {
+      clearTimeout(searchTimeout);
+      searchTimeout = setTimeout(() => {
+        enhancedState.filters.search = searchInput.value;
+        fetchProperties(true);
+      }, 500);
+    });
+  }
+
+  // Price filter
+  const priceFilter = document.getElementById('price-filter');
+  if (priceFilter) {
+    priceFilter.addEventListener('change', () => {
+      const value = priceFilter.value;
+      if (value === 'any') {
+        enhancedState.filters.priceMin = null;
+        enhancedState.filters.priceMax = null;
+      } else if (value.includes('-')) {
+        const [min, max] = value.split('-').map(Number);
+        enhancedState.filters.priceMin = min;
+        enhancedState.filters.priceMax = max;
+      } else if (value.endsWith('+')) {
+        enhancedState.filters.priceMin = Number(value.slice(0, -1));
+        enhancedState.filters.priceMax = null;
+      }
+      fetchProperties(true);
+    });
+  }
+
+  // Room type filter
+  const roomTypeFilter = document.getElementById('room-type-filter');
+  if (roomTypeFilter) {
+    roomTypeFilter.addEventListener('change', () => {
+      enhancedState.filters.roomType = roomTypeFilter.value;
+      fetchProperties(true);
+    });
+  }
+
+  // Distance filter (not implemented in backend yet, but can be added)
+  const distanceFilter = document.getElementById('distance-filter');
+  if (distanceFilter) {
+    distanceFilter.addEventListener('change', () => {
+      // TODO: Implement distance filter in backend
+      console.log('Distance filter selected:', distanceFilter.value);
+    });
+  }
+
+  // Amenities
+  const amenitiesPanel = document.getElementById('amenities-panel');
+  if (amenitiesPanel) {
+    amenitiesPanel.addEventListener('change', e => {
+      if (e.target.type === 'checkbox') {
+        const checkedBoxes = amenitiesPanel.querySelectorAll('input:checked');
+        enhancedState.filters.amenities = Array.from(checkedBoxes).map(cb => cb.value);
+        fetchProperties(true);
+      }
+    });
+  }
+
+  // Sort select
+  const sortSelect = document.getElementById('sort-select');
+  if (sortSelect) {
+    sortSelect.addEventListener('change', () => {
+      enhancedState.filters.sortBy = sortSelect.value;
+      fetchProperties(true);
+    });
+  }
+
+  // Reset filters button
+  const resetBtn = document.getElementById('reset-filters-btn');
+  if (resetBtn) {
+    resetBtn.addEventListener('click', () => {
+      enhancedState.filters = {
+        search: '',
+        priceMin: null,
+        priceMax: null,
+        roomType: '',
+        amenities: [],
+        sortBy: 'recommended',
+      };
+
+      // Reset UI controls
+      if (searchInput) searchInput.value = '';
+      if (priceFilter) priceFilter.value = 'any';
+      if (roomTypeFilter) roomTypeFilter.value = 'any';
+      if (distanceFilter) distanceFilter.value = 'any';
+      if (sortSelect) sortSelect.value = 'recommended';
+
+      // Uncheck all amenities
+      if (amenitiesPanel) {
+        amenitiesPanel.querySelectorAll('input[type="checkbox"]').forEach(cb => {
+          cb.checked = false;
+        });
+      }
+
+      fetchProperties(true);
+    });
+  }
+
+  // Load more button
+  const loadMoreBtn = document.getElementById('load-more-btn');
+  if (loadMoreBtn) {
+    loadMoreBtn.addEventListener('click', () => {
+      if (enhancedState.hasMore && !enhancedState.isLoading) {
+        fetchProperties();
+      }
+    });
+  }
+}
 const sampleApplications = [
   {
     id: 1,
@@ -370,6 +804,12 @@ function setupEnhancedFeatures() {
   if (!authState.isAuthenticated) {
     initGuestSearch();
   }
+
+  // Fetch properties from backend
+  fetchProperties(true);
+
+  // Setup filter and search event listeners
+  setupFilterListeners();
 }
 
 /* ==========================================================================
@@ -1072,7 +1512,7 @@ function generateStarRating(rating, size = 16) {
  * Global function to open detail panel by property ID
  */
 window.openDetailPanelById = function (propertyId) {
-  const property = properties.find(p => p.id === parseInt(propertyId));
+  const property = enhancedState.properties.find(p => p.id === parseInt(propertyId));
   if (property) {
     openDetailPanel(property);
   }

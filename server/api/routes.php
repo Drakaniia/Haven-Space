@@ -195,6 +195,14 @@ Router::get('/api/landlord/properties', function() {
 });
 
 // ============================================
+// PUBLIC ROOM LISTINGS ROUTES
+// ============================================
+// Get all published properties (no authentication required)
+Router::get('/api/rooms/public', function() {
+    require_once __DIR__ . '/rooms/public.php';
+});
+
+// ============================================
 // DISPATCH THE REQUEST
 // ============================================
 $method = $_SERVER['REQUEST_METHOD'];
