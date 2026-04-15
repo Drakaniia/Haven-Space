@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="icon" type="image/svg+xml" href="../../../assets/favicon.svg" />
+    <title>Recent Activity - Haven Space</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="../../../css/global.css" />
+    <link rel="stylesheet" href="../../../css/components/sidebar.css" />
+    <link rel="stylesheet" href="../../../css/components/navbar.css" />
+    <link rel="stylesheet" href="../../../css/views/landlord/landlord-activity.css" />
+  </head>
+  <body data-view="landlord" data-dashboard-type="landlord">
+    <div class="landlord-dashboard">
+      <!-- Sidebar Container -->
+      <div id="sidebar-container"></div>
+
+      <!-- Main Content -->
+      <main class="landlord-main">
+        <!-- Navbar Container -->
+        <div id="navbar-container"></div>
+
+        <!-- Content Wrapper -->
+        <div class="landlord-content">
+          <!-- Page Header -->
+          <div class="activity-page-header">
+            <div class="activity-page-title">
+              <h1>
+                <span
+                  data-icon="activity"
+                  data-icon-width="24"
+                  data-icon-height="24"
+                  data-icon-stroke-width="2"
+                ></span>
+                Recent Activity
+              </h1>
+              <p>Track all activity from your boarders and properties</p>
+            </div>
+            <div class="activity-page-actions">
+              <div class="activity-filter-group">
+                <select class="activity-form-select" id="activity-filter">
+                  <option value="all">All Activities</option>
+                  <option value="payment">Payments</option>
+                  <option value="application">Applications</option>
+                  <option value="maintenance">Maintenance</option>
+                  <option value="message">Messages</option>
+                </select>
+                <select class="activity-form-select" id="activity-date-filter">
+                  <option value="all">All Time</option>
+                  <option value="today">Today</option>
+                  <option value="week">This Week</option>
+                  <option value="month">This Month</option>
+                </select>
+              </div>
+            </div>
+          </div>
+
+          <!-- Activity Statistics -->
+          <div class="activity-stats">
+            <div class="activity-stat-card">
+              <div class="activity-stat-header">
+                <span class="activity-stat-label">Total Activities</span>
+              </div>
+              <div class="activity-stat-value" id="total-activities">--</div>
+            </div>
+            <div class="activity-stat-card">
+              <div class="activity-stat-header">
+                <span class="activity-stat-label">This Week</span>
+              </div>
+              <div class="activity-stat-value" id="week-activities">--</div>
+            </div>
+            <div class="activity-stat-card">
+              <div class="activity-stat-header">
+                <span class="activity-stat-label">Pending Actions</span>
+              </div>
+              <div class="activity-stat-value" id="pending-actions">--</div>
+            </div>
+          </div>
+
+          <!-- Activity List -->
+          <div class="activity-list-container">
+            <div class="activity-list" id="activity-list">
+              <!-- Activities will be loaded dynamically from backend -->
+              <div class="activity-loading">
+                <p class="activity-loading-text">Loading activities...</p>
+              </div>
+            </div>
+          </div>
+
+          <!-- Pagination -->
+          <div class="activity-pagination" id="pagination">
+            <button type="button" class="activity-pagination-btn" id="prev-page" disabled>
+              <span
+                data-icon="chevronLeft"
+                data-icon-width="20"
+                data-icon-height="20"
+                data-icon-stroke-width="2"
+              ></span>
+              Previous
+            </button>
+            <div class="activity-pagination-info">
+              <span id="page-info">Page 1 of 1</span>
+            </div>
+            <button type="button" class="activity-pagination-btn" id="next-page" disabled>
+              Next
+              <span
+                data-icon="chevronRight"
+                data-icon-width="20"
+                data-icon-height="20"
+                data-icon-stroke-width="2"
+              ></span>
+            </button>
+          </div>
+        </div>
+      </main>
+    </div>
+
+    <script type="module" src="../../../js/main.js"></script>
+    <script type="module" src="../../../js/views/landlord/activity.js"></script>
+  </body>
+</html>
