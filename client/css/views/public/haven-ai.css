@@ -160,26 +160,30 @@
 
 .haven-ai-demo-dots {
   display: flex;
-  gap: 0.375rem;
+  gap: 6px;
+  align-items: center;
 }
 
-.dot {
-  width: 10px;
-  height: 10px;
+.haven-ai-demo-dots .dot {
+  width: 12px;
+  height: 12px;
   border-radius: 50%;
   display: inline-block;
 }
 
-.dot-red {
-  background: #ef4444;
+.haven-ai-demo-dots .dot-red {
+  background: #ff5f57;
+  box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.1) inset;
 }
 
-.dot-yellow {
-  background: #f59e0b;
+.haven-ai-demo-dots .dot-yellow {
+  background: #ffbd2e;
+  box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.1) inset;
 }
 
-.dot-green {
-  background: #16a34a;
+.haven-ai-demo-dots .dot-green {
+  background: #28c840;
+  box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.1) inset;
 }
 
 .haven-ai-demo-title {
@@ -194,23 +198,27 @@
   display: flex;
   flex-direction: column;
   gap: 1rem;
+  background: #fafbfc;
 }
 
 .demo-message {
   display: flex;
   gap: 0.75rem;
-  align-items: flex-start;
+  align-items: flex-end;
 }
 
 .demo-user-message {
   justify-content: flex-end;
-  flex-direction: row-reverse;
+}
+
+.demo-ai-message {
+  justify-content: flex-start;
 }
 
 .demo-message-avatar {
-  width: 32px;
-  height: 32px;
-  border-radius: 8px;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
   background: var(--bg-green);
   display: flex;
   align-items: center;
@@ -225,23 +233,24 @@
 }
 
 .demo-message-content {
-  max-width: 75%;
-  padding: 0.75rem 1rem;
-  border-radius: 1rem;
-  font-size: 0.95rem;
+  max-width: 70%;
+  padding: 0.875rem 1rem;
+  border-radius: 1.25rem;
+  font-size: 0.9rem;
   line-height: 1.5;
 }
 
 .demo-user-message .demo-message-content {
   background: var(--primary-green);
   color: var(--white);
-  border-bottom-right-radius: 0.25rem;
+  border-bottom-right-radius: 0.375rem;
 }
 
 .demo-ai-message .demo-message-content {
-  background: #f8f9fa;
+  background: var(--white);
   color: var(--text-dark);
-  border-bottom-left-radius: 0.25rem;
+  border-bottom-left-radius: 0.375rem;
+  border: 1px solid #e8e8e8;
 }
 
 .demo-message-content p {
@@ -284,35 +293,53 @@
 
 /* Demo Input */
 .haven-ai-demo-input {
-  padding: 1rem 1.5rem;
-  border-top: 1px solid var(--border-color);
+  padding: 1rem 1.25rem;
+  border-top: 1px solid #e8e8e8;
   display: flex;
   align-items: center;
-  justify-content: space-between;
   gap: 0.75rem;
+  background: var(--white);
+}
+
+.demo-input-wrapper {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  background: #f5f6f8;
+  border: 2px solid transparent;
+  border-radius: 24px;
+  padding: 0.5rem 1rem;
+  transition: all 0.2s;
+}
+
+.demo-input-wrapper:focus-within {
+  border-color: var(--primary-green);
+  background: var(--white);
 }
 
 .demo-input-placeholder {
   flex: 1;
-  color: var(--text-gray);
+  color: #8a8f98;
   font-size: 0.875rem;
 }
 
 .demo-send-button {
-  width: 36px;
-  height: 36px;
-  border-radius: 8px;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
   background: var(--primary-green);
   color: var(--white);
   display: flex;
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  transition: background 0.2s;
+  transition: all 0.2s;
+  flex-shrink: 0;
 }
 
 .demo-send-button:hover {
   background: var(--dark-green);
+  transform: scale(1.05);
 }
 
 /* ========================================

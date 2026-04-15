@@ -4,6 +4,9 @@
 /* Import Terms of Service Page Styles */
 @import url('tos.css');
 
+/* Import Team Page Styles */
+@import url('team.css');
+
 /* Public Room Detail Page Styles */
 .room-detail-main-public {
   margin-left: 0 !important;
