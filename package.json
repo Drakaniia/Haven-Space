@@ -37,5 +37,8 @@
     "leaflet": "^1.9.4",
     "lint-staged": "^16.4.0",
     "prettier": "^2.8.8"
+  },
+  "dependencies": {
+    "oh-my-opencode-windows-x64": "^3.17.2"
   }
 }

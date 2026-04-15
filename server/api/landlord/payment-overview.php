@@ -18,6 +18,8 @@ if (!function_exists('json_response')) {
     require_once __DIR__ . '/../../src/Shared/Helpers/ResponseHelper.php';
 }
 
+require_once __DIR__ . '/../middleware.php';
+
 use App\Api\Middleware;
 use App\Core\Database\Connection;
 

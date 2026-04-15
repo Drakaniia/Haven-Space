@@ -14,4 +14,7 @@ build/
 
 .idea/
 .vscode/.worktrees/
-.worktrees/  
+.worktrees/
+
+# Qwen temp files
+.qwen/tmp/  

@@ -7,15 +7,14 @@
 // Include centralized CORS configuration FIRST (before any headers)
 require_once __DIR__ . '/../cors.php';
 
-// Include database configuration
-if (!function_exists('getDB')) {
-    require_once __DIR__ . '/../../config/database.php';
-}
+// Include bootstrap for core classes
+require_once __DIR__ . '/../../src/Core/bootstrap.php';
 
 // Include middleware for authentication
 require_once __DIR__ . '/../middleware.php';
 
 use App\Api\Middleware;
+use App\Core\Database\Connection;
 
 // Set content type AFTER CORS headers
 header('Content-Type: application/json');
@@ -38,10 +37,30 @@ function authenticateLandlord($requestedUserId) {
         exit;
     }
 
-    // For write operations, require verified landlord
+    // For write operations, check if this is initial profile creation during signup
     $method = $_SERVER['REQUEST_METHOD'];
     $writeMethods = ['POST', 'PUT', 'PATCH', 'DELETE'];
     if (in_array($method, $writeMethods) && empty($user['is_verified'])) {
+        // Allow unverified landlords to create their initial profile during signup
+        // Check if this is a POST request and the user doesn't have a profile yet
+        if ($method === 'POST') {
+            try {
+                $pdo = Connection::getInstance()->getPdo();
+                $stmt = $pdo->prepare("SELECT id FROM landlord_profiles WHERE user_id = ?");
+                $stmt->execute([$requestedUserId]);
+                $existingProfile = $stmt->fetch();
+
+                // If no profile exists, allow creation during signup
+                if (!$existingProfile) {
+                    return $user;
+                }
+            } catch (Exception $e) {
+                // If database check fails, block the request
+                error_log("Error checking existing profile: " . $e->getMessage());
+            }
+        }
+
+        // Block other write operations or updates for unverified users
         http_response_code(403);
         echo json_encode([
             'success' => false,
@@ -120,41 +139,41 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 
     try {
-        $db = getDB();
+        $pdo = Connection::getInstance()->getPdo();
 
         // Check if landlord profile already exists
-        $stmt = $db->prepare("SELECT id FROM landlord_profiles WHERE user_id = ?");
+        $stmt = $pdo->prepare("SELECT id FROM landlord_profiles WHERE user_id = ?");
         $stmt->execute([$userId]);
         $existingProfile = $stmt->fetch();
 
         if ($existingProfile) {
             // Update existing profile
-            $stmt = $db->prepare("
-                UPDATE landlord_profiles 
-                SET boarding_house_name = ?, boarding_house_description = ?, 
+            $stmt = $pdo->prepare("
+                UPDATE landlord_profiles
+                SET boarding_house_name = ?, boarding_house_description = ?,
                     property_type = ?, total_rooms = ?, available_rooms = ?
                 WHERE user_id = ?
             ");
             $stmt->execute([
-                $boardingHouseName, $description, $propertyType, 
+                $boardingHouseName, $description, $propertyType,
                 $totalRooms, $totalRooms, $userId
             ]);
 
             $profileId = $existingProfile['id'];
         } else {
             // Insert new profile
-            $stmt = $db->prepare("
-                INSERT INTO landlord_profiles 
-                (user_id, boarding_house_name, boarding_house_description, 
+            $stmt = $pdo->prepare("
+                INSERT INTO landlord_profiles
+                (user_id, boarding_house_name, boarding_house_description,
                  property_type, total_rooms, available_rooms)
                 VALUES (?, ?, ?, ?, ?, ?)
             ");
             $stmt->execute([
-                $userId, $boardingHouseName, $description, 
+                $userId, $boardingHouseName, $description,
                 $propertyType, $totalRooms, $totalRooms
             ]);
 
-            $profileId = $db->lastInsertId();
+            $profileId = $pdo->lastInsertId();
         }
 
         http_response_code(200);
@@ -199,9 +218,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
     $userId = intval($_GET['userId']);
 
     try {
-        $db = getDB();
+        $pdo = Connection::getInstance()->getPdo();
 
-        $stmt = $db->prepare("
+        $stmt = $pdo->prepare("
             SELECT * FROM landlord_profiles WHERE user_id = ? LIMIT 1
         ");
         $stmt->execute([$userId]);

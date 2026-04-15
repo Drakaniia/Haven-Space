@@ -1155,12 +1155,35 @@ async function submitSignup() {
 
     const userId = userResult.user.id;
 
-    // Step 2: Save boarding house details (Profile must be created first before location & payment!)
+    // Step 2: Login immediately to get auth token for subsequent API calls
+    const loginResponse = await fetch(`${CONFIG.API_BASE_URL}/auth/login.php`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      credentials: 'include',
+      body: JSON.stringify({
+        email: signupState.step1.email,
+        password: signupState.step1.password,
+      }),
+    });
+
+    if (!loginResponse.ok) {
+      const loginError = await loginResponse.json();
+      throw new Error(loginError.error || 'Login failed after registration');
+    }
+
+    const loginResult = await loginResponse.json();
+    // Store user info in localStorage
+    localStorage.setItem('user', JSON.stringify(loginResult.user));
+
+    // Step 3: Save boarding house details with auth token
     const propertyResponse = await fetch(`${CONFIG.API_BASE_URL}/api/landlord/profile.php`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
       },
+      credentials: 'include',
       body: JSON.stringify({
         userId,
         boardingHouseName: signupState.step3.boardingHouseName,
@@ -1171,10 +1194,12 @@ async function submitSignup() {
     });
 
     if (!propertyResponse.ok) {
-      console.error('Failed to save property details');
+      const propertyError = await propertyResponse.json();
+      console.error('Failed to save property details:', propertyError);
+      showToast('Property details could not be saved. Please add them later.', 'warning');
     }
 
-    // Step 3: Save property location
+    // Step 4: Save property location with auth token
     const locationResponse = await fetch(
       `${CONFIG.API_BASE_URL}/api/landlord/property-location.php`,
       {
@@ -1182,6 +1207,7 @@ async function submitSignup() {
         headers: {
           'Content-Type': 'application/json',
         },
+        credentials: 'include',
         body: JSON.stringify({
           userId,
           latitude: signupState.step2.latitude,
@@ -1192,10 +1218,12 @@ async function submitSignup() {
     );
 
     if (!locationResponse.ok) {
-      console.error('Failed to save property location');
+      const locationError = await locationResponse.json();
+      console.error('Failed to save property location:', locationError);
+      showToast('Property location could not be saved. Please add it later.', 'warning');
     }
 
-    // Step 4: Save payment method (if not skipped)
+    // Step 5: Save payment method with auth token (if not skipped)
     if (!signupState.step4.skipped && signupState.step4.paymentMethod) {
       const paymentResponse = await fetch(
         `${CONFIG.API_BASE_URL}/api/landlord/payment-methods.php`,
@@ -1204,6 +1232,7 @@ async function submitSignup() {
           headers: {
             'Content-Type': 'application/json',
           },
+          credentials: 'include',
           body: JSON.stringify({
             userId,
             methodType: signupState.step4.paymentMethod,
@@ -1216,61 +1245,17 @@ async function submitSignup() {
       );
 
       if (!paymentResponse.ok) {
-        console.error('Failed to save payment method');
+        const paymentError = await paymentResponse.json();
+        console.error('Failed to save payment method:', paymentError);
+        showToast('Payment method could not be saved. Please add it later.', 'warning');
       }
     }
 
-    // Success - auto-login landlord and redirect to dashboard
+    // Success - redirect to dashboard
     clearState();
 
-    // Auto-login by calling login endpoint to get JWT tokens and establish session
-    try {
-      const loginResponse = await fetch(`${CONFIG.API_BASE_URL}/auth/login.php`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        credentials: 'include',
-        body: JSON.stringify({
-          email: signupState.step1.email,
-          password: signupState.step1.password,
-        }),
-      });
-
-      if (loginResponse.ok) {
-        const loginResult = await loginResponse.json();
-        // Store user info in localStorage
-        localStorage.setItem('user', JSON.stringify(loginResult.user));
-
-        // Immediately redirect to dashboard
-        const basePath = getBasePath();
-        window.location.href = `${basePath}landlord/index.html`;
-        return;
-      }
-    } catch (loginError) {
-      console.error('Auto-login failed:', loginError);
-    }
-
-    // Fallback: if auto-login fails, store user info manually and show welcome modal
-    localStorage.setItem(
-      'user',
-      JSON.stringify({
-        id: userId,
-        first_name: signupState.step1.firstName,
-        last_name: signupState.step1.lastName,
-        email: signupState.step1.email,
-        role: 'landlord',
-      })
-    );
-
-    // Show welcome modal with manual login option
-    showWelcomeModal({
-      id: userId,
-      first_name: signupState.step1.firstName,
-      last_name: signupState.step1.lastName,
-      email: signupState.step1.email,
-      role: 'landlord',
-    });
+    const basePath = getBasePath();
+    window.location.href = `${basePath}landlord/index.html`;
   } catch (error) {
     console.error('Error during signup:', error);
     showToast(error.message || 'An error occurred. Please try again.', 'error');

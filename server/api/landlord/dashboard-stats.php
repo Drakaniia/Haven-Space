@@ -19,6 +19,8 @@ if (!function_exists('json_response')) {
     require_once __DIR__ . '/../../src/Shared/Helpers/ResponseHelper.php';
 }
 
+require_once __DIR__ . '/../middleware.php';
+
 use App\Api\Middleware;
 use App\Core\Database\Connection;
 
@@ -37,9 +39,9 @@ try {
     // 1. Calculate Occupancy Rate
     // Get total rooms and occupied rooms for this landlord
     $stmt = $pdo->prepare("
-        SELECT 
+        SELECT
             COUNT(*) as total_rooms,
-            COALESCE(SUM(CASE WHEN status = 'occupied' THEN 1 ELSE 0 END), 0) as occupied_rooms
+            COALESCE(SUM(CASE WHEN r.status = 'occupied' THEN 1 ELSE 0 END), 0) as occupied_rooms
         FROM rooms r
         INNER JOIN properties p ON r.property_id = p.id
         WHERE p.landlord_id = ? AND p.deleted_at IS NULL

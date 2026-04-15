@@ -7,15 +7,14 @@
 // Include centralized CORS configuration
 require_once __DIR__ . '/../cors.php';
 
-// Include database configuration
-if (!function_exists('getDB')) {
-    require_once __DIR__ . '/../../config/database.php';
-}
+// Include bootstrap for core classes
+require_once __DIR__ . '/../../src/Core/bootstrap.php';
 
 // Include middleware for authentication
 require_once __DIR__ . '/../middleware.php';
 
 use App\Api\Middleware;
+use App\Core\Database\Connection;
 
 header('Content-Type: application/json');
 
@@ -37,10 +36,34 @@ function authenticateLandlord($requestedUserId) {
         exit;
     }
 
-    // For write operations, require verified landlord
+    // For write operations, check if this is initial location creation during signup
     $method = $_SERVER['REQUEST_METHOD'];
     $writeMethods = ['POST', 'PUT', 'PATCH', 'DELETE'];
     if (in_array($method, $writeMethods) && empty($user['is_verified'])) {
+        // Allow unverified landlords to create their initial location during signup
+        // Check if this is a POST request and the user doesn't have a location yet
+        if ($method === 'POST') {
+            try {
+                $pdo = Connection::getInstance()->getPdo();
+                $stmt = $pdo->prepare("
+                    SELECT pl.id FROM property_locations pl
+                    INNER JOIN landlord_profiles lp ON pl.landlord_id = lp.id
+                    WHERE lp.user_id = ? AND pl.is_primary = 1
+                ");
+                $stmt->execute([$requestedUserId]);
+                $existingLocation = $stmt->fetch();
+
+                // If no location exists, allow creation during signup
+                if (!$existingLocation) {
+                    return $user;
+                }
+            } catch (Exception $e) {
+                // If database check fails, block the request
+                error_log("Error checking existing location: " . $e->getMessage());
+            }
+        }
+
+        // Block other write operations or updates for unverified users
         http_response_code(403);
         echo json_encode([
             'success' => false,
@@ -105,10 +128,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $country = end($addressParts) ? trim(end($addressParts)) : 'Philippines';
 
     try {
-        $db = getDB();
+        $pdo = Connection::getInstance()->getPdo();
 
         // Check if landlord profile exists
-        $stmt = $db->prepare("SELECT id FROM landlord_profiles WHERE user_id = ?");
+        $stmt = $pdo->prepare("SELECT id FROM landlord_profiles WHERE user_id = ?");
         $stmt->execute([$userId]);
         $landlordProfile = $stmt->fetch();
 
@@ -124,15 +147,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $landlordId = $landlordProfile['id'];
 
         // Check if location already exists
-        $stmt = $db->prepare("SELECT id FROM property_locations WHERE landlord_id = ? AND is_primary = 1");
+        $stmt = $pdo->prepare("SELECT id FROM property_locations WHERE landlord_id = ? AND is_primary = 1");
         $stmt->execute([$landlordId]);
         $existingLocation = $stmt->fetch();
 
         if ($existingLocation) {
             // Update existing location
-            $stmt = $db->prepare("
-                UPDATE property_locations 
-                SET latitude = ?, longitude = ?, address_line_1 = ?, address_line_2 = ?, 
+            $stmt = $pdo->prepare("
+                UPDATE property_locations
+                SET latitude = ?, longitude = ?, address_line_1 = ?, address_line_2 = ?,
                     city = ?, province = ?, postal_code = ?, country = ?
                 WHERE landlord_id = ? AND is_primary = 1
             ");
@@ -144,9 +167,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $locationId = $existingLocation['id'];
         } else {
             // Insert new location
-            $stmt = $db->prepare("
-                INSERT INTO property_locations 
-                (landlord_id, latitude, longitude, address_line_1, address_line_2, 
+            $stmt = $pdo->prepare("
+                INSERT INTO property_locations
+                (landlord_id, latitude, longitude, address_line_1, address_line_2,
                  city, province, postal_code, country, is_primary)
                 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 1)
             ");
@@ -155,7 +178,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $city, $province, $postalCode, $country
             ]);
 
-            $locationId = $db->lastInsertId();
+            $locationId = $pdo->lastInsertId();
         }
 
         http_response_code(200);
@@ -199,10 +222,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
     $userId = intval($_GET['userId']);
 
     try {
-        $db = getDB();
+        $pdo = Connection::getInstance()->getPdo();
 
-        $stmt = $db->prepare("
-            SELECT pl.* 
+        $stmt = $pdo->prepare("
+            SELECT pl.*
             FROM property_locations pl
             INNER JOIN landlord_profiles lp ON pl.landlord_id = lp.id
             WHERE lp.user_id = ? AND pl.is_primary = 1
