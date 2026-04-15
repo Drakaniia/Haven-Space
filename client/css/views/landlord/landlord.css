@@ -739,6 +739,35 @@
   color: var(--dashboard-text-secondary);
 }
 
+/* Loading, Empty, and Error States for Activity Feed */
+.landlord-activity-loading,
+.landlord-activity-empty,
+.landlord-activity-error {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px 16px;
+  text-align: center;
+}
+
+.landlord-activity-loading .landlord-activity-text {
+  font-size: 13px;
+  color: var(--dashboard-text-secondary);
+  font-style: italic;
+}
+
+.landlord-activity-empty .landlord-activity-text {
+  font-size: 13px;
+  color: var(--dashboard-text-secondary);
+  line-height: 1.5;
+}
+
+.landlord-activity-error .landlord-activity-text {
+  font-size: 13px;
+  color: var(--dashboard-error, #dc2626);
+  line-height: 1.5;
+}
+
 /* ===== Property Listings Grid ===== */
 .landlord-properties-grid {
   display: grid;

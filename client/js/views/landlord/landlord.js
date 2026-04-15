@@ -1,10 +1,6 @@
-/**
- * Landlord Dashboard Initialization
- * Handles dashboard-specific interactions and dynamic content loading
- */
-
 import CONFIG from '../../config.js';
 import { getIcon } from '../../shared/icons.js';
+import { initLandlordApplications } from './landlord-applications.js';
 
 /**
  * Inject icons from centralized library into elements with data-icon attributes
@@ -48,6 +44,11 @@ export function initLandlordDashboard(config = {}) {
 
   // Load payment overview data
   loadPaymentOverview();
+
+  // Load recent activities
+  loadRecentActivities();
+
+  initLandlordApplications();
 }
 
 /**
@@ -338,6 +339,105 @@ document.addEventListener('DOMContentLoaded', () => {
   initPaymentReminderButtons();
   initApplicationActionButtons();
 });
+
+/**
+ * Load recent activities from API
+ */
+async function loadRecentActivities() {
+  const container = document.getElementById('recent-activity-feed');
+  if (!container) return;
+
+  try {
+    const response = await fetch(`${CONFIG.API_BASE_URL}/api/landlord/activity.php`, {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      credentials: 'include',
+    });
+
+    if (!response.ok) {
+      throw new Error('Failed to fetch recent activities');
+    }
+
+    const result = await response.json();
+
+    if (result.data && result.data.activities) {
+      renderActivities(result.data.activities, container);
+    } else {
+      renderEmptyState(container);
+    }
+  } catch (error) {
+    console.error('Failed to load recent activities:', error);
+    renderErrorState(container);
+  }
+}
+
+/**
+ * Render activities list
+ * @param {Array} activities - Array of activity objects
+ * @param {HTMLElement} container - Container element to render into
+ */
+function renderActivities(activities, container) {
+  if (!activities || activities.length === 0) {
+    renderEmptyState(container);
+    return;
+  }
+
+  const html = activities
+    .map(activity => {
+      return `
+        <div class="landlord-activity-item" data-activity-id="${activity.id}" data-activity-type="${activity.type}">
+          <div class="landlord-activity-icon ${activity.color}">
+            <span
+              data-icon="${activity.icon}"
+              data-icon-width="20"
+              data-icon-height="20"
+              data-icon-stroke-width="2"
+            ></span>
+          </div>
+          <div class="landlord-activity-content">
+            <p class="landlord-activity-text">${activity.description}</p>
+            <span class="landlord-activity-time">${activity.time_ago}</span>
+          </div>
+        </div>
+      `;
+    })
+    .join('');
+
+  container.innerHTML = html;
+
+  // Re-inject icons after rendering
+  injectIcons();
+}
+
+/**
+ * Render empty state when no activities exist
+ * @param {HTMLElement} container - Container element
+ */
+function renderEmptyState(container) {
+  container.innerHTML = `
+    <div class="landlord-activity-empty">
+      <p class="landlord-activity-text">
+        No recent activity. Activities will appear here as boarders interact with your properties.
+      </p>
+    </div>
+  `;
+}
+
+/**
+ * Render error state when API fails
+ * @param {HTMLElement} container - Container element
+ */
+function renderErrorState(container) {
+  container.innerHTML = `
+    <div class="landlord-activity-error">
+      <p class="landlord-activity-text">
+        Unable to load recent activity. Please try again later.
+      </p>
+    </div>
+  `;
+}
 
 /**
  * Load payment overview data from API

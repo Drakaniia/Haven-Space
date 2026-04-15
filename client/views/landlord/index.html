@@ -192,105 +192,7 @@
                   ></span>
                 </a>
               </div>
-              <div class="landlord-application-queue">
-                <!-- Application Item -->
-                <div class="landlord-application-card">
-                  <div class="landlord-application-header">
-                    <div class="landlord-application-info">
-                      <h3 class="landlord-application-name">Ana Garcia</h3>
-                      <p class="landlord-application-property">
-                        <span
-                          data-icon="building"
-                          data-icon-width="16"
-                          data-icon-height="16"
-                          data-icon-stroke-width="2"
-                          style="display: inline-block; vertical-align: middle"
-                        ></span>
-                        Sunrise Dormitory - Room 305
-                      </p>
-                    </div>
-                    <span class="landlord-status-badge landlord-status-new">New</span>
-                  </div>
-                  <div class="landlord-application-meta">
-                    <div class="landlord-meta-item">
-                      <span
-                        data-icon="user"
-                        data-icon-width="16"
-                        data-icon-height="16"
-                        data-icon-stroke-width="2"
-                      ></span>
-                      <span>BS Computer Science</span>
-                    </div>
-                    <div class="landlord-meta-item">
-                      <span
-                        data-icon="checkCircle"
-                        data-icon-width="16"
-                        data-icon-height="16"
-                        data-icon-stroke-width="2"
-                      ></span>
-                      <span>Documents uploaded</span>
-                    </div>
-                  </div>
-                  <div class="landlord-application-actions">
-                    <button class="landlord-btn landlord-btn-outline landlord-btn-sm">
-                      View Details
-                    </button>
-                    <button class="landlord-btn landlord-btn-success landlord-btn-sm">
-                      Approve
-                    </button>
-                    <button class="landlord-btn landlord-btn-danger landlord-btn-sm">Reject</button>
-                  </div>
-                </div>
-
-                <!-- Second Application -->
-                <div class="landlord-application-card">
-                  <div class="landlord-application-header">
-                    <div class="landlord-application-info">
-                      <h3 class="landlord-application-name">Luis Torres</h3>
-                      <p class="landlord-application-property">
-                        <span
-                          data-icon="building"
-                          data-icon-width="16"
-                          data-icon-height="16"
-                          data-icon-stroke-width="2"
-                          style="display: inline-block; vertical-align: middle"
-                        ></span>
-                        Green Valley - Room 210
-                      </p>
-                    </div>
-                    <span class="landlord-status-badge landlord-status-review">Under Review</span>
-                  </div>
-                  <div class="landlord-application-meta">
-                    <div class="landlord-meta-item">
-                      <span
-                        data-icon="user"
-                        data-icon-width="16"
-                        data-icon-height="16"
-                        data-icon-stroke-width="2"
-                      ></span>
-                      <span>BS Engineering</span>
-                    </div>
-                    <div class="landlord-meta-item">
-                      <span
-                        data-icon="checkCircle"
-                        data-icon-width="16"
-                        data-icon-height="16"
-                        data-icon-stroke-width="2"
-                      ></span>
-                      <span>Documents uploaded</span>
-                    </div>
-                  </div>
-                  <div class="landlord-application-actions">
-                    <button class="landlord-btn landlord-btn-outline landlord-btn-sm">
-                      View Details
-                    </button>
-                    <button class="landlord-btn landlord-btn-success landlord-btn-sm">
-                      Approve
-                    </button>
-                    <button class="landlord-btn landlord-btn-danger landlord-btn-sm">Reject</button>
-                  </div>
-                </div>
-              </div>
+              <div class="landlord-application-queue" id="applicationQueueContainer"></div>
             </div>
           </div>
 
@@ -363,91 +265,10 @@
                   ></span>
                 </a>
               </div>
-              <div class="landlord-activity-feed">
-                <div class="landlord-activity-item">
-                  <div class="landlord-activity-icon green">
-                    <span
-                      data-icon="currencyDollar"
-                      data-icon-width="20"
-                      data-icon-height="20"
-                      data-icon-stroke-width="2"
-                    ></span>
-                  </div>
-                  <div class="landlord-activity-content">
-                    <p class="landlord-activity-text">
-                      <strong>Maria Santos</strong> paid rent for
-                      <strong>Sunrise Dormitory</strong>
-                    </p>
-                    <span class="landlord-activity-time">2 hours ago</span>
-                  </div>
-                </div>
-
-                <div class="landlord-activity-item">
-                  <div class="landlord-activity-icon blue">
-                    <span
-                      data-icon="user"
-                      data-icon-width="20"
-                      data-icon-height="20"
-                      data-icon-stroke-width="2"
-                    ></span>
-                  </div>
-                  <div class="landlord-activity-content">
-                    <p class="landlord-activity-text">
-                      <strong>New application</strong> from Ana Garcia
-                    </p>
-                    <span class="landlord-activity-time">5 hours ago</span>
-                  </div>
-                </div>
-
-                <div class="landlord-activity-item">
-                  <div class="landlord-activity-icon yellow">
-                    <span
-                      data-icon="exclamation"
-                      data-icon-width="20"
-                      data-icon-height="20"
-                      data-icon-stroke-width="2"
-                    ></span>
-                  </div>
-                  <div class="landlord-activity-content">
-                    <p class="landlord-activity-text">
-                      <strong>Payment reminder</strong> sent to Jose Reyes
-                    </p>
-                    <span class="landlord-activity-time">1 day ago</span>
-                  </div>
-                </div>
-
-                <div class="landlord-activity-item">
-                  <div class="landlord-activity-icon orange">
-                    <span
-                      data-icon="wrenchScrewdriver"
-                      data-icon-width="20"
-                      data-icon-height="20"
-                      data-icon-stroke-width="2"
-                    ></span>
-                  </div>
-                  <div class="landlord-activity-content">
-                    <p class="landlord-activity-text">
-                      <strong>Maintenance request</strong> from Room 205
-                    </p>
-                    <span class="landlord-activity-time">2 days ago</span>
-                  </div>
-                </div>
-
-                <div class="landlord-activity-item">
-                  <div class="landlord-activity-icon purple">
-                    <span
-                      data-icon="checkCircle"
-                      data-icon-width="20"
-                      data-icon-height="20"
-                      data-icon-stroke-width="2"
-                    ></span>
-                  </div>
-                  <div class="landlord-activity-content">
-                    <p class="landlord-activity-text">
-                      <strong>Lease renewed</strong> for Green Valley - Room 108
-                    </p>
-                    <span class="landlord-activity-time">3 days ago</span>
-                  </div>
+              <div class="landlord-activity-feed" id="recent-activity-feed">
+                <!-- Activities will be loaded dynamically from backend -->
+                <div class="landlord-activity-loading">
+                  <p class="landlord-activity-text">Loading recent activity...</p>
                 </div>
               </div>
             </div>
@@ -593,5 +414,6 @@
 
     <!-- ES Module Entry Point -->
     <script type="module" src="../../js/main.js"></script>
+    <script type="module" src="../../js/views/landlord/landlord-applications.js"></script>
   </body>
 </html>

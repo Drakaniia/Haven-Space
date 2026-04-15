@@ -1,3 +1,5 @@
+import CONFIG from '../../config.js';
+
 /**
  * Landlord Reports Page
  * Handles charts, data filtering, and export functionality
@@ -7,17 +9,107 @@
  * Initialize Reports Page
  */
 export function initReports() {
-  // Initialize charts
   initRevenueChart();
   initOccupancyChart();
   initPaymentStatusChart();
   initPropertyRevenueChart();
-
-  // Initialize filters and event listeners
   initFilters();
   initExportReport();
+  loadPaymentData();
+}
 
-  console.log('Reports: Initialized');
+async function loadPaymentData() {
+  const tableBody = document.getElementById('paymentTableBody');
+  if (!tableBody) return;
+
+  try {
+    const response = await fetch(`${CONFIG.API_BASE_URL}/api/landlord/payment-overview.php`, {
+      method: 'GET',
+      headers: { 'Content-Type': 'application/json' },
+      credentials: 'include',
+    });
+
+    if (!response.ok) throw new Error('Failed to fetch payment data');
+
+    const result = await response.json();
+    if (result.data) {
+      renderPaymentTable(result.data, tableBody);
+    }
+  } catch (error) {
+    console.error('Failed to load payment data:', error);
+    tableBody.innerHTML = `
+      <tr>
+        <td colspan="6" style="text-align: center; padding: 2rem; color: #ef4444;">
+          Unable to load payment data. Please try again later.
+        </td>
+      </tr>
+    `;
+  }
+}
+
+function renderPaymentTable(data, container) {
+  const allPayments = [
+    ...(data.on_track?.payments || []).map(p => ({ ...p, displayStatus: 'paid' })),
+    ...(data.due_soon?.payments || []).map(p => ({ ...p, displayStatus: 'pending' })),
+    ...(data.overdue?.payments || []).map(p => ({ ...p, displayStatus: 'overdue' })),
+  ];
+
+  if (allPayments.length === 0) {
+    container.innerHTML = `
+      <tr>
+        <td colspan="6" style="text-align: center; padding: 2rem;">
+          No payment records found.
+        </td>
+      </tr>
+    `;
+    return;
+  }
+
+  container.innerHTML = allPayments.map(payment => createPaymentRow(payment)).join('');
+}
+
+function createPaymentRow(payment) {
+  const fullName = payment.full_name || 'Unknown';
+  const email = payment.boarder_email || '';
+  const propertyRoom = `${payment.property_title} - ${payment.room_title}`;
+  const amount = formatCurrency(payment.total_amount || payment.amount);
+  const dueDate = formatDate(payment.due_date);
+  const statusBadge = getStatusBadge(payment.displayStatus, payment.status);
+
+  return `
+    <tr>
+      <td>
+        <div class="boarder-info">
+          <strong>${fullName}</strong>
+          <span class="boarder-email">${email}</span>
+        </div>
+      </td>
+      <td>${propertyRoom}</td>
+      <td class="amount">${amount}</td>
+      <td>${dueDate}</td>
+      <td>${statusBadge}</td>
+      <td>
+        <button class="table-btn table-btn-outline" type="button">View Details</button>
+      </td>
+    </tr>
+  `;
+}
+
+function formatCurrency(amount) {
+  return `₱${parseFloat(amount).toLocaleString('en-PH', { minimumFractionDigits: 0 })}`;
+}
+
+function formatDate(dateStr) {
+  if (!dateStr) return '-';
+  const date = new Date(dateStr);
+  return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+}
+
+function getStatusBadge(status, originalStatus) {
+  const statusClass =
+    status === 'paid' ? 'status-paid' : status === 'overdue' ? 'status-overdue' : 'status-pending';
+  const label = status === 'paid' ? 'Paid' : originalStatus === 'overdue' ? 'Overdue' : 'Pending';
+  return `<span class="status-badge ${statusClass}">${label}</span>`;
 }
 
 /**

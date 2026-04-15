@@ -11,6 +11,12 @@ require_once __DIR__ . '/../src/Shared/Helpers/ResponseHelper.php';
 // Load CORS configuration
 require_once __DIR__ . '/cors.php';
 
+// Load Middleware for route authentication
+require_once __DIR__ . '/middleware.php';
+
+// Load Middleware for route authentication
+require_once __DIR__ . '/middleware.php';
+
 use App\Api\Middleware;
 use App\Modules\Message\Controllers\MessageController;
 use App\Modules\Maintenance\Controllers\MaintenanceController;

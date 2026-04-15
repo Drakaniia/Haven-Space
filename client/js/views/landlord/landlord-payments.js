@@ -7,6 +7,8 @@
  * - 🟢 Green: Paid or due date > 7 days away
  */
 
+import CONFIG from '../../config.js';
+
 // Sample payment data - In production, this would come from an API
 const paymentsData = [
   {
@@ -107,49 +109,8 @@ const paymentsData = [
   },
 ];
 
-// Recent payment activity data
-const recentActivityData = [
-  {
-    id: 1,
-    boarderName: 'Maria Santos',
-    property: 'Sunrise Dormitory',
-    amount: 5500,
-    type: 'paid',
-    timestamp: '2 hours ago',
-  },
-  {
-    id: 2,
-    boarderName: 'Luis Torres',
-    property: 'Green Valley',
-    amount: 4800,
-    type: 'paid',
-    timestamp: '5 hours ago',
-  },
-  {
-    id: 3,
-    boarderName: 'Jose Reyes',
-    property: 'Green Valley',
-    amount: 4500,
-    type: 'reminder_sent',
-    timestamp: '1 day ago',
-  },
-  {
-    id: 4,
-    boarderName: 'Pedro Cruz',
-    property: 'Metro Boarding',
-    amount: 5000,
-    type: 'overdue_notice',
-    timestamp: '2 days ago',
-  },
-  {
-    id: 5,
-    boarderName: 'Elena Ramos',
-    property: 'Green Valley',
-    amount: 4700,
-    type: 'paid',
-    timestamp: '3 days ago',
-  },
-];
+// Payment activity data - loaded dynamically from API
+let paymentActivityData = [];
 
 /**
  * Calculate payment status based on due date
@@ -299,68 +260,6 @@ function createPaymentRow(payment) {
 }
 
 /**
- * Create activity item HTML
- * @param {Object} activity - Activity data object
- * @returns {string} HTML string for activity item
- */
-function createActivityItem(activity) {
-  let iconClass = 'icon-blue';
-  let iconSvg = '';
-  let activityText = '';
-
-  switch (activity.type) {
-    case 'paid':
-      iconClass = 'icon-green';
-      iconSvg = `
-        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-        </svg>
-      `;
-      activityText = `<strong>${activity.boarderName}</strong> paid for ${activity.property}`;
-      break;
-    case 'reminder_sent':
-      iconClass = 'icon-orange';
-      iconSvg = `
-        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
-        </svg>
-      `;
-      activityText = `Reminder sent to <strong>${activity.boarderName}</strong>`;
-      break;
-    case 'overdue_notice':
-      iconClass = 'icon-red';
-      iconSvg = `
-        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-        </svg>
-      `;
-      activityText = `Overdue notice for <strong>${activity.boarderName}</strong>`;
-      break;
-    default:
-      iconClass = 'icon-blue';
-      iconSvg = `
-        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-        </svg>
-      `;
-      activityText = `Activity for <strong>${activity.boarderName}</strong>`;
-  }
-
-  return `
-    <div class="payment-activity-item">
-      <div class="payment-activity-icon ${iconClass}">
-        ${iconSvg}
-      </div>
-      <div class="payment-activity-content">
-        <div class="payment-activity-text">${activityText}</div>
-        <div class="payment-activity-meta">${activity.timestamp}</div>
-      </div>
-      <div class="payment-activity-amount">${formatCurrency(activity.amount)}</div>
-    </div>
-  `;
-}
-
-/**
  * Render all payments to the table
  */
 function renderPayments() {
@@ -373,17 +272,119 @@ function renderPayments() {
 }
 
 /**
- * Render recent payment activity
+ * Load recent payment activity from API
  */
-function renderActivity() {
+async function loadPaymentActivity() {
   const activityList = document.getElementById('paymentActivityList');
   if (!activityList) {
     return;
   }
 
-  activityList.innerHTML = recentActivityData
-    .map(activity => createActivityItem(activity))
+  try {
+    activityList.innerHTML = `
+      <div class="payment-activity-loading">
+        <p class="payment-activity-text">Loading payment activity...</p>
+      </div>
+    `;
+
+    const response = await fetch(`${CONFIG.API_BASE_URL}/api/landlord/activity.php`, {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      credentials: 'include',
+    });
+
+    if (!response.ok) {
+      throw new Error('Failed to fetch payment activity');
+    }
+
+    const result = await response.json();
+
+    if (result.data && result.data.activities) {
+      paymentActivityData = result.data.activities.filter(
+        activity => activity.type === 'payment_received' || activity.type === 'payment_reminder'
+      );
+      renderPaymentActivity(activityList);
+    } else {
+      renderEmptyActivityState(activityList);
+    }
+  } catch (error) {
+    console.error('Failed to load payment activity:', error);
+    renderActivityError(activityList);
+  }
+}
+
+/**
+ * Render payment activity list
+ */
+function renderPaymentActivity(container) {
+  if (!paymentActivityData || paymentActivityData.length === 0) {
+    renderEmptyActivityState(container);
+    return;
+  }
+
+  container.innerHTML = paymentActivityData
+    .map(activity => createPaymentActivityItem(activity))
     .join('');
+}
+
+/**
+ * Create payment activity item HTML
+ */
+function createPaymentActivityItem(activity) {
+  const isPayment = activity.type === 'payment_received';
+  const iconClass = isPayment ? 'icon-green' : 'icon-orange';
+  const iconSvg = isPayment
+    ? `<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+      </svg>`
+    : `<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+      </svg>`;
+
+  return `
+    <div class="payment-activity-item">
+      <div class="payment-activity-icon ${iconClass}">
+        ${iconSvg}
+      </div>
+      <div class="payment-activity-content">
+        <div class="payment-activity-text">${activity.description}</div>
+        <div class="payment-activity-meta">${activity.time_ago}</div>
+      </div>
+      ${
+        activity.amount
+          ? `<div class="payment-activity-amount">${formatCurrency(activity.amount)}</div>`
+          : ''
+      }
+    </div>
+  `;
+}
+
+/**
+ * Render empty state when no activities
+ */
+function renderEmptyActivityState(container) {
+  container.innerHTML = `
+    <div class="payment-activity-empty">
+      <p class="payment-activity-text">
+        No recent payment activity. Payment activities will appear here when boarders make payments or receive reminders.
+      </p>
+    </div>
+  `;
+}
+
+/**
+ * Render error state when API fails
+ */
+function renderActivityError(container) {
+  container.innerHTML = `
+    <div class="payment-activity-error">
+      <p class="payment-activity-text">
+        Unable to load payment activity. Please try again later.
+      </p>
+    </div>
+  `;
 }
 
 /**
@@ -603,16 +604,15 @@ function initEventListeners() {
  * Initialize the payments page
  */
 function initPaymentsPage() {
-  // Wait for DOM to be ready
   if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', () => {
       renderPayments();
-      renderActivity();
+      loadPaymentActivity();
       initEventListeners();
     });
   } else {
     renderPayments();
-    renderActivity();
+    loadPaymentActivity();
     initEventListeners();
   }
 }

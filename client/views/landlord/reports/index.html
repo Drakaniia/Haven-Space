@@ -284,95 +284,10 @@
                     <th>Actions</th>
                   </tr>
                 </thead>
-                <tbody>
-                  <tr>
-                    <td>
-                      <div class="boarder-info">
-                        <strong>Maria Santos</strong>
-                        <span class="boarder-email">maria@example.com</span>
-                      </div>
-                    </td>
-                    <td>Sunrise Dormitory - Room 201</td>
-                    <td class="amount">₱5,500</td>
-                    <td>Feb 15, 2025</td>
-                    <td><span class="status-badge status-paid">Paid</span></td>
-                    <td>
-                      <button class="table-btn table-btn-outline">View Receipt</button>
-                    </td>
-                  </tr>
-                  <tr>
-                    <td>
-                      <div class="boarder-info">
-                        <strong>Jose Reyes</strong>
-                        <span class="boarder-email">jose@example.com</span>
-                      </div>
-                    </td>
-                    <td>Green Valley - Room 105</td>
-                    <td class="amount">₱4,500</td>
-                    <td>Jan 31, 2025</td>
-                    <td><span class="status-badge status-pending">Pending</span></td>
-                    <td>
-                      <button class="table-btn table-btn-primary">Send Reminder</button>
-                    </td>
-                  </tr>
-                  <tr>
-                    <td>
-                      <div class="boarder-info">
-                        <strong>Pedro Cruz</strong>
-                        <span class="boarder-email">pedro@example.com</span>
-                      </div>
-                    </td>
-                    <td>Metro Boarding - Room 302</td>
-                    <td class="amount">₱5,250</td>
-                    <td>Jan 20, 2025</td>
-                    <td><span class="status-badge status-overdue">Overdue</span></td>
-                    <td>
-                      <button class="table-btn table-btn-danger">Send Notice</button>
-                    </td>
-                  </tr>
-                  <tr>
-                    <td>
-                      <div class="boarder-info">
-                        <strong>Ana Garcia</strong>
-                        <span class="boarder-email">ana@example.com</span>
-                      </div>
-                    </td>
-                    <td>Sunrise Dormitory - Room 305</td>
-                    <td class="amount">₱5,000</td>
-                    <td>Feb 28, 2025</td>
-                    <td><span class="status-badge status-paid">Paid</span></td>
-                    <td>
-                      <button class="table-btn table-btn-outline">View Receipt</button>
-                    </td>
-                  </tr>
-                  <tr>
-                    <td>
-                      <div class="boarder-info">
-                        <strong>Luis Torres</strong>
-                        <span class="boarder-email">luis@example.com</span>
-                      </div>
-                    </td>
-                    <td>Green Valley - Room 210</td>
-                    <td class="amount">₱4,800</td>
-                    <td>Feb 20, 2025</td>
-                    <td><span class="status-badge status-paid">Paid</span></td>
-                    <td>
-                      <button class="table-btn table-btn-outline">View Receipt</button>
-                    </td>
-                  </tr>
-                  <tr>
-                    <td>
-                      <div class="boarder-info">
-                        <strong>Sofia Mendoza</strong>
-                        <span class="boarder-email">sofia@example.com</span>
-                      </div>
-                    </td>
-                    <td>Metro Boarding - Room 108</td>
-                    <td class="amount">₱4,200</td>
-                    <td>Feb 10, 2025</td>
-                    <td><span class="status-badge status-pending">Pending</span></td>
-                    <td>
-                      <button class="table-btn table-btn-primary">Send Reminder</button>
+                <tbody id="paymentTableBody">
+                  <tr class="loading-row">
+                    <td colspan="6" style="text-align: center; padding: 2rem">
+                      Loading payment data...
                     </td>
                   </tr>
                 </tbody>
