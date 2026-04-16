@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="icon" type="image/svg+xml" href="../../../assets/favicon.svg" />
+    <title>Applications - Landlord Dashboard - Haven Space</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="../../../css/global.css" />
+    <link rel="stylesheet" href="../../../css/components/sidebar.css" />
+    <link rel="stylesheet" href="../../../css/components/navbar.css" />
+    <link rel="stylesheet" href="../../../css/views/landlord/landlord.css" />
+    <link rel="stylesheet" href="../../../css/views/landlord/applications.css" />
+  </head>
+  <body data-view="landlord" data-dashboard-type="landlord">
+    <div class="landlord-dashboard">
+      <!-- Sidebar Container -->
+      <div id="sidebar-container"></div>
+
+      <!-- Main Content -->
+      <main class="landlord-main">
+        <!-- Navbar Container -->
+        <div id="navbar-container"></div>
+
+        <!-- Content Wrapper -->
+        <div class="landlord-content">
+          <!-- Page Header -->
+          <div class="applications-header">
+            <div class="applications-header-text">
+              <h1 class="applications-title">
+                <span
+                  data-icon="document"
+                  data-icon-width="28"
+                  data-icon-height="28"
+                  data-icon-stroke-width="2"
+                ></span>
+                Applications
+              </h1>
+              <p class="applications-subtitle">
+                Review and manage rental applications from boarders
+              </p>
+            </div>
+            <div class="applications-header-actions">
+              <button class="landlord-btn landlord-btn-outline" id="refreshBtn">
+                <span
+                  data-icon="arrowPath"
+                  data-icon-width="20"
+                  data-icon-height="20"
+                  data-icon-stroke-width="2"
+                ></span>
+                Refresh
+              </button>
+            </div>
+          </div>
+
+          <!-- Stats Overview -->
+          <div class="applications-stats-grid">
+            <div class="applications-stat-card">
+              <div class="applications-stat-icon pending">
+                <span
+                  data-icon="clock"
+                  data-icon-width="24"
+                  data-icon-height="24"
+                  data-icon-stroke-width="2"
+                ></span>
+              </div>
+              <div class="applications-stat-content">
+                <div class="applications-stat-value" id="pendingCount">0</div>
+                <div class="applications-stat-label">Pending Review</div>
+              </div>
+            </div>
+
+            <div class="applications-stat-card">
+              <div class="applications-stat-icon approved">
+                <span
+                  data-icon="checkCircle"
+                  data-icon-width="24"
+                  data-icon-height="24"
+                  data-icon-stroke-width="2"
+                ></span>
+              </div>
+              <div class="applications-stat-content">
+                <div class="applications-stat-value" id="approvedCount">0</div>
+                <div class="applications-stat-label">Approved</div>
+              </div>
+            </div>
+
+            <div class="applications-stat-card">
+              <div class="applications-stat-icon rejected">
+                <span
+                  data-icon="xCircle"
+                  data-icon-width="24"
+                  data-icon-height="24"
+                  data-icon-stroke-width="2"
+                ></span>
+              </div>
+              <div class="applications-stat-content">
+                <div class="applications-stat-value" id="rejectedCount">0</div>
+                <div class="applications-stat-label">Rejected</div>
+              </div>
+            </div>
+
+            <div class="applications-stat-card">
+              <div class="applications-stat-icon total">
+                <span
+                  data-icon="documentText"
+                  data-icon-width="24"
+                  data-icon-height="24"
+                  data-icon-stroke-width="2"
+                ></span>
+              </div>
+              <div class="applications-stat-content">
+                <div class="applications-stat-value" id="totalCount">0</div>
+                <div class="applications-stat-label">Total Applications</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Filters and Search -->
+          <div class="applications-filters">
+            <div class="applications-search">
+              <span
+                data-icon="magnifyingGlass"
+                data-icon-width="20"
+                data-icon-height="20"
+                data-icon-stroke-width="2"
+                class="applications-search-icon"
+              ></span>
+              <input
+                type="text"
+                class="applications-search-input"
+                placeholder="Search by boarder name or property..."
+                id="searchInput"
+              />
+            </div>
+
+            <div class="applications-filter-group">
+              <label for="statusFilter" class="applications-filter-label">Status:</label>
+              <select id="statusFilter" class="applications-filter-select">
+                <option value="all">All Applications</option>
+                <option value="pending">Pending</option>
+                <option value="under_review">Under Review</option>
+                <option value="approved">Approved</option>
+                <option value="rejected">Rejected</option>
+              </select>
+            </div>
+
+            <div class="applications-filter-group">
+              <label for="sortFilter" class="applications-filter-label">Sort by:</label>
+              <select id="sortFilter" class="applications-filter-select">
+                <option value="newest">Newest First</option>
+                <option value="oldest">Oldest First</option>
+                <option value="property">Property Name</option>
+              </select>
+            </div>
+          </div>
+
+          <!-- Applications List -->
+          <div class="applications-list-container">
+            <div id="applicationsList" class="applications-list">
+              <!-- Loading state -->
+              <div class="applications-loading" id="loadingState">
+                <div class="applications-loading-spinner"></div>
+                <p>Loading applications...</p>
+              </div>
+            </div>
+
+            <!-- Empty State (hidden by default) -->
+            <div class="applications-empty" id="emptyState" style="display: none">
+              <div class="applications-empty-icon">
+                <span
+                  data-icon="documentText"
+                  data-icon-width="64"
+                  data-icon-height="64"
+                  data-icon-stroke-width="1.5"
+                ></span>
+              </div>
+              <h3 class="applications-empty-title">No applications yet</h3>
+              <p class="applications-empty-text">
+                Applications from boarders will appear here. Make sure your properties are published
+                and visible to attract potential boarders.
+              </p>
+            </div>
+
+            <!-- Error State (hidden by default) -->
+            <div class="applications-error" id="errorState" style="display: none">
+              <div class="applications-error-icon">
+                <span
+                  data-icon="exclamationTriangle"
+                  data-icon-width="64"
+                  data-icon-height="64"
+                  data-icon-stroke-width="1.5"
+                ></span>
+              </div>
+              <h3 class="applications-error-title">Failed to load applications</h3>
+              <p class="applications-error-text">
+                There was an error loading your applications. Please try again.
+              </p>
+              <button class="landlord-btn landlord-btn-primary" onclick="location.reload()">
+                Retry
+              </button>
+            </div>
+          </div>
+        </div>
+      </main>
+    </div>
+
+    <!-- Application Detail Modal -->
+    <div class="applications-modal" id="applicationModal" style="display: none">
+      <div class="applications-modal-overlay" id="modalOverlay"></div>
+      <div class="applications-modal-content">
+        <div class="applications-modal-header">
+          <h2 class="applications-modal-title">Application Details</h2>
+          <button class="applications-modal-close" id="modalCloseBtn">
+            <span
+              data-icon="xMark"
+              data-icon-width="24"
+              data-icon-height="24"
+              data-icon-stroke-width="2"
+            ></span>
+          </button>
+        </div>
+
+        <div class="applications-modal-body" id="modalBody">
+          <!-- Content will be dynamically loaded -->
+        </div>
+      </div>
+    </div>
+
+    <!-- ES Module Entry Point -->
+    <script type="module" src="../../../js/main.js"></script>
+    <script type="module" src="../../../js/views/landlord/applications.js"></script>
+  </body>
+</html>

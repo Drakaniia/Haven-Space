@@ -3,110 +3,12 @@
  *
  * Handles recording payments received from boarders via various payment methods
  * including GCash, Bank Transfer, Credit Card, and Cash.
- *
- * TODO: Check connection with boarder payment submission
- * - Verify if boarder has already submitted payment
- * - Match reference numbers
- * - Display boarder's submitted payment details
  */
 
-// Sample payment data - In production, this would come from an API/backend
-// This data should match with the boarder's pending payments
-const pendingPaymentsData = [
-  {
-    id: 1,
-    boarderName: 'Maria Santos',
-    boarderEmail: 'maria.santos@email.com',
-    boarderInitials: 'MS',
-    property: 'Sunrise Dormitory',
-    room: 'Room 201',
-    amount: 5500,
-    baseRent: 5000,
-    utilities: 350,
-    wifi: 150,
-    dueDate: '2025-02-15',
-    period: 'January 2025',
-    status: 'pending',
-    // TODO: Add boarderSubmittedPayment field to track if boarder already submitted
-    boarderSubmittedPayment: {
-      submitted: true,
-      referenceNumber: 'GC1234567890',
-      paymentDate: '2025-02-10',
-      paymentMethod: 'gcash',
-      payerNumber: '0917-123-4567',
-    },
-  },
-  {
-    id: 2,
-    boarderName: 'Jose Reyes',
-    boarderEmail: 'jose.reyes@email.com',
-    boarderInitials: 'JR',
-    property: 'Green Valley',
-    room: 'Room 105',
-    amount: 4500,
-    baseRent: 4000,
-    utilities: 350,
-    wifi: 150,
-    dueDate: '2025-02-05',
-    period: 'January 2025',
-    status: 'upcoming',
-    boarderSubmittedPayment: null,
-  },
-  {
-    id: 3,
-    boarderName: 'Ana Garcia',
-    boarderEmail: 'ana.garcia@email.com',
-    boarderInitials: 'AG',
-    property: 'Sunrise Dormitory',
-    room: 'Room 305',
-    amount: 6000,
-    baseRent: 5500,
-    utilities: 350,
-    wifi: 150,
-    dueDate: '2025-02-28',
-    period: 'January 2025',
-    status: 'upcoming',
-    boarderSubmittedPayment: null,
-  },
-  {
-    id: 4,
-    boarderName: 'Luis Torres',
-    boarderEmail: 'luis.torres@email.com',
-    boarderInitials: 'LT',
-    property: 'Green Valley',
-    room: 'Room 210',
-    amount: 4800,
-    baseRent: 4300,
-    utilities: 350,
-    wifi: 150,
-    dueDate: '2025-02-01',
-    period: 'January 2025',
-    status: 'pending',
-    boarderSubmittedPayment: {
-      submitted: true,
-      referenceNumber: 'BDO9876543210',
-      paymentDate: '2025-02-01',
-      paymentMethod: 'bank',
-      bankName: 'BDO',
-    },
-  },
-  {
-    id: 5,
-    boarderName: 'Ramon Diaz',
-    boarderEmail: 'ramon.diaz@email.com',
-    boarderInitials: 'RD',
-    property: 'Sunrise Dormitory',
-    room: 'Room 402',
-    amount: 5500,
-    baseRent: 5000,
-    utilities: 350,
-    wifi: 150,
-    dueDate: '2025-03-01',
-    period: 'February 2025',
-    status: 'upcoming',
-    boarderSubmittedPayment: null,
-  },
-];
+import CONFIG from '../../config.js';
+
+// Payment data - loaded dynamically from API
+let pendingPaymentsData = [];
 
 // State management
 let selectedPaymentId = null;
@@ -150,6 +52,64 @@ function _formatDateForInput(dateString) {
 }
 
 /**
+ * Load pending payments from API
+ */
+async function loadPendingPayments() {
+  try {
+    const response = await fetch(
+      `${CONFIG.API_BASE_URL}/api/landlord/payments.php?status=pending`,
+      {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        credentials: 'include',
+      }
+    );
+
+    if (!response.ok) {
+      throw new Error('Failed to fetch pending payments');
+    }
+
+    const result = await response.json();
+
+    if (result.data && Array.isArray(result.data)) {
+      // Transform API data to match frontend format
+      pendingPaymentsData = result.data.map(payment => ({
+        id: payment.id,
+        boarderName: `${payment.boarder_first_name} ${payment.boarder_last_name}`,
+        boarderEmail: payment.boarder_email,
+        boarderInitials: `${payment.boarder_first_name[0]}${payment.boarder_last_name[0]}`,
+        property: payment.property_title,
+        room: payment.room_title,
+        amount: parseFloat(payment.amount) + parseFloat(payment.late_fee || 0),
+        baseRent: parseFloat(payment.amount),
+        utilities: 0,
+        wifi: 0,
+        dueDate: payment.due_date,
+        period: formatPeriod(payment.due_date),
+        status: payment.status,
+      }));
+
+      populateBoarderDropdown();
+    }
+  } catch (error) {
+    console.error('Failed to load pending payments:', error);
+  }
+}
+
+/**
+ * Format period from due date
+ * @param {string} dueDate - Due date in YYYY-MM-DD format
+ * @returns {string} Formatted period (e.g., "January 2025")
+ */
+function formatPeriod(dueDate) {
+  const date = new Date(dueDate);
+  const options = { year: 'numeric', month: 'long' };
+  return date.toLocaleDateString('en-PH', options);
+}
+
+/**
  * Populate boarder payment dropdown
  */
 function populateBoarderDropdown() {
@@ -159,7 +119,7 @@ function populateBoarderDropdown() {
   }
 
   // Filter out already recorded payments
-  const availablePayments = pendingPaymentsData.filter(p => p.status !== 'recorded');
+  const availablePayments = pendingPaymentsData.filter(p => p.status !== 'paid');
 
   if (availablePayments.length === 0) {
     select.innerHTML = '<option value="">-- No pending payments --</option>';
@@ -229,10 +189,13 @@ function displaySelectedPayment(paymentId) {
     paymentAmount.value = payment.amount.toFixed(2);
   }
 
-  // TODO: Check if boarder already submitted payment and pre-fill details
+  // Check if boarder already submitted payment and pre-fill details
+  // TODO: Implement when boarder payment submission is available
+  /*
   if (payment.boarderSubmittedPayment && payment.boarderSubmittedPayment.submitted) {
     prefillBoarderPaymentDetails(payment);
   }
+  */
 
   // Set default payment date to today
   setDefaultPaymentDate();
@@ -621,7 +584,7 @@ function getPaymentData() {
 /**
  * Submit payment record
  */
-function submitPayment() {
+async function submitPayment() {
   // Validate form
   const validation = validateForm();
   if (!validation.isValid) {
@@ -636,18 +599,47 @@ function submitPayment() {
     return;
   }
 
-  // TODO: In production, send to backend API
-  // Example: await fetch('/api/payments/record', { method: 'POST', body: JSON.stringify(paymentData) })
+  try {
+    // Submit to backend API
+    const response = await fetch(`${CONFIG.API_BASE_URL}/api/landlord/payments.php`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      credentials: 'include',
+      body: JSON.stringify({
+        payment_id: paymentData.paymentId,
+        paid_date: paymentData.paymentDate,
+        payment_method: paymentData.paymentMethod,
+        reference_number: paymentData.referenceNumber,
+        notes: paymentData.notes,
+      }),
+    });
 
-  // Update local data
-  const paymentIndex = pendingPaymentsData.findIndex(p => p.id === selectedPaymentId);
-  if (paymentIndex !== -1) {
-    pendingPaymentsData[paymentIndex].status = 'recorded';
-    pendingPaymentsData[paymentIndex].recordedPayment = paymentData;
+    if (!response.ok) {
+      const error = await response.json();
+      throw new Error(error.error || 'Failed to record payment');
+    }
+
+    const result = await response.json();
+
+    if (result.success) {
+      // Update local data
+      const paymentIndex = pendingPaymentsData.findIndex(p => p.id === selectedPaymentId);
+      if (paymentIndex !== -1) {
+        pendingPaymentsData[paymentIndex].status = 'paid';
+        pendingPaymentsData[paymentIndex].recordedPayment = paymentData;
+      }
+
+      // Show confirmation modal
+      showConfirmationModal(paymentData);
+    } else {
+      throw new Error('Failed to record payment');
+    }
+  } catch (error) {
+    console.error('Error recording payment:', error);
+    alert('Failed to record payment: ' + error.message);
   }
-
-  // Show confirmation modal
-  showConfirmationModal(paymentData);
 }
 
 /**
@@ -787,8 +779,8 @@ function initEventListeners() {
 function initPaymentRecordPage() {
   // Wait for DOM to be ready
   if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', () => {
-      populateBoarderDropdown();
+    document.addEventListener('DOMContentLoaded', async () => {
+      await loadPendingPayments();
       initEventListeners();
       setDefaultPaymentDate();
       // Default to GCash
@@ -797,11 +789,12 @@ function initPaymentRecordPage() {
       handleURLParameters();
     });
   } else {
-    populateBoarderDropdown();
-    initEventListeners();
-    setDefaultPaymentDate();
-    selectPaymentMethod('gcash');
-    handleURLParameters();
+    loadPendingPayments().then(() => {
+      initEventListeners();
+      setDefaultPaymentDate();
+      selectPaymentMethod('gcash');
+      handleURLParameters();
+    });
   }
 }
 
