@@ -3,13 +3,233 @@
  * Handles creating, editing, and managing announcements
  */
 
+import CONFIG from '../../config.js';
+import { showToast } from '../../shared/toast.js';
+
+let currentEditingId = null;
+let landlordProperties = [];
+
 /**
  * Initialize announcements management
  */
 export function initAnnouncements() {
   initCreateAnnouncementForm();
-  initAnnouncementActions();
   setDefaultPublishDate();
+  loadLandlordProperties();
+  loadAnnouncements();
+}
+
+/**
+ * Load landlord properties for targeting
+ */
+async function loadLandlordProperties() {
+  try {
+    const response = await fetch(`${CONFIG.API_BASE_URL}/api/landlord/properties`, {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      credentials: 'include',
+    });
+
+    if (!response.ok) {
+      throw new Error('Failed to fetch properties');
+    }
+
+    const result = await response.json();
+    if (result.success !== false && result.data) {
+      landlordProperties = result.data.properties || [];
+      updatePropertyCheckboxes();
+    }
+  } catch (error) {
+    console.error('Failed to load properties:', error);
+  }
+}
+
+/**
+ * Update property checkboxes with real data
+ */
+function updatePropertyCheckboxes() {
+  const checkboxGroup = document.querySelector('.landlord-checkbox-group');
+  if (!checkboxGroup) {
+    return;
+  }
+
+  // Keep "All Properties" checkbox
+  const allCheckbox = checkboxGroup.querySelector('input[value="all"]');
+  const allLabel = allCheckbox?.parentElement;
+
+  // Clear other checkboxes
+  checkboxGroup.innerHTML = '';
+
+  // Re-add "All Properties"
+  if (allLabel) {
+    checkboxGroup.appendChild(allLabel);
+  }
+
+  // Add real properties
+  landlordProperties.forEach(property => {
+    const label = document.createElement('label');
+    label.className = 'landlord-checkbox';
+    label.innerHTML = `
+      <input type="checkbox" name="properties" value="${property.id}" />
+      <span>${property.name}</span>
+    `;
+    checkboxGroup.appendChild(label);
+  });
+
+  // Re-attach "All Properties" toggle behavior
+  if (allCheckbox) {
+    allCheckbox.addEventListener('change', handleAllPropertiesToggle);
+  }
+}
+
+/**
+ * Handle "All Properties" checkbox toggle
+ */
+function handleAllPropertiesToggle(e) {
+  const checkboxes = document.querySelectorAll('input[name="properties"]:not([value="all"])');
+  checkboxes.forEach(cb => {
+    cb.disabled = e.target.checked;
+    if (e.target.checked) {
+      cb.checked = false;
+    }
+  });
+}
+
+/**
+ * Load announcements from API
+ */
+async function loadAnnouncements() {
+  try {
+    const response = await fetch(`${CONFIG.API_BASE_URL}/api/landlord/announcements`, {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      credentials: 'include',
+    });
+
+    if (!response.ok) {
+      throw new Error('Failed to fetch announcements');
+    }
+
+    const result = await response.json();
+    if (result.success !== false && result.data) {
+      renderAnnouncements(result.data.announcements || []);
+    }
+  } catch (error) {
+    console.error('Failed to load announcements:', error);
+    showToast('Failed to load announcements', 'error');
+  }
+}
+
+/**
+ * Render announcements list
+ */
+function renderAnnouncements(announcements) {
+  const listContainer = document.getElementById('announcements-list');
+  if (!listContainer) {
+    return;
+  }
+
+  if (announcements.length === 0) {
+    listContainer.innerHTML = `
+      <div style="text-align: center; padding: 48px 24px; color: #6b7280;">
+        <p style="font-size: 16px; margin-bottom: 8px;">No announcements yet</p>
+        <p style="font-size: 14px;">Create your first announcement to notify your boarders</p>
+      </div>
+    `;
+    return;
+  }
+
+  listContainer.innerHTML = announcements
+    .map(announcement => {
+      const categoryClass = `landlord-badge-${announcement.category}`;
+      const priorityClass = `landlord-badge-${announcement.priority}`;
+      const date = new Date(announcement.publish_date).toLocaleDateString('en-US', {
+        month: 'short',
+        day: 'numeric',
+        year: 'numeric',
+      });
+
+      let targetDisplay = announcement.target_property;
+      if (announcement.target_properties && announcement.target_properties.length > 1) {
+        targetDisplay = `${announcement.target_properties.length} Properties`;
+      }
+
+      return `
+      <div class="landlord-announcement-card" data-announcement-id="${announcement.id}">
+        <div class="landlord-announcement-card-header">
+          <div class="landlord-announcement-card-info">
+            <div class="landlord-announcement-badges">
+              <span class="landlord-badge ${categoryClass}">${announcement.category}</span>
+              <span class="landlord-badge ${priorityClass}">${announcement.priority}</span>
+            </div>
+            <h3 class="landlord-announcement-card-title">${announcement.title}</h3>
+          </div>
+          <div class="landlord-announcement-card-actions">
+            <button class="landlord-icon-btn" title="Edit" data-action="edit" data-id="${announcement.id}">
+              <span
+                data-icon="edit"
+                data-icon-width="24"
+                data-icon-height="24"
+                data-icon-stroke-width="2"
+              ></span>
+            </button>
+            <button class="landlord-icon-btn" title="Delete" data-action="delete" data-id="${announcement.id}">
+              <span
+                data-icon="trash"
+                data-icon-width="24"
+                data-icon-height="24"
+                data-icon-stroke-width="2"
+              ></span>
+            </button>
+          </div>
+        </div>
+        <div class="landlord-announcement-card-body">
+          <p class="landlord-announcement-card-text">${announcement.description}</p>
+        </div>
+        <div class="landlord-announcement-card-footer">
+          <div class="landlord-announcement-card-meta">
+            <span class="landlord-announcement-date">
+              <span
+                data-icon="calendarDays"
+                data-icon-width="24"
+                data-icon-height="24"
+                data-icon-stroke-width="2"
+              ></span>
+              ${date}
+            </span>
+            <span class="landlord-announcement-target">
+              <span
+                data-icon="building"
+                data-icon-width="24"
+                data-icon-height="24"
+                data-icon-stroke-width="2"
+              ></span>
+              ${targetDisplay}
+            </span>
+          </div>
+          <div class="landlord-announcement-stats">
+            <span class="landlord-announcement-views">
+              <span
+                data-icon="eye"
+                data-icon-width="24"
+                data-icon-height="24"
+                data-icon-stroke-width="2"
+              ></span>
+              ${announcement.view_count} views
+            </span>
+          </div>
+        </div>
+      </div>
+    `;
+    })
+    .join('');
+
+  // Re-attach event listeners
+  initAnnouncementActions();
 }
 
 /**
@@ -18,7 +238,6 @@ export function initAnnouncements() {
 function initCreateAnnouncementForm() {
   const createBtn = document.getElementById('create-announcement-btn');
   const modalOverlay = document.getElementById('announcement-modal-overlay');
-  const _formContainer = document.getElementById('announcement-form-container');
   const closeBtn = document.getElementById('close-form-btn');
   const cancelBtn = document.getElementById('cancel-btn');
   const form = document.getElementById('announcement-form');
@@ -26,6 +245,8 @@ function initCreateAnnouncementForm() {
   // Show modal
   if (createBtn) {
     createBtn.addEventListener('click', () => {
+      currentEditingId = null;
+      document.getElementById('modal-title').textContent = 'Create New Announcement';
       showModal();
     });
   }
@@ -37,6 +258,7 @@ function initCreateAnnouncementForm() {
     setTimeout(() => {
       form.reset();
       setDefaultPublishDate();
+      currentEditingId = null;
     }, 300);
   };
 
@@ -65,6 +287,11 @@ function initCreateAnnouncementForm() {
       hideModal();
     }
   });
+
+  // Form submission
+  if (form) {
+    form.addEventListener('submit', handleFormSubmit);
+  }
 }
 
 /**
@@ -96,43 +323,72 @@ function setDefaultPublishDate() {
 }
 
 /**
- * Initialize announcement form submission
+ * Handle form submission (create or update)
  */
-function initAnnouncementFormSubmission() {
-  const form = document.getElementById('announcement-form');
-  const modalOverlay = document.getElementById('announcement-modal-overlay');
+async function handleFormSubmit(e) {
+  e.preventDefault();
 
-  if (!form) {
-    return;
-  }
+  const formData = {
+    title: document.getElementById('announcement-title').value,
+    category: document.getElementById('announcement-category').value,
+    priority: document.getElementById('announcement-priority').value,
+    description: document.getElementById('announcement-description').value,
+    publish_date: document.getElementById('announcement-date').value,
+    properties: getSelectedProperties(),
+  };
 
-  form.addEventListener('submit', async e => {
-    e.preventDefault();
+  try {
+    let response;
+    if (currentEditingId) {
+      // Update existing announcement
+      response = await fetch(
+        `${CONFIG.API_BASE_URL}/api/landlord/announcements/${currentEditingId}`,
+        {
+          method: 'PUT',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          credentials: 'include',
+          body: JSON.stringify(formData),
+        }
+      );
+      if (response.ok) {
+        showToast('Announcement updated successfully!', 'success');
+      }
+    } else {
+      // Create new announcement
+      response = await fetch(`${CONFIG.API_BASE_URL}/api/landlord/announcements`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        credentials: 'include',
+        body: JSON.stringify(formData),
+      });
+      if (response.ok) {
+        showToast('Announcement published successfully!', 'success');
+      }
+    }
 
-    const formData = {
-      title: document.getElementById('announcement-title').value,
-      category: document.getElementById('announcement-category').value,
-      priority: document.getElementById('announcement-priority').value,
-      description: document.getElementById('announcement-description').value,
-      publishDate: document.getElementById('announcement-date').value,
-      properties: getSelectedProperties(),
-    };
-
-    // Show success notification
-    showNotification('Announcement published successfully!', 'success');
+    if (!response.ok) {
+      throw new Error('Failed to save announcement');
+    }
 
     // Hide modal and reset
+    const modalOverlay = document.getElementById('announcement-modal-overlay');
     modalOverlay.classList.remove('active');
     setTimeout(() => {
-      form.reset();
+      e.target.reset();
       setDefaultPublishDate();
+      currentEditingId = null;
     }, 300);
 
-    // In a real implementation, you would:
-    // 1. Send data to backend
-    // 2. Add the new announcement to the list
-    // 3. Update the UI
-  });
+    // Reload announcements
+    loadAnnouncements();
+  } catch (error) {
+    console.error('Failed to save announcement:', error);
+    showToast('Failed to save announcement', 'error');
+  }
 }
 
 /**
@@ -149,103 +405,122 @@ function getSelectedProperties() {
  */
 function initAnnouncementActions() {
   // Initialize edit buttons
-  const editButtons = document.querySelectorAll('[title="Edit"]');
+  const editButtons = document.querySelectorAll('[data-action="edit"]');
   editButtons.forEach(btn => {
     btn.addEventListener('click', () => {
-      // TODO: Implement edit functionality
-      showNotification('Edit functionality coming soon', 'info');
+      const announcementId = btn.dataset.id;
+      handleEditAnnouncement(announcementId);
     });
   });
 
   // Initialize delete buttons
-  const deleteButtons = document.querySelectorAll('[title="Delete"]');
+  const deleteButtons = document.querySelectorAll('[data-action="delete"]');
   deleteButtons.forEach(btn => {
     btn.addEventListener('click', () => {
-      // TODO: Implement delete functionality
-      const confirmed = confirm('Are you sure you want to delete this announcement?');
-      if (confirmed) {
-        showNotification('Delete functionality coming soon', 'info');
-      }
+      const announcementId = btn.dataset.id;
+      handleDeleteAnnouncement(announcementId);
     });
   });
-
-  // Initialize form submission
-  initAnnouncementFormSubmission();
 }
 
 /**
- * Show notification toast
- * @param {string} message - Notification message
- * @param {string} type - Notification type (success, error, warning, info)
+ * Handle edit announcement
  */
-function showNotification(message, type = 'info') {
-  // Simple alert for now - will be replaced with toast component
-  const colors = {
-    success: '#22c55e',
-    error: '#ef4444',
-    warning: '#f59e0b',
-    info: '#3b82f6',
-  };
+async function handleEditAnnouncement(announcementId) {
+  try {
+    // Get announcement data
+    const response = await fetch(`${CONFIG.API_BASE_URL}/api/landlord/announcements`, {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      credentials: 'include',
+    });
 
-  // Create toast element
-  const toast = document.createElement('div');
-  toast.textContent = message;
-  toast.style.cssText = `
-    position: fixed;
-    bottom: 24px;
-    right: 24px;
-    background-color: ${colors[type]};
-    color: white;
-    padding: 16px 24px;
-    border-radius: 8px;
-    font-size: 14px;
-    font-weight: 600;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-    z-index: 10000;
-    animation: slideIn 0.3s ease;
-  `;
-
-  document.body.appendChild(toast);
-
-  setTimeout(() => {
-    toast.style.animation = 'slideOut 0.3s ease';
-    setTimeout(() => toast.remove(), 300);
-  }, 3000);
-}
-
-/**
- * Add CSS animations for toast notifications
- */
-function _injectToastStyles() {
-  const style = document.createElement('style');
-  style.textContent = `
-    @keyframes slideIn {
-      from {
-        transform: translateX(100%);
-        opacity: 0;
-      }
-      to {
-        transform: translateX(0);
-        opacity: 1;
-      }
+    if (!response.ok) {
+      throw new Error('Failed to fetch announcements');
     }
 
-    @keyframes slideOut {
-      from {
-        transform: translateX(0);
-        opacity: 1;
+    const result = await response.json();
+    if (result.success !== false && result.data) {
+      const announcement = result.data.announcements.find(a => a.id === parseInt(announcementId));
+      if (!announcement) {
+        showToast('Announcement not found', 'error');
+        return;
       }
-      to {
-        transform: translateX(100%);
-        opacity: 0;
+
+      // Populate form
+      currentEditingId = announcementId;
+      document.getElementById('modal-title').textContent = 'Edit Announcement';
+      document.getElementById('announcement-title').value = announcement.title;
+      document.getElementById('announcement-category').value = announcement.category;
+      document.getElementById('announcement-priority').value = announcement.priority;
+      document.getElementById('announcement-description').value = announcement.description;
+      document.getElementById('announcement-date').value = announcement.publish_date;
+
+      // Set property checkboxes
+      const allCheckbox = document.querySelector('input[name="properties"][value="all"]');
+      const propertyCheckboxes = document.querySelectorAll(
+        'input[name="properties"]:not([value="all"])'
+      );
+
+      // Uncheck all first
+      allCheckbox.checked = false;
+      propertyCheckboxes.forEach(cb => {
+        cb.checked = false;
+        cb.disabled = false;
+      });
+
+      // Check appropriate boxes
+      if (!announcement.target_properties || announcement.target_properties.length === 0) {
+        allCheckbox.checked = true;
+        propertyCheckboxes.forEach(cb => (cb.disabled = true));
+      } else {
+        announcement.target_properties.forEach(prop => {
+          const checkbox = document.querySelector(`input[name="properties"][value="${prop.id}"]`);
+          if (checkbox) {
+            checkbox.checked = true;
+          }
+        });
       }
+
+      showModal();
     }
-  `;
-  document.head.appendChild(style);
+  } catch (error) {
+    console.error('Failed to load announcement:', error);
+    showToast('Failed to load announcement', 'error');
+  }
 }
 
 /**
- * Initialize all components
- * Called from initLandlordDashboardEntry() in index.js
+ * Handle delete announcement
  */
-// No DOMContentLoaded listener needed - called from index.js
+async function handleDeleteAnnouncement(announcementId) {
+  const confirmed = confirm('Are you sure you want to delete this announcement?');
+  if (!confirmed) {
+    return;
+  }
+
+  try {
+    const response = await fetch(
+      `${CONFIG.API_BASE_URL}/api/landlord/announcements/${announcementId}`,
+      {
+        method: 'DELETE',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        credentials: 'include',
+      }
+    );
+
+    if (!response.ok) {
+      throw new Error('Failed to delete announcement');
+    }
+
+    showToast('Announcement deleted successfully', 'success');
+    loadAnnouncements();
+  } catch (error) {
+    console.error('Failed to delete announcement:', error);
+    showToast('Failed to delete announcement', 'error');
+  }
+}

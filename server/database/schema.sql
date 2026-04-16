@@ -57,6 +57,10 @@ CREATE TABLE IF NOT EXISTS landlord_profiles (
     property_type ENUM('Single unit', 'Multi-unit', 'Apartment', 'Dormitory') DEFAULT 'Multi-unit',
     total_rooms INT NOT NULL DEFAULT 1,
     available_rooms INT NOT NULL DEFAULT 1,
+    welcome_message TEXT NULL,
+    house_rules_file_url VARCHAR(255) NULL,
+    house_rules_file_name VARCHAR(255) NULL,
+    house_rules_file_size INT NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
