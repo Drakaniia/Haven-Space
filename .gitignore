@@ -16,4 +16,7 @@ build/
 .worktrees/
 
 # Qwen temp files
-.qwen/tmp/  
+.qwen/tmp/
+
+# Qoder config
+qoder.json
