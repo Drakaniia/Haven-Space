@@ -1,0 +1,203 @@
+/**
+ * Readonly Mode Styles
+ * Applied when boarder doesn't have accepted application
+ */
+
+/* Readonly banner at top of page */
+.boarder-readonly-banner {
+  background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+  border-bottom: 2px solid #f59e0b;
+  padding: 16px 24px;
+  position: sticky;
+  top: 0;
+  z-index: 999;
+  animation: slideDown 0.3s ease;
+}
+
+.boarder-readonly-banner-content {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  max-width: 1200px;
+  margin: 0 auto;
+  color: #92400e;
+}
+
+.boarder-readonly-banner-content svg {
+  flex-shrink: 0;
+  color: #f59e0b;
+}
+
+.boarder-readonly-banner-text {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+.boarder-readonly-banner-text strong {
+  font-weight: 600;
+  font-size: 15px;
+}
+
+.boarder-readonly-banner-text span {
+  font-size: 13px;
+  opacity: 0.9;
+}
+
+.boarder-readonly-banner-text a {
+  color: #92400e;
+  text-decoration: underline;
+  font-weight: 500;
+}
+
+.boarder-readonly-banner-text a:hover {
+  color: #78350f;
+}
+
+/* Readonly toast notification */
+.boarder-readonly-toast {
+  position: fixed;
+  bottom: 24px;
+  right: 24px;
+  background: #1f2937;
+  color: white;
+  padding: 14px 20px;
+  border-radius: 8px;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  z-index: 1000;
+  animation: slideIn 0.3s ease;
+  font-size: 14px;
+  max-width: 400px;
+}
+
+.boarder-readonly-toast svg {
+  flex-shrink: 0;
+  color: #fbbf24;
+}
+
+/* Disabled state for readonly elements */
+.boarder-readonly-mode .readonly-disabled {
+  pointer-events: none;
+  user-select: none;
+}
+
+.boarder-readonly-mode .readonly-disabled:not(.sidebar *, .navbar *) {
+  opacity: 0.5 !important;
+  cursor: not-allowed !important;
+  filter: grayscale(0.3);
+}
+
+/* Overlay for readonly sections */
+.boarder-readonly-overlay {
+  position: relative;
+}
+
+.boarder-readonly-overlay::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(255, 255, 255, 0.7);
+  backdrop-filter: blur(2px);
+  z-index: 10;
+  cursor: not-allowed;
+}
+
+/* Empty state for readonly content */
+.boarder-readonly-empty {
+  text-align: center;
+  padding: 60px 20px;
+  color: #6b7280;
+}
+
+.boarder-readonly-empty svg {
+  width: 64px;
+  height: 64px;
+  margin: 0 auto 20px;
+  opacity: 0.4;
+  color: #9ca3af;
+}
+
+.boarder-readonly-empty h3 {
+  font-size: 18px;
+  font-weight: 600;
+  margin: 0 0 8px 0;
+  color: #374151;
+}
+
+.boarder-readonly-empty p {
+  font-size: 14px;
+  margin: 0 0 20px 0;
+  line-height: 1.6;
+}
+
+.boarder-readonly-empty .boarder-btn {
+  margin-top: 16px;
+}
+
+/* Animations */
+@keyframes slideDown {
+  from {
+    transform: translateY(-100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+@keyframes slideIn {
+  from {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+@keyframes slideOut {
+  from {
+    transform: translateX(0);
+    opacity: 1;
+  }
+  to {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .boarder-readonly-banner {
+    padding: 12px 16px;
+  }
+
+  .boarder-readonly-banner-content {
+    gap: 10px;
+  }
+
+  .boarder-readonly-banner-text {
+    font-size: 13px;
+  }
+
+  .boarder-readonly-banner-text strong {
+    font-size: 14px;
+  }
+
+  .boarder-readonly-toast {
+    bottom: 16px;
+    right: 16px;
+    left: 16px;
+    max-width: none;
+  }
+}
