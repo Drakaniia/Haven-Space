@@ -204,6 +204,21 @@ Router::put('/api/landlord/listings/{id}', function($id) {
 });
 
 // ============================================
+// BOARDER ROUTES - LANDLORD
+// ============================================
+Router::get('/api/landlord/boarders.php', function() {
+    require_once __DIR__ . '/landlord/boarders.php';
+});
+
+Router::post('/api/landlord/boarders.php', function() {
+    require_once __DIR__ . '/landlord/boarders.php';
+});
+
+Router::delete('/api/landlord/boarders.php', function() {
+    require_once __DIR__ . '/landlord/boarders.php';
+});
+
+// ============================================
 // ANNOUNCEMENT ROUTES - LANDLORD
 // ============================================
 Router::get('/api/landlord/announcements', function() {

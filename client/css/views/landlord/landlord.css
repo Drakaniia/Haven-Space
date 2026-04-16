@@ -123,7 +123,7 @@
   align-items: center;
   gap: 8px;
   padding: 10px 20px;
-  border-radius: 8px;
+  border-radius: 25px;
   font-size: 14px;
   font-weight: 600;
   text-decoration: none;
@@ -133,14 +133,13 @@
 }
 
 .landlord-btn-outline {
-  background-color: transparent;
-  border: 1px solid var(--dashboard-border);
-  color: var(--dashboard-text-primary);
+  background-color: var(--white);
+  border: 2px solid var(--primary-green);
+  color: var(--primary-green);
 }
 
 .landlord-btn-outline:hover {
   background-color: var(--bg-green);
-  border-color: var(--primary-green);
 }
 
 .landlord-btn-primary {

@@ -39,6 +39,11 @@ async function fetchPropertyFromApi(propertyId) {
       return result.data.property;
     }
 
+    // API may return a properties array when queried by id
+    if (result.data && result.data.properties && result.data.properties.length > 0) {
+      return result.data.properties[0];
+    }
+
     return null;
   } catch (error) {
     console.error('Failed to fetch property:', error);

@@ -349,14 +349,20 @@ function populateRoomData(room) {
   // Update gallery images
   const mainImage = document.getElementById('gallery-main-image');
   if (mainImage) {
-    mainImage.src = room.images[0];
+    mainImage.src = room.images[0] || '../../../assets/images/placeholder-room.svg';
     mainImage.alt = `${room.title} - Main View`;
+    mainImage.onerror = function () {
+      this.src = '../../../assets/images/placeholder-room.svg';
+    };
   }
 
   const thumbnails = document.querySelectorAll('.gallery-thumb img');
   room.images.forEach((img, index) => {
     if (thumbnails[index]) {
       thumbnails[index].src = img.replace('w=1200', 'w=300');
+      thumbnails[index].onerror = function () {
+        this.src = '../../../assets/images/placeholder-room.svg';
+      };
     }
   });
 
@@ -443,7 +449,11 @@ function updateGalleryImage() {
 
   const mainImage = document.getElementById('gallery-main-image');
   if (mainImage) {
-    mainImage.src = room.images[state.currentImageIndex];
+    mainImage.src =
+      room.images[state.currentImageIndex] || '../../../assets/images/placeholder-room.svg';
+    mainImage.onerror = function () {
+      this.src = '../../../assets/images/placeholder-room.svg';
+    };
   }
 
   // Update thumbnail active state

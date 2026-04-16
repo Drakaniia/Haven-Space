@@ -76,23 +76,23 @@
 }
 
 .applications-stat-icon.pending {
-  background-color: rgba(245, 158, 11, 0.1);
-  color: #f59e0b;
+  background-color: #fef3c7;
+  color: #d97706;
 }
 
 .applications-stat-icon.approved {
-  background-color: rgba(34, 197, 94, 0.1);
-  color: #22c55e;
+  background-color: var(--bg-green);
+  color: var(--primary-green);
 }
 
 .applications-stat-icon.rejected {
-  background-color: rgba(239, 68, 68, 0.1);
-  color: #ef4444;
+  background-color: #fee2e2;
+  color: #dc2626;
 }
 
 .applications-stat-icon.total {
-  background-color: rgba(59, 130, 246, 0.1);
-  color: #3b82f6;
+  background-color: #dbeafe;
+  color: #2563eb;
 }
 
 .applications-stat-content {
@@ -100,7 +100,7 @@
 }
 
 .applications-stat-value {
-  font-size: 32px;
+  font-size: 1.5rem;
   font-weight: 700;
   color: var(--text-dark);
   line-height: 1;
@@ -143,7 +143,7 @@
   width: 100%;
   padding: 12px 16px 12px 48px;
   border: 1px solid var(--border-color);
-  border-radius: 8px;
+  border-radius: 9999px;
   font-size: 14px;
   font-family: 'Plus Jakarta Sans', sans-serif;
   background-color: #f9fafb;
@@ -275,22 +275,22 @@
 }
 
 .status-pending {
-  background-color: rgba(245, 158, 11, 0.1);
+  background-color: #fef3c7;
   color: #d97706;
 }
 
 .status-review {
-  background-color: rgba(59, 130, 246, 0.1);
+  background-color: #dbeafe;
   color: #2563eb;
 }
 
 .status-approved {
-  background-color: rgba(34, 197, 94, 0.1);
-  color: #16a34a;
+  background-color: var(--bg-green);
+  color: var(--primary-green);
 }
 
 .status-rejected {
-  background-color: rgba(239, 68, 68, 0.1);
+  background-color: #fee2e2;
   color: #dc2626;
 }
 

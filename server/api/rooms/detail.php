@@ -122,7 +122,7 @@ try {
 
     // Get all property photos
     $images = [];
-    $coverImage = '/assets/images/Haven_Space_Logo.png';
+    $coverImage = '/assets/images/placeholder-room.svg';
     
     try {
         $photoStmt = $pdo->prepare("

@@ -1292,8 +1292,11 @@ function populateDetailPanel(property) {
   // Set property image
   const propertyImage = document.getElementById('detail-property-image');
   if (propertyImage) {
-    propertyImage.src = property.image;
+    propertyImage.src = property.image || '../../assets/images/placeholder-room.svg';
     propertyImage.alt = property.title;
+    propertyImage.onerror = function () {
+      this.src = '../../assets/images/placeholder-room.svg';
+    };
   }
 
   // Set property title

@@ -39,20 +39,25 @@ export function initLandlordDashboard(config = {}) {
   // Update greeting based on time of day
   updateGreeting(user.name);
 
-  // Load dashboard data (placeholder for API integration)
-  loadDashboardData();
+  // Check if we're on the listings page - if so, skip dashboard-specific loaders
+  const isListingsPage = window.location.pathname.includes('/listings/');
 
-  // Load payment overview data
-  loadPaymentOverview();
+  if (!isListingsPage) {
+    // Load dashboard data (placeholder for API integration)
+    loadDashboardData();
 
-  // Load recent activities
-  loadRecentActivities();
+    // Load payment overview data
+    loadPaymentOverview();
 
-  // Load properties
-  loadProperties();
+    // Load recent activities
+    loadRecentActivities();
 
-  // Initialize edit property modal handlers
-  initEditPropertyModal();
+    // Load properties
+    loadProperties();
+
+    // Initialize edit property modal handlers
+    initEditPropertyModal();
+  }
 
   initLandlordApplications();
 }
@@ -814,7 +819,7 @@ function createPropertyCard(property) {
             Edit
           </button>
           <a
-            href="boarders/index.html?property=${property.id}"
+            href="boarders/index.html?propertyId=${property.id}"
             class="landlord-btn landlord-btn-outline landlord-btn-sm"
           >
             View Boarders
@@ -883,9 +888,16 @@ function initEditPropertyModal() {
   });
 
   document.addEventListener('click', e => {
-    const btn = e.target.closest('[data-action="edit-property"]');
+    const btn = e.target.closest('[data-action="edit-property"], [data-action="edit"]');
     if (btn && btn.dataset.id) {
       const propertyId = parseInt(btn.dataset.id);
+
+      // Navigate to edit page for listings
+      if (window.location.pathname.includes('/listings/')) {
+        window.location.href = `edit.html?id=${propertyId}`;
+        return;
+      }
+
       openEditModal(propertyId);
     }
   });

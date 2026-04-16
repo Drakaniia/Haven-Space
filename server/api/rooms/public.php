@@ -145,7 +145,7 @@ try {
         }
 
         // Get property photo
-        $image = '/assets/images/Haven_Space_Logo.png';
+        $image = '/assets/images/placeholder-room.svg';
         try {
             $photoStmt = $pdo->prepare("SELECT photo_url FROM property_photos WHERE property_id = ? AND is_cover = 1 LIMIT 1");
             $photoStmt->execute([$propertyId]);

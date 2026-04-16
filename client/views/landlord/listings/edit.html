@@ -12,45 +12,136 @@
       rel="stylesheet"
     />
     <link rel="stylesheet" href="../../../css/global.css" />
-    <link rel="stylesheet" href="../../../css/views/landlord/create-listing.css" />
-    <link rel="stylesheet" href="../../../css/views/landlord/edit-property.css" />
+    <link rel="stylesheet" href="../../../css/components/sidebar.css" />
+    <link rel="stylesheet" href="../../../css/components/navbar.css" />
+    <link rel="stylesheet" href="../../../css/views/landlord/edit-listing.css" />
   </head>
-  <body>
-    <div class="edit-property-page">
+  <body data-view="landlord" data-dashboard-type="landlord">
+    <div class="edit-listing-page">
+      <!-- Sidebar Container -->
+      <div id="sidebar-container"></div>
+
       <!-- Main Content -->
-      <main class="edit-property-main">
+      <main class="edit-listing-main">
+        <!-- Navbar Container -->
+        <div id="navbar-container"></div>
+
         <!-- Content -->
-        <div class="edit-property-content">
-          <div class="edit-property-header">
-            <a href="../listings/index.html" class="back-btn">
+        <div class="edit-listing-content">
+          <!-- Header -->
+          <div class="edit-listing-header">
+            <a href="index.html" class="back-btn">
               <span
-                data-icon="arrowLeft"
-                data-icon-width="24"
-                data-icon-height="24"
+                data-icon="chevronLeft"
+                data-icon-width="20"
+                data-icon-height="20"
                 data-icon-stroke-width="2"
               ></span>
-              Back to Properties
+              Back to Listings
             </a>
-            <h1>Edit Property</h1>
-            <p>Update your property details and manage photos.</p>
+            <div class="header-title-section">
+              <h1>Edit Property</h1>
+              <p>
+                Update your property details, photos, and amenities to keep your listing current.
+              </p>
+            </div>
           </div>
 
-          <form id="edit-property-form" class="edit-property-form">
+          <!-- Loading State -->
+          <div id="loading-state" class="loading-state">
+            <div class="spinner"></div>
+            <p>Loading property details...</p>
+          </div>
+
+          <!-- Edit Form -->
+          <form id="edit-listing-form" class="edit-listing-form" style="display: none">
+            <!-- Property Photos Section -->
+            <section class="form-section photo-section">
+              <div class="section-header">
+                <div>
+                  <h2 class="section-title">
+                    <span
+                      data-icon="photo"
+                      data-icon-width="24"
+                      data-icon-height="24"
+                      data-icon-stroke-width="2"
+                    ></span>
+                    Property Photos
+                  </h2>
+                  <p class="section-description">
+                    Add high-quality photos to showcase your property. First photo will be the cover
+                    image. Drag to reorder.
+                  </p>
+                </div>
+                <div class="photo-count-badge"><span id="photo-count">0</span> / 10 photos</div>
+              </div>
+
+              <div class="photo-upload-container">
+                <!-- Existing Photos Grid -->
+                <div id="existing-photos-grid" class="photo-preview-grid"></div>
+
+                <!-- Upload New Photos Area -->
+                <div class="photo-upload-area" id="photo-upload-area">
+                  <input
+                    type="file"
+                    id="property-photos"
+                    name="propertyPhotos"
+                    accept="image/jpeg,image/jpg,image/png,image/webp"
+                    multiple
+                    hidden
+                  />
+                  <div class="upload-placeholder">
+                    <div class="upload-icon">
+                      <span
+                        data-icon="cloudUpload"
+                        data-icon-width="48"
+                        data-icon-height="48"
+                        data-icon-stroke-width="2"
+                      ></span>
+                    </div>
+                    <p class="upload-text">
+                      <strong>Click to add more photos</strong> or drag and drop
+                    </p>
+                    <p class="upload-hint">
+                      PNG, JPG, JPEG, WEBP up to 5MB each (Max 10 photos total)
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              <div id="photo-error" class="photo-error"></div>
+            </section>
+
             <!-- Basic Information Section -->
             <section class="form-section">
-              <h2 class="section-title">Basic Information</h2>
+              <div class="section-header">
+                <h2 class="section-title">
+                  <span
+                    data-icon="home"
+                    data-icon-width="24"
+                    data-icon-height="24"
+                    data-icon-stroke-width="2"
+                  ></span>
+                  Basic Information
+                </h2>
+                <p class="section-description">Essential details about your property</p>
+              </div>
 
-              <div class="form-row">
-                <div class="form-group">
-                  <label for="property-name">Property Name *</label>
+              <div class="form-grid">
+                <div class="form-group full-width">
+                  <label for="property-name">
+                    Property Name *
+                    <span class="label-hint">This will be the main title of your listing</span>
+                  </label>
                   <input
                     type="text"
                     id="property-name"
                     name="propertyName"
-                    placeholder="e.g. Sunrise Boarding House"
+                    placeholder="e.g. Sunrise Boarding House, Campus View Dormitory"
                     required
                   />
                 </div>
+
                 <div class="form-group">
                   <label for="property-type">Property Type *</label>
                   <select id="property-type" name="propertyType" required>
@@ -59,119 +150,197 @@
                     <option value="dormitory">Dormitory</option>
                     <option value="apartment">Apartment</option>
                     <option value="studio">Studio Unit</option>
+                    <option value="condominium">Condominium</option>
+                    <option value="bedspace">Bed Space</option>
                     <option value="others">Others</option>
                   </select>
                 </div>
-              </div>
 
-              <div class="form-group" id="property-type-other-group" style="display: none">
-                <label for="property-type-other">Specify Property Type *</label>
-                <input
-                  type="text"
-                  id="property-type-other"
-                  name="propertyTypeOther"
-                  placeholder="e.g. Townhouse, Condominium, etc."
-                />
-              </div>
-
-              <div class="form-group">
-                <label for="property-description">Description *</label>
-                <textarea
-                  id="property-description"
-                  name="propertyDescription"
-                  rows="4"
-                  placeholder="Describe your property, its features, and what makes it special..."
-                  required
-                ></textarea>
-              </div>
-
-              <div class="form-row">
                 <div class="form-group">
-                  <label for="property-price">Monthly Rent (₱) *</label>
-                  <input
-                    type="number"
-                    id="property-price"
-                    name="propertyPrice"
-                    placeholder="5000"
-                    min="0"
-                    required
-                  />
-                </div>
-                <div class="form-group">
-                  <label for="property-deposit">Security Deposit (₱) *</label>
-                  <input
-                    type="number"
-                    id="property-deposit"
-                    name="propertyDeposit"
-                    placeholder="5000"
-                    min="0"
-                    required
-                  />
-                </div>
-              </div>
-
-              <div class="form-row">
-                <div class="form-group">
-                  <label for="property-capacity">Capacity per Room *</label>
-                  <select id="property-capacity" name="propertyCapacity" required>
-                    <option value="">Select capacity</option>
-                    <option value="1">1 person</option>
-                    <option value="2">2 persons</option>
-                    <option value="3">3 persons</option>
-                    <option value="4">4+ persons</option>
-                    <option value="custom">Custom</option>
-                  </select>
-                </div>
-                <div class="form-group">
-                  <label for="property-status">Property Status *</label>
+                  <label for="property-status">Listing Status *</label>
                   <select id="property-status" name="propertyStatus" required>
-                    <option value="active">Active</option>
-                    <option value="inactive">Inactive</option>
-                    <option value="full">Fully Occupied</option>
+                    <option value="active">Active - Visible to boarders</option>
+                    <option value="inactive">Inactive - Hidden from search</option>
+                    <option value="full">Fully Occupied - No vacancies</option>
                   </select>
                 </div>
+
+                <div class="form-group full-width">
+                  <label for="property-description">
+                    Property Description *
+                    <span class="label-hint"
+                      >Describe your property, its features, and what makes it special</span
+                    >
+                  </label>
+                  <textarea
+                    id="property-description"
+                    name="propertyDescription"
+                    rows="5"
+                    placeholder="Example: Cozy boarding house perfect for students and young professionals. Located near universities, shopping centers, and public transportation. Features modern amenities, 24/7 security, and a friendly community atmosphere..."
+                    required
+                  ></textarea>
+                  <div class="character-count">
+                    <span id="description-count">0</span> / 1000 characters
+                  </div>
+                </div>
+              </div>
+            </section>
+
+            <!-- Pricing & Capacity Section -->
+            <section class="form-section">
+              <div class="section-header">
+                <h2 class="section-title">
+                  <span
+                    data-icon="currencyDollar"
+                    data-icon-width="24"
+                    data-icon-height="24"
+                    data-icon-stroke-width="2"
+                  ></span>
+                  Pricing & Capacity
+                </h2>
+                <p class="section-description">Set your rental rates and room availability</p>
               </div>
 
-              <div class="form-group" id="property-capacity-custom-group" style="display: none">
-                <label for="property-capacity-custom">Specify Capacity (number of persons) *</label>
-                <input
-                  type="number"
-                  id="property-capacity-custom"
-                  name="propertyCapacityCustom"
-                  placeholder="e.g. 5, 6, 8"
-                  min="1"
-                />
+              <div class="form-grid">
+                <div class="form-group">
+                  <label for="property-price">
+                    Monthly Rent (₱) *
+                    <span class="label-hint">Base price per month</span>
+                  </label>
+                  <div class="input-with-icon">
+                    <span class="input-icon">₱</span>
+                    <input
+                      type="number"
+                      id="property-price"
+                      name="propertyPrice"
+                      placeholder="5000"
+                      min="0"
+                      step="100"
+                      required
+                    />
+                  </div>
+                </div>
+
+                <div class="form-group">
+                  <label for="property-deposit">
+                    Security Deposit (₱)
+                    <span class="label-hint">Usually 1-2 months rent</span>
+                  </label>
+                  <div class="input-with-icon">
+                    <span class="input-icon">₱</span>
+                    <input
+                      type="number"
+                      id="property-deposit"
+                      name="propertyDeposit"
+                      placeholder="10000"
+                      min="0"
+                      step="100"
+                    />
+                  </div>
+                </div>
+
+                <div class="form-group">
+                  <label for="property-rooms">
+                    Total Number of Rooms *
+                    <span class="label-hint">Available rooms in your property</span>
+                  </label>
+                  <input
+                    type="number"
+                    id="property-rooms"
+                    name="propertyRooms"
+                    placeholder="10"
+                    min="1"
+                    max="100"
+                    required
+                  />
+                </div>
+
+                <div class="form-group">
+                  <label for="property-capacity">
+                    Capacity per Room
+                    <span class="label-hint">How many people per room</span>
+                  </label>
+                  <select id="property-capacity" name="propertyCapacity">
+                    <option value="">Select capacity</option>
+                    <option value="1">1 person (Single)</option>
+                    <option value="2">2 persons (Shared)</option>
+                    <option value="3">3 persons</option>
+                    <option value="4">4 persons</option>
+                    <option value="5+">5+ persons</option>
+                  </select>
+                </div>
+
+                <div class="form-group">
+                  <label for="property-min-stay">
+                    Minimum Stay Period
+                    <span class="label-hint">Shortest rental duration</span>
+                  </label>
+                  <select id="property-min-stay" name="propertyMinStay">
+                    <option value="">No minimum</option>
+                    <option value="1-month">1 month</option>
+                    <option value="3-months">3 months</option>
+                    <option value="6-months">6 months</option>
+                    <option value="1-year">1 year</option>
+                  </select>
+                </div>
+
+                <div class="form-group">
+                  <label for="property-availability">
+                    Availability Status
+                    <span class="label-hint">When can boarders move in</span>
+                  </label>
+                  <select id="property-availability" name="propertyAvailability">
+                    <option value="available-now">Available Now</option>
+                    <option value="available-soon">Available Soon</option>
+                    <option value="by-appointment">By Appointment</option>
+                  </select>
+                </div>
               </div>
             </section>
 
             <!-- Location Section -->
             <section class="form-section">
-              <h2 class="section-title">Location</h2>
-
-              <div class="form-group">
-                <label for="property-address">Complete Address *</label>
-                <textarea
-                  id="property-address"
-                  name="propertyAddress"
-                  rows="2"
-                  placeholder="Street, Barangay, City, Province"
-                  required
-                ></textarea>
+              <div class="section-header">
+                <h2 class="section-title">
+                  <span
+                    data-icon="location"
+                    data-icon-width="24"
+                    data-icon-height="24"
+                    data-icon-stroke-width="2"
+                  ></span>
+                  Location Details
+                </h2>
+                <p class="section-description">Help boarders find your property easily</p>
               </div>
 
-              <div class="form-row">
+              <div class="form-grid">
+                <div class="form-group full-width">
+                  <label for="property-address">
+                    Complete Address *
+                    <span class="label-hint">Street, Barangay, Building number</span>
+                  </label>
+                  <textarea
+                    id="property-address"
+                    name="propertyAddress"
+                    rows="2"
+                    placeholder="e.g. 123 Katipunan Avenue, Barangay UP Campus, Diliman"
+                    required
+                  ></textarea>
+                </div>
+
                 <div class="form-group">
-                  <label for="property-city">City *</label>
+                  <label for="property-city">City / Municipality *</label>
                   <input
                     type="text"
                     id="property-city"
                     name="propertyCity"
-                    placeholder="e.g. Manila"
+                    placeholder="e.g. Quezon City"
                     required
                   />
                 </div>
+
                 <div class="form-group">
-                  <label for="property-province">Province *</label>
+                  <label for="property-province">Province / Region *</label>
                   <input
                     type="text"
                     id="property-province"
@@ -180,282 +349,425 @@
                     required
                   />
                 </div>
-              </div>
 
-              <div class="form-group">
-                <button type="button" id="set-location-btn" class="btn-set-location">
+                <div class="form-group">
+                  <label for="property-postal">Postal / ZIP Code</label>
+                  <input
+                    type="text"
+                    id="property-postal"
+                    name="propertyPostal"
+                    placeholder="e.g. 1101"
+                    maxlength="4"
+                  />
+                </div>
+
+                <div class="form-group">
+                  <label for="property-landmark">
+                    Nearby Landmark
+                    <span class="label-hint">Helps boarders locate your property</span>
+                  </label>
+                  <input
+                    type="text"
+                    id="property-landmark"
+                    name="propertyLandmark"
+                    placeholder="e.g. Near UP Diliman, Ateneo de Manila"
+                  />
+                </div>
+
+                <div class="form-group full-width">
+                  <label>Map Location</label>
+                  <button type="button" id="set-location-btn" class="btn-set-location">
+                    <span
+                      data-icon="target"
+                      data-icon-width="20"
+                      data-icon-height="20"
+                      data-icon-stroke-width="2"
+                    ></span>
+                    <span id="location-btn-text">Set Location on Map</span>
+                  </button>
+                  <input type="hidden" id="property-latitude" name="propertyLatitude" />
+                  <input type="hidden" id="property-longitude" name="propertyLongitude" />
+                  <p class="field-hint" id="coordinates-display">Click button to set coordinates</p>
+                </div>
+              </div>
+            </section>
+
+            <!-- Amenities & Features Section -->
+            <section class="form-section">
+              <div class="section-header">
+                <h2 class="section-title">
                   <span
-                    data-icon="target"
+                    data-icon="sparkles"
                     data-icon-width="24"
                     data-icon-height="24"
                     data-icon-stroke-width="2"
                   ></span>
-                  Set Location on Map
-                </button>
-                <input type="hidden" id="property-latitude" name="propertyLatitude" />
-                <input type="hidden" id="property-longitude" name="propertyLongitude" />
-              </div>
-            </section>
-
-            <!-- Amenities Section -->
-            <section class="form-section">
-              <h2 class="section-title">Amenities & Features</h2>
-              <p class="section-description">Select all amenities that your property offers.</p>
-
-              <div class="amenities-grid">
-                <label class="amenity-checkbox">
-                  <input type="checkbox" name="amenities" value="wifi" />
-                  <span class="amenity-label">
-                    <span
-                      data-icon="sparkles"
-                      data-icon-width="24"
-                      data-icon-height="24"
-                      data-icon-stroke-width="2"
-                    ></span>
-                    WiFi
-                  </span>
-                </label>
-                <label class="amenity-checkbox">
-                  <input type="checkbox" name="amenities" value="aircon" />
-                  <span class="amenity-label">
-                    <span
-                      data-icon="computerDesktop"
-                      data-icon-width="24"
-                      data-icon-height="24"
-                      data-icon-stroke-width="2"
-                    ></span>
-                    Air Conditioning
-                  </span>
-                </label>
-                <label class="amenity-checkbox">
-                  <input type="checkbox" name="amenities" value="furnished" />
-                  <span class="amenity-label">
-                    <span
-                      data-icon="videoCamera"
-                      data-icon-width="24"
-                      data-icon-height="24"
-                      data-icon-stroke-width="2"
-                    ></span>
-                    Fully Furnished
-                  </span>
-                </label>
-                <label class="amenity-checkbox">
-                  <input type="checkbox" name="amenities" value="parking" />
-                  <span class="amenity-label">
-                    <span
-                      data-icon="home"
-                      data-icon-width="24"
-                      data-icon-height="24"
-                      data-icon-stroke-width="2"
-                    ></span>
-                    Parking
-                  </span>
-                </label>
-                <label class="amenity-checkbox">
-                  <input type="checkbox" name="amenities" value="laundry" />
-                  <span class="amenity-label">
-                    <span
-                      data-icon="history"
-                      data-icon-width="24"
-                      data-icon-height="24"
-                      data-icon-stroke-width="2"
-                    ></span>
-                    Laundry
-                  </span>
-                </label>
-                <label class="amenity-checkbox">
-                  <input type="checkbox" name="amenities" value="kitchen" />
-                  <span class="amenity-label">
-                    <span
-                      data-icon="moon"
-                      data-icon-width="24"
-                      data-icon-height="24"
-                      data-icon-stroke-width="2"
-                    ></span>
-                    Kitchen Access
-                  </span>
-                </label>
-                <label class="amenity-checkbox">
-                  <input type="checkbox" name="amenities" value="cr" />
-                  <span class="amenity-label">
-                    <span
-                      data-icon="clipboard"
-                      data-icon-width="24"
-                      data-icon-height="24"
-                      data-icon-stroke-width="2"
-                    ></span>
-                    CR Inside Room
-                  </span>
-                </label>
-                <label class="amenity-checkbox">
-                  <input type="checkbox" name="amenities" value="cctv" />
-                  <span class="amenity-label">
-                    <span
-                      data-icon="camera"
-                      data-icon-width="24"
-                      data-icon-height="24"
-                      data-icon-stroke-width="2"
-                    ></span>
-                    CCTV Security
-                  </span>
-                </label>
+                  Amenities & Features
+                </h2>
+                <p class="section-description">Select all amenities that your property offers</p>
               </div>
 
-              <!-- Custom Amenities Section -->
-              <div class="custom-amenities-section" style="margin-top: 1.5rem">
-                <h4
-                  style="
-                    margin-bottom: 0.75rem;
-                    font-size: 0.95rem;
-                    font-weight: 600;
-                    color: var(--text-dark);
-                  "
-                >
-                  Add Custom Amenity
-                </h4>
-                <div
-                  class="custom-amenities-input-group"
-                  style="display: flex; gap: 0.5rem; align-items: flex-start"
-                >
-                  <input
-                    type="text"
-                    id="custom-amenity-input"
-                    placeholder="e.g. Swimming Pool, Gym, 24/7 Security, etc."
-                    style="
-                      flex: 1;
-                      padding: 0.75rem 1rem;
-                      border: 1px solid var(--border-color);
-                      border-radius: 8px;
-                      font-size: 0.95rem;
-                      font-family: var(--font-main);
-                    "
-                  />
-                  <button
-                    type="button"
-                    id="add-custom-amenity-btn"
-                    class="btn-add-amenity"
-                    style="
-                      padding: 0.75rem 1.25rem;
-                      background-color: var(--primary-green);
-                      color: var(--white);
-                      border: none;
-                      border-radius: 8px;
-                      font-weight: 500;
-                      cursor: pointer;
-                      transition: all 0.2s ease;
-                    "
-                  >
-                    Add
-                  </button>
-                </div>
-                <div
-                  id="custom-amenities-list"
-                  class="custom-amenities-list"
-                  style="display: flex; flex-wrap: wrap; gap: 0.5rem; margin-top: 1rem"
-                ></div>
-              </div>
-            </section>
-
-            <!-- Photo Management Section -->
-            <section class="form-section">
-              <h2 class="section-title">Property Photos</h2>
-              <p class="section-description">
-                Manage your property photos. Drag to reorder. First photo will be the cover image.
-              </p>
-
-              <div class="photo-upload-container">
-                <!-- Photo Preview Grid -->
-                <div id="photo-preview-grid" class="photo-preview-grid"></div>
-
-                <!-- Upload Area -->
-                <div class="photo-upload-area" id="photo-upload-area">
-                  <input
-                    type="file"
-                    id="property-photos"
-                    name="propertyPhotos"
-                    accept="image/*"
-                    multiple
-                    hidden
-                  />
-                  <div class="upload-placeholder">
-                    <span
-                      data-icon="photo"
-                      data-icon-width="24"
-                      data-icon-height="24"
-                      data-icon-stroke-width="2"
-                    ></span>
-                    <p><strong>Click to upload</strong> or drag and drop</p>
-                    <p class="upload-hint">PNG, JPG, JPEG up to 5MB each (Max 10 photos)</p>
-                  </div>
-                </div>
-              </div>
-
-              <div id="photo-error" class="photo-error"></div>
-            </section>
-
-            <!-- Room Availability Management Section -->
-            <section class="form-section">
-              <h2 class="section-title">Room Availability Management</h2>
-              <p class="section-description">
-                Manage room capacity, availability status, and upload photos for available rooms.
-              </p>
-
-              <!-- Room Capacity -->
-              <div class="room-capacity-section">
-                <div class="form-group">
-                  <label for="room-capacity-input">Total Number of Rooms *</label>
-                  <div class="capacity-input-wrapper">
-                    <input
-                      type="number"
-                      id="room-capacity-input"
-                      name="roomCapacity"
-                      min="1"
-                      max="100"
-                      value="10"
-                      required
-                    />
-                    <button type="button" class="btn-primary" id="update-capacity-btn">
+              <div class="amenities-section">
+                <h3 class="amenities-category-title">Essential Amenities</h3>
+                <div class="amenities-grid">
+                  <label class="amenity-checkbox">
+                    <input type="checkbox" name="amenities" value="wifi" />
+                    <span class="amenity-content">
                       <span
-                        data-icon="check"
-                        data-icon-width="24"
-                        data-icon-height="24"
+                        data-icon="wifi"
+                        data-icon-width="20"
+                        data-icon-height="20"
                         data-icon-stroke-width="2"
                       ></span>
-                      Update
-                    </button>
-                  </div>
-                  <p class="capacity-help-text">
-                    Adjust the total number of rooms. Reducing capacity will remove available rooms
-                    first (occupied rooms are preserved).
-                  </p>
+                      <span class="amenity-label">WiFi / Internet</span>
+                    </span>
+                  </label>
+
+                  <label class="amenity-checkbox">
+                    <input type="checkbox" name="amenities" value="aircon" />
+                    <span class="amenity-content">
+                      <span
+                        data-icon="computerDesktop"
+                        data-icon-width="20"
+                        data-icon-height="20"
+                        data-icon-stroke-width="2"
+                      ></span>
+                      <span class="amenity-label">Air Conditioning</span>
+                    </span>
+                  </label>
+
+                  <label class="amenity-checkbox">
+                    <input type="checkbox" name="amenities" value="furnished" />
+                    <span class="amenity-content">
+                      <span
+                        data-icon="home"
+                        data-icon-width="20"
+                        data-icon-height="20"
+                        data-icon-stroke-width="2"
+                      ></span>
+                      <span class="amenity-label">Fully Furnished</span>
+                    </span>
+                  </label>
+
+                  <label class="amenity-checkbox">
+                    <input type="checkbox" name="amenities" value="kitchen" />
+                    <span class="amenity-content">
+                      <span
+                        data-icon="fire"
+                        data-icon-width="20"
+                        data-icon-height="20"
+                        data-icon-stroke-width="2"
+                      ></span>
+                      <span class="amenity-label">Kitchen Access</span>
+                    </span>
+                  </label>
+
+                  <label class="amenity-checkbox">
+                    <input type="checkbox" name="amenities" value="cr" />
+                    <span class="amenity-content">
+                      <span
+                        data-icon="home"
+                        data-icon-width="20"
+                        data-icon-height="20"
+                        data-icon-stroke-width="2"
+                      ></span>
+                      <span class="amenity-label">Private Bathroom</span>
+                    </span>
+                  </label>
+
+                  <label class="amenity-checkbox">
+                    <input type="checkbox" name="amenities" value="water-heater" />
+                    <span class="amenity-content">
+                      <span
+                        data-icon="drop"
+                        data-icon-width="20"
+                        data-icon-height="20"
+                        data-icon-stroke-width="2"
+                      ></span>
+                      <span class="amenity-label">Water Heater</span>
+                    </span>
+                  </label>
+                </div>
+
+                <h3 class="amenities-category-title">Facilities & Services</h3>
+                <div class="amenities-grid">
+                  <label class="amenity-checkbox">
+                    <input type="checkbox" name="amenities" value="laundry" />
+                    <span class="amenity-content">
+                      <span
+                        data-icon="sparkles"
+                        data-icon-width="20"
+                        data-icon-height="20"
+                        data-icon-stroke-width="2"
+                      ></span>
+                      <span class="amenity-label">Laundry Area</span>
+                    </span>
+                  </label>
+
+                  <label class="amenity-checkbox">
+                    <input type="checkbox" name="amenities" value="parking" />
+                    <span class="amenity-content">
+                      <span
+                        data-icon="truck"
+                        data-icon-width="20"
+                        data-icon-height="20"
+                        data-icon-stroke-width="2"
+                      ></span>
+                      <span class="amenity-label">Parking Space</span>
+                    </span>
+                  </label>
+
+                  <label class="amenity-checkbox">
+                    <input type="checkbox" name="amenities" value="cctv" />
+                    <span class="amenity-content">
+                      <span
+                        data-icon="camera"
+                        data-icon-width="20"
+                        data-icon-height="20"
+                        data-icon-stroke-width="2"
+                      ></span>
+                      <span class="amenity-label">CCTV Security</span>
+                    </span>
+                  </label>
+
+                  <label class="amenity-checkbox">
+                    <input type="checkbox" name="amenities" value="security" />
+                    <span class="amenity-content">
+                      <span
+                        data-icon="shieldCheck"
+                        data-icon-width="20"
+                        data-icon-height="20"
+                        data-icon-stroke-width="2"
+                      ></span>
+                      <span class="amenity-label">24/7 Security</span>
+                    </span>
+                  </label>
+
+                  <label class="amenity-checkbox">
+                    <input type="checkbox" name="amenities" value="generator" />
+                    <span class="amenity-content">
+                      <span
+                        data-icon="bolt"
+                        data-icon-width="20"
+                        data-icon-height="20"
+                        data-icon-stroke-width="2"
+                      ></span>
+                      <span class="amenity-label">Backup Generator</span>
+                    </span>
+                  </label>
+
+                  <label class="amenity-checkbox">
+                    <input type="checkbox" name="amenities" value="common-area" />
+                    <span class="amenity-content">
+                      <span
+                        data-icon="userGroup"
+                        data-icon-width="20"
+                        data-icon-height="20"
+                        data-icon-stroke-width="2"
+                      ></span>
+                      <span class="amenity-label">Common Area</span>
+                    </span>
+                  </label>
+
+                  <label class="amenity-checkbox">
+                    <input type="checkbox" name="amenities" value="cleaning" />
+                    <span class="amenity-content">
+                      <span
+                        data-icon="sparkles"
+                        data-icon-width="20"
+                        data-icon-height="20"
+                        data-icon-stroke-width="2"
+                      ></span>
+                      <span class="amenity-label">Weekly Cleaning</span>
+                    </span>
+                  </label>
+
+                  <label class="amenity-checkbox">
+                    <input type="checkbox" name="amenities" value="elevator" />
+                    <span class="amenity-content">
+                      <span
+                        data-icon="arrowUp"
+                        data-icon-width="20"
+                        data-icon-height="20"
+                        data-icon-stroke-width="2"
+                      ></span>
+                      <span class="amenity-label">Elevator</span>
+                    </span>
+                  </label>
                 </div>
               </div>
+            </section>
 
-              <!-- Rooms List -->
-              <div class="rooms-list-section">
-                <h3 style="font-size: 1rem; margin-bottom: 1rem">Individual Rooms</h3>
-                <div id="rooms-list" class="rooms-list"></div>
+            <!-- House Rules Section -->
+            <section class="form-section">
+              <div class="section-header">
+                <h2 class="section-title">
+                  <span
+                    data-icon="clipboard"
+                    data-icon-width="24"
+                    data-icon-height="24"
+                    data-icon-stroke-width="2"
+                  ></span>
+                  House Rules & Policies
+                </h2>
+                <p class="section-description">Set clear expectations for your boarders</p>
               </div>
 
-              <!-- Hidden file input for room image upload -->
-              <input
-                type="file"
-                id="room-image-upload"
-                accept="image/*"
-                multiple
-                style="display: none"
-              />
+              <div class="form-grid">
+                <div class="form-group">
+                  <label for="property-curfew">Curfew Time</label>
+                  <select id="property-curfew" name="propertyCurfew">
+                    <option value="">No curfew</option>
+                    <option value="10pm">10:00 PM</option>
+                    <option value="11pm">11:00 PM</option>
+                    <option value="12am">12:00 AM (Midnight)</option>
+                    <option value="1am">1:00 AM</option>
+                  </select>
+                </div>
+
+                <div class="form-group">
+                  <label for="property-visitors">Visitor Policy</label>
+                  <select id="property-visitors" name="propertyVisitors">
+                    <option value="allowed">Visitors Allowed</option>
+                    <option value="limited">Limited Hours Only</option>
+                    <option value="not-allowed">No Visitors</option>
+                  </select>
+                </div>
+
+                <div class="form-group">
+                  <label>Smoking Policy</label>
+                  <div class="radio-group">
+                    <label class="radio-option">
+                      <input type="radio" name="propertySmoking" value="not-allowed" checked />
+                      <span>No Smoking</span>
+                    </label>
+                    <label class="radio-option">
+                      <input type="radio" name="propertySmoking" value="designated-area" />
+                      <span>Designated Area Only</span>
+                    </label>
+                    <label class="radio-option">
+                      <input type="radio" name="propertySmoking" value="allowed" />
+                      <span>Allowed</span>
+                    </label>
+                  </div>
+                </div>
+
+                <div class="form-group">
+                  <label>Pet Policy</label>
+                  <div class="radio-group">
+                    <label class="radio-option">
+                      <input type="radio" name="propertyPets" value="not-allowed" checked />
+                      <span>No Pets</span>
+                    </label>
+                    <label class="radio-option">
+                      <input type="radio" name="propertyPets" value="small-pets" />
+                      <span>Small Pets Only</span>
+                    </label>
+                    <label class="radio-option">
+                      <input type="radio" name="propertyPets" value="allowed" />
+                      <span>Pets Allowed</span>
+                    </label>
+                  </div>
+                </div>
+
+                <div class="form-group full-width">
+                  <label for="property-additional-rules">
+                    Additional Rules (Optional)
+                    <span class="label-hint">Any other important rules or policies</span>
+                  </label>
+                  <textarea
+                    id="property-additional-rules"
+                    name="propertyAdditionalRules"
+                    rows="3"
+                    placeholder="e.g. Quiet hours from 10 PM to 6 AM, No cooking in rooms, Guests must register at front desk..."
+                  ></textarea>
+                </div>
+              </div>
+            </section>
+
+            <!-- Contact Information Section -->
+            <section class="form-section">
+              <div class="section-header">
+                <h2 class="section-title">
+                  <span
+                    data-icon="phone"
+                    data-icon-width="24"
+                    data-icon-height="24"
+                    data-icon-stroke-width="2"
+                  ></span>
+                  Contact Information
+                </h2>
+                <p class="section-description">How boarders can reach you</p>
+              </div>
+
+              <div class="form-grid">
+                <div class="form-group">
+                  <label for="property-contact-name">Contact Person</label>
+                  <input
+                    type="text"
+                    id="property-contact-name"
+                    name="propertyContactName"
+                    placeholder="e.g. Juan Dela Cruz"
+                  />
+                </div>
+
+                <div class="form-group">
+                  <label for="property-contact-phone">Contact Number</label>
+                  <input
+                    type="tel"
+                    id="property-contact-phone"
+                    name="propertyContactPhone"
+                    placeholder="+63 9XX XXX XXXX"
+                  />
+                </div>
+
+                <div class="form-group">
+                  <label for="property-contact-email">Contact Email</label>
+                  <input
+                    type="email"
+                    id="property-contact-email"
+                    name="propertyContactEmail"
+                    placeholder="email@example.com"
+                  />
+                </div>
+
+                <div class="form-group">
+                  <label for="property-contact-hours">Available Hours</label>
+                  <input
+                    type="text"
+                    id="property-contact-hours"
+                    name="propertyContactHours"
+                    placeholder="e.g. 9 AM - 6 PM"
+                  />
+                </div>
+              </div>
             </section>
 
             <!-- Form Actions -->
             <div class="form-actions">
-              <button type="button" id="cancel-btn" class="btn-cancel">Cancel</button>
-              <button type="button" id="save-draft-btn" class="btn-save-draft">Save Draft</button>
+              <button type="button" id="cancel-btn" class="btn-cancel">
+                <span
+                  data-icon="close"
+                  data-icon-width="20"
+                  data-icon-height="20"
+                  data-icon-stroke-width="2"
+                ></span>
+                Cancel
+              </button>
+              <button type="button" id="preview-btn" class="btn-preview">
+                <span
+                  data-icon="eye"
+                  data-icon-width="20"
+                  data-icon-height="20"
+                  data-icon-stroke-width="2"
+                ></span>
+                Preview Changes
+              </button>
               <button type="submit" class="btn-submit">
                 <span
                   data-icon="check"
-                  data-icon-width="24"
-                  data-icon-height="24"
+                  data-icon-width="20"
+                  data-icon-height="20"
                   data-icon-stroke-width="2"
                 ></span>
                 Save Changes
@@ -466,33 +778,46 @@
       </main>
     </div>
 
-    <!-- Image Preview Modal -->
-    <div id="image-preview-modal" class="image-preview-modal">
-      <div class="modal-overlay"></div>
-      <div class="image-preview-content">
-        <button type="button" class="image-modal-close" id="image-modal-close">
+    <!-- Success Confirmation Modal -->
+    <div class="listing-success-overlay" id="listing-success-modal" style="display: none">
+      <div class="listing-success-modal">
+        <div class="listing-success-icon">
           <span
-            data-icon="xMark"
-            data-icon-width="24"
-            data-icon-height="24"
+            data-icon="checkCircle"
+            data-icon-width="64"
+            data-icon-height="64"
             data-icon-stroke-width="2"
           ></span>
-        </button>
-        <img id="image-preview-source" src="" alt="Room preview" />
-        <div class="image-preview-actions">
-          <button type="button" class="btn-danger" id="delete-room-image">
+        </div>
+        <h2 class="listing-success-title">Changes Saved Successfully!</h2>
+        <p class="listing-success-message">
+          Your property listing has been updated and is now live with the new information.
+        </p>
+        <div class="listing-success-actions">
+          <button type="button" class="listing-success-btn-secondary" id="listing-view-btn">
             <span
-              data-icon="trash"
-              data-icon-width="24"
-              data-icon-height="24"
+              data-icon="eye"
+              data-icon-width="20"
+              data-icon-height="20"
               data-icon-stroke-width="2"
             ></span>
-            Delete Image
+            View Listing
+          </button>
+          <button type="button" class="listing-success-btn-primary" id="listing-dashboard-btn">
+            <span
+              data-icon="arrowLeft"
+              data-icon-width="20"
+              data-icon-height="20"
+              data-icon-stroke-width="2"
+            ></span>
+            Back to Listings
           </button>
         </div>
       </div>
     </div>
 
-    <script type="module" src="../../../js/views/landlord/edit-property.js"></script>
+    <!-- ES Module Entry Point -->
+    <script type="module" src="../../../js/main.js"></script>
+    <script type="module" src="../../../js/views/landlord/edit-listing.js"></script>
   </body>
 </html>

@@ -32,16 +32,9 @@ function detectEnvironment() {
       return 'local-dev';
     }
 
-    // Apache setup typically uses paths like /views/ or /haven-space/
-    if (
-      pathname.includes('haven-space') ||
-      pathname.includes('htdocs') ||
-      pathname.includes('/views/')
-    ) {
-      return 'local-apache';
-    }
-
-    return 'local-dev';
+    // Apache/XAMPP - typically on port 80 or no port specified
+    // or paths containing haven-space, htdocs, views
+    return 'local-apache';
   }
 
   // Default to local development for unknown hosts
