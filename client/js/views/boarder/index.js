@@ -9,7 +9,7 @@ import { initSidebar } from '../../components/sidebar.js';
 import { initNavbar } from '../../components/navbar.js';
 import { loadDashboardData } from './dashboard.js';
 import { initMessages } from './messages.js';
-import { initFindARoom } from './boarder-find-a-room.js';
+import { initBoarderFindARoom } from './boarder-find-a-room-auth.js';
 import { initLeasePage } from './lease.js';
 import { initPaymentPage } from './boarder-payment-process.js';
 import { initSettingsPage } from './settings.js';
@@ -120,7 +120,7 @@ export async function initBoarderDashboard() {
   const currentPath = window.location.pathname;
 
   if (currentPath.includes('find-a-room')) {
-    initFindARoom();
+    initBoarderFindARoom();
   }
 
   if (currentPath.includes('messages')) {

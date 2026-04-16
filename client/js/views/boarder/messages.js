@@ -5,6 +5,7 @@
 
 import { getIcon } from '../../shared/icons.js';
 import CONFIG from '../../config.js';
+import { initBoarderAccessControl, showProtectedEmptyState } from './access-control-init.js';
 
 const API_BASE_URL = CONFIG.API_BASE_URL;
 let currentConversationId = null;
@@ -15,7 +16,25 @@ if (!localStorage.getItem('user_id')) {
   localStorage.setItem('user_id', '3'); // Simulated Boarder ID
 }
 
-export function initMessages() {
+export async function initMessages() {
+  // Check access control first
+  const accessResult = await initBoarderAccessControl();
+  
+  if (!accessResult.hasAccess) {
+    // Show empty state
+    const conversationsList = document.getElementById('conversations-list');
+    const messagesContainer = document.querySelector('.messages-container');
+    
+    if (conversationsList) {
+      showProtectedEmptyState(conversationsList, 'messages');
+    }
+    if (messagesContainer) {
+      showProtectedEmptyState(messagesContainer, 'messages');
+    }
+    
+    return; // Stop here
+  }
+  
   const urlParams = new URLSearchParams(window.location.search);
   const convId = urlParams.get('id');
   if (convId) currentConversationId = parseInt(convId);

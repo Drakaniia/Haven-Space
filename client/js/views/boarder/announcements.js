@@ -5,13 +5,25 @@
 
 import CONFIG from '../../config.js';
 import { showToast } from '../../shared/toast.js';
+import { initBoarderAccessControl, showProtectedEmptyState } from './access-control-init.js';
 
 let allAnnouncements = [];
 
 /**
  * Initialize announcements page
  */
-export function initAnnouncements() {
+export async function initAnnouncements() {
+  // Check access control first
+  const accessResult = await initBoarderAccessControl();
+  
+  if (!accessResult.hasAccess) {
+    const announcementsContainer = document.querySelector('.announcements-list') || document.querySelector('.boarder-announcements-list');
+    if (announcementsContainer) {
+      showProtectedEmptyState(announcementsContainer, 'announcements');
+    }
+    return;
+  }
+  
   initFilterTabs();
   loadAnnouncements();
 }

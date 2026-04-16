@@ -1,6 +1,19 @@
 // Boarder Documents - My Documents
 
-document.addEventListener('DOMContentLoaded', () => {
+import { initBoarderAccessControl, showProtectedEmptyState } from './access-control-init.js';
+
+document.addEventListener('DOMContentLoaded', async () => {
+  // Check access control first
+  const accessResult = await initBoarderAccessControl();
+  
+  if (!accessResult.hasAccess) {
+    const documentsContainer = document.getElementById('documents-container');
+    if (documentsContainer) {
+      showProtectedEmptyState(documentsContainer, 'documents');
+    }
+    return;
+  }
+  
   loadDocuments();
 });
 

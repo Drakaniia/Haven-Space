@@ -694,22 +694,22 @@ function setupEventListeners(room) {
  * Handle Apply Now action
  */
 function handleApplyNow(room) {
+  console.log('handleApplyNow called', room);
+
   // Check if user is logged in
   const user = JSON.parse(localStorage.getItem('user') || '{}');
 
-  if (!user || user.role !== 'boarder') {
-    // Not logged in, redirect to login
-    const basePath = window.location.pathname.includes('github.io')
-      ? '/Haven-Space/client/views/public/auth/login.html'
-      : '/views/public/auth/login.html';
-
+  if (!user || !user.id || user.role !== 'boarder') {
+    // Not logged in, redirect to login with correct relative path
     const redirectUrl = encodeURIComponent(window.location.href);
-    window.location.href = `${basePath}?redirect=${redirectUrl}`;
+    window.location.href = `../../public/auth/login.html?redirect=${redirectUrl}`;
     return;
   }
 
-  // User is logged in, show confirmation modal
-  showApplicationModal(room);
+  console.log('Redirecting to confirmation page');
+
+  // User is logged in, redirect to confirmation page
+  window.location.href = `./confirm-application.html?id=${room.id || state.roomId}`;
 }
 
 /**

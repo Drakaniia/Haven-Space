@@ -4,10 +4,23 @@
  * Handles house rules acknowledgment and download functionality
  */
 
+import { initBoarderAccessControl, showProtectedEmptyState } from './access-control-init.js';
+
 /**
  * Initialize House Rules Page
  */
-export function initHouseRulesPage() {
+export async function initHouseRulesPage() {
+  // Check access control first
+  const accessResult = await initBoarderAccessControl();
+  
+  if (!accessResult.hasAccess) {
+    const houseRulesContainer = document.querySelector('.house-rules-container') || document.querySelector('main');
+    if (houseRulesContainer) {
+      showProtectedEmptyState(houseRulesContainer, 'houseRules');
+    }
+    return;
+  }
+  
   // Acknowledge button handler
   const acknowledgeBtn = document.getElementById('acknowledge-rules-btn');
   if (acknowledgeBtn) {
