@@ -776,6 +776,137 @@
   display: block;
 }
 
+/* Terms Required Overlay */
+.terms-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.6);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 10002;
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.3s ease, visibility 0.3s ease;
+}
+
+.terms-overlay.active {
+  opacity: 1;
+  visibility: visible;
+}
+
+.terms-overlay-content {
+  background: var(--white);
+  border-radius: 16px;
+  padding: 2.5rem 2rem;
+  max-width: 480px;
+  width: 90%;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+  text-align: center;
+  transform: scale(0.9);
+  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+}
+
+.terms-overlay.active .terms-overlay-content {
+  transform: scale(1);
+}
+
+.terms-overlay-close {
+  position: absolute;
+  top: 1rem;
+  right: 1rem;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  color: var(--text-gray);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 4px;
+  border-radius: 4px;
+  transition: all 0.2s ease;
+}
+
+.terms-overlay-close:hover {
+  background: #f5f5f5;
+  color: var(--text-dark);
+}
+
+.terms-overlay-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 1.25rem;
+  color: #f59e0b;
+}
+
+.terms-overlay-icon svg {
+  width: 56px;
+  height: 56px;
+}
+
+.terms-overlay-title {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--text-dark);
+  margin-bottom: 1rem;
+  line-height: 1.3;
+}
+
+.terms-overlay-message {
+  font-size: 0.95rem;
+  color: var(--text-gray);
+  line-height: 1.6;
+  margin-bottom: 0.5rem;
+}
+
+.terms-overlay-links {
+  font-size: 0.85rem;
+  color: var(--text-gray);
+  margin-bottom: 2rem;
+  line-height: 1.6;
+}
+
+.terms-overlay-links a {
+  color: var(--primary-green);
+  text-decoration: underline;
+}
+
+.terms-overlay-links a:hover {
+  color: var(--dark-green);
+}
+
+.terms-overlay-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.875rem 2rem;
+  border: none;
+  border-radius: 8px;
+  font-size: 0.95rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-family: var(--font-main);
+  background: var(--primary-green);
+  color: var(--white);
+  width: 100%;
+}
+
+.terms-overlay-btn:hover {
+  background: var(--dark-green);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(74, 124, 35, 0.3);
+}
+
+.terms-overlay-btn:active {
+  transform: translateY(0);
+}
+
 /* Welcome Modal */
 .welcome-modal-overlay {
   position: fixed;
@@ -975,6 +1106,21 @@
   }
 
   .welcome-modal-icon svg {
+    width: 48px;
+    height: 48px;
+  }
+
+  /* Terms overlay responsive */
+  .terms-overlay-content {
+    padding: 2rem 1.5rem;
+    max-width: 90%;
+  }
+
+  .terms-overlay-title {
+    font-size: 1.25rem;
+  }
+
+  .terms-overlay-icon svg {
     width: 48px;
     height: 48px;
   }

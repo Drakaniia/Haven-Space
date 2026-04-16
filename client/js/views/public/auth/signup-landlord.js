@@ -1170,13 +1170,52 @@ function setupEventListeners() {
     goToStep(5);
   });
 
+  // Setup terms overlay (define before use)
+  const termsOverlay = document.getElementById('termsOverlay');
+  const termsOverlayClose = termsOverlay?.querySelector('.terms-overlay-close');
+  const termsOverlayOk = document.getElementById('termsOverlayOk');
+
+  function showTermsOverlay() {
+    if (termsOverlay) {
+      termsOverlay.classList.add('active');
+    }
+  }
+
+  function hideTermsOverlay() {
+    if (termsOverlay) {
+      termsOverlay.classList.remove('active');
+      // Focus the terms checkbox after closing
+      const termsCheckbox = document.querySelector('#step5Form input[name="terms"]');
+      if (termsCheckbox) {
+        termsCheckbox.focus();
+      }
+    }
+  }
+
+  if (termsOverlayClose) {
+    termsOverlayClose.addEventListener('click', hideTermsOverlay);
+  }
+
+  if (termsOverlayOk) {
+    termsOverlayOk.addEventListener('click', hideTermsOverlay);
+  }
+
+  // Close overlay on backdrop click
+  if (termsOverlay) {
+    termsOverlay.addEventListener('click', function (e) {
+      if (e.target === termsOverlay) {
+        hideTermsOverlay();
+      }
+    });
+  }
+
   // Step 5: Final submission
   document.getElementById('step5Form').addEventListener('submit', async e => {
     e.preventDefault();
 
     const termsChecked = e.target.terms.checked;
     if (!termsChecked) {
-      showToast('Please agree to the Terms of Service to continue', 'warning');
+      showTermsOverlay();
       return;
     }
 
@@ -1497,7 +1536,6 @@ function showWelcomeModal(_userData) {
 document.addEventListener('DOMContentLoaded', () => {
   // Inject icons
   injectIcons();
-
   // Load saved state
   loadState();
 

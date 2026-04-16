@@ -1,6 +1,7 @@
 import CONFIG from '../config.js';
 import { getIcon } from '../shared/icons.js';
 import { getBoarderRedirectPath, updateBoarderStatus } from '../shared/routing.js';
+import { showToast } from '../shared/toast.js';
 
 /**
  * Inject icons from centralized library into elements with data-icon attributes
@@ -23,6 +24,15 @@ function injectIcons() {
 }
 
 document.addEventListener('DOMContentLoaded', function () {
+  // Show logout toast if redirected from logout
+  const logoutToastMsg = sessionStorage.getItem('logoutToast');
+  if (logoutToastMsg) {
+    const toastType = sessionStorage.getItem('logoutToastType') || 'success';
+    sessionStorage.removeItem('logoutToast');
+    sessionStorage.removeItem('logoutToastType');
+    showToast(logoutToastMsg, toastType, 5000);
+  }
+
   const passwordToggle = document.getElementById('passwordToggle');
   const passwordInput = document.getElementById('password');
   const eyeOpen = passwordToggle.querySelector('.eye-open');

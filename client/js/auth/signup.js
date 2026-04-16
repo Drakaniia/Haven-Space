@@ -99,11 +99,49 @@ document.addEventListener('DOMContentLoaded', function () {
   const confirmPasswordInput = document.getElementById('confirmPassword');
   const confirmEyeOpen = confirmPasswordToggle.querySelector('.eye-open');
   const confirmEyeClosed = confirmPasswordToggle.querySelector('.eye-closed');
+  const termsOverlay = document.getElementById('termsOverlay');
+  const termsOverlayClose = termsOverlay?.querySelector('.terms-overlay-close');
+  const termsOverlayOk = document.getElementById('termsOverlayOk');
 
   let selectedRole = null;
 
   // Inject icons from centralized library
   injectIcons();
+
+  // Terms overlay handlers
+  function showTermsOverlay() {
+    if (termsOverlay) {
+      termsOverlay.classList.add('active');
+    }
+  }
+
+  function hideTermsOverlay() {
+    if (termsOverlay) {
+      termsOverlay.classList.remove('active');
+      // Focus the terms checkbox after closing
+      const termsCheckbox = document.querySelector('#signupForm input[name="terms"]');
+      if (termsCheckbox) {
+        termsCheckbox.focus();
+      }
+    }
+  }
+
+  if (termsOverlayClose) {
+    termsOverlayClose.addEventListener('click', hideTermsOverlay);
+  }
+
+  if (termsOverlayOk) {
+    termsOverlayOk.addEventListener('click', hideTermsOverlay);
+  }
+
+  // Close overlay on backdrop click
+  if (termsOverlay) {
+    termsOverlay.addEventListener('click', function (e) {
+      if (e.target === termsOverlay) {
+        hideTermsOverlay();
+      }
+    });
+  }
 
   // Check for pending Google OAuth signup
   const urlParams = new URLSearchParams(window.location.search);
@@ -349,10 +387,7 @@ document.addEventListener('DOMContentLoaded', function () {
     // Validate terms checkbox
     const termsCheckbox = e.target.terms;
     if (!termsCheckbox.checked) {
-      showToast(
-        'Please agree to the Terms of Service, including the User Agreement and Privacy Policy to continue.',
-        'warning'
-      );
+      showTermsOverlay();
       return;
     }
 

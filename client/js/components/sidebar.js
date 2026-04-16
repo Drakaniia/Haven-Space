@@ -4,7 +4,6 @@
  */
 
 import { getIcon } from '../shared/icons.js';
-import { showToast } from '../shared/toast.js';
 
 // Navigation configurations per role
 const NAV_CONFIG = {
@@ -439,25 +438,24 @@ function setupLogoutHandler() {
       // Clear authentication data
       localStorage.removeItem('user');
 
-      // Show success toast before redirect
-      showToast('You have successfully logged out', 'success', 3000);
+      // Store logout message in sessionStorage to display after redirect
+      sessionStorage.setItem('logoutToast', 'You have successfully logged out');
+      sessionStorage.setItem('logoutToastType', 'success');
 
-      // Redirect to login page after short delay to show toast
-      setTimeout(() => {
-        const pathname = window.location.pathname;
+      // Redirect to login page
+      const pathname = window.location.pathname;
 
-        // Determine correct login path based on current URL structure
-        if (pathname.includes('/dist/')) {
-          // Production mode (dist): auth folder is at root
-          window.location.href = '/auth/login.html';
-        } else if (pathname.includes('/views/')) {
-          // Direct /views access
-          window.location.href = '/views/public/auth/login.html';
-        } else {
-          // Fallback: try development path
-          window.location.href = '/views/public/auth/login.html';
-        }
-      }, 500);
+      // Determine correct login path based on current URL structure
+      if (pathname.includes('/dist/')) {
+        // Production mode (dist): auth folder is at root
+        window.location.href = '/auth/login.html';
+      } else if (pathname.includes('/views/')) {
+        // Direct /views access
+        window.location.href = '/views/public/auth/login.html';
+      } else {
+        // Fallback: try development path
+        window.location.href = '/views/public/auth/login.html';
+      }
     });
   }
 }
