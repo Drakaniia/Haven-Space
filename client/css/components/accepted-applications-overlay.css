@@ -1,0 +1,400 @@
+/**
+ * Accepted Applications Overlay Styles
+ * Styles for the "Choose Your Boarding House" modal
+ */
+
+/* ============================================
+   SELECTION OVERLAY
+   ============================================ */
+
+.accepted-applications-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 10000;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+  padding: 1rem;
+}
+
+.accepted-applications-overlay.accepted-app-overlay-visible {
+  opacity: 1;
+}
+
+.accepted-app-modal {
+  background: #fff;
+  border-radius: 1rem;
+  max-width: 640px;
+  width: 100%;
+  max-height: 90vh;
+  overflow-y: auto;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+  transform: scale(0.95);
+  transition: transform 0.3s ease;
+}
+
+.accepted-applications-overlay.accepted-app-overlay-visible .accepted-app-modal {
+  transform: scale(1);
+}
+
+.accepted-app-modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1.5rem 1.5rem 1rem;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.accepted-app-modal-title {
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: #111827;
+  margin: 0;
+}
+
+.accepted-app-modal-close {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0.5rem;
+  border-radius: 0.5rem;
+  color: #6b7280;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background-color 0.2s, color 0.2s;
+}
+
+.accepted-app-modal-close:hover {
+  background-color: #f3f4f6;
+  color: #111827;
+}
+
+.accepted-app-modal-body {
+  padding: 1rem 1.5rem 1.5rem;
+}
+
+.accepted-app-modal-description {
+  color: #6b7280;
+  font-size: 0.9375rem;
+  line-height: 1.5;
+  margin: 0 0 1.25rem;
+}
+
+.accepted-app-cards {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+/* Individual application card */
+.accepted-app-card {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 1rem;
+  border: 1px solid #e5e7eb;
+  border-radius: 0.75rem;
+  transition: opacity 0.3s ease, transform 0.3s ease, box-shadow 0.2s;
+}
+
+.accepted-app-card:hover {
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+}
+
+.accepted-app-card-image {
+  flex-shrink: 0;
+  width: 64px;
+  height: 64px;
+  border-radius: 0.5rem;
+  overflow: hidden;
+  background: #f3f4f6;
+}
+
+.accepted-app-card-image-placeholder {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #9ca3af;
+}
+
+.accepted-app-card-content {
+  flex: 1;
+  min-width: 0;
+}
+
+.accepted-app-card-title {
+  font-size: 1rem;
+  font-weight: 600;
+  color: #111827;
+  margin: 0 0 0.25rem;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.accepted-app-card-address {
+  font-size: 0.8125rem;
+  color: #6b7280;
+  margin: 0 0 0.25rem;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.accepted-app-card-price {
+  font-size: 0.9375rem;
+  font-weight: 600;
+  color: #16a34a;
+  margin: 0;
+}
+
+.accepted-app-card-actions {
+  display: flex;
+  gap: 0.5rem;
+  flex-shrink: 0;
+}
+
+.accepted-app-btn {
+  padding: 0.5rem 1rem;
+  border-radius: 0.5rem;
+  font-size: 0.875rem;
+  font-weight: 500;
+  cursor: pointer;
+  border: none;
+  transition: background-color 0.2s, transform 0.1s;
+  white-space: nowrap;
+}
+
+.accepted-app-btn:active {
+  transform: scale(0.97);
+}
+
+.accepted-app-btn-select {
+  background: #16a34a;
+  color: #fff;
+}
+
+.accepted-app-btn-select:hover {
+  background: #15803d;
+}
+
+.accepted-app-btn-decline {
+  background: #ef4444;
+  color: #fff;
+}
+
+.accepted-app-btn-decline:hover {
+  background: #dc2626;
+}
+
+/* ============================================
+   CONFIRMATION OVERLAY
+   ============================================ */
+
+.confirmation-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 10001;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+  padding: 1rem;
+}
+
+.confirmation-overlay.confirmation-overlay-visible {
+  opacity: 1;
+}
+
+.confirmation-modal {
+  background: #fff;
+  border-radius: 1rem;
+  max-width: 480px;
+  width: 100%;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+  transform: scale(0.95);
+  transition: transform 0.3s ease;
+}
+
+.confirmation-overlay.confirmation-overlay-visible .confirmation-modal {
+  transform: scale(1);
+}
+
+.confirmation-modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1.5rem 1.5rem 1rem;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.confirmation-modal-title {
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: #111827;
+  margin: 0;
+}
+
+.confirmation-modal-close {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0.5rem;
+  border-radius: 0.5rem;
+  color: #6b7280;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background-color 0.2s, color 0.2s;
+}
+
+.confirmation-modal-close:hover {
+  background-color: #f3f4f6;
+  color: #111827;
+}
+
+.confirmation-modal-body {
+  padding: 1.5rem;
+}
+
+.confirmation-property-card {
+  display: flex;
+  gap: 1rem;
+  padding: 1.25rem;
+  background: #f9fafb;
+  border-radius: 0.75rem;
+  border: 1px solid #e5e7eb;
+}
+
+.confirmation-property-image {
+  flex-shrink: 0;
+  width: 80px;
+  height: 80px;
+  border-radius: 0.5rem;
+  overflow: hidden;
+  background: #f3f4f6;
+}
+
+.confirmation-property-image-placeholder {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #9ca3af;
+}
+
+.confirmation-property-details {
+  flex: 1;
+}
+
+.confirmation-property-name {
+  font-size: 1.0625rem;
+  font-weight: 600;
+  color: #111827;
+  margin: 0 0 0.25rem;
+}
+
+.confirmation-property-address {
+  font-size: 0.8125rem;
+  color: #6b7280;
+  margin: 0 0 0.5rem;
+}
+
+.confirmation-property-room {
+  font-size: 0.875rem;
+  color: #374151;
+  margin: 0 0 0.25rem;
+}
+
+.confirmation-property-price {
+  font-size: 1.125rem;
+  font-weight: 700;
+  color: #16a34a;
+  margin: 0;
+}
+
+.confirmation-actions {
+  display: flex;
+  gap: 0.75rem;
+  margin-top: 1.5rem;
+}
+
+.confirmation-btn {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 0.75rem 1rem;
+  border-radius: 0.5rem;
+  font-size: 0.9375rem;
+  font-weight: 500;
+  cursor: pointer;
+  border: none;
+  transition: background-color 0.2s, transform 0.1s;
+}
+
+.confirmation-btn:active {
+  transform: scale(0.98);
+}
+
+.confirmation-btn-confirm {
+  background: #16a34a;
+  color: #fff;
+}
+
+.confirmation-btn-confirm:hover:not(:disabled) {
+  background: #15803d;
+}
+
+.confirmation-btn-confirm:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+}
+
+.confirmation-btn-cancel {
+  background: #f3f4f6;
+  color: #374151;
+}
+
+.confirmation-btn-cancel:hover {
+  background: #e5e7eb;
+}
+
+/* ============================================
+   RESPONSIVE
+   ============================================ */
+
+@media (max-width: 640px) {
+  .accepted-app-card {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .accepted-app-card-actions {
+    width: 100%;
+  }
+
+  .accepted-app-btn {
+    flex: 1;
+  }
+
+  .confirmation-property-card {
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+  }
+
+  .confirmation-actions {
+    flex-direction: column;
+  }
+}
