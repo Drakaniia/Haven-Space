@@ -1200,6 +1200,11 @@ function initProfileDropdown() {
 
       // Clear authentication data
       localStorage.removeItem('user');
+
+      // Store logout message in sessionStorage to display after redirect
+      sessionStorage.setItem('logoutToast', 'You have successfully logged out');
+      sessionStorage.setItem('logoutToastType', 'success');
+
       window.location.href = '../auth/login.html';
     });
   }

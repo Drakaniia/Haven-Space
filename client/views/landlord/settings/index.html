@@ -222,7 +222,7 @@
               <div class="settings-card">
                 <h2 class="settings-card-title">Welcome Message Template</h2>
                 <p class="settings-card-description">
-                  Configure the automatic welcome message for new boarders
+                  Configure the automatic welcome message and house rules for new boarders
                 </p>
 
                 <div class="welcome-message-editor">
@@ -257,6 +257,53 @@
                       placeholder="Enter your welcome message here..."
                     ></textarea>
                     <p class="char-count"><span id="char-count">0</span> characters</p>
+                  </div>
+
+                  <div class="form-group">
+                    <label for="house-rules-file">House Rules Document (Optional)</label>
+                    <p class="form-hint">
+                      Upload a PDF file with your house rules. This will be automatically sent to
+                      new boarders when their application is accepted.
+                    </p>
+                    <div class="file-upload-area">
+                      <input
+                        type="file"
+                        id="house-rules-file"
+                        accept=".pdf,.doc,.docx"
+                        style="display: none"
+                      />
+                      <button type="button" class="btn btn-outline" id="select-file-btn">
+                        <span
+                          data-icon="document"
+                          data-icon-width="24"
+                          data-icon-height="24"
+                          data-icon-stroke-width="2"
+                        ></span>
+                        <span>Select File</span>
+                      </button>
+                      <div id="file-preview" class="file-preview" style="display: none">
+                        <div class="file-preview-info">
+                          <span
+                            data-icon="document"
+                            data-icon-width="24"
+                            data-icon-height="24"
+                            data-icon-stroke-width="2"
+                          ></span>
+                          <div class="file-details">
+                            <p class="file-name" id="file-name-display"></p>
+                            <p class="file-size" id="file-size-display"></p>
+                          </div>
+                        </div>
+                        <button type="button" class="btn-icon" id="remove-file-btn">
+                          <span
+                            data-icon="xMark"
+                            data-icon-width="20"
+                            data-icon-height="20"
+                            data-icon-stroke-width="2"
+                          ></span>
+                        </button>
+                      </div>
+                    </div>
                   </div>
 
                   <div class="editor-actions">

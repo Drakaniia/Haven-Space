@@ -705,3 +705,76 @@ textarea.form-control {
     width: 100%;
   }
 }
+
+/* File Upload Area */
+.file-upload-area {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.file-preview {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 16px;
+  background-color: var(--bg-cream);
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+}
+
+.file-preview-info {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex: 1;
+}
+
+.file-preview-info svg {
+  width: 24px;
+  height: 24px;
+  color: var(--primary-green);
+}
+
+.file-details {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.file-name {
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--text-dark);
+  margin: 0;
+}
+
+.file-size {
+  font-size: 12px;
+  color: var(--text-gray);
+  margin: 0;
+}
+
+.btn-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  background: none;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  color: var(--text-gray);
+  transition: all 0.2s ease;
+}
+
+.btn-icon:hover {
+  background-color: rgba(0, 0, 0, 0.05);
+  color: var(--text-dark);
+}
+
+.btn-icon svg {
+  width: 20px;
+  height: 20px;
+}

@@ -222,7 +222,44 @@ async function loadProperties(userId) {
   grid.style.display = 'none';
 
   try {
-    // Fetch property data from API
+    // First, try to fetch from properties table (full listings)
+    const propertiesRes = await fetch(`${CONFIG.API_BASE_URL}/api/landlord/properties.php`, {
+      credentials: 'include',
+    });
+
+    let hasFullProperties = false;
+    if (propertiesRes.ok) {
+      const propertiesData = await propertiesRes.json();
+      if (propertiesData.success && propertiesData.data.properties.length > 0) {
+        hasFullProperties = true;
+        const mappedProperties = propertiesData.data.properties.map(prop => ({
+          id: prop.id,
+          name: prop.name,
+          type: prop.type,
+          location: prop.address,
+          city: prop.city,
+          province: prop.province,
+          price: prop.price,
+          rooms: prop.total_rooms,
+          occupied: prop.occupied_rooms,
+          status: prop.status,
+          description: prop.description,
+          amenities: prop.amenities || [],
+          photos: ['https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?w=800'],
+          createdAt: prop.created_at,
+          isFullListing: true,
+        }));
+
+        if (loadingState) {
+          loadingState.style.display = 'none';
+        }
+        grid.style.display = 'grid';
+        renderProperties(mappedProperties);
+        return;
+      }
+    }
+
+    // If no full properties, check for profile data from signup
     const property = await fetchPropertyData(userId);
 
     if (loadingState) {
@@ -253,6 +290,9 @@ async function loadProperties(userId) {
             'Start by adding your first boarding house or property to get started.';
       }
     } else {
+      // Mark as draft property from signup
+      property.isDraft = true;
+      property.isFullListing = false;
       propertiesData = [property];
       grid.style.display = 'grid';
       renderProperties(propertiesData);
@@ -293,18 +333,31 @@ function createPropertyCard(property) {
   card.className = 'property-card';
   card.dataset.propertyId = property.id;
 
-  const occupancyRate = Math.round((property.occupied / property.rooms) * 100);
-  const statusLabel =
-    property.status === 'active'
-      ? 'Active'
-      : property.status === 'full'
-      ? 'Fully Occupied'
-      : 'Inactive';
+  const occupancyRate =
+    property.rooms > 0 ? Math.round((property.occupied / property.rooms) * 100) : 0;
+
+  // Determine status label
+  let statusLabel = 'Draft';
+  let statusClass = 'draft';
+
+  if (property.isDraft) {
+    statusLabel = 'Draft - Complete Setup';
+    statusClass = 'draft';
+  } else if (property.status === 'active') {
+    statusLabel = 'Active';
+    statusClass = 'active';
+  } else if (property.status === 'full') {
+    statusLabel = 'Fully Occupied';
+    statusClass = 'full';
+  } else {
+    statusLabel = 'Inactive';
+    statusClass = 'inactive';
+  }
 
   card.innerHTML = `
     <div class="property-card-image">
       <img src="${property.photos[0] || '/placeholder.jpg'}" alt="${property.name}" />
-      <span class="property-card-status status-${property.status}">${statusLabel}</span>
+      <span class="property-card-status status-${statusClass}">${statusLabel}</span>
       <div class="property-card-photo-count">
         ${getIcon('photo')}
         ${property.photos.length}
@@ -316,9 +369,23 @@ function createPropertyCard(property) {
         ${getIcon('location')}
         ${property.location}
       </div>
+      ${
+        property.isDraft
+          ? `
+        <div class="property-card-draft-notice">
+          <p style="color: var(--warning-color); font-size: 14px; margin: 8px 0;">
+            ${getIcon('exclamationTriangle', { width: 16, height: 16 })}
+            Complete your property details to publish
+          </p>
+        </div>
+      `
+          : ''
+      }
       <div class="property-card-stats">
         <div class="property-card-stat">
-          <div class="property-card-stat-value">₱${property.price.toLocaleString()}</div>
+          <div class="property-card-stat-value">${
+            property.price > 0 ? '₱' + property.price.toLocaleString() : 'Not set'
+          }</div>
           <div class="property-card-stat-label">/month</div>
         </div>
         <div class="property-card-stat">
@@ -332,22 +399,35 @@ function createPropertyCard(property) {
       </div>
     </div>
     <div class="property-card-actions">
-      <button class="btn-view" data-action="view" data-id="${property.id}">
-        ${getIcon('eye')}
-        View
-      </button>
-      <button class="btn-edit" data-action="edit" data-id="${property.id}" ${
-    !isVerified ? 'disabled' : ''
-  } title="${!isVerified ? 'Account pending verification' : 'Edit Property'}">
-        ${getIcon('edit')}
-        Edit
-      </button>
-      <button class="btn-delete" data-action="delete" data-id="${property.id}" ${
-    !isVerified ? 'disabled' : ''
-  } title="${!isVerified ? 'Account pending verification' : 'Delete Property'}">
-        ${getIcon('trash')}
-        Delete
-      </button>
+      ${
+        property.isDraft
+          ? `
+        <button class="btn-edit btn-primary" data-action="edit" data-id="${
+          property.id
+        }" style="flex: 1;">
+          ${getIcon('edit')}
+          Complete Setup
+        </button>
+      `
+          : `
+        <button class="btn-view" data-action="view" data-id="${property.id}">
+          ${getIcon('eye')}
+          View
+        </button>
+        <button class="btn-edit" data-action="edit" data-id="${property.id}" ${
+              !isVerified ? 'disabled' : ''
+            } title="${!isVerified ? 'Account pending verification' : 'Edit Property'}">
+          ${getIcon('edit')}
+          Edit
+        </button>
+        <button class="btn-delete" data-action="delete" data-id="${property.id}" ${
+              !isVerified ? 'disabled' : ''
+            } title="${!isVerified ? 'Account pending verification' : 'Delete Property'}">
+          ${getIcon('trash')}
+          Delete
+        </button>
+      `
+      }
     </div>
   `;
 
@@ -478,8 +558,9 @@ function openPropertyModal(property) {
  * Edit property - navigate to edit page (only if verified)
  */
 function editProperty(property) {
-  // Check if landlord is verified
-  if (!isVerified) {
+  // For draft properties from signup, allow editing even if not verified
+  // since they need to complete their property setup
+  if (!property.isDraft && !isVerified) {
     alert(
       'Your account is pending verification by a superadmin. You can edit your property details after your account has been approved.'
     );
@@ -487,7 +568,12 @@ function editProperty(property) {
   }
 
   // Navigate to edit page with property ID
-  window.location.href = `../listings/edit.html?id=${property.id}`;
+  // For draft properties, pass a flag to indicate it's from profile
+  const editUrl = property.isDraft
+    ? `../listings/edit.html?profileId=${property.id}&draft=true`
+    : `../listings/edit.html?id=${property.id}`;
+
+  window.location.href = editUrl;
 }
 
 /**

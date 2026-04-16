@@ -180,6 +180,17 @@ function initWelcomeMessageEditor() {
   const charCount = document.getElementById('char-count');
   const previewBtn = document.getElementById('preview-message-btn');
   const saveBtn = document.getElementById('save-message-btn');
+  const selectFileBtn = document.getElementById('select-file-btn');
+  const fileInput = document.getElementById('house-rules-file');
+  const filePreview = document.getElementById('file-preview');
+  const fileNameDisplay = document.getElementById('file-name-display');
+  const fileSizeDisplay = document.getElementById('file-size-display');
+  const removeFileBtn = document.getElementById('remove-file-btn');
+
+  let selectedFile = null;
+
+  // Load existing welcome message and file
+  loadWelcomeSettings();
 
   if (textarea && charCount) {
     textarea.addEventListener('input', () => {
@@ -187,20 +198,167 @@ function initWelcomeMessageEditor() {
     });
   }
 
+  // File selection
+  if (selectFileBtn && fileInput) {
+    selectFileBtn.addEventListener('click', () => {
+      fileInput.click();
+    });
+
+    fileInput.addEventListener('change', e => {
+      const file = e.target.files[0];
+      if (file) {
+        // Validate file size (max 10MB)
+        if (file.size > 10 * 1024 * 1024) {
+          showToast('File must be less than 10MB', 'error');
+          fileInput.value = '';
+          return;
+        }
+
+        // Validate file type
+        const allowedTypes = [
+          'application/pdf',
+          'application/msword',
+          'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+        ];
+        if (!allowedTypes.includes(file.type)) {
+          showToast('Only PDF, DOC, and DOCX files are allowed', 'error');
+          fileInput.value = '';
+          return;
+        }
+
+        selectedFile = file;
+        displayFilePreview(file);
+      }
+    });
+  }
+
+  // Remove file
+  if (removeFileBtn) {
+    removeFileBtn.addEventListener('click', () => {
+      selectedFile = null;
+      fileInput.value = '';
+      filePreview.style.display = 'none';
+    });
+  }
+
   if (previewBtn) {
     previewBtn.addEventListener('click', () => {
       const message = textarea?.value || '';
-      showToast('Preview feature coming soon', 'info');
+      const previewMessage = replaceVariables(message);
+      showToast('Preview: ' + previewMessage.substring(0, 100) + '...', 'info');
     });
   }
 
   if (saveBtn) {
-    saveBtn.addEventListener('click', () => {
+    saveBtn.addEventListener('click', async () => {
       const message = textarea?.value || '';
-      // TODO: Integrate with backend API
-      showToast('Welcome message saved successfully', 'success');
+
+      if (!message.trim()) {
+        showToast('Please enter a welcome message', 'error');
+        return;
+      }
+
+      await saveWelcomeSettings(message, selectedFile);
     });
   }
+
+  function displayFilePreview(file) {
+    if (fileNameDisplay && fileSizeDisplay && filePreview) {
+      fileNameDisplay.textContent = file.name;
+      fileSizeDisplay.textContent = formatFileSize(file.size);
+      filePreview.style.display = 'flex';
+    }
+  }
+
+  function formatFileSize(bytes) {
+    if (bytes < 1024) return bytes + ' B';
+    if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(2) + ' KB';
+    return (bytes / (1024 * 1024)).toFixed(2) + ' MB';
+  }
+
+  function replaceVariables(message) {
+    return message
+      .replace(/{boarder_name}/g, 'John')
+      .replace(/{house_name}/g, 'Sample Boarding House')
+      .replace(/{move_in_date}/g, new Date().toLocaleDateString())
+      .replace(/{room_number}/g, 'TBD');
+  }
+}
+
+/**
+ * Load welcome settings from backend
+ */
+async function loadWelcomeSettings() {
+  try {
+    const response = await fetch('/api/landlord/welcome-settings', {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      credentials: 'include',
+    });
+
+    if (response.ok) {
+      const data = await response.json();
+      const textarea = document.getElementById('welcome-message-textarea');
+      const charCount = document.getElementById('char-count');
+      const filePreview = document.getElementById('file-preview');
+      const fileNameDisplay = document.getElementById('file-name-display');
+      const fileSizeDisplay = document.getElementById('file-size-display');
+
+      if (data.data && textarea) {
+        textarea.value = data.data.welcome_message || '';
+        if (charCount) {
+          charCount.textContent = textarea.value.length;
+        }
+
+        // Display existing file if present
+        if (data.data.house_rules_file_name && filePreview && fileNameDisplay && fileSizeDisplay) {
+          fileNameDisplay.textContent = data.data.house_rules_file_name;
+          fileSizeDisplay.textContent = formatFileSize(data.data.house_rules_file_size || 0);
+          filePreview.style.display = 'flex';
+        }
+      }
+    }
+  } catch (error) {
+    console.error('Failed to load welcome settings:', error);
+  }
+}
+
+/**
+ * Save welcome settings to backend
+ */
+async function saveWelcomeSettings(message, file) {
+  try {
+    const formData = new FormData();
+    formData.append('welcome_message', message);
+
+    if (file) {
+      formData.append('house_rules_file', file);
+    }
+
+    const response = await fetch('/api/landlord/welcome-settings', {
+      method: 'POST',
+      body: formData,
+      credentials: 'include',
+    });
+
+    if (response.ok) {
+      showToast('Welcome message and house rules saved successfully', 'success');
+    } else {
+      const error = await response.json();
+      showToast(error.error || 'Failed to save settings', 'error');
+    }
+  } catch (error) {
+    console.error('Failed to save welcome settings:', error);
+    showToast('Failed to save settings', 'error');
+  }
+}
+
+function formatFileSize(bytes) {
+  if (bytes < 1024) return bytes + ' B';
+  if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(2) + ' KB';
+  return (bytes / (1024 * 1024)).toFixed(2) + ' MB';
 }
 
 /**

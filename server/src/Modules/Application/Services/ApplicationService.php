@@ -5,6 +5,7 @@ namespace App\Modules\Application\Services;
 use App\Modules\Application\Repositories\ApplicationRepository;
 use App\Modules\Notification\Services\NotificationService;
 use App\Modules\Onboarding\Helpers\OnboardingTrigger;
+use App\Modules\Payment\Services\PaymentService;
 
 /**
  * Application Service
@@ -14,11 +15,13 @@ class ApplicationService
 {
     private ApplicationRepository $repository;
     private NotificationService $notificationService;
+    private PaymentService $paymentService;
 
     public function __construct()
     {
         $this->repository = new ApplicationRepository();
         $this->notificationService = new NotificationService();
+        $this->paymentService = new PaymentService();
     }
 
     /**
@@ -147,7 +150,16 @@ class ApplicationService
                 $houseName
             );
 
-            error_log("Onboarding triggered for application {$application['id']}");
+            // Create initial payment for the boarder
+            $this->paymentService->createInitialPayment(
+                $application['boarder_id'],
+                $application['landlord_id'],
+                $application['room_id'],
+                $application['property_id'] ?? 0,
+                $application['room_price'] ?? 0
+            );
+
+            error_log("Onboarding and payment triggered for application {$application['id']}");
         } catch (\Exception $e) {
             // Log error but don't fail the status update
             error_log("Failed to trigger onboarding for application {$application['id']}: " . $e->getMessage());

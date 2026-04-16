@@ -1,0 +1,44 @@
+{
+  "name": "haven-space",
+  "version": "1.0.0",
+  "type": "module",
+  "scripts": {
+    "build": "node scripts/build.js",
+    "server": "php -S localhost:8000 -t server server/router.php",
+    "client": "php scripts/start-apache.php",
+    "mysql": "php scripts/start-mysql.php",
+    "db:setup": "php scripts/setup-database.php",
+    "db:seed": "php scripts/setup-database.php --seed",
+    "db:reset": "php scripts/reset-database.php",
+    "db:reset:force": "php scripts/reset-database.php --force --no-backup",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "lint": "eslint client/js/**/*.js --no-error-on-unmatched-pattern",
+    "lint:fix": "eslint client/js/**/*.js --fix --no-error-on-unmatched-pattern",
+    "prepare": "husky"
+  },
+  "lint-staged": {
+    "*.{js,jsx,ts,tsx}": [
+      "eslint --fix",
+      "prettier --write"
+    ],
+    "*.{html,css,scss,md,json,yaml}": [
+      "prettier --write"
+    ]
+  },
+  "devDependencies": {
+    "@commitlint/cli": "^20.5.0",
+    "@commitlint/config-conventional": "^20.5.0",
+    "eslint": "^8.57.0",
+    "eslint-config-prettier": "9.1.0",
+    "eslint-plugin-prettier": "4.2.1",
+    "http-server": "^14.1.1",
+    "husky": "^9.1.7",
+    "leaflet": "^1.9.4",
+    "lint-staged": "^16.4.0",
+    "prettier": "^2.8.8"
+  },
+  "dependencies": {
+    "oh-my-opencode-windows-x64": "^3.17.2"
+  }
+}

@@ -141,21 +141,40 @@ class OnboardingService
      */
     public function triggerWelcomeFlow(int $boarderId, int $landlordId, int $propertyId, string $houseName, ?string $customMessage = null): int
     {
-        // Get welcome template
-        $template = $this->repository->getWelcomeTemplate($landlordId, $propertyId);
+        // Get welcome message and house rules from landlord profile
+        $pdo = \App\Core\Database\Database::getInstance()->getConnection();
+        $stmt = $pdo->prepare('
+            SELECT welcome_message, house_rules_file_url, house_rules_file_name, house_rules_file_size
+            FROM landlord_profiles
+            WHERE user_id = ?
+        ');
+        $stmt->execute([$landlordId]);
+        $landlordSettings = $stmt->fetch(\PDO::FETCH_ASSOC);
 
         $welcomeMessage = $customMessage;
-        if (!$welcomeMessage && $template) {
+        if (!$welcomeMessage && $landlordSettings && $landlordSettings['welcome_message']) {
             // Process template variables
-            $welcomeMessage = $this->processTemplateVariables($template['message_text'], $boarderId, $houseName);
+            $welcomeMessage = $this->processTemplateVariables($landlordSettings['welcome_message'], $boarderId, $houseName);
         }
 
         if (!$welcomeMessage) {
             $welcomeMessage = "Welcome to $houseName! We're excited to have you join our community.";
         }
 
-        // Get auto-send documents
-        $documents = $this->repository->getAutoSendDocuments($landlordId, $propertyId);
+        // Prepare house rules document if available
+        $documents = [];
+        if ($landlordSettings && $landlordSettings['house_rules_file_url']) {
+            $documents[] = [
+                'document_url' => $landlordSettings['house_rules_file_url'],
+                'document_name' => $landlordSettings['house_rules_file_name'] ?? 'House Rules',
+                'document_type' => 'application/pdf',
+                'file_size' => $landlordSettings['house_rules_file_size'] ?? 0,
+            ];
+        }
+
+        // Also get any auto-send documents from the old system (for backward compatibility)
+        $autoSendDocs = $this->repository->getAutoSendDocuments($landlordId, $propertyId);
+        $documents = array_merge($documents, $autoSendDocs);
 
         // Create welcome conversation
         $conversationId = $this->messageService->createWelcomeConversation(
@@ -179,10 +198,10 @@ class OnboardingService
     private function processTemplateVariables(string $template, int $boarderId, string $houseName): string
     {
         // Get boarder info from users table
-        $pdo = \App\Core\Database\Connection::getInstance()->getPdo();
+        $pdo = \App\Core\Database\Database::getInstance()->getConnection();
         $stmt = $pdo->prepare('SELECT first_name, last_name FROM users WHERE id = ?');
         $stmt->execute([$boarderId]);
-        $boarder = $stmt->fetch();
+        $boarder = $stmt->fetch(\PDO::FETCH_ASSOC);
 
         $variables = [
             '{boarder_name}' => $boarder['first_name'] ?? 'Boarder',

@@ -1,7 +1,8 @@
 <?php
 /**
  * Landlord Properties API
- * GET /api/landlord/properties.php
+ * GET /api/landlord/properties.php - Returns all properties for the logged-in landlord
+ * POST /api/landlord/properties.php - Create a new property listing
  *
  * Returns all properties for the logged-in landlord with:
  * - Property details
@@ -21,17 +22,81 @@ require_once __DIR__ . '/../middleware.php';
 use App\Api\Middleware;
 use App\Core\Database\Connection;
 
-// Only allow GET requests
-if ($_SERVER['REQUEST_METHOD'] !== 'GET') {
-    json_response(405, ['error' => 'Method not allowed']);
+// Handle POST request - Create new property
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    // Authenticate user and authorize as landlord
+    $user = Middleware::authorize(['landlord']);
+    $landlordId = $user['user_id'];
+
+    $input = json_decode(file_get_contents('php://input'), true);
+
+    // Validate required fields
+    if (!isset($input['propertyName']) || !isset($input['propertyAddress']) || !isset($input['propertyPrice'])) {
+        json_response(400, ['error' => 'Missing required fields: propertyName, propertyAddress, propertyPrice']);
+    }
+
+    try {
+        $pdo = Connection::getInstance()->getPdo();
+
+        // Insert new property
+        $stmt = $pdo->prepare("
+            INSERT INTO properties 
+            (landlord_id, title, description, address, latitude, longitude, price, status, listing_moderation_status)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, 'pending_review')
+        ");
+
+        $status = isset($input['propertyStatus']) ? $input['propertyStatus'] : 'available';
+        $latitude = isset($input['propertyLatitude']) && $input['propertyLatitude'] !== '' ? floatval($input['propertyLatitude']) : null;
+        $longitude = isset($input['propertyLongitude']) && $input['propertyLongitude'] !== '' ? floatval($input['propertyLongitude']) : null;
+
+        $stmt->execute([
+            $landlordId,
+            $input['propertyName'],
+            $input['propertyDescription'] ?? '',
+            $input['propertyAddress'],
+            $latitude,
+            $longitude,
+            floatval($input['propertyPrice']),
+            $status
+        ]);
+
+        $propertyId = $pdo->lastInsertId();
+
+        // Insert amenities if provided
+        if (isset($input['amenities']) && is_array($input['amenities'])) {
+            $amenityStmt = $pdo->prepare("
+                INSERT INTO property_amenities (property_id, amenity_name)
+                VALUES (?, ?)
+            ");
+
+            foreach ($input['amenities'] as $amenity) {
+                $amenityStmt->execute([$propertyId, $amenity]);
+            }
+        }
+
+        json_response(201, [
+            'success' => true,
+            'data' => [
+                'property_id' => $propertyId,
+                'message' => 'Property created successfully'
+            ]
+        ]);
+
+    } catch (Exception $e) {
+        error_log('Create property error: ' . $e->getMessage());
+        error_log('Stack trace: ' . $e->getTraceAsString());
+        json_response(500, ['error' => 'Failed to create property: ' . $e->getMessage()]);
+    }
 }
 
-// Authenticate user and authorize as landlord
-$user = Middleware::authorize(['landlord']);
-$landlordId = $user['user_id'];
+// Handle GET request - List properties
+if ($_SERVER['REQUEST_METHOD'] === 'GET') {
+    // Authenticate user and authorize as landlord
+    $user = Middleware::authorize(['landlord']);
+    $landlordId = $user['user_id'];
 
-try {
-    $pdo = Connection::getInstance()->getPdo();
+    try {
+        $pdo = Connection::getInstance()->getPdo();
 
     $stmt = $pdo->prepare("
         SELECT 
@@ -135,3 +200,7 @@ try {
     error_log('Stack trace: ' . $e->getTraceAsString());
     json_response(500, ['error' => 'Failed to load properties: ' . $e->getMessage()]);
 }
+}
+
+// Method not allowed
+json_response(405, ['error' => 'Method not allowed']);
