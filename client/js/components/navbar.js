@@ -517,3 +517,81 @@ function setupSidebarToggle() {
 /**
  * Setup keyboard shortcuts
  */
+
+/**
+ * Update navbar notification count and list from API
+ * Call this after initNavbar to populate real notifications
+ */
+export async function updateNavbarNotifications() {
+  try {
+    const { fetchNotifications } = await import('../shared/notifications.js');
+
+    const result = await fetchNotifications(10);
+    const notifications = result.data || [];
+    const unreadCount = result.unread_count || 0;
+
+    // Update badge
+    updateNotificationCount(unreadCount);
+
+    // Transform API notifications for navbar display
+    const formattedNotifications = notifications.map(n => ({
+      id: n.id,
+      type: getNotificationType(n.type),
+      icon: getNotificationIcon(n.type),
+      title: n.title,
+      description: n.message || '',
+      time: timeAgo(n.created_at),
+      unread: !n.is_read,
+    }));
+
+    renderNotifications(formattedNotifications);
+  } catch {
+    // Failed to fetch notifications - leave defaults
+  }
+}
+
+/**
+ * Map notification type to display type
+ */
+function getNotificationType(type) {
+  const map = {
+    application_accepted: 'success',
+    application_rejected: 'warning',
+    maintenance_status_change: 'info',
+    maintenance_new_request: 'info',
+    maintenance_comment: 'info',
+    system: 'info',
+  };
+  return map[type] || 'info';
+}
+
+/**
+ * Map notification type to icon name
+ */
+function getNotificationIcon(type) {
+  const map = {
+    application_accepted: 'checkCircle',
+    application_rejected: 'xCircle',
+    maintenance_status_change: 'wrench',
+    maintenance_new_request: 'exclamationTriangle',
+    maintenance_comment: 'chatBubble',
+    system: 'informationCircle',
+  };
+  return map[type] || 'bell';
+}
+
+/**
+ * Format timestamp to human-readable time ago
+ */
+function timeAgo(timestamp) {
+  if (!timestamp) return '';
+  const now = new Date();
+  const date = new Date(timestamp);
+  const seconds = Math.floor((now - date) / 1000);
+
+  if (seconds < 60) return 'just now';
+  if (seconds < 3600) return `${Math.floor(seconds / 60)} minutes ago`;
+  if (seconds < 86400) return `${Math.floor(seconds / 3600)} hours ago`;
+  if (seconds < 604800) return `${Math.floor(seconds / 86400)} days ago`;
+  return date.toLocaleDateString();
+}

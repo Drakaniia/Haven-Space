@@ -203,6 +203,10 @@ function createPropertyCard(property) {
         ${getIcon('eye')}
         View
       </button>
+      <button type="button" data-action="boarders" data-id="${property.id}">
+        ${getIcon('userGroup')}
+        View Boarders
+      </button>
       <button type="button" data-action="edit" data-id="${property.id}">
         ${getIcon('edit')}
         Edit
@@ -237,6 +241,9 @@ function handlePropertyAction(action, id) {
   switch (action) {
     case 'view':
       openPropertyModal(property);
+      break;
+    case 'boarders':
+      window.location.href = `../boarders/index.html?propertyId=${id}`;
       break;
     case 'edit':
       editProperty(property);

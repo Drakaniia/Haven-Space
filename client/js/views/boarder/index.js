@@ -17,6 +17,9 @@ import { initAnnouncements } from './announcements.js';
 import { initDashboardMap } from './dashboard-map.js';
 import { initHouseRulesPage } from './house-rules.js';
 import { initBoarderStatus } from './status.js';
+import { openAcceptedApplicationsOverlay } from '../../components/accepted-applications-overlay.js';
+import { hasAcceptedApplications } from '../../shared/notifications.js';
+import { updateNavbarNotifications } from '../../components/navbar.js';
 
 function loginPath() {
   const pathname = window.location.pathname;
@@ -87,8 +90,21 @@ export async function initBoarderDashboard() {
         avatarUrl: user.avatar_url || '',
         email: user.email || '',
       },
-      notificationCount: 3,
+      notificationCount: 0,
     });
+
+    // Fetch real notifications from API
+    updateNavbarNotifications();
+  }
+
+  // Check for accepted applications and show overlay
+  try {
+    const hasAccepted = await hasAcceptedApplications();
+    if (hasAccepted) {
+      openAcceptedApplicationsOverlay();
+    }
+  } catch {
+    // Failed to check accepted applications
   }
 
   // Load dashboard data
