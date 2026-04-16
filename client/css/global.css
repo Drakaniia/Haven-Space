@@ -1,6 +1,7 @@
 @import './components/logo-cloud.css';
 @import './components/sidebar.css';
 @import './components/accepted-applications-overlay.css';
+@import './components/readonly-mode.css';
 @import './views/public/auth.css';
 @import './views/public/public.css';
 @import './views/boarder/boarder.css';

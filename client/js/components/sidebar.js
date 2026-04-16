@@ -17,6 +17,7 @@ const NAV_CONFIG = {
           href: '../boarder/lease/index.html',
           icon: 'application',
         },
+        { label: 'Applications', href: '../boarder/applications/index.html', icon: 'clipboard' },
         { label: 'Messages', href: '../boarder/messages/index.html', icon: 'chat', badge: '3' },
         { label: 'Payments', href: '../boarder/payments/index.html', icon: 'payment' },
         {

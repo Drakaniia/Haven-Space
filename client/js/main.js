@@ -6,6 +6,8 @@
  * Uses dynamic imports to isolate failures - a broken view won't break others
  */
 
+console.log('main.js loaded');
+
 /**
  * Detect current view and initialize appropriate components
  * Uses data attribute on body to detect view type
@@ -14,8 +16,29 @@ async function detectAndInitialize() {
   const body = document.body;
   const view = body.dataset.view || 'public';
 
+  console.log('Detected view:', view);
+
   // Initialize appropriate dashboard based on view type
   switch (view) {
+    case 'boarder-find-room-auth': {
+      const { initBoarderFindARoomAuth } = await import(
+        './views/boarder/boarder-find-a-room-init.js'
+      );
+      initBoarderFindARoomAuth();
+      break;
+    }
+    case 'boarder-room-detail-auth': {
+      const { initBoarderRoomDetailAuth } = await import(
+        './views/boarder/boarder-room-detail-init.js'
+      );
+      initBoarderRoomDetailAuth();
+      break;
+    }
+    case 'boarder-confirm-application': {
+      const { initConfirmApplication } = await import('./views/boarder/confirm-application.js');
+      initConfirmApplication();
+      break;
+    }
     case 'boarder': {
       const { initBoarderDashboard } = await import('./views/boarder/index.js');
       initBoarderDashboard();

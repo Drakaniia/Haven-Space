@@ -3,16 +3,19 @@
  * Handles all notification-related API calls
  */
 
-import CONFIG from '../../config.js';
+import CONFIG from '../config.js';
 
 /**
  * Fetch all notifications for the current user
  * @returns {Promise<{data: Array, unread_count: number}>}
  */
 export async function fetchNotifications(limit = 50, offset = 0) {
-  const res = await fetch(`${CONFIG.API_BASE_URL}/notifications?limit=${limit}&offset=${offset}`, {
-    credentials: 'include',
-  });
+  const res = await fetch(
+    `${CONFIG.API_BASE_URL}/api/notifications?limit=${limit}&offset=${offset}`,
+    {
+      credentials: 'include',
+    }
+  );
   if (!res.ok) throw new Error('Failed to fetch notifications');
   return res.json();
 }
@@ -22,7 +25,7 @@ export async function fetchNotifications(limit = 50, offset = 0) {
  * @returns {Promise<number>}
  */
 export async function fetchUnreadCount() {
-  const res = await fetch(`${CONFIG.API_BASE_URL}/notifications/unread-count`, {
+  const res = await fetch(`${CONFIG.API_BASE_URL}/api/notifications/unread-count`, {
     credentials: 'include',
   });
   if (!res.ok) throw new Error('Failed to fetch unread count');
@@ -36,7 +39,7 @@ export async function fetchUnreadCount() {
  * @returns {Promise<void>}
  */
 export async function markNotificationAsRead(notificationId) {
-  const res = await fetch(`${CONFIG.API_BASE_URL}/notifications/${notificationId}/read`, {
+  const res = await fetch(`${CONFIG.API_BASE_URL}/api/notifications/${notificationId}/read`, {
     method: 'PATCH',
     credentials: 'include',
   });
@@ -48,7 +51,7 @@ export async function markNotificationAsRead(notificationId) {
  * @returns {Promise<void>}
  */
 export async function markAllNotificationsAsRead() {
-  const res = await fetch(`${CONFIG.API_BASE_URL}/notifications/read-all`, {
+  const res = await fetch(`${CONFIG.API_BASE_URL}/api/notifications/read-all`, {
     method: 'PATCH',
     credentials: 'include',
   });
@@ -61,7 +64,7 @@ export async function markAllNotificationsAsRead() {
  * @returns {Promise<void>}
  */
 export async function deleteNotification(notificationId) {
-  const res = await fetch(`${CONFIG.API_BASE_URL}/notifications/${notificationId}`, {
+  const res = await fetch(`${CONFIG.API_BASE_URL}/api/notifications/${notificationId}`, {
     method: 'DELETE',
     credentials: 'include',
   });
@@ -73,7 +76,7 @@ export async function deleteNotification(notificationId) {
  * @returns {Promise<Array>}
  */
 export async function fetchAcceptedApplications() {
-  const res = await fetch(`${CONFIG.API_BASE_URL}/boarder/accepted-applications`, {
+  const res = await fetch(`${CONFIG.API_BASE_URL}/api/boarder/accepted-applications`, {
     credentials: 'include',
   });
   if (!res.ok) throw new Error('Failed to fetch accepted applications');
@@ -86,7 +89,7 @@ export async function fetchAcceptedApplications() {
  * @returns {Promise<boolean>}
  */
 export async function hasAcceptedApplications() {
-  const res = await fetch(`${CONFIG.API_BASE_URL}/boarder/has-accepted-applications`, {
+  const res = await fetch(`${CONFIG.API_BASE_URL}/api/boarder/has-accepted-applications`, {
     credentials: 'include',
   });
   if (!res.ok) throw new Error('Failed to check accepted applications');
