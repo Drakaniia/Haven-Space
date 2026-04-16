@@ -248,6 +248,17 @@ Router::get('/api/landlord/payment-summary', function() {
     require_once __DIR__ . '/landlord/payment-summary.php';
 });
 
+Router::get('/api/landlord/reports', function() {
+    require_once __DIR__ . '/landlord/reports.php';
+});
+
+// ============================================
+// CALENDAR ROUTES - LANDLORD
+// ============================================
+Router::get('/api/landlord/calendar', function() {
+    require_once __DIR__ . '/landlord/calendar.php';
+});
+
 // Welcome settings
 Router::get('/api/landlord/welcome-settings', function() {
     require_once __DIR__ . '/landlord/welcome-settings.php';
@@ -263,6 +274,11 @@ Router::post('/api/landlord/welcome-settings', function() {
 // Get all published properties (no authentication required)
 Router::get('/api/rooms/public', function() {
     require_once __DIR__ . '/rooms/public.php';
+});
+
+// Get single property detail (no authentication required)
+Router::get('/api/rooms/detail', function() {
+    require_once __DIR__ . '/rooms/detail.php';
 });
 
 // ============================================
