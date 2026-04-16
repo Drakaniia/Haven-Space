@@ -1,0 +1,455 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>For Landlords - Haven Space</title>
+    <link rel="icon" type="image/svg+xml" href="../../assets/favicon.svg" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="../../css/global.css" />
+    <link rel="stylesheet" href="../../css/views/public/public.css" />
+    <link rel="stylesheet" href="../../css/views/public/for-landlords.css" />
+  </head>
+  <body data-view="public">
+    <!-- Navigation -->
+    <nav class="navbar">
+      <div class="nav-container">
+        <div class="nav-logo">
+          <a href="index.html" style="text-decoration: none">
+            <span class="logo-text">Haven Space</span>
+          </a>
+        </div>
+        <ul class="nav-links">
+          <li><a href="index.html">Home</a></li>
+          <li><a href="index.html#about">About</a></li>
+          <li><a href="team.html">Our Team</a></li>
+          <li><a href="for-landlords.html" class="active">For Landlords</a></li>
+        </ul>
+        <div class="nav-actions">
+          <a href="auth/login.html" class="btn-login">Log in</a>
+          <a href="auth/signup.html" class="btn-join">Join now</a>
+        </div>
+      </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <main class="landlord-hero">
+      <div class="landlord-hero-content">
+        <span class="landlord-badge">FOR LANDLORDS</span>
+        <h1 class="landlord-hero-title">List your property.<br />Reach verified boarders.</h1>
+        <p class="landlord-hero-description">
+          Haven Space connects property owners with quality tenants. Manage listings, track
+          applications, and grow your rental business with our trusted platform.
+        </p>
+        <div class="landlord-hero-buttons">
+          <a href="auth/signup.html?role=landlord" class="btn-get-started">Get Started</a>
+          <a href="#pricing" class="btn-view-pricing">View Pricing</a>
+        </div>
+      </div>
+    </main>
+
+    <!-- Benefits Section -->
+    <section class="benefits-section">
+      <div class="benefits-container">
+        <div class="benefits-header">
+          <span class="benefits-badge">WHY CHOOSE US</span>
+          <h2 class="benefits-title">Everything you need to manage your properties</h2>
+          <p class="benefits-subtitle">
+            From listing to lease signing, Haven Space provides the tools landlords need to succeed
+            in the modern rental market.
+          </p>
+        </div>
+
+        <div class="benefits-grid">
+          <!-- Benefit 1 -->
+          <div class="benefit-card">
+            <div class="benefit-icon-wrapper benefit-icon-green">
+              <span
+                data-icon="users"
+                data-icon-width="28"
+                data-icon-height="28"
+                data-icon-stroke-width="1.5"
+                class="benefit-icon"
+              ></span>
+            </div>
+            <h3 class="benefit-title">Verified Boarders</h3>
+            <p class="benefit-description">
+              Connect with pre-screened tenants who have verified identities and rental histories.
+            </p>
+          </div>
+
+          <!-- Benefit 2 -->
+          <div class="benefit-card">
+            <div class="benefit-icon-wrapper benefit-icon-blue">
+              <span
+                data-icon="chartBar"
+                data-icon-width="28"
+                data-icon-height="28"
+                data-icon-stroke-width="1.5"
+                class="benefit-icon"
+              ></span>
+            </div>
+            <h3 class="benefit-title">Analytics Dashboard</h3>
+            <p class="benefit-description">
+              Track views, applications, and occupancy rates with real-time insights.
+            </p>
+          </div>
+
+          <!-- Benefit 3 -->
+          <div class="benefit-card">
+            <div class="benefit-icon-wrapper benefit-icon-purple">
+              <span
+                data-icon="creditCard"
+                data-icon-width="28"
+                data-icon-height="28"
+                data-icon-stroke-width="1.5"
+                class="benefit-icon"
+              ></span>
+            </div>
+            <h3 class="benefit-title">Payment Tracking</h3>
+            <p class="benefit-description">
+              Monitor rent payments, track payment history, and manage multiple payment methods.
+            </p>
+          </div>
+
+          <!-- Benefit 4 -->
+          <div class="benefit-card">
+            <div class="benefit-icon-wrapper benefit-icon-orange">
+              <span
+                data-icon="bell"
+                data-icon-width="28"
+                data-icon-height="28"
+                data-icon-stroke-width="1.5"
+                class="benefit-icon"
+              ></span>
+            </div>
+            <h3 class="benefit-title">Instant Notifications</h3>
+            <p class="benefit-description">
+              Get notified immediately when someone applies or messages about your property.
+            </p>
+          </div>
+
+          <!-- Benefit 5 -->
+          <div class="benefit-card">
+            <div class="benefit-icon-wrapper benefit-icon-red">
+              <span
+                data-icon="wrench"
+                data-icon-width="28"
+                data-icon-height="28"
+                data-icon-stroke-width="1.5"
+                class="benefit-icon"
+              ></span>
+            </div>
+            <h3 class="benefit-title">Maintenance Requests</h3>
+            <p class="benefit-description">
+              Streamline maintenance workflows with built-in request tracking and resolution.
+            </p>
+          </div>
+
+          <!-- Benefit 6 -->
+          <div class="benefit-card">
+            <div class="benefit-icon-wrapper benefit-icon-teal">
+              <span
+                data-icon="shieldCheck"
+                data-icon-width="28"
+                data-icon-height="28"
+                data-icon-stroke-width="1.5"
+                class="benefit-icon"
+              ></span>
+            </div>
+            <h3 class="benefit-title">Secure Platform</h3>
+            <p class="benefit-description">
+              Your data and transactions are protected with industry-standard encryption.
+            </p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Pricing Section -->
+    <section class="pricing-section" id="pricing">
+      <div class="pricing-wrapper">
+        <div class="pricing-grid">
+          <!-- Left Column - Title -->
+          <div class="pricing-title-column">
+            <p class="pricing-badge">PRICING</p>
+            <h2 class="pricing-title">Pricing that doesn't suck</h2>
+          </div>
+
+          <!-- Right Column - Pricing Cards -->
+          <div class="pricing-cards-column">
+            <!-- Starter Plan -->
+            <div class="pricing-card">
+              <div class="pricing-card-header">
+                <p class="pricing-plan-name">STARTER</p>
+                <div class="pricing-amount-wrapper">
+                  <h3 class="pricing-amount">Free</h3>
+                </div>
+                <p class="pricing-plan-description">For early-stage landlords</p>
+                <a href="auth/signup.html?role=landlord" class="btn-pricing btn-pricing-outline">
+                  Get started
+                </a>
+              </div>
+
+              <div class="pricing-card-features">
+                <p class="pricing-features-title">FREE, FOREVER:</p>
+                <ul class="pricing-features-list">
+                  <li class="pricing-feature-item">
+                    <span
+                      data-icon="check"
+                      data-icon-width="16"
+                      data-icon-height="16"
+                      data-icon-stroke-width="2"
+                      class="pricing-check-icon"
+                    ></span>
+                    <span>3 property listings</span>
+                  </li>
+                  <li class="pricing-feature-item">
+                    <span
+                      data-icon="check"
+                      data-icon-width="16"
+                      data-icon-height="16"
+                      data-icon-stroke-width="2"
+                      class="pricing-check-icon"
+                    ></span>
+                    <span>10 applications</span>
+                  </li>
+                  <li class="pricing-feature-item">
+                    <span
+                      data-icon="check"
+                      data-icon-width="16"
+                      data-icon-height="16"
+                      data-icon-stroke-width="2"
+                      class="pricing-check-icon"
+                    ></span>
+                    <span>Basic analytics</span>
+                  </li>
+                  <li class="pricing-feature-item">
+                    <span
+                      data-icon="check"
+                      data-icon-width="16"
+                      data-icon-height="16"
+                      data-icon-stroke-width="2"
+                      class="pricing-check-icon"
+                    ></span>
+                    <span>Email support</span>
+                  </li>
+                </ul>
+              </div>
+            </div>
+
+            <!-- Scale Plan -->
+            <div class="pricing-card">
+              <div class="pricing-card-header">
+                <p class="pricing-plan-name">SCALE</p>
+                <div class="pricing-amount-wrapper">
+                  <h3 class="pricing-amount">₱499</h3>
+                  <span class="pricing-period">/ month</span>
+                </div>
+                <p class="pricing-plan-description">For fast-growing teams</p>
+                <a
+                  href="auth/signup.html?role=landlord&plan=scale"
+                  class="btn-pricing btn-pricing-primary"
+                >
+                  Get started
+                </a>
+              </div>
+
+              <div class="pricing-card-features">
+                <p class="pricing-features-title">EVERYTHING IN STARTER, PLUS:</p>
+                <ul class="pricing-features-list">
+                  <li class="pricing-feature-item">
+                    <span
+                      data-icon="check"
+                      data-icon-width="16"
+                      data-icon-height="16"
+                      data-icon-stroke-width="2"
+                      class="pricing-check-icon"
+                    ></span>
+                    <span>Unlimited listings</span>
+                  </li>
+                  <li class="pricing-feature-item">
+                    <span
+                      data-icon="check"
+                      data-icon-width="16"
+                      data-icon-height="16"
+                      data-icon-stroke-width="2"
+                      class="pricing-check-icon"
+                    ></span>
+                    <span>Unlimited applications</span>
+                  </li>
+                  <li class="pricing-feature-item">
+                    <span
+                      data-icon="check"
+                      data-icon-width="16"
+                      data-icon-height="16"
+                      data-icon-stroke-width="2"
+                      class="pricing-check-icon"
+                    ></span>
+                    <span>Advanced analytics</span>
+                  </li>
+                  <li class="pricing-feature-item">
+                    <span
+                      data-icon="check"
+                      data-icon-width="16"
+                      data-icon-height="16"
+                      data-icon-stroke-width="2"
+                      class="pricing-check-icon"
+                    ></span>
+                    <span>Priority support</span>
+                  </li>
+                  <li class="pricing-feature-item">
+                    <span
+                      data-icon="check"
+                      data-icon-width="16"
+                      data-icon-height="16"
+                      data-icon-stroke-width="2"
+                      class="pricing-check-icon"
+                    ></span>
+                    <span>Featured listings</span>
+                  </li>
+                </ul>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- CTA Section -->
+    <section class="landlord-cta-section">
+      <div class="landlord-cta-container">
+        <h2 class="landlord-cta-title">
+          Ready to <span class="landlord-cta-highlight">grow</span> your rental business?
+        </h2>
+        <p class="landlord-cta-description">
+          Join hundreds of landlords who trust Haven Space to manage their properties and connect
+          with quality tenants.
+        </p>
+        <div class="landlord-cta-buttons">
+          <a href="auth/signup.html?role=landlord" class="btn-cta-primary">
+            Start Listing Today
+            <span
+              data-icon="arrowRight"
+              data-icon-width="20"
+              data-icon-height="20"
+              data-icon-stroke-width="2"
+              class="cta-arrow-icon"
+            ></span>
+          </a>
+          <a href="index.html#contact" class="btn-cta-secondary">Contact Sales</a>
+        </div>
+      </div>
+    </section>
+
+    <!-- Footer Section -->
+    <footer class="footer">
+      <div class="footer-container">
+        <div class="footer-grid">
+          <!-- Brand Column -->
+          <div class="footer-brand">
+            <div class="footer-logo">
+              <span class="logo-text">Haven Space</span>
+            </div>
+            <p class="footer-tagline">Your trusted boarding house platform.</p>
+            <div class="footer-social">
+              <a href="#linkedin" class="social-link" aria-label="LinkedIn">
+                <span
+                  data-icon="linkedin"
+                  data-icon-width="20"
+                  data-icon-height="20"
+                  data-icon-stroke-width="1.5"
+                ></span>
+              </a>
+              <a href="#twitter" class="social-link" aria-label="Twitter">
+                <span
+                  data-icon="twitter"
+                  data-icon-width="20"
+                  data-icon-height="20"
+                  data-icon-stroke-width="1.5"
+                ></span>
+              </a>
+              <a href="#instagram" class="social-link" aria-label="Instagram">
+                <span
+                  data-icon="instagram"
+                  data-icon-width="20"
+                  data-icon-height="20"
+                  data-icon-stroke-width="1.5"
+                ></span>
+              </a>
+            </div>
+            <div class="footer-status">
+              <span class="status-dot"></span>
+              <span>All Systems Normal</span>
+            </div>
+          </div>
+
+          <!-- Company Column -->
+          <div class="footer-column">
+            <h3 class="footer-column-title">Company</h3>
+            <ul class="footer-links">
+              <li><a href="#properties">Properties</a></li>
+              <li><a href="#new">What's New</a></li>
+              <li><a href="#about">About</a></li>
+              <li><a href="#press">Press</a></li>
+              <li><a href="#careers">Careers</a></li>
+            </ul>
+          </div>
+
+          <!-- Community Column -->
+          <div class="footer-column">
+            <h3 class="footer-column-title">Community</h3>
+            <ul class="footer-links">
+              <li><a href="#landlord-guide">Landlord Guide</a></li>
+              <li><a href="#boarder-guide">Boarder Guide</a></li>
+              <li><a href="#success-stories">Success Stories</a></li>
+              <li><a href="#trending">Trending</a></li>
+              <li><a href="#explore">Explore Listings</a></li>
+            </ul>
+          </div>
+
+          <!-- Support Column -->
+          <div class="footer-column">
+            <h3 class="footer-column-title">Support</h3>
+            <ul class="footer-links">
+              <li><a href="#help">Help Topics</a></li>
+              <li><a href="#getting-started">Getting Started</a></li>
+              <li><a href="#pro">Haven Pro</a></li>
+              <li><a href="#faqs">FAQs</a></li>
+              <li><a href="#report">Report a Violation</a></li>
+            </ul>
+          </div>
+        </div>
+
+        <!-- Footer Bottom -->
+        <div class="footer-bottom">
+          <div class="footer-copyright">
+            <p>
+              &copy; 2026 Haven Space. All rights reserved &bull; Built with
+              <span class="heart-icon">&hearts;</span> from the Philippines.
+            </p>
+          </div>
+          <div class="footer-legal">
+            <a href="terms-of-service.html">T&C</a>
+            <span class="separator">&bull;</span>
+            <a href="privacy-policy.html">Privacy Notice</a>
+            <span class="separator">&bull;</span>
+            <a href="#cookies">Cookie Notice</a>
+            <span class="separator">&bull;</span>
+            <a href="#trust">Trust Center</a>
+            <span class="separator">&bull;</span>
+            <a href="#cookie-preferences">Cookie Preferences</a>
+          </div>
+        </div>
+      </div>
+    </footer>
+
+    <!-- ES Module Entry Point -->
+    <script type="module" src="../../js/main.js"></script>
+  </body>
+</html>

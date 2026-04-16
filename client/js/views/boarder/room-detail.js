@@ -4,9 +4,10 @@
  */
 
 import { updateBoarderStatus, getBoarderStatus } from '../../shared/routing.js';
+import CONFIG from '../../config.js';
 
-// Sample room data (replace with API calls in production)
-const roomData = {
+// Sample room data (fallback for development)
+const roomDataFallback = {
   1: {
     id: 1,
     title: 'Sunrise Dormitory',
@@ -224,6 +225,7 @@ const state = {
   currentImageIndex: 0,
   roomId: null,
   isFavorite: false,
+  roomData: null, // Store fetched room data
 };
 
 /**
@@ -249,23 +251,73 @@ export function initRoomDetail() {
 /**
  * Setup the page with room data
  */
-function setupPage() {
-  const room = roomData[state.roomId];
+async function setupPage() {
+  try {
+    // Show loading state
+    showLoadingState();
 
-  if (!room) {
-    showNotFound();
-    return;
+    // Fetch room data from API
+    const response = await fetch(`${CONFIG.API_BASE_URL}/api/rooms/detail?id=${state.roomId}`);
+
+    if (!response.ok) {
+      if (response.status === 404) {
+        showNotFound();
+        return;
+      }
+      throw new Error('Failed to fetch property details');
+    }
+
+    const result = await response.json();
+    state.roomData = result.data;
+
+    // Populate page with fetched data
+    populateRoomData(state.roomData);
+    setupGallery();
+    setupEventListeners(state.roomData);
+  } catch (error) {
+    console.error('Error loading room details:', error);
+    // Fallback to sample data if API fails
+    const room = roomDataFallback[state.roomId];
+    if (room) {
+      state.roomData = room;
+      populateRoomData(room);
+      setupGallery();
+      setupEventListeners(room);
+    } else {
+      showNotFound();
+    }
   }
+}
 
-  populateRoomData(room);
-  setupGallery();
-  setupEventListeners(room);
+/**
+ * Show loading state
+ */
+function showLoadingState() {
+  const content = document.querySelector('.room-detail-content');
+  if (content) {
+    content.style.opacity = '0.5';
+    content.style.pointerEvents = 'none';
+  }
+}
+
+/**
+ * Hide loading state
+ */
+function hideLoadingState() {
+  const content = document.querySelector('.room-detail-content');
+  if (content) {
+    content.style.opacity = '1';
+    content.style.pointerEvents = 'auto';
+  }
 }
 
 /**
  * Populate room data into the page
  */
 function populateRoomData(room) {
+  // Hide loading state
+  hideLoadingState();
+
   // Update page title
   document.title = `${room.title} - Haven Space`;
 
@@ -279,29 +331,91 @@ function populateRoomData(room) {
   const roomTitle = document.getElementById('room-title');
   if (roomTitle) roomTitle.textContent = room.title;
 
+  // Update badges
+  const badgesContainer = document.querySelector('.room-detail-badges');
+  if (badgesContainer && room.badges && room.badges.length > 0) {
+    badgesContainer.innerHTML = room.badges
+      .map(badge => {
+        const badgeClass =
+          badge === 'verified'
+            ? 'room-badge-verified'
+            : badge === 'new'
+            ? 'room-badge-new'
+            : badge === 'promo'
+            ? 'room-badge-promo'
+            : '';
+        const badgeText =
+          badge === 'verified'
+            ? 'Verified Property'
+            : badge === 'new'
+            ? 'New Listing'
+            : badge === 'promo'
+            ? 'Promo'
+            : badge;
+        const badgeIcon =
+          badge === 'verified'
+            ? '<span data-icon="badgeCheck" data-icon-width="16" data-icon-height="16"></span>'
+            : '';
+
+        return `
+          <span class="room-badge ${badgeClass}">
+            ${badgeIcon}
+            ${badgeText}
+          </span>
+        `;
+      })
+      .join('');
+  } else if (badgesContainer) {
+    badgesContainer.innerHTML = '';
+  }
+
   const roomAddress = document.getElementById('room-address');
-  if (roomAddress) roomAddress.textContent = room.address;
+  if (roomAddress) {
+    const fullAddress = [room.address, room.city, room.province].filter(Boolean).join(', ');
+    roomAddress.textContent = fullAddress;
+  }
 
   const roomRating = document.getElementById('room-rating');
-  if (roomRating) roomRating.textContent = room.rating;
+  const roomRatingContainer = document.querySelector('.room-detail-rating');
+  if (roomRating && room.rating && room.reviews > 0) {
+    roomRating.textContent = room.rating;
+    if (roomRatingContainer) roomRatingContainer.style.display = 'flex';
+  } else {
+    if (roomRatingContainer) roomRatingContainer.style.display = 'none';
+  }
 
   const roomReviews = document.getElementById('room-reviews');
-  if (roomReviews) roomReviews.textContent = `(${room.reviews} reviews)`;
+  if (roomReviews && room.reviews > 0) {
+    roomReviews.textContent = `(${room.reviews} reviews)`;
+  } else if (roomReviews) {
+    roomReviews.textContent = '(No reviews yet)';
+  }
 
   const roomDistance = document.getElementById('room-distance');
-  if (roomDistance) roomDistance.textContent = room.distance;
+  if (roomDistance) {
+    // Hide distance element if not available
+    const distanceContainer = roomDistance.closest('.room-detail-distance');
+    if (room.distance) {
+      roomDistance.textContent = room.distance;
+      if (distanceContainer) distanceContainer.style.display = 'flex';
+    } else {
+      if (distanceContainer) distanceContainer.style.display = 'none';
+    }
+  }
 
   const roomTypes = document.getElementById('room-types');
-  if (roomTypes) roomTypes.textContent = room.types;
+  if (roomTypes) roomTypes.textContent = room.roomTypes || 'Available';
 
   const roomAvailability = document.getElementById('room-availability');
-  if (roomAvailability) roomAvailability.textContent = room.availability;
+  if (roomAvailability)
+    roomAvailability.textContent = room.availability || 'Contact for availability';
 
   const roomPrice = document.getElementById('room-price');
   if (roomPrice) roomPrice.textContent = `₱${room.price.toLocaleString()}`;
 
   const bookingAvailability = document.getElementById('booking-availability');
-  if (bookingAvailability) bookingAvailability.textContent = room.availability;
+  if (bookingAvailability)
+    bookingAvailability.textContent = room.availability || 'Contact for availability';
 
   const roomDescription = document.getElementById('room-description');
   if (roomDescription) {
@@ -313,79 +427,154 @@ function populateRoomData(room) {
 
   // Update amenities
   const roomAmenities = document.getElementById('room-amenities');
-  if (roomAmenities) {
+  if (roomAmenities && room.amenities && room.amenities.length > 0) {
     roomAmenities.innerHTML = room.amenities
-      .map(
-        amenity => `
-      <div class="amenity-item">
-        <span data-icon="${amenity.icon}" data-icon-width="20" data-icon-height="20"></span>
-        <span>${amenity.label}</span>
-      </div>
-    `
-      )
+      .map(amenity => {
+        const amenityName = typeof amenity === 'string' ? amenity : amenity.label;
+        const amenityIcon = typeof amenity === 'object' ? amenity.icon : 'check';
+        return `
+            <div class="amenity-item">
+              <span data-icon="${amenityIcon}" data-icon-width="20" data-icon-height="20"></span>
+              <span>${amenityName}</span>
+            </div>
+          `;
+      })
       .join('');
   }
 
   // Update house rules
   const rulesContainer = document.querySelector('.room-detail-rules');
-  if (rulesContainer) {
-    rulesContainer.innerHTML = room.rules
-      .map(
-        rule => `
-      <div class="rule-item">
-        <span data-icon="${rule.icon}" data-icon-width="20" data-icon-height="20"></span>
-        <div class="rule-content">
-          <h4>${rule.title}</h4>
-          <p>${rule.desc}</p>
-        </div>
-      </div>
-    `
-      )
+  if (rulesContainer && room.houseRules && room.houseRules.length > 0) {
+    rulesContainer.innerHTML = room.houseRules
+      .map(rule => {
+        const ruleTitle = typeof rule === 'string' ? rule : rule.title;
+        const ruleDesc = typeof rule === 'object' ? rule.desc : '';
+        const ruleIcon = typeof rule === 'object' ? rule.icon : 'check';
+        return `
+            <div class="rule-item">
+              <span data-icon="${ruleIcon}" data-icon-width="20" data-icon-height="20"></span>
+              <div class="rule-content">
+                <h4>${ruleTitle}</h4>
+                ${ruleDesc ? `<p>${ruleDesc}</p>` : ''}
+              </div>
+            </div>
+          `;
+      })
       .join('');
   }
 
   // Update landlord info
   const landlordName = document.getElementById('landlord-name');
-  if (landlordName) landlordName.textContent = room.landlord.name;
+  if (landlordName && room.landlord) {
+    landlordName.textContent = room.landlord.name || 'Property Owner';
+  }
+
+  // Update landlord stats
+  const landlordStats = document.querySelectorAll('.landlord-stat-value');
+  if (landlordStats.length >= 2 && room.landlord) {
+    landlordStats[0].textContent = room.landlord.properties || '0';
+    landlordStats[1].textContent = room.landlord.rating || '0';
+  }
 
   // Update gallery images
   const mainImage = document.getElementById('gallery-main-image');
-  if (mainImage) {
+  if (mainImage && room.images && room.images.length > 0) {
     mainImage.src = room.images[0];
     mainImage.alt = `${room.title} - Main View`;
   }
 
-  const thumbnails = document.querySelectorAll('.gallery-thumb img');
-  room.images.forEach((img, index) => {
-    if (thumbnails[index]) {
-      thumbnails[index].src = img.replace('w=1200', 'w=300');
+  // Update thumbnails
+  const thumbnailsContainer = document.getElementById('gallery-thumbnails');
+  if (thumbnailsContainer && room.images && room.images.length > 0) {
+    thumbnailsContainer.innerHTML = room.images
+      .map(
+        (img, index) => `
+          <button class="gallery-thumb ${index === 0 ? 'active' : ''}" data-index="${index}">
+            <img src="${img}" alt="Thumbnail ${index + 1}" />
+          </button>
+        `
+      )
+      .join('');
+  }
+
+  // Update booking section with room types
+  if (room.rooms && room.rooms.length > 0) {
+    const roomTypeOptions = document.querySelector('.booking-room-type-options');
+    if (roomTypeOptions) {
+      const availableRooms = room.rooms.filter(r => r.status === 'available');
+
+      if (availableRooms.length > 0) {
+        roomTypeOptions.innerHTML = availableRooms
+          .map(
+            (r, index) => `
+              <label class="booking-room-option">
+                <input type="radio" name="room-type" value="${r.roomType}" ${
+              index === 0 ? 'checked' : ''
+            } />
+                <div class="booking-room-type-content">
+                  <div class="booking-room-type-info">
+                    <span data-icon="${
+                      r.capacity > 1 ? 'userGroup' : 'user'
+                    }" data-icon-width="18" data-icon-height="18"></span>
+                    <span class="booking-room-type-label">${r.roomType}</span>
+                  </div>
+                  <span class="booking-room-type-price">₱${r.price.toLocaleString()}/mo</span>
+                </div>
+              </label>
+            `
+          )
+          .join('');
+      } else {
+        roomTypeOptions.innerHTML = `
+          <div style="padding: 1rem; text-align: center; color: #6b7280;">
+            No rooms currently available
+          </div>
+        `;
+      }
     }
-  });
+  } else {
+    // No rooms data, show message
+    const roomTypeOptions = document.querySelector('.booking-room-type-options');
+    if (roomTypeOptions) {
+      roomTypeOptions.innerHTML = `
+        <div style="padding: 1rem; text-align: center; color: #6b7280;">
+          Contact landlord for room availability
+        </div>
+      `;
+    }
+  }
 
-  // Update booking section
-  const roomTypeOptions = document.querySelectorAll('.booking-room-option');
-  if (roomTypeOptions.length >= 2) {
-    const singlePrice = roomTypeOptions[0].querySelector('.booking-room-type-price');
-    if (singlePrice) singlePrice.textContent = `₱${room.price.toLocaleString()}/mo`;
+  // Update min stay and deposit
+  const minStayElement = document.querySelector('.quick-info-card:nth-child(3) .quick-info-value');
+  if (minStayElement) {
+    minStayElement.textContent = room.minStay || 'Contact for details';
+  }
 
-    const sharedPrice = roomTypeOptions[1].querySelector('.booking-room-type-price');
-    if (sharedPrice) sharedPrice.textContent = `₱${room.sharedPrice.toLocaleString()}/mo`;
+  const depositElements = document.querySelectorAll('.booking-info-item strong');
+  if (depositElements.length >= 3) {
+    depositElements[2].textContent = room.deposit || 'Contact for details';
   }
 
   // Update reviews
   const reviewsAverage = document.getElementById('reviews-average');
-  if (reviewsAverage) reviewsAverage.textContent = room.rating;
+  if (reviewsAverage) reviewsAverage.textContent = room.rating || '0';
 
   const reviewsTotal = document.getElementById('reviews-total');
-  if (reviewsTotal) reviewsTotal.textContent = room.reviews;
+  if (reviewsTotal) reviewsTotal.textContent = room.reviews || '0';
+
+  // Update rating breakdown - hide if no reviews
+  const ratingBreakdown = document.querySelector('.rating-breakdown');
+  if (ratingBreakdown && (!room.reviews || room.reviews === 0)) {
+    ratingBreakdown.style.display = 'none';
+  }
 }
 
 /**
  * Setup gallery functionality
  */
 function setupGallery() {
-  const room = roomData[state.roomId];
-  if (!room) return;
+  const room = state.roomData;
+  if (!room || !room.images || room.images.length === 0) return;
 
   const totalImages = room.images.length;
 
@@ -440,8 +629,8 @@ function setupGallery() {
  * Update gallery main image
  */
 function updateGalleryImage() {
-  const room = roomData[state.roomId];
-  if (!room) return;
+  const room = state.roomData;
+  if (!room || !room.images || room.images.length === 0) return;
 
   const mainImage = document.getElementById('gallery-main-image');
   if (mainImage) {
@@ -509,19 +698,222 @@ function handleApplyNow(room) {
     return;
   }
 
-  // User is logged in, proceed with application
-  // TODO: Integrate with backend API
-  alert(`Application process for ${room.title} will begin. (Integration pending backend API)`);
+  // User is logged in, show confirmation modal
+  showApplicationModal(room);
+}
 
-  // Update boarder status
-  updateBoarderStatus('applied_pending');
+/**
+ * Show application confirmation modal
+ */
+function showApplicationModal(room) {
+  // Get selected room type
+  const selectedRoomType = document.querySelector('input[name="room-type"]:checked');
+  const roomType = selectedRoomType ? selectedRoomType.value : 'single';
+  const price = roomType === 'single' ? room.price : room.sharedPrice;
 
-  // Redirect to applications page
-  const basePath = window.location.pathname.includes('github.io')
-    ? '/Haven-Space/client/views/boarder/applications/index.html'
-    : '/views/boarder/applications/index.html';
+  // Create modal overlay
+  const modalOverlay = document.createElement('div');
+  modalOverlay.className = 'application-modal-overlay';
+  modalOverlay.innerHTML = `
+    <div class="application-modal">
+      <div class="application-modal-header">
+        <div class="application-modal-icon">
+          <span data-icon="application" data-icon-width="24" data-icon-height="24"></span>
+        </div>
+        <h2 class="application-modal-title">Confirm Your Application</h2>
+        <p class="application-modal-subtitle">Review your application details before submitting</p>
+      </div>
+      
+      <div class="application-modal-body">
+        <div class="application-modal-info">
+          <div class="application-modal-info-item">
+            <span class="application-modal-info-label">Property</span>
+            <span class="application-modal-info-value">${room.title}</span>
+          </div>
+          <div class="application-modal-info-item">
+            <span class="application-modal-info-label">Room Type</span>
+            <span class="application-modal-info-value">${
+              roomType === 'single' ? 'Single Room' : 'Shared Room'
+            }</span>
+          </div>
+          <div class="application-modal-info-item">
+            <span class="application-modal-info-label">Monthly Rent</span>
+            <span class="application-modal-info-value">₱${price.toLocaleString()}</span>
+          </div>
+          <div class="application-modal-info-item">
+            <span class="application-modal-info-label">Deposit Required</span>
+            <span class="application-modal-info-value">${room.deposit}</span>
+          </div>
+        </div>
 
-  window.location.href = basePath;
+        <div class="application-modal-message">
+          <h3 class="application-modal-message-title">
+            <span data-icon="informationCircle" data-icon-width="20" data-icon-height="20"></span>
+            What happens next?
+          </h3>
+          <p class="application-modal-message-text">
+            Your application will be sent to the landlord for review. You'll receive a notification once they respond. 
+            This typically takes 1-3 business days. You can continue browsing other properties while you wait.
+          </p>
+        </div>
+      </div>
+
+      <div class="application-modal-actions">
+        <button class="application-modal-btn application-modal-btn-secondary" id="modal-cancel-btn">
+          Cancel
+        </button>
+        <button class="application-modal-btn application-modal-btn-tertiary" id="modal-browse-btn">
+          <span data-icon="search" data-icon-width="18" data-icon-height="18"></span>
+          Browse More
+        </button>
+        <button class="application-modal-btn application-modal-btn-primary" id="modal-submit-btn">
+          <span data-icon="paperAirplane" data-icon-width="18" data-icon-height="18"></span>
+          Submit Application
+        </button>
+      </div>
+    </div>
+  `;
+
+  document.body.appendChild(modalOverlay);
+
+  // Trigger animation
+  requestAnimationFrame(() => {
+    modalOverlay.classList.add('active');
+  });
+
+  // Event listeners
+  const cancelBtn = modalOverlay.querySelector('#modal-cancel-btn');
+  const browseBtn = modalOverlay.querySelector('#modal-browse-btn');
+  const submitBtn = modalOverlay.querySelector('#modal-submit-btn');
+
+  // Cancel button - close modal
+  cancelBtn.addEventListener('click', () => {
+    closeModal(modalOverlay);
+  });
+
+  // Browse more button - close modal and stay on page
+  browseBtn.addEventListener('click', () => {
+    closeModal(modalOverlay);
+    // Optionally scroll to similar properties
+    const similarSection = document.querySelector('.similar-properties');
+    if (similarSection) {
+      similarSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+  });
+
+  // Submit button - submit application
+  submitBtn.addEventListener('click', () => {
+    submitApplication(room, roomType, modalOverlay);
+  });
+
+  // Close on overlay click
+  modalOverlay.addEventListener('click', e => {
+    if (e.target === modalOverlay) {
+      closeModal(modalOverlay);
+    }
+  });
+}
+
+/**
+ * Submit application
+ */
+async function submitApplication(room, roomType, modalOverlay) {
+  const submitBtn = modalOverlay.querySelector('#modal-submit-btn');
+  submitBtn.classList.add('loading');
+  submitBtn.textContent = 'Submitting...';
+
+  try {
+    // TODO: Integrate with backend API
+    // Simulate API call
+    await new Promise(resolve => setTimeout(resolve, 1500));
+
+    // Update boarder status
+    updateBoarderStatus('applied_pending');
+
+    // Show success state
+    showSuccessModal(room, modalOverlay);
+  } catch (error) {
+    console.error('Application submission error:', error);
+    submitBtn.classList.remove('loading');
+    submitBtn.innerHTML = `
+      <span data-icon="paperAirplane" data-icon-width="18" data-icon-height="18"></span>
+      Submit Application
+    `;
+    alert('Failed to submit application. Please try again.');
+  }
+}
+
+/**
+ * Show success modal
+ */
+function showSuccessModal(room, modalOverlay) {
+  const modal = modalOverlay.querySelector('.application-modal');
+  modal.classList.add('application-modal-success');
+  modal.innerHTML = `
+    <div class="application-modal-header">
+      <div class="application-modal-icon">
+        <span data-icon="checkCircle" data-icon-width="24" data-icon-height="24"></span>
+      </div>
+      <h2 class="application-modal-title">Application Submitted!</h2>
+      <p class="application-modal-subtitle">Your application has been sent to the landlord</p>
+    </div>
+    
+    <div class="application-modal-body">
+      <div class="application-modal-message">
+        <h3 class="application-modal-message-title">
+          <span data-icon="clock" data-icon-width="20" data-icon-height="20"></span>
+          What's next?
+        </h3>
+        <p class="application-modal-message-text">
+          The landlord will review your application and respond within 1-3 business days. 
+          You'll receive a notification when they make a decision. Feel free to continue browsing other properties!
+        </p>
+      </div>
+    </div>
+
+    <div class="application-modal-actions">
+      <button class="application-modal-btn application-modal-btn-tertiary" id="modal-browse-more-btn">
+        <span data-icon="search" data-icon-width="18" data-icon-height="18"></span>
+        Browse More Listings
+      </button>
+      <button class="application-modal-btn application-modal-btn-primary" id="modal-view-applications-btn">
+        <span data-icon="clipboardList" data-icon-width="18" data-icon-height="18"></span>
+        View My Applications
+      </button>
+    </div>
+  `;
+
+  // Event listeners for success modal
+  const browseMoreBtn = modal.querySelector('#modal-browse-more-btn');
+  const viewApplicationsBtn = modal.querySelector('#modal-view-applications-btn');
+
+  browseMoreBtn.addEventListener('click', () => {
+    closeModal(modalOverlay);
+    // Navigate to find a room page
+    const basePath = window.location.pathname.includes('github.io')
+      ? '/Haven-Space/client/views/public/find-a-room.html'
+      : '/views/public/find-a-room.html';
+    window.location.href = basePath;
+  });
+
+  viewApplicationsBtn.addEventListener('click', () => {
+    closeModal(modalOverlay);
+    // Navigate to applications page
+    const basePath = window.location.pathname.includes('github.io')
+      ? '/Haven-Space/client/views/boarder/applications/index.html'
+      : '/views/boarder/applications/index.html';
+    window.location.href = basePath;
+  });
+}
+
+/**
+ * Close modal
+ */
+function closeModal(modalOverlay) {
+  modalOverlay.classList.remove('active');
+  setTimeout(() => {
+    modalOverlay.remove();
+  }, 300);
 }
 
 /**
@@ -593,4 +985,18 @@ function showNotFound() {
 // Initialize on module load for single-page apps
 if (typeof window !== 'undefined') {
   window.initRoomDetail = initRoomDetail;
+
+  // Auto-initialize if the room detail dashboard exists
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', () => {
+      if (document.querySelector('.room-detail-dashboard')) {
+        initRoomDetail();
+      }
+    });
+  } else {
+    // DOM already loaded
+    if (document.querySelector('.room-detail-dashboard')) {
+      initRoomDetail();
+    }
+  }
 }

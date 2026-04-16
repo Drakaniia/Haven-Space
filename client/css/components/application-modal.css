@@ -1,0 +1,241 @@
+/**
+ * Application Confirmation Modal
+ * Modal for confirming room application submission
+ */
+
+.application-modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.3s ease, visibility 0.3s ease;
+}
+
+.application-modal-overlay.active {
+  opacity: 1;
+  visibility: visible;
+}
+
+.application-modal {
+  background: white;
+  border-radius: 16px;
+  max-width: 500px;
+  width: 90%;
+  max-height: 90vh;
+  overflow-y: auto;
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+  transform: scale(0.95);
+  transition: transform 0.3s ease;
+}
+
+.application-modal-overlay.active .application-modal {
+  transform: scale(1);
+}
+
+.application-modal-header {
+  padding: 24px 24px 16px;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.application-modal-icon {
+  width: 48px;
+  height: 48px;
+  border-radius: 12px;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 16px;
+  color: white;
+}
+
+.application-modal-title {
+  font-size: 20px;
+  font-weight: 700;
+  color: #111827;
+  margin: 0 0 8px 0;
+}
+
+.application-modal-subtitle {
+  font-size: 14px;
+  color: #6b7280;
+  margin: 0;
+}
+
+.application-modal-body {
+  padding: 24px;
+}
+
+.application-modal-info {
+  background: #f9fafb;
+  border-radius: 12px;
+  padding: 16px;
+  margin-bottom: 20px;
+}
+
+.application-modal-info-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 0;
+}
+
+.application-modal-info-item:not(:last-child) {
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.application-modal-info-label {
+  font-size: 14px;
+  color: #6b7280;
+}
+
+.application-modal-info-value {
+  font-size: 14px;
+  font-weight: 600;
+  color: #111827;
+}
+
+.application-modal-message {
+  background: #eff6ff;
+  border-left: 4px solid #3b82f6;
+  border-radius: 8px;
+  padding: 16px;
+  margin-bottom: 20px;
+}
+
+.application-modal-message-title {
+  font-size: 14px;
+  font-weight: 600;
+  color: #1e40af;
+  margin: 0 0 8px 0;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.application-modal-message-text {
+  font-size: 14px;
+  color: #1e40af;
+  margin: 0;
+  line-height: 1.5;
+}
+
+.application-modal-actions {
+  display: flex;
+  gap: 12px;
+  padding: 16px 24px 24px;
+  border-top: 1px solid #e5e7eb;
+}
+
+.application-modal-btn {
+  flex: 1;
+  padding: 12px 20px;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  border: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+.application-modal-btn-primary {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+}
+
+.application-modal-btn-primary:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+}
+
+.application-modal-btn-primary:active {
+  transform: translateY(0);
+}
+
+.application-modal-btn-secondary {
+  background: white;
+  color: #6b7280;
+  border: 1px solid #d1d5db;
+}
+
+.application-modal-btn-secondary:hover {
+  background: #f9fafb;
+  border-color: #9ca3af;
+}
+
+.application-modal-btn-tertiary {
+  background: #f3f4f6;
+  color: #374151;
+}
+
+.application-modal-btn-tertiary:hover {
+  background: #e5e7eb;
+}
+
+/* Success state */
+.application-modal-success .application-modal-icon {
+  background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+}
+
+.application-modal-success .application-modal-message {
+  background: #d1fae5;
+  border-left-color: #10b981;
+}
+
+.application-modal-success .application-modal-message-title,
+.application-modal-success .application-modal-message-text {
+  color: #065f46;
+}
+
+/* Loading state */
+.application-modal-btn.loading {
+  opacity: 0.7;
+  cursor: not-allowed;
+  pointer-events: none;
+}
+
+.application-modal-btn.loading::after {
+  content: '';
+  width: 16px;
+  height: 16px;
+  border: 2px solid currentColor;
+  border-top-color: transparent;
+  border-radius: 50%;
+  animation: spin 0.6s linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* Responsive */
+@media (max-width: 640px) {
+  .application-modal {
+    max-width: 100%;
+    width: 100%;
+    border-radius: 16px 16px 0 0;
+    align-self: flex-end;
+  }
+
+  .application-modal-actions {
+    flex-direction: column;
+  }
+
+  .application-modal-btn {
+    width: 100%;
+  }
+}
