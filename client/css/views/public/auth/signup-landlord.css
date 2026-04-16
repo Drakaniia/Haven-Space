@@ -270,6 +270,20 @@
   font-family: var(--font-main);
 }
 
+/* Form Section Divider */
+.form-section-divider {
+  margin: 2rem 0 1.5rem;
+  padding-top: 1.5rem;
+  border-top: 1px solid var(--border-color);
+}
+
+.form-section-title {
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--text-dark);
+  margin: 0 0 1rem 0;
+}
+
 /* Responsive Design */
 @media (max-width: 1024px) {
   .signup-progress {

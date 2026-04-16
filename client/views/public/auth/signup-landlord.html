@@ -300,6 +300,88 @@
             />
           </div>
 
+          <!-- Address Section -->
+          <div class="form-section-divider">
+            <h3 class="form-section-title">Property Address</h3>
+          </div>
+
+          <div class="form-group">
+            <label for="step3AddressSearch" class="form-label">Search for address</label>
+            <div class="address-search-wrapper">
+              <input
+                type="text"
+                id="step3AddressSearch"
+                name="step3AddressSearch"
+                class="form-input"
+                placeholder="Type an address or place..."
+                autocomplete="off"
+              />
+              <div class="address-search-results hidden" id="step3AddressResults"></div>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label for="streetAddress" class="form-label">Street address *</label>
+            <input
+              type="text"
+              id="streetAddress"
+              name="streetAddress"
+              class="form-input"
+              placeholder="e.g., 123 Main Street"
+              required
+            />
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label for="barangay" class="form-label">Barangay *</label>
+              <input
+                type="text"
+                id="barangay"
+                name="barangay"
+                class="form-input"
+                placeholder="e.g., Poblacion"
+                required
+              />
+            </div>
+            <div class="form-group">
+              <label for="city" class="form-label">City/Municipality *</label>
+              <input
+                type="text"
+                id="city"
+                name="city"
+                class="form-input"
+                placeholder="e.g., Quezon City"
+                required
+              />
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label for="province" class="form-label">Province *</label>
+              <input
+                type="text"
+                id="province"
+                name="province"
+                class="form-input"
+                placeholder="e.g., Metro Manila"
+                required
+              />
+            </div>
+            <div class="form-group">
+              <label for="postalCode" class="form-label">Postal code</label>
+              <input
+                type="text"
+                id="postalCode"
+                name="postalCode"
+                class="form-input"
+                placeholder="e.g., 1100"
+                maxlength="4"
+              />
+            </div>
+          </div>
+
           <button type="submit" class="auth-btn-primary auth-btn-full">
             Continue to Payment Setup
           </button>
@@ -514,6 +596,10 @@
             <div class="review-item">
               <span class="review-label">Rooms:</span>
               <span class="review-value" id="reviewRooms"></span>
+            </div>
+            <div class="review-item">
+              <span class="review-label">Full Address:</span>
+              <span class="review-value" id="reviewFullAddress"></span>
             </div>
           </div>
 
