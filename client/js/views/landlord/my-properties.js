@@ -5,6 +5,7 @@
 
 import CONFIG from '../../config.js';
 import { getIcon } from '../../shared/icons.js';
+import { getImageUrl, setImageWithFallback } from '../../shared/image-utils.js';
 import { initSidebar } from '../../components/sidebar.js';
 import { initNavbar, updateNavbarNotifications } from '../../components/navbar.js';
 
@@ -92,7 +93,7 @@ async function fetchPropertyData(userId) {
       status: 'inactive', // Default status for new properties
       description: profileData.data.description || 'No description provided',
       amenities: [], // Amenities not set during signup
-      photos: ['https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?w=800'], // Default placeholder
+      photos: [], // No photos during signup, will be added later
       createdAt: new Date().toISOString().split('T')[0],
     };
 
@@ -253,7 +254,7 @@ async function loadProperties(userId) {
           status: prop.status,
           description: prop.description,
           amenities: prop.amenities || [],
-          photos: ['https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?w=800'],
+          photos: prop.photos || [], // Use actual photos from API
           createdAt: prop.created_at,
           isFullListing: true,
         }));
@@ -364,7 +365,7 @@ function createPropertyCard(property) {
 
   card.innerHTML = `
     <div class="property-card-image">
-      <img src="${property.photos[0] || '/placeholder.jpg'}" alt="${property.name}" />
+      <img id="property-img-${property.id}" alt="${property.name}" />
       <span class="property-card-status status-${statusClass}">${statusLabel}</span>
       <div class="property-card-photo-count">
         ${getIcon('photo')}
@@ -449,6 +450,13 @@ function createPropertyCard(property) {
     });
   });
 
+  // Set the image with proper fallback after the card is created
+  const imgElement = card.querySelector(`#property-img-${property.id}`);
+  if (imgElement) {
+    const imageUrl = property.photos.length > 0 ? property.photos[0] : null;
+    setImageWithFallback(imgElement, imageUrl);
+  }
+
   return card;
 }
 
@@ -520,18 +528,18 @@ function openPropertyModal(property) {
 
   // Set cover image
   const coverImage = document.getElementById('modal-cover-image');
-  coverImage.src = property.photos[0] || '/placeholder.jpg';
-  coverImage.alt = property.name;
+  const coverImageUrl = property.photos.length > 0 ? property.photos[0] : null;
+  setImageWithFallback(coverImage, coverImageUrl);
 
   // Set thumbnail images
   const thumbsContainer = document.getElementById('modal-image-thumbs');
   thumbsContainer.innerHTML = '';
   property.photos.slice(1).forEach(photoUrl => {
     const img = document.createElement('img');
-    img.src = photoUrl;
     img.alt = property.name;
+    setImageWithFallback(img, photoUrl);
     img.addEventListener('click', () => {
-      coverImage.src = photoUrl;
+      setImageWithFallback(coverImage, photoUrl);
     });
     thumbsContainer.appendChild(img);
   });

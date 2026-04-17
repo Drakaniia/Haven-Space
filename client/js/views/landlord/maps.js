@@ -13,8 +13,8 @@ document.addEventListener('DOMContentLoaded', async () => {
     attribution: '© OpenStreetMap contributors',
   }).addTo(map);
 
-  // Custom icon for property markers
-  const propertyIcon = L.icon({
+  // Custom icons for different property types
+  const ownPropertyIcon = L.icon({
     iconUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png',
     iconRetinaUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon-2x.png',
     shadowUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png',
@@ -24,7 +24,22 @@ document.addEventListener('DOMContentLoaded', async () => {
     shadowSize: [41, 41],
   });
 
-  // Fetch properties from API
+  const otherPropertyIcon = L.icon({
+    iconUrl:
+      'data:image/svg+xml;base64,' +
+      btoa(`
+      <svg width="25" height="41" viewBox="0 0 25 41" xmlns="http://www.w3.org/2000/svg">
+        <path d="M12.5 0C5.6 0 0 5.6 0 12.5C0 19.4 12.5 41 12.5 41S25 19.4 25 12.5C25 5.6 19.4 0 12.5 0Z" fill="#dc2626"/>
+        <circle cx="12.5" cy="12.5" r="6" fill="white"/>
+      </svg>
+    `),
+    iconSize: [25, 41],
+    iconAnchor: [12, 41],
+    popupAnchor: [1, -34],
+    shadowSize: [41, 41],
+  });
+
+  // Fetch all properties from all landlords for market view
   try {
     const token = localStorage.getItem('token');
     const headers = {};
@@ -32,7 +47,11 @@ document.addEventListener('DOMContentLoaded', async () => {
       headers['Authorization'] = `Bearer ${token}`;
     }
 
-    const response = await fetch(`${CONFIG.API_BASE_URL}/api/landlord/properties.php`, {
+    // Get current landlord's user ID for highlighting their properties
+    const user = JSON.parse(localStorage.getItem('user') || '{}');
+    const currentLandlordId = user.user_id;
+
+    const response = await fetch(`${CONFIG.API_BASE_URL}/api/properties/all.php`, {
       method: 'GET',
       headers,
       credentials: 'include',
@@ -57,8 +76,12 @@ document.addEventListener('DOMContentLoaded', async () => {
 
           // Validate coordinates are valid numbers
           if (!isNaN(lat) && !isNaN(lng)) {
+            // Determine if this is the current landlord's property
+            const isOwnProperty = property.landlord_id === currentLandlordId;
+            const icon = isOwnProperty ? ownPropertyIcon : otherPropertyIcon;
+
             const marker = L.marker([lat, lng], {
-              icon: propertyIcon,
+              icon: icon,
             }).addTo(map);
 
             // Create popup content
@@ -69,11 +92,19 @@ document.addEventListener('DOMContentLoaded', async () => {
                 ? 'Fully Occupied'
                 : 'Inactive';
 
+            const ownershipLabel = isOwnProperty ? 'Your Property' : `By ${property.landlord_name}`;
+            const ownershipColor = isOwnProperty ? '#4a7c23' : '#dc2626';
+
             const popupContent = `
-              <div style="min-width: 200px;">
-                <h3 style="margin: 0 0 8px 0; font-size: 16px; font-weight: 600;">${
-                  property.name
-                }</h3>
+              <div style="min-width: 220px;">
+                <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px;">
+                  <h3 style="margin: 0; font-size: 16px; font-weight: 600; flex: 1;">${
+                    property.name
+                  }</h3>
+                  <span style="display: inline-block; padding: 2px 6px; background: ${ownershipColor}; color: white; border-radius: 4px; font-size: 10px; font-weight: 600; margin-left: 8px;">
+                    ${ownershipLabel}
+                  </span>
+                </div>
                 <p style="margin: 0 0 6px 0; font-size: 13px; color: #666;">
                   <strong>Address:</strong> ${property.address || 'N/A'}
                 </p>
@@ -102,10 +133,21 @@ document.addEventListener('DOMContentLoaded', async () => {
                     ${statusLabel}
                   </span>
                 </p>
-                <a href="../listings/edit.html?id=${property.id}" 
-                   style="display: inline-block; padding: 6px 12px; background: #4a7c23; color: white; text-decoration: none; border-radius: 6px; font-size: 13px; font-weight: 600;">
-                  Edit Property
-                </a>
+                ${
+                  isOwnProperty
+                    ? `
+                  <a href="../listings/edit.html?id=${property.id}" 
+                     style="display: inline-block; padding: 6px 12px; background: #4a7c23; color: white; text-decoration: none; border-radius: 6px; font-size: 13px; font-weight: 600;">
+                    Edit Property
+                  </a>
+                `
+                    : `
+                  <a href="../../public/room-detail.html?id=${property.id}" 
+                     style="display: inline-block; padding: 6px 12px; background: #dc2626; color: white; text-decoration: none; border-radius: 6px; font-size: 13px; font-weight: 600;">
+                    View Details
+                  </a>
+                `
+                }
               </div>
             `;
 
@@ -125,9 +167,18 @@ document.addEventListener('DOMContentLoaded', async () => {
       // Update instruction text
       const instruction = document.querySelector('.map-instruction');
       if (instruction) {
-        instruction.textContent = `Showing ${bounds.length} ${
-          bounds.length === 1 ? 'property' : 'properties'
-        } on the map`;
+        const ownProperties = properties.filter(p => p.landlord_id === currentLandlordId);
+        const otherProperties = properties.filter(p => p.landlord_id !== currentLandlordId);
+
+        instruction.innerHTML = `
+          <div style="text-align: center;">
+            <div style="font-weight: 600; margin-bottom: 4px;">Market Overview</div>
+            <div style="font-size: 12px; opacity: 0.8;">
+              <span style="color: #4a7c23;">●</span> Your properties: ${ownProperties.length} | 
+              <span style="color: #dc2626;">●</span> Other properties: ${otherProperties.length}
+            </div>
+          </div>
+        `;
       }
     } else {
       // No properties found
