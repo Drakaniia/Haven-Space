@@ -26,6 +26,38 @@
   max-width: 100%;
 }
 
+/* Property Selector */
+.property-selector-container {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.property-selector {
+  padding: 0.75rem 1rem;
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  background: var(--white);
+  font-size: 0.95rem;
+  font-weight: 500;
+  color: var(--text-dark);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  min-width: 300px;
+}
+
+.property-selector:focus {
+  outline: none;
+  border-color: var(--primary-green);
+  box-shadow: 0 0 0 3px rgba(74, 124, 35, 0.1);
+}
+
+.property-info {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
 /* Header */
 .boarders-header {
   display: flex;

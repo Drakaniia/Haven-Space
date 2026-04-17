@@ -40,8 +40,15 @@
                 ></span>
                 Back to Properties
               </a>
-              <h1 id="property-name">Property Name</h1>
-              <p id="property-location">Property Location</p>
+              <div class="property-selector-container">
+                <select id="property-selector" class="property-selector" style="display: none">
+                  <option value="">Select a property...</option>
+                </select>
+                <div class="property-info">
+                  <h1 id="property-name">Property Name</h1>
+                  <p id="property-location">Property Location</p>
+                </div>
+              </div>
             </div>
             <div class="header-actions">
               <button type="button" class="btn-secondary" id="btn-filter">
@@ -182,6 +189,27 @@
             ></span>
             <h2>No Boarders Found</h2>
             <p>This property has no boarders yet. Click "Add Boarder" to get started.</p>
+          </div>
+
+          <!-- No Properties State -->
+          <div id="no-properties-state" class="empty-state" style="display: none">
+            <span
+              data-icon="building"
+              data-icon-width="48"
+              data-icon-height="48"
+              data-icon-stroke-width="2"
+            ></span>
+            <h2>No Properties Found</h2>
+            <p>You need to create a property first before you can manage boarders.</p>
+            <a href="../listings/create.html" class="btn-primary">
+              <span
+                data-icon="plus"
+                data-icon-width="24"
+                data-icon-height="24"
+                data-icon-stroke-width="2"
+              ></span>
+              Create Your First Property
+            </a>
           </div>
 
           <!-- Loading State -->

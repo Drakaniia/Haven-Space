@@ -1,50 +1,257 @@
 import { getIcon } from '../../shared/icons.js';
 import CONFIG from '../../config.js';
 
+/**
+ * Inject icons from centralized library into elements with data-icon attributes
+ */
+function injectIcons() {
+  const iconElements = document.querySelectorAll('[data-icon]');
+
+  iconElements.forEach(element => {
+    const iconName = element.dataset.icon;
+    const options = {
+      width: element.dataset.iconWidth || 24,
+      height: element.dataset.iconHeight || 24,
+      strokeWidth: element.dataset.iconStrokeWidth || '1.5',
+      className: element.dataset.iconClass || '',
+    };
+
+    element.innerHTML = getIcon(iconName, options);
+  });
+}
+
 let currentProperty = null;
 let currentBoarder = null;
 let boardersData = [];
 let propertyData = null;
+let allProperties = [];
 
 export function initLandlordBoarders() {
   const urlParams = new URLSearchParams(window.location.search);
   const propertyId = urlParams.get('propertyId');
 
   if (!propertyId) {
-    // If no propertyId provided, fetch the first property and redirect
-    fetchFirstProperty().then(firstProperty => {
-      if (firstProperty && firstProperty.id) {
-        window.location.href = `index.html?propertyId=${firstProperty.id}`;
-      } else {
-        // No properties found, redirect to listings page
-        window.location.href = '../listings/index.html';
-      }
-    });
+    // If no propertyId provided, fetch all properties and show selector
+    console.log('No propertyId provided, fetching all properties...');
+    showLoadingState();
+    fetchAllProperties()
+      .then(properties => {
+        hideLoadingState();
+        allProperties = properties;
+        if (properties && properties.length > 0) {
+          if (properties.length === 1) {
+            // Only one property, redirect to it
+            console.log('Only one property found, redirecting to it:', properties[0].id);
+            window.location.href = `index.html?propertyId=${properties[0].id}`;
+          } else {
+            // Multiple properties, show selector
+            console.log('Multiple properties found, showing selector');
+            showPropertySelector(properties);
+          }
+        } else {
+          console.log('No properties found, showing no properties state');
+          showNoPropertiesState();
+        }
+      })
+      .catch(error => {
+        console.error('Error fetching properties:', error);
+        hideLoadingState();
+        showNoPropertiesState();
+      });
     return;
   }
+
+  console.log('Loading boarders for property:', propertyId);
+  // Also fetch all properties for the selector
+  fetchAllProperties().then(properties => {
+    allProperties = properties;
+    if (properties && properties.length > 1) {
+      showPropertySelector(properties, propertyId);
+    }
+  });
 
   loadPropertyData(propertyId);
   loadBoarders(propertyId);
   setupEventListeners();
+
+  // Inject icons
+  setTimeout(() => injectIcons(), 100);
 }
 
-async function fetchFirstProperty() {
+async function fetchAllProperties() {
   try {
+    console.log('Fetching all properties from API...');
+    const token = localStorage.getItem('token');
+    const headers = {
+      'Content-Type': 'application/json',
+    };
+    if (token) {
+      headers['Authorization'] = `Bearer ${token}`;
+    }
+
     const response = await fetch(`${CONFIG.API_BASE_URL}/api/landlord/properties.php`, {
+      method: 'GET',
+      headers,
       credentials: 'include',
     });
+
+    console.log('Properties API response status:', response.status);
 
     if (!response.ok) {
       throw new Error(`API error: ${response.status}`);
     }
 
     const result = await response.json();
+    console.log('Properties API result:', result);
 
     // Check if there are properties in the response
     if (result.data && result.data.properties && result.data.properties.length > 0) {
+      console.log('Found properties:', result.data.properties.length);
+      return result.data.properties;
+    }
+
+    console.log('No properties found in API response');
+    return [];
+  } catch (error) {
+    console.error('Failed to fetch properties:', error);
+    return [];
+  }
+}
+
+function showPropertySelector(properties, selectedPropertyId = null) {
+  const selector = document.getElementById('property-selector');
+  const propertyInfo = document.querySelector('.property-info');
+
+  if (!selector) return;
+
+  // Populate selector
+  selector.innerHTML = '<option value="">Select a property...</option>';
+  properties.forEach(property => {
+    const option = document.createElement('option');
+    option.value = property.id;
+    option.textContent = property.name || 'Unnamed Property';
+    if (selectedPropertyId && property.id === selectedPropertyId) {
+      option.selected = true;
+    }
+    selector.appendChild(option);
+  });
+
+  // Show selector
+  selector.style.display = 'block';
+
+  // Add change handler
+  selector.addEventListener('change', e => {
+    const newPropertyId = e.target.value;
+    if (newPropertyId) {
+      window.location.href = `index.html?propertyId=${newPropertyId}`;
+    }
+  });
+
+  // If no property is selected, show instruction
+  if (!selectedPropertyId) {
+    if (propertyInfo) {
+      const propertyName = document.getElementById('property-name');
+      const propertyLocation = document.getElementById('property-location');
+      if (propertyName) propertyName.textContent = 'Select a Property';
+      if (propertyLocation) propertyLocation.textContent = 'Choose a property to view its boarders';
+    }
+
+    // Hide header actions
+    const headerActions = document.querySelector('.header-actions');
+    if (headerActions) headerActions.style.display = 'none';
+
+    // Show empty state with instruction
+    const grid = document.getElementById('boarders-grid');
+    const emptyState = document.getElementById('empty-state');
+    if (grid) grid.style.display = 'none';
+    if (emptyState) {
+      emptyState.style.display = 'flex';
+      const h2 = emptyState.querySelector('h2');
+      const p = emptyState.querySelector('p');
+      if (h2) h2.textContent = 'Select a Property';
+      if (p)
+        p.textContent =
+          'Choose a property from the dropdown above to view and manage its boarders.';
+    }
+
+    // Inject icons
+    setTimeout(() => injectIcons(), 100);
+  }
+}
+
+function showLoadingState() {
+  const loadingState = document.getElementById('loading-state');
+  const emptyState = document.getElementById('empty-state');
+  const noPropertiesState = document.getElementById('no-properties-state');
+  const grid = document.getElementById('boarders-grid');
+
+  if (loadingState) loadingState.style.display = 'flex';
+  if (emptyState) emptyState.style.display = 'none';
+  if (noPropertiesState) noPropertiesState.style.display = 'none';
+  if (grid) grid.style.display = 'none';
+}
+
+function hideLoadingState() {
+  const loadingState = document.getElementById('loading-state');
+  if (loadingState) loadingState.style.display = 'none';
+}
+
+function showNoPropertiesState() {
+  const noPropertiesState = document.getElementById('no-properties-state');
+  const emptyState = document.getElementById('empty-state');
+  const grid = document.getElementById('boarders-grid');
+
+  if (noPropertiesState) noPropertiesState.style.display = 'flex';
+  if (emptyState) emptyState.style.display = 'none';
+  if (grid) grid.style.display = 'none';
+
+  // Hide the header actions since there's no property
+  const headerActions = document.querySelector('.header-actions');
+  if (headerActions) headerActions.style.display = 'none';
+
+  // Update the header text
+  const propertyName = document.getElementById('property-name');
+  const propertyLocation = document.getElementById('property-location');
+  if (propertyName) propertyName.textContent = 'Manage Boarders';
+  if (propertyLocation) propertyLocation.textContent = 'No properties available';
+
+  // Inject icons for the no properties state
+  setTimeout(() => injectIcons(), 100);
+}
+
+async function fetchFirstProperty() {
+  try {
+    console.log('Fetching properties from API...');
+    const token = localStorage.getItem('token');
+    const headers = {
+      'Content-Type': 'application/json',
+    };
+    if (token) {
+      headers['Authorization'] = `Bearer ${token}`;
+    }
+
+    const response = await fetch(`${CONFIG.API_BASE_URL}/api/landlord/properties.php`, {
+      method: 'GET',
+      headers,
+      credentials: 'include',
+    });
+
+    console.log('Properties API response status:', response.status);
+
+    if (!response.ok) {
+      throw new Error(`API error: ${response.status}`);
+    }
+
+    const result = await response.json();
+    console.log('Properties API result:', result);
+
+    // Check if there are properties in the response
+    if (result.data && result.data.properties && result.data.properties.length > 0) {
+      console.log('Found properties:', result.data.properties.length);
       return result.data.properties[0];
     }
 
+    console.log('No properties found in API response');
     return null;
   } catch (error) {
     console.error('Failed to fetch first property:', error);
