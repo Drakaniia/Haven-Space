@@ -28,7 +28,7 @@ class ApplicationRepository
                 FROM applications a
                 JOIN rooms r ON a.room_id = r.id
                 JOIN users u ON a.landlord_id = u.id
-                WHERE a.boarder_id = ?
+                WHERE a.boarder_id = ? AND a.deleted_at IS NULL
                 ORDER BY a.created_at DESC';
 
         $stmt = $this->pdo->prepare($sql);
@@ -46,7 +46,7 @@ class ApplicationRepository
                 FROM applications a
                 JOIN rooms r ON a.room_id = r.id
                 JOIN users u ON a.boarder_id = u.id
-                WHERE a.landlord_id = ?
+                WHERE a.landlord_id = ? AND a.deleted_at IS NULL
                 ORDER BY a.created_at DESC';
 
         $stmt = $this->pdo->prepare($sql);
@@ -67,7 +67,7 @@ class ApplicationRepository
                 JOIN rooms r ON a.room_id = r.id
                 JOIN users ub ON a.boarder_id = ub.id
                 JOIN users ul ON a.landlord_id = ul.id
-                WHERE a.id = ?';
+                WHERE a.id = ? AND a.deleted_at IS NULL';
 
         $stmt = $this->pdo->prepare($sql);
         $stmt->execute([$id]);
@@ -137,11 +137,11 @@ class ApplicationRepository
     }
 
     /**
-     * Delete an application
+     * Delete an application (soft delete)
      */
     public function delete(int $id): bool
     {
-        $stmt = $this->pdo->prepare('DELETE FROM applications WHERE id = ?');
+        $stmt = $this->pdo->prepare('UPDATE applications SET deleted_at = CURRENT_TIMESTAMP WHERE id = ?');
         return $stmt->execute([$id]);
     }
 

@@ -78,11 +78,57 @@ class ApplicationService
         try {
             $id = $this->repository->create($data);
             error_log("Application created successfully with ID: $id");
+            
+            // Get the created application with full details for notification
+            $fullApplication = $this->repository->findById($id);
+            
+            // Send notification to landlord about new application
+            if ($fullApplication) {
+                $this->notifyLandlordOfNewApplication($fullApplication);
+            }
+            
+            // Return application details for the boarder
             return $this->getApplication($id, $boarderId, 'boarder');
         } catch (\Exception $e) {
             error_log("Error creating application: " . $e->getMessage());
             error_log("Stack trace: " . $e->getTraceAsString());
             throw $e;
+        }
+    }
+
+    /**
+     * Send notification to landlord about new application
+     */
+    private function notifyLandlordOfNewApplication(array $application): void
+    {
+        try {
+            // Get property details for property name
+            $propertyDetails = $this->repository->getPropertyDetails($application['room_id']);
+            
+            if (!$propertyDetails) {
+                error_log("Could not find property details for room {$application['room_id']}");
+                return;
+            }
+
+            $propertyName = $propertyDetails['house_name'] ?? 'your property';
+            $boarderName = trim(($application['boarder_first_name'] ?? '') . ' ' . ($application['boarder_last_name'] ?? '')) ?: 'A boarder';
+
+            // Create notification for the landlord
+            $this->notificationService->notifyNewApplication(
+                $application['landlord_id'],
+                $application['boarder_id'],
+                $application['id'],
+                $application['property_id'] ?? 0,
+                $application['room_id'],
+                $propertyName,
+                $application['room_title'] ?? 'a room',
+                $boarderName
+            );
+
+            error_log("New application notification sent to landlord {$application['landlord_id']} for application {$application['id']}");
+        } catch (\Exception $e) {
+            // Log error but don't fail the application creation
+            error_log("Failed to send new application notification for application {$application['id']}: " . $e->getMessage());
         }
     }
 

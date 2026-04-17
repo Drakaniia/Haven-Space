@@ -118,6 +118,30 @@ class NotificationService
     }
 
     /**
+     * Create new application notification for landlord
+     */
+    public function notifyNewApplication(int $landlordId, int $boarderId, int $applicationId, int $propertyId, int $roomId, string $propertyName, string $roomTitle, string $boarderName): int
+    {
+        $data = [
+            'user_id' => $landlordId,
+            'type' => 'new_application',
+            'title' => 'New Application Received',
+            'message' => "{$boarderName} has applied for {$roomTitle} at {$propertyName}. Please review their application.",
+            'metadata' => [
+                'application_id' => $applicationId,
+                'property_id' => $propertyId,
+                'room_id' => $roomId,
+                'boarder_id' => $boarderId,
+                'property_name' => $propertyName,
+                'room_title' => $roomTitle,
+                'boarder_name' => $boarderName,
+            ],
+        ];
+
+        return $this->repository->create($data);
+    }
+
+    /**
      * Get boarder's accepted applications with property details
      */
     public function getAcceptedApplications(int $boarderId): array
