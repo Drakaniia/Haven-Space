@@ -483,10 +483,41 @@ function handleApplyNow(room) {
     return;
   }
 
-  console.log('Redirecting to confirmation page');
+  console.log('Redirecting to confirm-booking page');
 
-  // User is logged in, redirect to confirmation page
-  window.location.href = `./confirm-application.html?id=${room.id || state.roomId}`;
+  // Get selected room type and its price
+  const selectedRoomType = document.querySelector('input[name="room-type"]:checked');
+  let roomType = 'Standard Room';
+  let roomPrice = room.price || 0;
+
+  if (selectedRoomType) {
+    const roomOption = selectedRoomType.closest('.booking-room-option');
+    const roomTypeLabel = roomOption?.querySelector('.booking-room-type-label');
+    const roomTypePrice = roomOption?.querySelector('.booking-room-type-price');
+
+    if (roomTypeLabel) {
+      roomType = roomTypeLabel.textContent.trim();
+    }
+
+    if (roomTypePrice) {
+      // Extract price from text like "₱4,500/mo"
+      const priceText = roomTypePrice.textContent.replace(/[₱,/mo]/g, '').trim();
+      roomPrice = parseInt(priceText) || room.price || 0;
+    }
+  }
+
+  // User is logged in, redirect to confirm-booking page to set up moving date
+  // Pass room details as URL parameters since they haven't applied yet
+  const params = new URLSearchParams({
+    id: room.id || state.roomId,
+    title: room.title || 'Property',
+    price: roomPrice,
+    address: room.address || '',
+    landlordName: room.landlord?.name || 'Property Owner',
+    roomType: roomType,
+  });
+
+  window.location.href = `../confirm-booking/index.html?${params.toString()}`;
 }
 
 /**

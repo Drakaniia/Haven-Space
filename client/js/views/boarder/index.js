@@ -69,8 +69,12 @@ export async function initBoarderDashboard() {
   // Initialize sidebar
   const sidebarContainer = document.getElementById('sidebar-container');
   if (sidebarContainer) {
+    // Get boarder status from user data (default to accepted for main dashboard)
+    const boarderStatus = user.boarderStatus || 'accepted';
+
     initSidebar({
       role: 'boarder',
+      boarderStatus: boarderStatus,
       user: {
         name,
         initials,
