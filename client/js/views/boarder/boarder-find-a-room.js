@@ -6,6 +6,7 @@
 import { getIcon, getSolidIcon } from '../../shared/icons.js';
 import { updateBoarderStatus } from '../../shared/routing.js';
 import { getImageUrl, getImageErrorHandler } from '../../shared/image-utils.js';
+import { authenticatedFetch } from '../../shared/state.js';
 import CONFIG from '../../config.js';
 
 // State management
@@ -908,7 +909,9 @@ function renderProperties(propertiesList) {
               : ''
           }
         </div>
-        <button class="find-room-favorite-btn" data-favorite="false">
+        <button class="find-room-favorite-btn" data-favorite="false" data-property-id="${
+          property.id
+        }">
           ${heartIcon(false)}
         </button>
         <div class="find-room-card-amenities-preview">
@@ -987,6 +990,10 @@ function renderProperties(propertiesList) {
       }
     });
   });
+
+  // Load saved status for all properties
+  const propertyIds = propertiesList.map(property => property.id);
+  loadSavedStatus(propertyIds);
 }
 
 /**
@@ -1179,10 +1186,148 @@ function handleLoadMore() {
 /**
  * Toggle favorite status
  */
-function toggleFavorite(btn) {
+async function toggleFavorite(btn) {
+  const propertyId = btn.dataset.propertyId;
+  const roomId = btn.dataset.roomId || null;
   const isFavorite = btn.dataset.favorite === 'true';
+
+  if (!propertyId) {
+    console.error('Property ID not found');
+    return;
+  }
+
+  // Optimistic UI update
   btn.dataset.favorite = (!isFavorite).toString();
   btn.innerHTML = heartIcon(!isFavorite);
+  btn.disabled = true;
+
+  try {
+    if (!isFavorite) {
+      // Save the property
+      const response = await authenticatedFetch(
+        `${CONFIG.API_BASE_URL}/api/boarder/saved-listings`,
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            property_id: parseInt(propertyId),
+            room_id: roomId ? parseInt(roomId) : null,
+          }),
+        }
+      );
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Failed to save property');
+      }
+
+      // Show success message
+      showToast('Property saved successfully!', 'success');
+    } else {
+      // Remove from saved
+      const response = await authenticatedFetch(
+        `${CONFIG.API_BASE_URL}/api/boarder/saved-listings`,
+        {
+          method: 'DELETE',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            property_id: parseInt(propertyId),
+          }),
+        }
+      );
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Failed to remove property');
+      }
+
+      // Show success message
+      showToast('Property removed from saved list', 'success');
+    }
+  } catch (error) {
+    console.error('Error toggling favorite:', error);
+
+    // Revert UI on error
+    btn.dataset.favorite = isFavorite.toString();
+    btn.innerHTML = heartIcon(isFavorite);
+
+    // Show error message
+    showToast(error.message || 'Failed to update saved status', 'error');
+  } finally {
+    btn.disabled = false;
+  }
+}
+
+/**
+ * Check if properties are saved and update UI accordingly
+ */
+async function loadSavedStatus(propertyIds) {
+  if (!propertyIds || propertyIds.length === 0) return;
+
+  try {
+    // Check each property's saved status
+    for (const propertyId of propertyIds) {
+      const response = await authenticatedFetch(
+        `${CONFIG.API_BASE_URL}/api/boarder/saved-listings?property_id=${propertyId}`
+      );
+
+      if (response.ok) {
+        const data = await response.json();
+        const favoriteBtn = document.querySelector(`[data-property-id="${propertyId}"]`);
+
+        if (favoriteBtn) {
+          favoriteBtn.dataset.favorite = data.is_saved.toString();
+          favoriteBtn.innerHTML = heartIcon(data.is_saved);
+        }
+      }
+    }
+  } catch (error) {
+    console.error('Error loading saved status:', error);
+  }
+}
+
+/**
+ * Show toast notification
+ */
+function showToast(message, type = 'info') {
+  // Create toast element
+  const toast = document.createElement('div');
+  toast.className = `toast toast-${type}`;
+  toast.textContent = message;
+
+  // Add styles
+  Object.assign(toast.style, {
+    position: 'fixed',
+    top: '20px',
+    right: '20px',
+    padding: '12px 20px',
+    borderRadius: '6px',
+    color: 'white',
+    fontWeight: '500',
+    zIndex: '10000',
+    transform: 'translateX(100%)',
+    transition: 'transform 0.3s ease',
+    backgroundColor: type === 'success' ? '#10b981' : type === 'error' ? '#ef4444' : '#3b82f6',
+  });
+
+  document.body.appendChild(toast);
+
+  // Animate in
+  setTimeout(() => {
+    toast.style.transform = 'translateX(0)';
+  }, 100);
+
+  // Remove after 3 seconds
+  setTimeout(() => {
+    toast.style.transform = 'translateX(100%)';
+    setTimeout(() => {
+      document.body.removeChild(toast);
+    }, 300);
+  }, 3000);
 }
 
 // Utility functions

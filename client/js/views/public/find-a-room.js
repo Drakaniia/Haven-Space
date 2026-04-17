@@ -4,7 +4,7 @@
  */
 
 import { getIcon } from '../../shared/icons.js';
-import { loadState, getState } from '../../shared/state.js';
+import { loadState, getState, authenticatedFetch } from '../../shared/state.js';
 import { getImageUrl, getImageErrorHandler } from '../../shared/image-utils.js';
 import CONFIG from '../../config.js';
 
@@ -263,17 +263,125 @@ function createPropertyCard(property) {
 /**
  * Toggle favorite for a property
  */
-function toggleFavorite(propertyId, button) {
+async function toggleFavorite(propertyId, button) {
   const isFavorite = button.dataset.favorite === 'true';
+
+  // Check if user is logged in
+  const token = localStorage.getItem('authToken');
+  if (!token) {
+    // Redirect to login if not authenticated
+    window.location.href =
+      '../auth/login.html?redirect=' + encodeURIComponent(window.location.href);
+    return;
+  }
+
+  // Optimistic UI update
   const newState = !isFavorite;
   button.dataset.favorite = newState.toString();
+  button.disabled = true;
 
   const icon = button.querySelector('[data-icon]');
   if (icon) {
     icon.dataset.icon = newState ? 'heartSolid' : 'bookmark';
   }
 
-  console.log(`Property ${propertyId} favorite: ${newState}`);
+  try {
+    if (newState) {
+      // Save the property
+      const response = await authenticatedFetch(
+        `${CONFIG.API_BASE_URL}/api/boarder/saved-listings`,
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            property_id: parseInt(propertyId),
+          }),
+        }
+      );
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Failed to save property');
+      }
+
+      showToast('Property saved successfully!', 'success');
+    } else {
+      // Remove from saved
+      const response = await authenticatedFetch(
+        `${CONFIG.API_BASE_URL}/api/boarder/saved-listings`,
+        {
+          method: 'DELETE',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            property_id: parseInt(propertyId),
+          }),
+        }
+      );
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Failed to remove property');
+      }
+
+      showToast('Property removed from saved list', 'success');
+    }
+  } catch (error) {
+    console.error('Error toggling favorite:', error);
+
+    // Revert UI on error
+    button.dataset.favorite = isFavorite.toString();
+    if (icon) {
+      icon.dataset.icon = isFavorite ? 'heartSolid' : 'bookmark';
+    }
+
+    showToast(error.message || 'Failed to update saved status', 'error');
+  } finally {
+    button.disabled = false;
+  }
+}
+
+/**
+ * Show toast notification
+ */
+function showToast(message, type = 'info') {
+  // Create toast element
+  const toast = document.createElement('div');
+  toast.className = `toast toast-${type}`;
+  toast.textContent = message;
+
+  // Add styles
+  Object.assign(toast.style, {
+    position: 'fixed',
+    top: '20px',
+    right: '20px',
+    padding: '12px 20px',
+    borderRadius: '6px',
+    color: 'white',
+    fontWeight: '500',
+    zIndex: '10000',
+    transform: 'translateX(100%)',
+    transition: 'transform 0.3s ease',
+    backgroundColor: type === 'success' ? '#10b981' : type === 'error' ? '#ef4444' : '#3b82f6',
+  });
+
+  document.body.appendChild(toast);
+
+  // Animate in
+  setTimeout(() => {
+    toast.style.transform = 'translateX(0)';
+  }, 100);
+
+  // Remove after 3 seconds
+  setTimeout(() => {
+    toast.style.transform = 'translateX(100%)';
+    setTimeout(() => {
+      document.body.removeChild(toast);
+    }, 300);
+  }, 3000);
 }
 
 /**
