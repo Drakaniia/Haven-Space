@@ -101,10 +101,7 @@ document.addEventListener('DOMContentLoaded', function () {
           const boarderStatus = result.user.boarder_status || 'new';
           updateBoarderStatus(boarderStatus);
 
-          const redirectPath = getBoarderRedirectPath({
-            ...result.user,
-            boarderStatus,
-          });
+          const redirectPath = getBoarderRedirectPath(result.user);
           window.location.href = redirectPath;
         }
       } else {

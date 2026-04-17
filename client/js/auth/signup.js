@@ -1,6 +1,6 @@
 import CONFIG from '../config.js';
 import { getIcon } from '../shared/icons.js';
-import { getBasePath, getBoarderRedirectPath, updateBoarderStatus } from '../shared/routing.js';
+import { getBoarderRedirectPath, updateBoarderStatus } from '../shared/routing.js';
 
 /**
  * Show toast notification
@@ -81,11 +81,6 @@ function injectIcons() {
 }
 
 document.addEventListener('DOMContentLoaded', function () {
-  const step1 = document.getElementById('step1');
-  const step2 = document.getElementById('step2');
-  const continueBtn = document.getElementById('continueBtn');
-  const headerLinkContainer = document.getElementById('headerLinkContainer');
-  const roleCards = document.querySelectorAll('.role-card');
   const passwordToggle = document.getElementById('passwordToggle');
   const passwordInput = document.getElementById('password');
   const eyeOpen = passwordToggle.querySelector('.eye-open');
@@ -97,8 +92,6 @@ document.addEventListener('DOMContentLoaded', function () {
   const termsOverlay = document.getElementById('termsOverlay');
   const termsOverlayClose = termsOverlay?.querySelector('.terms-overlay-close');
   const termsOverlayOk = document.getElementById('termsOverlayOk');
-
-  let selectedRole = null;
 
   // Inject icons from centralized library
   injectIcons();
@@ -160,20 +153,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
         const pendingUser = result.data;
 
-        if (oauthPending) {
-          // User is coming from Google OAuth signup (with role), skip to step 2
-          step1.classList.add('hidden');
-          step2.classList.remove('hidden');
-          headerLinkContainer.classList.remove('hidden');
-        } else if (oauthNew) {
-          // User is coming from Google OAuth login (no account), show step 1 for role selection
-          // Keep step 1 visible, hide step 2
-          step1.classList.remove('hidden');
-          step2.classList.add('hidden');
-          headerLinkContainer.classList.add('hidden');
-        }
-
-        // Pre-fill form if on step 2
+        // Pre-fill form with Google OAuth data
         if (pendingUser.first_name) {
           document.getElementById('firstName').value = pendingUser.first_name;
         }
@@ -192,92 +172,6 @@ document.addEventListener('DOMContentLoaded', function () {
       });
   }
 
-  // Role selection - handle both card click and radio change
-  roleCards.forEach(card => {
-    const input = card.querySelector('input[type="radio"]');
-
-    // Listen for radio button change (works for native label clicking)
-    input.addEventListener('change', function () {
-      if (this.checked) {
-        selectedRole = this.value;
-
-        // Update visual state
-        roleCards.forEach(c => c.classList.remove('selected'));
-        card.classList.add('selected');
-
-        // Enable continue button
-        continueBtn.disabled = false;
-
-        // Update button text based on role
-        if (selectedRole === 'landlord') {
-          continueBtn.textContent = 'Join as a Landlord';
-        } else {
-          continueBtn.textContent = 'Apply as a Boarder';
-        }
-      }
-    });
-
-    // Also handle card click for better UX
-    card.addEventListener('click', function (e) {
-      // Prevent double-triggering if clicking directly on radio
-      if (e.target !== input) {
-        input.checked = true;
-        input.dispatchEvent(new Event('change', { bubbles: true }));
-      }
-    });
-  });
-
-  // Continue to step 2 or redirect for landlords
-  continueBtn.addEventListener('click', function () {
-    if (selectedRole) {
-      // Redirect landlords to multi-step signup flow
-      if (selectedRole === 'landlord') {
-        window.location.href = 'signup-landlord.html';
-        return;
-      }
-
-      // Boarders continue to step 2
-      step1.classList.add('hidden');
-      step2.classList.remove('hidden');
-      headerLinkContainer.classList.remove('hidden');
-
-      // If OAuth user, fetch and pre-fill data after showing step 2
-      if (oauthPending || oauthNew) {
-        fetch(`${CONFIG.API_BASE_URL}/auth/google/get-pending-user.php`, {
-          credentials: 'include',
-        })
-          .then(res => res.json())
-          .then(result => {
-            if (result.success && result.data) {
-              const pendingUser = result.data;
-              if (pendingUser.first_name) {
-                document.getElementById('firstName').value = pendingUser.first_name;
-              }
-              if (pendingUser.last_name) {
-                document.getElementById('lastName').value = pendingUser.last_name;
-              }
-              if (pendingUser.email) {
-                document.getElementById('email').value = pendingUser.email;
-                document.getElementById('email').readOnly = true;
-              }
-            }
-          })
-          .catch(err => {
-            console.error('Error fetching pending user data:', err);
-          });
-      }
-    }
-  });
-
-  // "Apply as a Landlord" header link navigates to landlord signup
-  const headerRoleLink = document.getElementById('headerRoleLink');
-  if (headerRoleLink) {
-    headerRoleLink.addEventListener('click', function (e) {
-      e.preventDefault();
-      window.location.href = 'signup-landlord.html';
-    });
-  }
-
   // Password visibility toggle
   passwordToggle.addEventListener('click', function () {
     const isPassword = passwordInput.type === 'password';
@@ -294,20 +188,11 @@ document.addEventListener('DOMContentLoaded', function () {
     confirmEyeClosed.classList.toggle('hidden');
   });
 
-  // Google OAuth signup - works from step 1 or step 2
+  // Google OAuth signup for boarders
   document.querySelectorAll('.social-btn-google').forEach(btn => {
     btn.addEventListener('click', function () {
-      // If on step 1 and no role selected, prompt user
-      if (!step1.classList.contains('hidden') && !selectedRole) {
-        alert('Please select your role first (Boarder or Landlord)');
-        return;
-      }
-
-      // If user selected role on step 1, include it in the OAuth flow
-      const roleForOAuth = selectedRole || '';
-
-      // Redirect to Google OAuth authorize endpoint with role preference
-      const authUrl = `${CONFIG.API_BASE_URL}/auth/google/authorize.php?action=signup&role=${roleForOAuth}`;
+      // Redirect to Google OAuth authorize endpoint for boarder signup
+      const authUrl = `${CONFIG.API_BASE_URL}/auth/google/authorize.php?action=signup&role=boarder`;
       window.location.href = authUrl;
     });
   });
@@ -334,14 +219,14 @@ document.addEventListener('DOMContentLoaded', function () {
     const confirmPassword = e.target.confirmPassword.value;
 
     if (password !== confirmPassword) {
-      alert('Passwords do not match. Please try again.');
+      showToast('Passwords do not match. Please try again.', 'error');
       e.target.confirmPassword.focus();
       return;
     }
 
     // Check if this is a Google OAuth pending user completing signup
     if (oauthPending) {
-      // Complete Google OAuth signup with role selection
+      // Complete Google OAuth signup for boarder
       try {
         const response = await fetch(`${CONFIG.API_BASE_URL}/auth/google/finalize-signup.php`, {
           method: 'POST',
@@ -350,8 +235,7 @@ document.addEventListener('DOMContentLoaded', function () {
           },
           credentials: 'include',
           body: JSON.stringify({
-            role: selectedRole,
-            country: e.target.country.value,
+            role: 'boarder',
           }),
         });
 
@@ -364,36 +248,36 @@ document.addEventListener('DOMContentLoaded', function () {
             localStorage.setItem('token', result.access_token);
           }
 
-          // Redirect based on role
-          const basePath = getBasePath();
-
-          if (result.user.role === 'landlord') {
-            window.location.href = `${basePath}landlord/index.html`;
-          } else {
-            // New boarder - redirect to boarder find-a-room page (authenticated)
-            window.location.href = `${basePath}boarder/find-a-room/index.html`;
-          }
+          // New boarder via Google OAuth — route based on status
+          updateBoarderStatus(result.user.boarder_status || 'new');
+          const redirectPath = getBoarderRedirectPath(result.user);
+          window.location.href = redirectPath;
         } else {
-          alert(result.error || 'Signup failed');
+          showToast(result.error || 'Signup failed', 'error');
         }
       } catch (error) {
         console.error('Error during Google OAuth signup:', error);
-        alert('An error occurred. Please try again.');
+        showToast('An error occurred. Please try again.', 'error');
       }
       return;
     }
 
-    // Regular email/password signup
+    // Regular email/password signup for boarders
     const formData = new FormData(this);
     const data = {
-      role: selectedRole,
+      role: 'boarder',
       firstName: formData.get('firstName'),
       lastName: formData.get('lastName'),
       email: formData.get('email'),
       password: formData.get('password'),
-      country: formData.get('country'),
       terms: formData.get('terms') === 'on',
     };
+
+    // Disable submit button and show loading state
+    const submitBtn = this.querySelector('button[type="submit"]');
+    const originalText = submitBtn.textContent;
+    submitBtn.disabled = true;
+    submitBtn.textContent = 'Creating Account...';
 
     try {
       const response = await fetch(`${CONFIG.API_BASE_URL}/auth/register.php`, {
@@ -406,59 +290,27 @@ document.addEventListener('DOMContentLoaded', function () {
 
       const result = await response.json();
 
-      if (response.ok) {
-        // Auto-login boarders and redirect based on conditional routing
-        if (selectedRole === 'boarder') {
-          // Store user info to auto-login
-          const userInfo = {
-            ...result.user,
-            boarderStatus: 'new', // New signup, set to 'new'
-          };
-          localStorage.setItem('user', JSON.stringify(userInfo));
-          updateBoarderStatus('new');
-
-          // Redirect using conditional routing logic
-          const redirectPath = getBoarderRedirectPath(userInfo);
-          window.location.href = redirectPath;
-        } else {
-          // Landlord: auto-login and redirect to dashboard
-          const loginResponse = await fetch(`${CONFIG.API_BASE_URL}/auth/login.php`, {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-            },
-            credentials: 'include',
-            body: JSON.stringify({
-              email: data.email,
-              password: data.password,
-            }),
-          });
-
-          if (loginResponse.ok) {
-            const loginResult = await loginResponse.json();
-            localStorage.setItem('user', JSON.stringify(loginResult.user));
-            if (loginResult.access_token) {
-              localStorage.setItem('token', loginResult.access_token);
-            }
-
-            // Mark as new landlord for welcome message display
-            localStorage.setItem('landlordStatus', 'new');
-
-            // Redirect to landlord dashboard
-            const basePath = getBasePath();
-            window.location.href = `${basePath}landlord/index.html`;
-          } else {
-            // Fallback: redirect to login if auto-login fails
-            const basePath = getBasePath();
-            alert('Registration successful! Please login to continue.');
-            window.location.href = `${basePath}public/auth/login.html`;
-          }
+      if (response.ok && result.success) {
+        // Store user info and token
+        localStorage.setItem('user', JSON.stringify(result.user));
+        if (result.access_token) {
+          localStorage.setItem('token', result.access_token);
         }
+
+        // New boarder has no application yet — route to find-a-room
+        updateBoarderStatus('new');
+        const redirectPath = getBoarderRedirectPath(result.user);
+        window.location.href = redirectPath;
       } else {
-        alert(result.error || 'Registration failed');
+        showToast(result.error || 'Registration failed', 'error');
+        submitBtn.disabled = false;
+        submitBtn.textContent = originalText;
       }
     } catch (error) {
-      alert('An error occurred. Please try again.');
+      console.error('Registration error:', error);
+      showToast('An error occurred. Please try again.', 'error');
+      submitBtn.disabled = false;
+      submitBtn.textContent = originalText;
     }
   });
 });

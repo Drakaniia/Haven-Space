@@ -115,16 +115,34 @@ try {
     // Clear pending user data
     unset($_SESSION['pending_google_user']);
     
-    // Return success with user data
+    // Determine boarder status if user is a boarder
+    $boarderStatus = null;
+    if ($role === 'boarder') {
+        // New boarder has no applications yet
+        $boarderStatus = 'new';
+    }
+    
+    // Return success with user data and tokens
+    $userResponse = [
+        'id' => $userId,
+        'first_name' => $pendingUser['first_name'],
+        'last_name' => $pendingUser['last_name'],
+        'email' => $pendingUser['email'],
+        'role' => $role,
+        'is_verified' => (bool) ($pendingUser['email_verified'] ?? false),
+        'account_status' => 'active',
+    ];
+    
+    // Add boarder status if applicable
+    if ($boarderStatus !== null) {
+        $userResponse['boarder_status'] = $boarderStatus;
+    }
+    
     echo json_encode([
         'success' => true,
-        'user' => [
-            'id' => $userId,
-            'first_name' => $pendingUser['first_name'],
-            'last_name' => $pendingUser['last_name'],
-            'email' => $pendingUser['email'],
-            'role' => $role,
-        ],
+        'access_token' => $jwtAccessToken,
+        'refresh_token' => $jwtRefreshToken,
+        'user' => $userResponse,
     ]);
     
 } catch (\Exception $e) {

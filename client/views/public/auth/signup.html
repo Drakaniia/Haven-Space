@@ -39,74 +39,17 @@
             >Haven Space</span
           >
         </a>
-        <div class="auth-header-link hidden" id="headerLinkContainer">
-          <span id="headerLinkText"></span>
-          <a href="#" id="headerRoleLink"></a>
+        <div class="auth-header-link">
+          <span>Here to list your property?</span>
+          <a href="signup-landlord.html" id="headerRoleLink">Apply as a Landlord</a>
         </div>
       </div>
     </header>
 
-    <!-- Step 1: Role Selection -->
-    <main class="auth-main" id="step1">
-      <div class="auth-container">
-        <h1 class="auth-title">Join as a landlord or boarder</h1>
-
-        <div class="role-selection">
-          <label class="role-card" for="role-boarder">
-            <input type="radio" name="role" id="role-boarder" value="boarder" hidden />
-            <div class="role-card-content">
-              <div class="role-icon">
-                <span
-                  data-icon="building"
-                  data-icon-width="24"
-                  data-icon-height="24"
-                  data-icon-stroke-width="2"
-                ></span>
-              </div>
-              <span class="role-radio"></span>
-            </div>
-            <p class="role-text">I'm a boarder,<br />looking for a room</p>
-          </label>
-
-          <label class="role-card" for="role-landlord">
-            <input type="radio" name="role" id="role-landlord" value="landlord" hidden />
-            <div class="role-card-content">
-              <div class="role-icon">
-                <span
-                  data-icon="home"
-                  data-icon-width="24"
-                  data-icon-height="24"
-                  data-icon-stroke-width="2"
-                ></span>
-              </div>
-              <span class="role-radio"></span>
-            </div>
-            <p class="role-text">I'm a landlord,<br />looking for a boarder</p>
-          </label>
-        </div>
-
-        <button class="auth-btn-primary" id="continueBtn" disabled>Continue</button>
-
-        <p class="auth-footer-text">Already have an account? <a href="login.html">Log In</a></p>
-      </div>
-    </main>
-
-    <!-- Decorative Corner Images -->
-    <div class="signup-decorative-images">
-      <div class="signup-decorative-left">
-        <img src="../../../assets/images/public/signup_lower_right.png" alt="" />
-      </div>
-      <div class="signup-decorative-right">
-        <img src="../../../assets/images/public/signup_lower_left.png" alt="" />
-      </div>
-    </div>
-
-    <!-- Step 2: Signup Form -->
-    <main class="auth-main hidden" id="step2">
+    <!-- Main Signup Form -->
+    <main class="auth-main" id="signupMain">
       <div class="auth-container auth-container-narrow">
-        <h1 class="auth-title auth-title-small" id="step2Title">
-          Sign up to find <span id="roleTitleText">your perfect match</span>
-        </h1>
+        <h1 class="auth-title auth-title-small">Sign up to find your perfect room</h1>
 
         <div class="social-signup">
           <button class="social-btn social-btn-apple">
@@ -144,7 +87,7 @@
           </div>
 
           <div class="form-group">
-            <label for="email" class="form-label" id="emailLabel">Email</label>
+            <label for="email" class="form-label">Email</label>
             <input type="email" id="email" name="email" class="form-input" required />
           </div>
 
@@ -239,6 +182,16 @@
         <p class="auth-footer-text">Already have an account? <a href="login.html">Log In</a></p>
       </div>
     </main>
+
+    <!-- Decorative Corner Images -->
+    <div class="signup-decorative-images">
+      <div class="signup-decorative-left">
+        <img src="../../../assets/images/public/signup_lower_right.png" alt="" />
+      </div>
+      <div class="signup-decorative-right">
+        <img src="../../../assets/images/public/signup_lower_left.png" alt="" />
+      </div>
+    </div>
 
     <!-- Terms Required Overlay -->
     <div class="terms-overlay" id="termsOverlay">
