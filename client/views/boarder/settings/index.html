@@ -66,13 +66,14 @@
           <div class="settings-content">
             <!-- Profile Tab -->
             <div class="settings-panel active" id="profile-panel">
+              <!-- Basic Information Section -->
               <div class="settings-card">
-                <h2 class="settings-card-title">Profile Information</h2>
+                <h2 class="settings-card-title">Basic Information</h2>
                 <p class="settings-card-description">
                   Update your personal information and profile picture
                 </p>
 
-                <form class="settings-form" id="profile-form">
+                <form class="settings-form" id="basic-info-form">
                   <div class="profile-avatar-section">
                     <img
                       src="../../../assets/images/sample.png"
@@ -111,6 +112,47 @@
                     </div>
                   </div>
 
+                  <div class="form-row">
+                    <div class="form-group">
+                      <label for="date-of-birth">Date of Birth</label>
+                      <input type="date" id="date-of-birth" class="form-control" />
+                    </div>
+                    <div class="form-group">
+                      <label for="gender">Gender</label>
+                      <select id="gender" class="form-control">
+                        <option value="">Select Gender</option>
+                        <option value="male">Male</option>
+                        <option value="female">Female</option>
+                        <option value="other">Other</option>
+                        <option value="prefer-not-to-say">Prefer not to say</option>
+                      </select>
+                    </div>
+                  </div>
+
+                  <div class="form-group">
+                    <label for="bio">About Me</label>
+                    <textarea
+                      id="bio"
+                      class="form-control"
+                      rows="3"
+                      placeholder="Tell landlords a bit about yourself..."
+                    ></textarea>
+                  </div>
+
+                  <div class="form-actions">
+                    <button type="submit" class="btn btn-primary">Save Basic Information</button>
+                  </div>
+                </form>
+              </div>
+
+              <!-- Contact Details Section -->
+              <div class="settings-card">
+                <h2 class="settings-card-title">Contact Details</h2>
+                <p class="settings-card-description">
+                  Manage your contact information for landlord communication
+                </p>
+
+                <form class="settings-form" id="contact-form">
                   <div class="form-group">
                     <label for="email">Email Address</label>
                     <input
@@ -122,13 +164,162 @@
                     />
                   </div>
 
+                  <div class="form-row">
+                    <div class="form-group">
+                      <label for="phone">Phone Number</label>
+                      <input type="tel" id="phone" class="form-control" value="+63 912 345 6789" />
+                    </div>
+                    <div class="form-group">
+                      <label for="alt-phone">Alternative Phone</label>
+                      <input
+                        type="tel"
+                        id="alt-phone"
+                        class="form-control"
+                        placeholder="Optional"
+                      />
+                    </div>
+                  </div>
+
                   <div class="form-group">
-                    <label for="phone">Phone Number</label>
-                    <input type="tel" id="phone" class="form-control" value="+63 912 345 6789" />
+                    <label for="current-address">Current Address</label>
+                    <textarea
+                      id="current-address"
+                      class="form-control"
+                      rows="2"
+                      placeholder="Your current residential address"
+                    ></textarea>
                   </div>
 
                   <div class="form-actions">
-                    <button type="submit" class="btn btn-primary">Save Changes</button>
+                    <button type="submit" class="btn btn-primary">Save Contact Details</button>
+                  </div>
+                </form>
+              </div>
+
+              <!-- Employment Information Section -->
+              <div class="settings-card">
+                <h2 class="settings-card-title">Employment Information</h2>
+                <p class="settings-card-description">
+                  Provide employment details to strengthen your rental applications
+                </p>
+
+                <form class="settings-form" id="employment-form">
+                  <div class="form-group">
+                    <label for="employment-status">Employment Status</label>
+                    <select id="employment-status" class="form-control">
+                      <option value="">Select Status</option>
+                      <option value="employed">Employed</option>
+                      <option value="student">Student</option>
+                      <option value="self-employed">Self-Employed</option>
+                      <option value="unemployed">Unemployed</option>
+                      <option value="retired">Retired</option>
+                    </select>
+                  </div>
+
+                  <div class="form-row">
+                    <div class="form-group">
+                      <label for="company-name">Company/School Name</label>
+                      <input type="text" id="company-name" class="form-control" />
+                    </div>
+                    <div class="form-group">
+                      <label for="job-title">Job Title/Course</label>
+                      <input type="text" id="job-title" class="form-control" />
+                    </div>
+                  </div>
+
+                  <div class="form-row">
+                    <div class="form-group">
+                      <label for="monthly-income">Monthly Income</label>
+                      <select id="monthly-income" class="form-control">
+                        <option value="">Select Range</option>
+                        <option value="below-15k">Below ₱15,000</option>
+                        <option value="15k-30k">₱15,000 - ₱30,000</option>
+                        <option value="30k-50k">₱30,000 - ₱50,000</option>
+                        <option value="50k-100k">₱50,000 - ₱100,000</option>
+                        <option value="above-100k">Above ₱100,000</option>
+                      </select>
+                    </div>
+                    <div class="form-group">
+                      <label for="work-schedule">Work Schedule</label>
+                      <select id="work-schedule" class="form-control">
+                        <option value="">Select Schedule</option>
+                        <option value="day-shift">Day Shift</option>
+                        <option value="night-shift">Night Shift</option>
+                        <option value="flexible">Flexible</option>
+                        <option value="part-time">Part-time</option>
+                      </select>
+                    </div>
+                  </div>
+
+                  <div class="form-group">
+                    <label for="company-address">Company/School Address</label>
+                    <textarea
+                      id="company-address"
+                      class="form-control"
+                      rows="2"
+                      placeholder="Address of your workplace or school"
+                    ></textarea>
+                  </div>
+
+                  <div class="form-actions">
+                    <button type="submit" class="btn btn-primary">
+                      Save Employment Information
+                    </button>
+                  </div>
+                </form>
+              </div>
+
+              <!-- Emergency Contact Section -->
+              <div class="settings-card">
+                <h2 class="settings-card-title">Emergency Contact</h2>
+                <p class="settings-card-description">
+                  Provide emergency contact information for safety purposes
+                </p>
+
+                <form class="settings-form" id="emergency-contact-form">
+                  <div class="form-row">
+                    <div class="form-group">
+                      <label for="emergency-name">Full Name</label>
+                      <input type="text" id="emergency-name" class="form-control" required />
+                    </div>
+                    <div class="form-group">
+                      <label for="emergency-relationship">Relationship</label>
+                      <select id="emergency-relationship" class="form-control" required>
+                        <option value="">Select Relationship</option>
+                        <option value="parent">Parent</option>
+                        <option value="sibling">Sibling</option>
+                        <option value="spouse">Spouse</option>
+                        <option value="guardian">Guardian</option>
+                        <option value="friend">Friend</option>
+                        <option value="relative">Relative</option>
+                        <option value="other">Other</option>
+                      </select>
+                    </div>
+                  </div>
+
+                  <div class="form-row">
+                    <div class="form-group">
+                      <label for="emergency-phone">Phone Number</label>
+                      <input type="tel" id="emergency-phone" class="form-control" required />
+                    </div>
+                    <div class="form-group">
+                      <label for="emergency-alt-phone">Alternative Phone</label>
+                      <input type="tel" id="emergency-alt-phone" class="form-control" />
+                    </div>
+                  </div>
+
+                  <div class="form-group">
+                    <label for="emergency-address">Address</label>
+                    <textarea
+                      id="emergency-address"
+                      class="form-control"
+                      rows="2"
+                      placeholder="Emergency contact's address"
+                    ></textarea>
+                  </div>
+
+                  <div class="form-actions">
+                    <button type="submit" class="btn btn-primary">Save Emergency Contact</button>
                   </div>
                 </form>
               </div>
