@@ -10,31 +10,397 @@ import { updateBoarderStatus } from '../../shared/routing.js';
  * Initialize the confirm booking page
  */
 export function initConfirmBooking() {
-  // Get accepted application from localStorage or URL params
-  const application = getAcceptedApplication();
+  // Get application data from URL params or localStorage
+  const application = getApplicationData();
 
   if (!application) {
-    // No accepted application found - show error instead of silent redirect
+    // No application data found - show error instead of silent redirect
     console.error('No application data found for confirm-booking page');
     showMissingDataError();
     return;
   }
 
-  // Check if boarder already accepted a landlord
-  const user = JSON.parse(localStorage.getItem('user') || '{}');
-  if (user.boarderStatus === 'accepted') {
-    // Already confirmed a booking - cancel other applications and redirect to dashboard
-    cancelOtherApplications(application.id);
-    window.location.href = '../index.html';
+  // Check if this is a new application (from Apply Now) or accepted application
+  const isNewApplication = !application.status || application.status === 'new';
+
+  if (isNewApplication) {
+    // User came from "Apply Now" - show moving date setup
+    showMovingDateSetup(application);
+  } else {
+    // Check if boarder already accepted a landlord
+    const user = JSON.parse(localStorage.getItem('user') || '{}');
+    if (user.boarderStatus === 'accepted') {
+      // Already confirmed a booking - cancel other applications and redirect to dashboard
+      cancelOtherApplications(application.id);
+      window.location.href = '../index.html';
+      return;
+    }
+
+    // Populate property details for accepted application
+    populateApplicationDetails(application);
+    populatePaymentDetails(application);
+    setupAcceptedApplicationFlow(application);
+  }
+}
+
+/**
+ * Show error message when application data is missing
+ */
+function showMissingDataError() {
+  const container = document.querySelector('.confirm-booking-container');
+  if (!container) return;
+
+  container.innerHTML = `
+    <div class="confirm-booking-error">
+      ${getIcon('exclamation-triangle', {
+        width: 64,
+        height: 64,
+        className: 'confirm-booking-error-icon',
+      })}
+      <h2>Application Data Not Found</h2>
+      <p>We couldn't find the application details. Please try again from the Find a Room page.</p>
+      <a href="../../public/find-a-room.html" class="confirm-booking-error-btn">
+        ${getIcon('arrow-left', { width: 20, height: 20 })}
+        <span>Back to Find a Room</span>
+      </a>
+    </div>
+  `;
+}
+
+/**
+ * Get application data from URL params or localStorage
+ * @returns {Object|null} Application object or null
+ */
+function getApplicationData() {
+  // Check URL params first
+  const urlParams = new URLSearchParams(window.location.search);
+  const appId = urlParams.get('id');
+  const title = urlParams.get('title');
+  const price = urlParams.get('price');
+
+  // If we have URL params, this is likely a new application from "Apply Now"
+  if (appId && title) {
+    return {
+      id: parseInt(appId),
+      propertyId: parseInt(appId),
+      title: title,
+      address: urlParams.get('address') || '',
+      price: price ? parseInt(price) : 0,
+      monthlyRent: price ? parseInt(price) : 0,
+      landlordName: urlParams.get('landlordName') || 'Property Owner',
+      roomType: urlParams.get('roomType') || 'Standard Room',
+      status: 'new', // Mark as new application
+      appliedDate: new Date().toISOString().split('T')[0],
+    };
+  }
+
+  // Check for accepted application in localStorage
+  const applicationId = urlParams.get('applicationId');
+  if (applicationId) {
+    const applications = JSON.parse(localStorage.getItem('applications') || '[]');
+    const application = applications.find(app => app.id === parseInt(applicationId));
+    if (application) {
+      return application;
+    }
+  }
+
+  // Fallback: get from localStorage (single accepted application)
+  return JSON.parse(localStorage.getItem('acceptedApplication') || 'null');
+}
+
+/**
+ * Show moving date setup for new applications
+ * @param {Object} application - Application object
+ */
+function showMovingDateSetup(application) {
+  const container = document.querySelector('.confirm-booking-container');
+  if (!container) return;
+
+  // Update page title and header
+  document.title = 'Set Moving Date - Haven Space';
+
+  container.innerHTML = `
+    <div class="confirm-booking-header">
+      <div class="confirm-booking-header-content">
+        <h1 class="confirm-booking-title">Set Your Moving Date</h1>
+        <p class="confirm-booking-subtitle">
+          Choose your preferred moving date to complete your application
+        </p>
+      </div>
+    </div>
+
+    <!-- Property Summary Card -->
+    <div class="confirm-booking-card confirm-property-card">
+      <div class="confirm-card-header">
+        <h2 class="confirm-card-title">
+          <span data-icon="home" data-icon-width="24" data-icon-height="24"></span>
+          Property Summary
+        </h2>
+      </div>
+      <div class="confirm-property-details">
+        <div class="confirm-property-row">
+          <span class="confirm-property-label">Property Name:</span>
+          <span class="confirm-property-value">${application.title}</span>
+        </div>
+        <div class="confirm-property-row">
+          <span class="confirm-property-label">Room Type:</span>
+          <span class="confirm-property-value">${application.roomType}</span>
+        </div>
+        <div class="confirm-property-row">
+          <span class="confirm-property-label">Monthly Rent:</span>
+          <span class="confirm-property-value confirm-property-price">₱${application.monthlyRent.toLocaleString()}</span>
+        </div>
+        <div class="confirm-property-row">
+          <span class="confirm-property-label">Location:</span>
+          <span class="confirm-property-value">${
+            application.address || 'Contact landlord for details'
+          }</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Moving Date Selection -->
+    <div class="confirm-booking-card">
+      <div class="confirm-card-header">
+        <h2 class="confirm-card-title">
+          <span data-icon="calendar" data-icon-width="24" data-icon-height="24"></span>
+          Preferred Moving Date
+        </h2>
+      </div>
+      <div class="moving-date-content">
+        <div class="moving-date-info">
+          <p>Select your preferred moving date. This will be included in your application to help the landlord understand your timeline.</p>
+        </div>
+        <div class="moving-date-input-group">
+          <label for="moving-date-input" class="moving-date-label">Moving Date:</label>
+          <input type="date" id="moving-date-input" class="moving-date-input" min="${
+            new Date().toISOString().split('T')[0]
+          }" />
+        </div>
+        <div class="moving-date-note">
+          <span data-icon="informationCircle" data-icon-width="20" data-icon-height="20"></span>
+          <span>You can discuss and adjust this date with the landlord after your application is submitted.</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Additional Message -->
+    <div class="confirm-booking-card">
+      <div class="confirm-card-header">
+        <h2 class="confirm-card-title">
+          <span data-icon="chatBubbleLeft" data-icon-width="24" data-icon-height="24"></span>
+          Message to Landlord (Optional)
+        </h2>
+      </div>
+      <div class="message-content">
+        <textarea 
+          id="application-message" 
+          class="application-message-input" 
+          placeholder="Tell the landlord a bit about yourself, your occupation, or any questions you have about the property..."
+          rows="4"
+        ></textarea>
+      </div>
+    </div>
+
+    <!-- Action Buttons -->
+    <div class="confirm-booking-actions">
+      <button class="confirm-btn confirm-btn-secondary" id="back-to-search-btn">
+        <span data-icon="arrowLeft" data-icon-width="20" data-icon-height="20"></span>
+        Back to Search
+      </button>
+      <button class="confirm-btn confirm-btn-primary" id="submit-application-btn" disabled>
+        <span data-icon="paperAirplane" data-icon-width="20" data-icon-height="20"></span>
+        Submit Application
+      </button>
+    </div>
+  `;
+
+  // Setup event listeners for moving date setup
+  setupMovingDateEventListeners(application);
+}
+
+/**
+ * Setup event listeners for moving date setup
+ * @param {Object} application - Application object
+ */
+function setupMovingDateEventListeners(application) {
+  const movingDateInput = document.getElementById('moving-date-input');
+  const submitBtn = document.getElementById('submit-application-btn');
+  const backBtn = document.getElementById('back-to-search-btn');
+
+  // Enable submit button when date is selected
+  if (movingDateInput && submitBtn) {
+    movingDateInput.addEventListener('change', () => {
+      submitBtn.disabled = !movingDateInput.value;
+    });
+  }
+
+  // Submit application
+  if (submitBtn) {
+    submitBtn.addEventListener('click', async () => {
+      await handleSubmitApplication(application);
+    });
+  }
+
+  // Back to search
+  if (backBtn) {
+    backBtn.addEventListener('click', () => {
+      window.location.href = '../../public/find-a-room/index.html';
+    });
+  }
+}
+
+/**
+ * Handle submitting the application with moving date
+ * @param {Object} application - Application object
+ */
+async function handleSubmitApplication(application) {
+  const movingDateInput = document.getElementById('moving-date-input');
+  const messageInput = document.getElementById('application-message');
+  const submitBtn = document.getElementById('submit-application-btn');
+
+  if (!movingDateInput || !movingDateInput.value) {
+    alert('Please select a moving date.');
     return;
   }
 
-  // Populate property details
-  populateApplicationDetails(application);
+  try {
+    // Show loading state
+    submitBtn.disabled = true;
+    submitBtn.innerHTML =
+      '<span data-icon="loading" data-icon-width="20" data-icon-height="20"></span> Submitting...';
 
-  // Populate payment details
-  populatePaymentDetails(application);
+    // Prepare application data
+    const applicationData = {
+      ...application,
+      movingDate: movingDateInput.value,
+      message: messageInput ? messageInput.value : '',
+      status: 'pending',
+      submittedAt: new Date().toISOString(),
+    };
 
+    // Store application in localStorage (simulate API call)
+    const applications = JSON.parse(localStorage.getItem('applications') || '[]');
+    applications.push(applicationData);
+    localStorage.setItem('applications', JSON.stringify(applications));
+
+    // Add some sample saved properties if none exist (for demo purposes)
+    const savedProperties = JSON.parse(localStorage.getItem('savedProperties') || '[]');
+    if (savedProperties.length === 0) {
+      const sampleSavedProperties = [
+        {
+          id: 1,
+          title: 'Campus View Residences',
+          address: 'Loyola Heights, QC',
+          price: 6500,
+          image: 'https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?w=300&q=80',
+          savedAt: new Date().toISOString(),
+        },
+        {
+          id: 2,
+          title: 'Greenfield Boarding House',
+          address: 'Commonwealth Ave, QC',
+          price: 4200,
+          image: 'https://images.unsplash.com/photo-1502672260266-1c1ef2d93688?w=300&q=80',
+          savedAt: new Date(Date.now() - 86400000).toISOString(), // 1 day ago
+        },
+      ];
+      localStorage.setItem('savedProperties', JSON.stringify(sampleSavedProperties));
+    }
+
+    // Add some sample search alerts if none exist (for demo purposes)
+    const searchAlerts = JSON.parse(localStorage.getItem('searchAlerts') || '[]');
+    if (searchAlerts.length === 0) {
+      const sampleAlerts = [
+        {
+          id: 1,
+          name: 'Near UST - ₱3-5k',
+          criteria: 'Dorm/Boarding House • WiFi • Kitchen • Within 2km',
+          active: true,
+          newCount: 3,
+          totalCount: 12,
+        },
+        {
+          id: 2,
+          name: 'QC - Diliman Area',
+          criteria: 'Apartment • AC • Laundry • ₱5-8k',
+          active: true,
+          newCount: 1,
+          totalCount: 8,
+        },
+      ];
+      localStorage.setItem('searchAlerts', JSON.stringify(sampleAlerts));
+    }
+
+    // Update boarder status to applied_pending
+    updateBoarderStatus('applied_pending');
+
+    // Show success and redirect to dashboard
+    showApplicationSubmittedSuccess(applicationData);
+  } catch (error) {
+    console.error('Failed to submit application:', error);
+    submitBtn.disabled = false;
+    submitBtn.innerHTML =
+      '<span data-icon="paperAirplane" data-icon-width="20" data-icon-height="20"></span> Submit Application';
+    alert('Failed to submit application. Please try again.');
+  }
+}
+
+/**
+ * Show application submitted success message
+ * @param {Object} application - Application object
+ */
+function showApplicationSubmittedSuccess(application) {
+  const container = document.querySelector('.confirm-booking-container');
+  if (!container) return;
+
+  container.innerHTML = `
+    <div class="application-success">
+      <div class="application-success-icon">
+        <span data-icon="checkCircle" data-icon-width="64" data-icon-height="64"></span>
+      </div>
+      <h2 class="application-success-title">Application Submitted!</h2>
+      <p class="application-success-message">
+        Your application for <strong>${application.title}</strong> has been sent to the landlord.
+      </p>
+      <div class="application-success-details">
+        <div class="success-detail-item">
+          <span class="success-detail-label">Moving Date:</span>
+          <span class="success-detail-value">${formatDate(application.movingDate)}</span>
+        </div>
+        <div class="success-detail-item">
+          <span class="success-detail-label">Monthly Rent:</span>
+          <span class="success-detail-value">₱${application.monthlyRent.toLocaleString()}</span>
+        </div>
+      </div>
+      <div class="application-success-next">
+        <h3>What's Next?</h3>
+        <p>The landlord will review your application and respond within 1-3 business days. You'll receive a notification when they make a decision.</p>
+      </div>
+      <div class="application-success-actions">
+        <button class="confirm-btn confirm-btn-secondary" onclick="window.location.href='../../public/find-a-room/index.html'">
+          <span data-icon="search" data-icon-width="20" data-icon-height="20"></span>
+          Browse More Properties
+        </button>
+        <button class="confirm-btn confirm-btn-primary" onclick="window.location.href='../applications-dashboard/index.html'">
+          <span data-icon="home" data-icon-width="20" data-icon-height="20"></span>
+          Go to Dashboard
+        </button>
+      </div>
+    </div>
+  `;
+
+  // Auto-redirect to applications dashboard after 5 seconds
+  setTimeout(() => {
+    window.location.href = '../applications-dashboard/index.html';
+  }, 5000);
+}
+
+/**
+ * Setup the accepted application flow (original functionality)
+ * @param {Object} application - Application object
+ */
+function setupAcceptedApplicationFlow(application) {
   // Setup terms checkbox
   const termsCheckbox = document.getElementById('terms-agreement');
   const acceptBtn = document.getElementById('confirm-accept-btn');
@@ -67,88 +433,16 @@ export function initConfirmBooking() {
   const doneBtn = document.getElementById('modal-done-btn');
   if (doneBtn) {
     doneBtn.addEventListener('click', () => {
-      window.location.href = '../index.html';
+      // Check if user is now fully accepted, if so go to main dashboard
+      const user = JSON.parse(localStorage.getItem('user') || '{}');
+      if (user.boarderStatus === 'accepted') {
+        window.location.href = '../index.html';
+      } else {
+        // Otherwise go to applications dashboard
+        window.location.href = '../applications-dashboard/index.html';
+      }
     });
   }
-}
-
-/**
- * Show error message when application data is missing
- */
-function showMissingDataError() {
-  const container = document.querySelector('.confirm-booking-container');
-  if (!container) return;
-
-  container.innerHTML = `
-    <div class="confirm-booking-error">
-      ${getIcon('exclamation-triangle', {
-        width: 64,
-        height: 64,
-        className: 'confirm-booking-error-icon',
-      })}
-      <h2>Application Data Not Found</h2>
-      <p>We couldn't find the application details. Please try again from the Find a Room page.</p>
-      <a href="../../public/find-a-room.html" class="confirm-booking-error-btn">
-        ${getIcon('arrow-left', { width: 20, height: 20 })}
-        <span>Back to Find a Room</span>
-      </a>
-    </div>
-  `;
-}
-
-/**
- * Get the accepted application from URL params or localStorage
- * @returns {Object|null} Application object or null
- */
-function getAcceptedApplication() {
-  // Check URL params first
-  const urlParams = new URLSearchParams(window.location.search);
-  const appId = urlParams.get('applicationId');
-
-  if (appId) {
-    const applications = JSON.parse(localStorage.getItem('applications') || '[]');
-    const application = applications.find(app => app.id === parseInt(appId));
-
-    if (application) {
-      return application;
-    }
-
-    // Fallback: Try to reconstruct from URL params if not found in localStorage
-    return reconstructApplicationFromParams(appId);
-  }
-
-  // Fallback: get from localStorage (single accepted application)
-  return JSON.parse(localStorage.getItem('acceptedApplication') || 'null');
-}
-
-/**
- * Reconstruct application object from URL parameters
- * @param {string} appId - Application ID
- * @returns {Object|null} Reconstructed application or null
- */
-function reconstructApplicationFromParams(appId) {
-  const urlParams = new URLSearchParams(window.location.search);
-  const title = urlParams.get('title') || urlParams.get('property');
-  const price = urlParams.get('price') || urlParams.get('monthlyRent');
-  const address = urlParams.get('address') || urlParams.get('location');
-
-  if (!title && !price) {
-    console.error('Cannot reconstruct application - missing required params');
-    return null;
-  }
-
-  const reconstructed = {
-    id: parseInt(appId),
-    propertyId: parseInt(appId),
-    title: title || 'Unknown Property',
-    address: address || 'Address not available',
-    price: price ? parseInt(price) : 0,
-    monthlyRent: price ? parseInt(price) : 0,
-    status: 'pending_confirmation',
-    appliedDate: new Date().toISOString().split('T')[0],
-  };
-
-  return reconstructed;
 }
 
 /**

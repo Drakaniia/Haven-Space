@@ -662,3 +662,218 @@
     flex-direction: column;
   }
 }
+
+/* Moving Date Setup Styles */
+.moving-date-content {
+  padding: 1.5rem;
+}
+
+.moving-date-info {
+  margin-bottom: 1.5rem;
+}
+
+.moving-date-info p {
+  font-size: 0.95rem;
+  color: var(--text-gray);
+  line-height: 1.6;
+  margin: 0;
+}
+
+.moving-date-input-group {
+  margin-bottom: 1rem;
+}
+
+.moving-date-label {
+  display: block;
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: var(--text-dark);
+  margin-bottom: 0.5rem;
+}
+
+.moving-date-input {
+  width: 100%;
+  max-width: 300px;
+  padding: 0.75rem;
+  border: 2px solid var(--border-color);
+  border-radius: 8px;
+  font-size: 1rem;
+  font-family: var(--font-main);
+  transition: border-color 0.2s ease;
+}
+
+.moving-date-input:focus {
+  outline: none;
+  border-color: var(--primary-green);
+}
+
+.moving-date-note {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.5rem;
+  background: var(--bg-green);
+  padding: 1rem;
+  border-radius: 8px;
+  border-left: 4px solid var(--primary-green);
+}
+
+.moving-date-note svg {
+  color: var(--primary-green);
+  margin-top: 2px;
+  flex-shrink: 0;
+}
+
+.moving-date-note span:last-child {
+  font-size: 0.9rem;
+  color: var(--text-gray);
+  line-height: 1.5;
+}
+
+/* Message Input Styles */
+.message-content {
+  padding: 1.5rem;
+}
+
+.application-message-input {
+  width: 100%;
+  padding: 1rem;
+  border: 2px solid var(--border-color);
+  border-radius: 8px;
+  font-size: 0.95rem;
+  font-family: var(--font-main);
+  line-height: 1.5;
+  resize: vertical;
+  min-height: 100px;
+  transition: border-color 0.2s ease;
+}
+
+.application-message-input:focus {
+  outline: none;
+  border-color: var(--primary-green);
+}
+
+.application-message-input::placeholder {
+  color: var(--text-gray);
+}
+
+/* Application Success Styles */
+.application-success {
+  text-align: center;
+  padding: 3rem 2rem;
+  max-width: 600px;
+  margin: 0 auto;
+}
+
+.application-success-icon {
+  margin-bottom: 1.5rem;
+}
+
+.application-success-icon svg {
+  color: var(--primary-green);
+}
+
+.application-success-title {
+  font-size: 2rem;
+  font-weight: 700;
+  color: var(--text-dark);
+  margin: 0 0 1rem 0;
+}
+
+.application-success-message {
+  font-size: 1.1rem;
+  color: var(--text-gray);
+  line-height: 1.6;
+  margin: 0 0 2rem 0;
+}
+
+.application-success-details {
+  background: var(--bg-cream);
+  padding: 1.5rem;
+  border-radius: 8px;
+  margin-bottom: 2rem;
+}
+
+.success-detail-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.75rem 0;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.success-detail-item:last-child {
+  border-bottom: none;
+}
+
+.success-detail-label {
+  font-size: 0.95rem;
+  color: var(--text-gray);
+  font-weight: 500;
+}
+
+.success-detail-value {
+  font-size: 0.95rem;
+  color: var(--text-dark);
+  font-weight: 600;
+}
+
+.application-success-next {
+  background: var(--bg-green);
+  padding: 1.5rem;
+  border-radius: 8px;
+  border-left: 4px solid var(--primary-green);
+  margin-bottom: 2rem;
+  text-align: left;
+}
+
+.application-success-next h3 {
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: var(--text-dark);
+  margin: 0 0 0.75rem 0;
+}
+
+.application-success-next p {
+  font-size: 0.95rem;
+  color: var(--text-gray);
+  line-height: 1.6;
+  margin: 0;
+}
+
+.application-success-actions {
+  display: flex;
+  gap: 1rem;
+  justify-content: center;
+}
+
+/* Responsive adjustments for new styles */
+@media (max-width: 768px) {
+  .moving-date-content,
+  .message-content {
+    padding: 1rem;
+  }
+
+  .application-success {
+    padding: 2rem 1rem;
+  }
+
+  .application-success-title {
+    font-size: 1.5rem;
+  }
+
+  .application-success-actions {
+    flex-direction: column;
+  }
+
+  .application-success-actions .confirm-btn {
+    width: 100%;
+  }
+}
+
+@media (max-width: 480px) {
+  .success-detail-item {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.25rem;
+  }
+}

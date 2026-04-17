@@ -6,6 +6,7 @@
 import CONFIG from '../../config.js';
 import { updateBoarderStatus } from '../../shared/routing.js';
 import { getImageUrl } from '../../shared/image-utils.js';
+import { storeTemporaryApplicationData } from './application-submitted.js';
 
 // State management
 const state = {
@@ -294,21 +295,21 @@ function setupEventListeners() {
     submitBtn.addEventListener('click', handleSubmit);
   }
 
-  // Success modal buttons
-  const browseMoreBtn = document.getElementById('browse-more-btn');
-  const viewApplicationsBtn = document.getElementById('view-applications-btn');
+  // Success modal buttons - removed since we now redirect to application-submitted page
+  // const browseMoreBtn = document.getElementById('browse-more-btn');
+  // const viewApplicationsBtn = document.getElementById('view-applications-btn');
 
-  if (browseMoreBtn) {
-    browseMoreBtn.addEventListener('click', () => {
-      window.location.href = './index.html';
-    });
-  }
+  // if (browseMoreBtn) {
+  //   browseMoreBtn.addEventListener('click', () => {
+  //     window.location.href = './index.html';
+  //   });
+  // }
 
-  if (viewApplicationsBtn) {
-    viewApplicationsBtn.addEventListener('click', () => {
-      window.location.href = '../applications/index.html';
-    });
-  }
+  // if (viewApplicationsBtn) {
+  //   viewApplicationsBtn.addEventListener('click', () => {
+  //     window.location.href = '../applications/index.html';
+  //   });
+  // }
 }
 
 /**
@@ -402,11 +403,19 @@ async function handleSubmit(e) {
     const result = await response.json();
 
     if (response.ok && result.success) {
+      // Store temporary application data for the success page
+      storeTemporaryApplicationData({
+        property_id: state.propertyId,
+        room_id: roomId,
+        landlord_id: landlordId,
+        message: applicationData.message,
+      });
+
       // Update boarder status
       updateBoarderStatus('applied_pending');
 
-      // Show success modal
-      showSuccessModal();
+      // Redirect to application submitted page
+      window.location.href = '../application-submitted/index.html';
     } else {
       throw new Error(result.error || 'Failed to submit application');
     }
@@ -416,8 +425,19 @@ async function handleSubmit(e) {
     // For development, simulate success
     if (CONFIG.API_BASE_URL.includes('localhost')) {
       console.log('Development mode: Simulating successful submission');
+
+      // Store temporary application data for the success page
+      storeTemporaryApplicationData({
+        property_id: state.propertyId,
+        room_id: roomId,
+        landlord_id: landlordId,
+        message: applicationData.message,
+      });
+
       updateBoarderStatus('applied_pending');
-      showSuccessModal();
+
+      // Redirect to application submitted page
+      window.location.href = '../application-submitted/index.html';
     } else {
       alert('Failed to submit application. Please try again.');
       submitBtn.disabled = false;
@@ -426,18 +446,7 @@ async function handleSubmit(e) {
   }
 }
 
-/**
- * Show success modal
- */
-function showSuccessModal() {
-  const successModal = document.getElementById('success-modal');
-  if (successModal) {
-    successModal.style.display = 'flex';
-
-    // Prevent body scroll
-    document.body.style.overflow = 'hidden';
-  }
-}
+// showSuccessModal function removed - now redirecting to application-submitted page instead
 
 // Initialize when module is loaded
 if (document.readyState === 'loading') {
