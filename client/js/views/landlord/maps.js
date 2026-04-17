@@ -1,9 +1,11 @@
-document.addEventListener('DOMContentLoaded', () => {
+import CONFIG from '../../config.js';
+
+document.addEventListener('DOMContentLoaded', async () => {
   // Initialize the map, centered on Malaybalay City, Bukidnon
   const defaultLat = 7.8183;
   const defaultLng = 125.1333;
 
-  const map = L.map('map').setView([defaultLat, defaultLng], 15);
+  const map = L.map('map').setView([defaultLat, defaultLng], 13);
 
   // Add OpenStreetMap tiles
   L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
@@ -11,8 +13,8 @@ document.addEventListener('DOMContentLoaded', () => {
     attribution: '© OpenStreetMap contributors',
   }).addTo(map);
 
-  // Set up the draggable pin
-  const customIcon = L.icon({
+  // Custom icon for property markers
+  const propertyIcon = L.icon({
     iconUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png',
     iconRetinaUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon-2x.png',
     shadowUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png',
@@ -22,100 +24,119 @@ document.addEventListener('DOMContentLoaded', () => {
     shadowSize: [41, 41],
   });
 
-  const marker = L.marker([defaultLat, defaultLng], {
-    icon: customIcon,
-    draggable: true,
-  }).addTo(map);
+  // Fetch properties from API
+  try {
+    const response = await fetch(`${CONFIG.API_BASE_URL}/api/landlord/properties.php`, {
+      credentials: 'include',
+    });
 
-  // DOM Elements
-  const latInput = document.getElementById('prop-lat');
-  const lngInput = document.getElementById('prop-lng');
-  const locateBtn = document.getElementById('locate-me');
-  const form = document.getElementById('map-property-form');
+    if (!response.ok) {
+      throw new Error(`API error: ${response.status}`);
+    }
 
-  // Initial values
-  updateInputs(marker.getLatLng());
+    const result = await response.json();
 
-  // Auto-detect user location on load
-  if (navigator.geolocation) {
-    navigator.geolocation.getCurrentPosition(
-      position => {
-        const latlng = {
-          lat: position.coords.latitude,
-          lng: position.coords.longitude,
-        };
-        marker.setLatLng(latlng);
-        updateInputs(latlng);
-        map.flyTo(latlng, 16);
-      },
-      () => {
-        // Silently fail - stay on default Malaybalay City
-      }
-    );
-  }
+    if (result.data && result.data.properties && result.data.properties.length > 0) {
+      const properties = result.data.properties;
+      const bounds = [];
 
-  // Update inputs when marker gets dragged
-  marker.on('dragend', function (_e) {
-    const latlng = marker.getLatLng();
-    updateInputs(latlng);
-    map.flyTo(latlng, map.getZoom());
-  });
+      // Add markers for each property with valid coordinates
+      properties.forEach(property => {
+        // Check if property has valid latitude and longitude
+        if (property.latitude && property.longitude) {
+          const lat = parseFloat(property.latitude);
+          const lng = parseFloat(property.longitude);
 
-  // When clicking on map, move the marker
-  map.on('click', function (e) {
-    marker.setLatLng(e.latlng);
-    updateInputs(e.latlng);
-    map.flyTo(e.latlng, map.getZoom());
-  });
+          // Validate coordinates are valid numbers
+          if (!isNaN(lat) && !isNaN(lng)) {
+            const marker = L.marker([lat, lng], {
+              icon: propertyIcon,
+            }).addTo(map);
 
-  function updateInputs(latlng) {
-    latInput.value = latlng.lat.toFixed(6);
-    lngInput.value = latlng.lng.toFixed(6);
-  }
+            // Create popup content
+            const statusLabel =
+              property.status === 'active'
+                ? 'Active'
+                : property.status === 'full'
+                ? 'Fully Occupied'
+                : 'Inactive';
 
-  // Handle locate me button
-  if (locateBtn) {
-    locateBtn.addEventListener('click', () => {
-      if (navigator.geolocation) {
-        locateBtn.classList.add('loading');
-        navigator.geolocation.getCurrentPosition(
-          position => {
-            const latlng = { lat: position.coords.latitude, lng: position.coords.longitude };
-            marker.setLatLng(latlng);
-            updateInputs(latlng);
-            map.flyTo(latlng, 16);
-            locateBtn.classList.remove('loading');
-          },
-          _error => {
-            locateBtn.classList.remove('loading');
-            alert('Could not get your location. Please check browser permissions.');
+            const popupContent = `
+              <div style="min-width: 200px;">
+                <h3 style="margin: 0 0 8px 0; font-size: 16px; font-weight: 600;">${
+                  property.name
+                }</h3>
+                <p style="margin: 0 0 6px 0; font-size: 13px; color: #666;">
+                  <strong>Address:</strong> ${property.address || 'N/A'}
+                </p>
+                <p style="margin: 0 0 6px 0; font-size: 13px; color: #666;">
+                  <strong>Price:</strong> ₱${(property.price || 0).toLocaleString()}/month
+                </p>
+                <p style="margin: 0 0 6px 0; font-size: 13px; color: #666;">
+                  <strong>Rooms:</strong> ${property.total_rooms || 0} (${
+              property.occupied_rooms || 0
+            } occupied)
+                </p>
+                <p style="margin: 0 0 8px 0; font-size: 13px;">
+                  <span style="display: inline-block; padding: 2px 8px; background: ${
+                    property.status === 'active'
+                      ? '#dcfce7'
+                      : property.status === 'full'
+                      ? '#fef3c7'
+                      : '#fee2e2'
+                  }; color: ${
+              property.status === 'active'
+                ? '#166534'
+                : property.status === 'full'
+                ? '#92400e'
+                : '#991b1b'
+            }; border-radius: 4px; font-size: 12px; font-weight: 600;">
+                    ${statusLabel}
+                  </span>
+                </p>
+                <a href="../listings/edit.html?id=${property.id}" 
+                   style="display: inline-block; padding: 6px 12px; background: #4a7c23; color: white; text-decoration: none; border-radius: 6px; font-size: 13px; font-weight: 600;">
+                  Edit Property
+                </a>
+              </div>
+            `;
+
+            marker.bindPopup(popupContent);
+
+            // Add to bounds for auto-fitting
+            bounds.push([lat, lng]);
           }
-        );
-      } else {
-        alert('Geolocation is not supported by your browser.');
+        }
+      });
+
+      // Fit map to show all markers
+      if (bounds.length > 0) {
+        map.fitBounds(bounds, { padding: [50, 50] });
       }
-    });
-  }
 
-  // Handle Form Submit
-  if (form) {
-    form.addEventListener('submit', e => {
-      e.preventDefault();
-      // Handle the save logic here (mock)
-      const submitBtn = form.querySelector('.btn-save-property');
-      const originalText = submitBtn.textContent;
-      submitBtn.textContent = 'Saving...';
-
-      setTimeout(() => {
-        submitBtn.textContent = 'Saved Successfully!';
-        submitBtn.style.backgroundColor = '#16a34a';
-
-        setTimeout(() => {
-          submitBtn.textContent = originalText;
-          submitBtn.style.backgroundColor = '';
-          window.location.href = '../listings/index.html';
-        }, 1500);
-      }, 1000);
-    });
+      // Update instruction text
+      const instruction = document.querySelector('.map-instruction');
+      if (instruction) {
+        instruction.textContent = `Showing ${bounds.length} ${
+          bounds.length === 1 ? 'property' : 'properties'
+        } on the map`;
+      }
+    } else {
+      // No properties found
+      const instruction = document.querySelector('.map-instruction');
+      if (instruction) {
+        instruction.textContent = 'No properties with location data found';
+        instruction.style.background = 'rgba(254, 226, 226, 0.95)';
+        instruction.style.color = '#991b1b';
+      }
+    }
+  } catch (error) {
+    console.error('Failed to fetch properties:', error);
+    const instruction = document.querySelector('.map-instruction');
+    if (instruction) {
+      instruction.textContent = 'Failed to load properties. Please try again.';
+      instruction.style.background = 'rgba(254, 226, 226, 0.95)';
+      instruction.style.color = '#991b1b';
+    }
   }
 });

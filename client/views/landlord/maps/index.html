@@ -4,7 +4,7 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <link rel="icon" type="image/svg+xml" href="../../../assets/favicon.svg" />
-    <title>Add Property Location - Haven Space</title>
+    <title>Properties Map View - Haven Space</title>
     <!-- Leaflet CSS -->
     <link
       rel="stylesheet"
@@ -23,8 +23,8 @@
   </head>
   <body>
     <div class="landlord-map-container">
-      <!-- Map Section -->
-      <div class="map-section">
+      <!-- Map Section (Full Screen) -->
+      <div class="map-section fullscreen">
         <div id="map"></div>
         <!-- Back Button -->
         <a href="../index.html" class="map-back-btn">
@@ -36,68 +36,7 @@
           ></span>
           Back to Dashboard
         </a>
-        <!-- Map Controls -->
-        <div class="map-controls">
-          <button class="map-control-btn" id="locate-me" title="Use my location">
-            <span
-              data-icon="location"
-              data-icon-width="24"
-              data-icon-height="24"
-              data-icon-stroke-width="2"
-            ></span>
-          </button>
-        </div>
-        <div class="map-instruction">Drag the pin to set your property's exact location.</div>
-      </div>
-
-      <!-- Right side form panel -->
-      <div class="property-form-panel">
-        <div class="form-header">
-          <h2>Pin Location & Details</h2>
-          <p>Add a property directly from the map.</p>
-        </div>
-
-        <form id="map-property-form" class="property-form">
-          <div class="form-group">
-            <label for="prop-name">Property Name</label>
-            <input type="text" id="prop-name" placeholder="e.g. Sunrise Dormitory" required />
-          </div>
-
-          <div class="form-row">
-            <div class="form-group">
-              <label for="prop-type">Property Type</label>
-              <select id="prop-type" required>
-                <option value="boarding-house">Boarding House</option>
-                <option value="dormitory">Dormitory</option>
-                <option value="apartment">Apartment</option>
-              </select>
-            </div>
-            <div class="form-group">
-              <label for="prop-price">Monthly Rent (₱)</label>
-              <input type="number" id="prop-price" placeholder="4500" required />
-            </div>
-          </div>
-
-          <div class="form-group">
-            <label for="prop-location">Address</label>
-            <textarea id="prop-location" rows="2" placeholder="Full address" required></textarea>
-          </div>
-
-          <div class="form-row coordinates-row">
-            <div class="form-group">
-              <label for="prop-lat">Latitude</label>
-              <input type="text" id="prop-lat" readonly />
-            </div>
-            <div class="form-group">
-              <label for="prop-lng">Longitude</label>
-              <input type="text" id="prop-lng" readonly />
-            </div>
-          </div>
-
-          <div class="form-actions">
-            <button type="submit" class="btn-save-property">Save Property Location</button>
-          </div>
-        </form>
+        <div class="map-instruction">Loading your properties...</div>
       </div>
     </div>
 

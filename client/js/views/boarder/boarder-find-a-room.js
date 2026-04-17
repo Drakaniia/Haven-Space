@@ -5,6 +5,7 @@
 
 import { getIcon, getSolidIcon } from '../../shared/icons.js';
 import { updateBoarderStatus } from '../../shared/routing.js';
+import CONFIG from '../../config.js';
 
 // State management
 const state = {
@@ -22,177 +23,92 @@ const state = {
   markers: [],
   mapVisible: false,
   currentProperty: null,
+  properties: [], // Store fetched properties
+  isLoading: false,
 };
 
-// Sample property data (replace with API calls in production)
-const properties = [
-  {
-    id: 1,
-    title: 'Sunrise Dormitory',
-    address: 'Katipunan Avenue, Quezon City, Metro Manila',
-    location: 'University of the Philippines',
-    distance: 0.5,
-    price: 4500,
-    rating: 4.8,
-    reviews: 24,
-    type: 'single',
-    amenities: ['wifi', 'ac', 'parking', 'laundry', 'security', 'cctv'],
-    image: 'https://images.unsplash.com/photo-1555854877-bab0e564b8d5?w=800&q=80',
-    badges: ['verified', 'new'],
-    available: 'Now',
-    roomTypes: 'Single & Shared',
-    lat: 14.6417,
-    lng: 121.0705,
-    phone: '0906 460 1570',
-    locationCode: '58GX+JM Quezon City',
-    propertyType: 'Boarding House',
-    photos: [
-      'https://images.unsplash.com/photo-1555854877-bab0e564b8d5?w=800&q=80',
-      'https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?w=800&q=80',
-      'https://images.unsplash.com/photo-1502672260266-1c1ef2d93688?w=800&q=80',
-    ],
-    reviewsList: [
-      {
-        username: 'Maria Santos',
-        initials: 'MS',
-        reviewsCount: 12,
-        photosCount: 8,
-        rating: 5,
-        time: '2 months ago',
-        text: 'Great place to stay! Very clean and the landlord is accommodating. The WiFi is fast and perfect for online classes. Highly recommended!',
-      },
-      {
-        username: 'Juan Dela Cruz',
-        initials: 'JD',
-        reviewsCount: 5,
-        photosCount: 3,
-        rating: 4,
-        time: '3 months ago',
-        text: 'Good value for money. The room is spacious and well-ventilated. Only minor issue is the occasional water interruption but overall a solid choice.',
-      },
-    ],
-  },
-  {
-    id: 2,
-    title: 'Campus View Residences',
-    address: 'Loyola Heights, Quezon City, Metro Manila',
-    location: 'Ateneo de Manila',
-    distance: 1.2,
-    price: 6500,
-    rating: 4.6,
-    reviews: 18,
-    type: 'studio',
-    amenities: ['wifi', 'furnished', 'parking', 'cctv'],
-    image: 'https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?w=800&q=80',
-    badges: ['verified'],
-    available: 'Sept 1',
-    roomTypes: 'Studio & 1 BHK',
-    lat: 14.6385,
-    lng: 121.0733,
-    phone: '0917 123 4567',
-    locationCode: '58FX+KP Quezon City',
-    propertyType: 'Apartment',
-    photos: [
-      'https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?w=800&q=80',
-      'https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?w=800&q=80',
-      'https://images.unsplash.com/photo-1555854877-bab0e564b8d5?w=800&q=80',
-    ],
-    reviewsList: [
-      {
-        username: 'Ana Reyes',
-        initials: 'AR',
-        reviewsCount: 8,
-        photosCount: 5,
-        rating: 5,
-        time: '1 month ago',
-        text: 'Amazing location! Walking distance to Ateneo and very safe area. The rooms are modern and clean.',
-      },
-    ],
-  },
-  {
-    id: 3,
-    title: 'Greenfield Boarding House',
-    address: 'Commonwealth Avenue, Quezon City, Metro Manila',
-    location: 'Miriam College',
-    distance: 2.1,
-    price: 3200,
-    rating: 4.5,
-    reviews: 32,
-    type: 'shared',
-    amenities: ['wifi', 'laundry', 'kitchen', 'parking'],
-    image: 'https://images.unsplash.com/photo-1502672260266-1c1ef2d93688?w=800&q=80',
-    badges: ['promo'],
-    available: 'Now',
-    roomTypes: 'Shared Rooms',
-    lat: 14.6502,
-    lng: 121.0612,
-    phone: '0918 987 6543',
-    locationCode: '58HX+MN Quezon City',
-    propertyType: 'Boarding House',
-    photos: [
-      'https://images.unsplash.com/photo-1502672260266-1c1ef2d93688?w=800&q=80',
-      'https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?w=800&q=80',
-      'https://images.unsplash.com/photo-1555854877-bab0e564b8d5?w=800&q=80',
-    ],
-    reviewsList: [
-      {
-        username: 'Carlos Garcia',
-        initials: 'CG',
-        reviewsCount: 3,
-        photosCount: 2,
-        rating: 4,
-        time: '2 weeks ago',
-        text: 'Affordable and decent place. The shared kitchen is well-equipped and the landlord is friendly.',
-      },
-    ],
-  },
-  {
-    id: 4,
-    title: 'Metro Plaza Apartments',
-    address: 'Roxas Boulevard, Quezon City, Metro Manila',
-    location: 'University of the Philippines',
-    distance: 0.8,
-    price: 7800,
-    rating: 4.9,
-    reviews: 41,
-    type: '1bhk',
-    amenities: ['wifi', 'ac', 'security', 'cctv', 'parking', 'laundry', 'furnished', 'kitchen'],
-    image: 'https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?w=800&q=80',
-    badges: ['verified', 'new'],
-    available: 'Aug 15',
-    roomTypes: '1 BHK & Studio',
-    lat: 14.6352,
-    lng: 121.0661,
-    phone: '0920 555 1234',
-    locationCode: '58EW+QR Quezon City',
-    propertyType: 'Apartment',
-    photos: [
-      'https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?w=800&q=80',
-      'https://images.unsplash.com/photo-1555854877-bab0e564b8d5?w=800&q=80',
-      'https://images.unsplash.com/photo-1502672260266-1c1ef2d93688?w=800&q=80',
-    ],
-    reviewsList: [
-      {
-        username: 'Sofia Martinez',
-        initials: 'SM',
-        reviewsCount: 15,
-        photosCount: 10,
-        rating: 5,
-        time: '1 week ago',
-        text: 'Luxurious apartments with excellent amenities. The view is breathtaking and the security is top-notch. Worth every penny!',
-      },
-      {
-        username: 'Diego Torres',
-        initials: 'DT',
-        reviewsCount: 7,
-        photosCount: 4,
-        rating: 5,
-        time: '3 weeks ago',
-        text: 'Best boarding house I have stayed in. The management is professional and the facilities are well-maintained.',
-      },
-    ],
-  },
-];
+/**
+ * Fetch properties from API
+ */
+async function fetchProperties() {
+  if (state.isLoading) return;
+
+  state.isLoading = true;
+
+  try {
+    // Build query parameters
+    const params = new URLSearchParams();
+
+    if (state.filters.search) {
+      params.append('search', state.filters.search);
+    }
+
+    if (state.filters.price !== 'any') {
+      const priceRange = state.filters.price;
+      if (priceRange.includes('-')) {
+        const [min, max] = priceRange.split('-');
+        params.append('price_min', min);
+        params.append('price_max', max);
+      } else if (priceRange.endsWith('+')) {
+        params.append('price_min', priceRange.replace('+', ''));
+      }
+    }
+
+    if (state.filters.roomType !== 'any') {
+      params.append('room_type', state.filters.roomType);
+    }
+
+    if (state.sort !== 'recommended') {
+      params.append('sort_by', state.sort);
+    }
+
+    // Fetch from API
+    const response = await fetch(`${CONFIG.API_BASE_URL}/api/rooms/public?${params.toString()}`);
+
+    if (!response.ok) {
+      throw new Error('Failed to fetch properties');
+    }
+
+    const result = await response.json();
+
+    if (result.success && result.data && result.data.properties) {
+      // Transform API data to match expected format
+      state.properties = result.data.properties.map(prop => ({
+        id: prop.id,
+        title: prop.title,
+        address: prop.address,
+        location: prop.city || prop.address,
+        distance: 0, // Calculate if needed
+        price: prop.price,
+        rating: prop.rating || 4.5,
+        reviews: prop.reviews || 0,
+        type: prop.roomTypes || 'single',
+        amenities: Array.isArray(prop.amenities) ? prop.amenities : [],
+        image: prop.image || '../../assets/images/placeholder-room.svg',
+        badges: prop.badges || [],
+        available: 'Now',
+        roomTypes: prop.roomTypes || 'Available',
+        lat: prop.latitude,
+        lng: prop.longitude,
+        phone: prop.phone || '',
+        locationCode: '',
+        propertyType: prop.propertyType || 'Boarding House',
+        photos: prop.images || [prop.image],
+        reviewsList: [],
+      }));
+
+      return state.properties;
+    } else {
+      throw new Error('Invalid response format');
+    }
+  } catch (error) {
+    console.error('Error fetching properties:', error);
+    state.properties = [];
+    return [];
+  } finally {
+    state.isLoading = false;
+  }
+}
 
 /**
  * Initialize the Find a Room page
@@ -207,10 +123,23 @@ export function initFindARoom() {
 
   // Wait for DOM to be ready
   if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', setupEventListeners);
+    document.addEventListener('DOMContentLoaded', async () => {
+      await loadInitialData();
+      setupEventListeners();
+    });
   } else {
-    setupEventListeners();
+    loadInitialData().then(() => {
+      setupEventListeners();
+    });
   }
+}
+
+/**
+ * Load initial property data
+ */
+async function loadInitialData() {
+  await fetchProperties();
+  applyFilters();
 }
 
 /**
@@ -378,7 +307,7 @@ function setupEventListeners() {
 /**
  * Open map view
  */
-function openMapView() {
+async function openMapView() {
   const mapView = document.getElementById('map-view');
   if (mapView) {
     mapView.style.display = 'flex';
@@ -386,11 +315,13 @@ function openMapView() {
 
     // Initialize map if not already done
     if (!state.map) {
-      initMap();
+      await initMap();
     } else {
       // Invalidate size to ensure proper rendering
       setTimeout(() => {
         state.map.invalidateSize();
+        // Update markers with current properties
+        addPropertyMarkers(state.properties);
       }, 100);
     }
   }
@@ -416,15 +347,37 @@ function closeMapView() {
 /**
  * Initialize Leaflet map
  */
-function initMap() {
+async function initMap() {
   // Check if Leaflet is loaded
   if (typeof L === 'undefined') {
     console.error('Leaflet is not loaded');
     return;
   }
 
-  // Create map centered at Malaybalay City
-  state.map = L.map('find-room-map').setView([8.1489, 125.125], 15);
+  // Ensure we have properties loaded
+  if (state.properties.length === 0) {
+    await fetchProperties();
+  }
+
+  // Calculate center point from properties with coordinates
+  const propertiesWithCoords = state.properties.filter(p => p.lat && p.lng);
+  let centerLat = 8.1489; // Default: Malaybalay City
+  let centerLng = 125.125;
+  let zoom = 13;
+
+  if (propertiesWithCoords.length > 0) {
+    // Calculate average position
+    const avgLat =
+      propertiesWithCoords.reduce((sum, p) => sum + p.lat, 0) / propertiesWithCoords.length;
+    const avgLng =
+      propertiesWithCoords.reduce((sum, p) => sum + p.lng, 0) / propertiesWithCoords.length;
+    centerLat = avgLat;
+    centerLng = avgLng;
+    zoom = 12;
+  }
+
+  // Create map centered at calculated position
+  state.map = L.map('find-room-map').setView([centerLat, centerLng], zoom);
 
   // Add OpenStreetMap tiles
   L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
@@ -433,18 +386,30 @@ function initMap() {
   }).addTo(state.map);
 
   // Add property markers
-  addPropertyMarkers(properties);
+  addPropertyMarkers(state.properties);
 }
 
 /**
  * Add property markers to map
  */
 function addPropertyMarkers(propertiesList) {
+  if (!state.map) return;
+
   // Clear existing markers
   state.markers.forEach(marker => state.map.removeLayer(marker));
   state.markers = [];
 
-  propertiesList.forEach(property => {
+  // Filter properties that have valid coordinates
+  const validProperties = propertiesList.filter(
+    property => property.lat && property.lng && !isNaN(property.lat) && !isNaN(property.lng)
+  );
+
+  if (validProperties.length === 0) {
+    console.warn('No properties with valid coordinates to display on map');
+    return;
+  }
+
+  validProperties.forEach(property => {
     // Create custom icon
     const icon = L.divIcon({
       className: 'custom-marker',
@@ -486,12 +451,25 @@ function addPropertyMarkers(propertiesList) {
 
     state.markers.push(marker);
   });
+
+  // Fit map bounds to show all markers if there are multiple properties
+  if (validProperties.length > 1) {
+    const bounds = L.latLngBounds(validProperties.map(p => [p.lat, p.lng]));
+    state.map.fitBounds(bounds, { padding: [50, 50] });
+  }
 }
 
 /**
  * Create property popup content
  */
 function createPropertyPopup(property) {
+  const amenitiesHtml = Array.isArray(property.amenities)
+    ? property.amenities
+        .slice(0, 3)
+        .map(a => `<span class="amenity-badge">${a}</span>`)
+        .join('')
+    : '';
+
   return `
     <div class="property-popup">
       <div class="property-popup-image" style="background-image: url('${
@@ -504,16 +482,15 @@ function createPropertyPopup(property) {
           ${property.address}
         </div>
         <div class="property-popup-meta">
-          <span class="popup-distance">📍 ${property.distance} km away</span>
+          ${
+            property.distance
+              ? `<span class="popup-distance">📍 ${property.distance} km away</span>`
+              : ''
+          }
           <span class="popup-rating">⭐ ${property.rating} (${property.reviews})</span>
         </div>
         <div class="property-popup-price">₱${property.price.toLocaleString()}/month</div>
-        <div class="property-popup-amenities">
-          ${property.amenities
-            .slice(0, 3)
-            .map(a => `<span class="amenity-badge">${a}</span>`)
-            .join('')}
-        </div>
+        ${amenitiesHtml ? `<div class="property-popup-amenities">${amenitiesHtml}</div>` : ''}
         <div class="property-popup-actions">
           <button class="popup-btn popup-btn-primary" onclick="window.openDetailPanelById(${
             property.id
@@ -730,7 +707,7 @@ function generateStarRating(rating, size = 16) {
  * Global function to open detail panel by property ID
  */
 window.openDetailPanelById = function (propertyId) {
-  const property = properties.find(p => p.id === parseInt(propertyId));
+  const property = state.properties.find(p => p.id === parseInt(propertyId));
   if (property) {
     openDetailPanel(property);
   }
@@ -762,7 +739,10 @@ function handleFilterChange(e) {
       break;
   }
 
-  applyFilters();
+  // Refetch properties with new filters
+  fetchProperties().then(() => {
+    applyFilters();
+  });
 }
 
 /**
@@ -789,7 +769,10 @@ function handleAmenityChange(e) {
  */
 function handleSortChange(e) {
   state.sort = e.target.value;
-  applyFilters();
+  // Refetch properties with new sort
+  fetchProperties().then(() => {
+    applyFilters();
+  });
 }
 
 /**
@@ -807,7 +790,7 @@ function applyFilters() {
  * Filter properties based on current state
  */
 function filterProperties() {
-  return properties.filter(property => {
+  return state.properties.filter(property => {
     // Search filter
     if (state.filters.search) {
       const searchTerms = [
@@ -821,34 +804,16 @@ function filterProperties() {
       }
     }
 
-    // Price filter
-    if (state.filters.price !== 'any') {
-      const priceRange = state.filters.price.split('-');
-      const minPrice = parseInt(priceRange[0]);
-      const maxPrice = priceRange[1] ? parseInt(priceRange[1]) : Infinity;
-
-      if (property.price < minPrice || property.price > maxPrice) {
-        return false;
-      }
-    }
-
-    // Room type filter
-    if (state.filters.roomType !== 'any') {
-      if (property.type !== state.filters.roomType) {
-        return false;
-      }
-    }
-
-    // Distance filter
-    if (state.filters.distance !== 'any') {
+    // Distance filter (client-side)
+    if (state.filters.distance !== 'any' && property.distance) {
       const maxDistance = parseInt(state.filters.distance);
       if (property.distance > maxDistance) {
         return false;
       }
     }
 
-    // Amenities filter
-    if (state.filters.amenities.length > 0) {
+    // Amenities filter (client-side)
+    if (state.filters.amenities.length > 0 && Array.isArray(property.amenities)) {
       const hasAllAmenities = state.filters.amenities.every(amenity =>
         property.amenities.includes(amenity)
       );
@@ -876,7 +841,7 @@ function sortProperties(propertiesList) {
       sorted.sort((a, b) => b.price - a.price);
       break;
     case 'distance':
-      sorted.sort((a, b) => a.distance - b.distance);
+      sorted.sort((a, b) => (a.distance || 0) - (b.distance || 0));
       break;
     case 'rating':
       sorted.sort((a, b) => b.rating - a.rating);
@@ -889,8 +854,10 @@ function sortProperties(propertiesList) {
     default:
       // Recommended: prioritize verified, then rating, then price
       sorted.sort((a, b) => {
-        const aScore = (a.badges.includes('verified') ? 10 : 0) + a.rating * 2 - a.price / 1000;
-        const bScore = (b.badges.includes('verified') ? 10 : 0) + b.rating * 2 - b.price / 1000;
+        const aScore =
+          (a.badges && a.badges.includes('verified') ? 10 : 0) + a.rating * 2 - a.price / 1000;
+        const bScore =
+          (b.badges && b.badges.includes('verified') ? 10 : 0) + b.rating * 2 - b.price / 1000;
         return bScore - aScore;
       });
       break;
@@ -922,29 +889,38 @@ function renderProperties(propertiesList) {
           src="${property.image}"
           alt="${property.title}"
           class="find-room-card-image"
+          onerror="this.src='../../assets/images/placeholder-room.svg'"
         />
         <div class="find-room-card-badges">
-          ${property.badges
-            .map(
-              badge => `
+          ${
+            property.badges && Array.isArray(property.badges)
+              ? property.badges
+                  .map(
+                    badge => `
           <span class="find-room-badge find-room-badge-${badge}">
             ${badge === 'verified' ? badgeIcon() : ''}
             ${capitalizeFirstLetter(badge)}
           </span>
           `
-            )
-            .join('')}
+                  )
+                  .join('')
+              : ''
+          }
         </div>
         <button class="find-room-favorite-btn" data-favorite="false">
           ${heartIcon(false)}
         </button>
         <div class="find-room-card-amenities-preview">
-          ${property.amenities
-            .slice(0, 3)
-            .map(amenity => getAmenityIcon(amenity))
-            .join('')}
           ${
-            property.amenities.length > 3
+            property.amenities && Array.isArray(property.amenities)
+              ? property.amenities
+                  .slice(0, 3)
+                  .map(amenity => getAmenityIcon(amenity))
+                  .join('')
+              : ''
+          }
+          ${
+            property.amenities && property.amenities.length > 3
               ? `<span class="find-room-amenity-more">+${property.amenities.length - 3}</span>`
               : ''
           }
@@ -954,9 +930,11 @@ function renderProperties(propertiesList) {
         <div class="find-room-card-header">
           <div class="find-room-card-location">
             ${locationIcon()}
-            <span class="find-room-card-distance">${property.distance} km from ${
-        property.location.split(' ')[0]
-      }</span>
+            <span class="find-room-card-distance">${
+              property.distance
+                ? `${property.distance} km from ${property.location.split(' ')[0]}`
+                : property.location
+            }</span>
           </div>
           <div class="find-room-card-rating">
             ${starIcon()}

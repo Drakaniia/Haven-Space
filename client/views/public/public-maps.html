@@ -99,7 +99,7 @@
     ></script>
 
     <script>
-      document.addEventListener('DOMContentLoaded', () => {
+      document.addEventListener('DOMContentLoaded', async () => {
         // Default location (Malaybalay City, Mindanao, Philippines)
         const defaultLocation = [8.1489, 125.125];
 
@@ -112,14 +112,14 @@
           attribution: '© OpenStreetMap',
         }).addTo(map);
 
-        // Sample landlord properties (this will be replaced with API data)
-        const landlordProperties = [
-          { id: 1, lat: 8.15, lng: 125.126 },
-          { id: 2, lat: 8.148, lng: 125.124 },
-          { id: 3, lat: 8.151, lng: 125.127 },
-          { id: 4, lat: 8.147, lng: 125.123 },
-          { id: 5, lat: 8.152, lng: 125.128 },
-        ];
+        // Determine API base URL
+        const API_BASE_URL = window.location.origin.includes('github.io')
+          ? 'https://havenspace.com/server/api'
+          : window.location.origin.includes('localhost') ||
+            window.location.origin.includes('127.0.0.1') ||
+            window.location.hostname === 'localhost'
+          ? 'http://localhost:8000'
+          : '/server/api';
 
         // Create custom pin icon
         const pinIcon = L.icon({
@@ -129,16 +129,81 @@
           popupAnchor: [0, -50],
         });
 
-        // Add pin markers for landlord properties (no popup info)
-        landlordProperties.forEach(property => {
-          L.marker([property.lat, property.lng], { icon: pinIcon }).addTo(map);
-        });
+        // Fetch properties from API
+        try {
+          const response = await fetch(`${API_BASE_URL}/api/rooms/public?limit=100`);
+
+          if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+          }
+
+          const result = await response.json();
+
+          if (result.data && result.data.properties) {
+            const properties = result.data.properties;
+
+            // Filter properties that have valid coordinates
+            const propertiesWithCoords = properties.filter(p => p.latitude && p.longitude);
+
+            // Add pin markers for properties with popup info
+            propertiesWithCoords.forEach(property => {
+              const marker = L.marker([property.latitude, property.longitude], {
+                icon: pinIcon,
+              }).addTo(map);
+
+              // Create popup content
+              const popupContent = `
+                <div style="font-family: 'Plus Jakarta Sans', sans-serif; min-width: 200px;">
+                  <h3 style="margin: 0 0 8px 0; font-size: 16px; font-weight: 600;">
+                    ${property.title}
+                  </h3>
+                  <p style="margin: 0 0 8px 0; font-size: 14px; color: #666;">
+                    ${property.address}
+                  </p>
+                  <p style="margin: 0 0 12px 0; font-size: 18px; font-weight: 700; color: #2563eb;">
+                    ₱${property.price.toLocaleString()}/month
+                  </p>
+                  <a 
+                    href="find-a-room.html" 
+                    style="display: inline-block; padding: 8px 16px; background-color: #2563eb; color: white; text-decoration: none; border-radius: 6px; font-size: 14px; font-weight: 500;"
+                  >
+                    View Details
+                  </a>
+                </div>
+              `;
+
+              marker.bindPopup(popupContent);
+            });
+
+            // If we have properties with coordinates, fit map to show all markers
+            if (propertiesWithCoords.length > 0) {
+              const bounds = L.latLngBounds(
+                propertiesWithCoords.map(p => [p.latitude, p.longitude])
+              );
+              map.fitBounds(bounds, { padding: [50, 50] });
+            }
+          }
+        } catch (error) {
+          console.error('Failed to fetch properties:', error);
+          // Continue with default map view if API fails
+        }
 
         // Try to get user's location
         if (navigator.geolocation) {
           navigator.geolocation.getCurrentPosition(
             position => {
               const userLocation = [position.coords.latitude, position.coords.longitude];
+
+              // Add a marker for user's location
+              const userIcon = L.icon({
+                iconUrl:
+                  'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjQiIGhlaWdodD0iMjQiIHZpZXdCb3g9IjAgMCAyNCAyNCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPGNpcmNsZSBjeD0iMTIiIGN5PSIxMiIgcj0iOCIgZmlsbD0iIzI1NjNlYiIgc3Ryb2tlPSJ3aGl0ZSIgc3Ryb2tlLXdpZHRoPSIzIi8+Cjwvc3ZnPg==',
+                iconSize: [24, 24],
+                iconAnchor: [12, 12],
+              });
+
+              L.marker(userLocation, { icon: userIcon }).addTo(map).bindPopup('Your Location');
+
               map.setView(userLocation, 14);
             },
             error => {

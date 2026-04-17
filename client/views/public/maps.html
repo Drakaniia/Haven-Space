@@ -86,140 +86,85 @@
       let map;
       let markers = [];
       let userLocation = null;
+      let allProperties = []; // Store all fetched properties
+      let filteredProperties = []; // Store filtered properties
 
-      // Sample property data (replace with API call)
-      const sampleProperties = [
-        {
-          id: 1,
-          title: 'Sunrise Dormitory',
-          location: 'Sampaloc, Manila',
-          price: 5500,
-          lat: 8.15,
-          lng: 125.126,
-          rating: 4.5,
-          reviewCount: 28,
-          amenities: ['wifi', 'ac', 'laundry'],
-          type: 'dorm',
-          phone: '0917 123 4567',
-          description:
-            'A modern dormitory with excellent amenities and a vibrant student community. Located near major universities with easy access to public transportation.',
-          photos: [
-            { url: '', category: 'All', label: 'All' },
-            { url: '', category: 'Rooms', label: 'Rooms' },
-            { url: '', category: 'Videos', label: 'Videos' },
-            { url: '', category: 'Exterior', label: 'Exterior' },
-          ],
-          reviews: [
-            {
-              author: 'Maria Santos',
-              initial: 'M',
-              date: '2 months ago',
-              rating: 5,
-              text: 'Amazing dormitory! Very clean rooms and friendly staff. The WiFi is fast and the laundry facilities are well-maintained.',
-              tags: ['customer-service'],
-            },
-            {
-              author: 'John Reyes',
-              initial: 'J',
-              date: '1 month ago',
-              rating: 4,
-              text: 'Good value for money. The air conditioning works perfectly and the location is very convenient.',
-              tags: ['price'],
-            },
-          ],
-          reviewSummary: {
-            5: 18,
-            4: 7,
-            3: 2,
-            2: 1,
-            1: 0,
-          },
-        },
-        {
-          id: 2,
-          title: 'Green Valley Boarding House',
-          location: 'Diliman, Quezon City',
-          price: 4500,
-          lat: 8.148,
-          lng: 125.124,
-          rating: 4.3,
-          reviewCount: 22,
-          amenities: ['wifi', 'kitchen', 'parking'],
-          type: 'boarding-house',
-          phone: '0918 234 5678',
-          description:
-            'A peaceful boarding house surrounded by greenery. Perfect for students who want a quiet place to study with all the necessary amenities.',
-          photos: [
-            { url: '', category: 'All', label: 'All' },
-            { url: '', category: 'Rooms', label: 'Rooms' },
-            { url: '', category: 'Videos', label: 'Videos' },
-            { url: '', category: 'Common Areas', label: 'Common' },
-          ],
-          reviews: [
-            {
-              author: 'Anna Cruz',
-              initial: 'A',
-              date: '3 months ago',
-              rating: 4,
-              text: 'Very peaceful environment. The kitchen is fully equipped and the parking area is secure.',
-              tags: ['customer-service'],
-            },
-          ],
-          reviewSummary: {
-            5: 12,
-            4: 7,
-            3: 2,
-            2: 1,
-            1: 0,
-          },
-        },
-        {
-          id: 3,
-          title: 'Cozy Student Dorm',
-          location: 'Near University Ave',
-          price: 6000,
-          lat: 8.151,
-          lng: 125.127,
-          rating: 4.7,
-          reviewCount: 36,
-          amenities: ['wifi', 'ac', 'laundry', 'security'],
-          type: 'dorm',
-          phone: '0919 345 6789',
-          description:
-            'A premium student dormitory with top-notch security and modern amenities. Walking distance to the university campus.',
-          photos: [
-            { url: '', category: 'All', label: 'All' },
-            { url: '', category: 'Rooms', label: 'Rooms' },
-            { url: '', category: 'Videos', label: 'Videos' },
-            { url: '', category: 'Facilities', label: 'Facilities' },
-          ],
-          reviews: [
-            {
-              author: 'Princess Nicole Mora',
-              initial: 'P',
-              date: '3 months ago',
-              rating: 5,
-              text: "Just booked our overnight stay with them and it was very good! Place and room is very spacious and the food is great especially for breakfast as well. You get the rest that you crave for and it's been a wonderful experience for me 10/10",
-              tags: ['customer-service', 'price'],
-            },
-            {
-              author: 'Carlos Mendoza',
-              initial: 'C',
-              date: '1 month ago',
-              rating: 4,
-              text: 'Great security features and the location is perfect. The amenities are well-maintained.',
-              tags: ['customer-service'],
-            },
-          ],
-          reviewSummary: {
-            5: 28,
-            4: 5,
-            3: 2,
-            2: 1,
-            1: 0,
-          },
-        },
-      ];
+      // Determine API base URL
+      const API_BASE_URL = window.location.origin.includes('github.io')
+        ? 'https://havenspace.com/server/api'
+        : window.location.origin.includes('localhost') ||
+          window.location.origin.includes('127.0.0.1') ||
+          window.location.hostname === 'localhost'
+        ? 'http://localhost:8000'
+        : '/server/api';
+
+      // Fetch properties from API
+      async function fetchProperties() {
+        try {
+          // Show loading state
+          const container = document.getElementById('properties-list');
+          container.innerHTML = `
+            <div class="loading-properties">
+              <div class="spinner"></div>
+              <p>Loading properties...</p>
+            </div>
+          `;
+
+          const response = await fetch(`${API_BASE_URL}/api/rooms/public?limit=100`);
+
+          if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+          }
+
+          const result = await response.json();
+
+          if (result.data && result.data.properties) {
+            // Filter properties that have valid coordinates
+            allProperties = result.data.properties.filter(p => p.latitude && p.longitude);
+
+            // Transform API data to match expected format
+            allProperties = allProperties.map(p => ({
+              id: p.id,
+              title: p.title,
+              location: p.city || p.address,
+              address: p.address,
+              city: p.city,
+              province: p.province,
+              price: p.price,
+              lat: p.latitude,
+              lng: p.longitude,
+              rating: p.rating || 4.5,
+              reviewCount: p.reviews || 0,
+              amenities: p.amenities || [],
+              type: p.propertyType || 'boarding-house',
+              phone: '',
+              description: p.description || '',
+              image: p.image || '../../assets/images/placeholder-room.svg',
+              photos: p.images || [],
+              reviews: [],
+              reviewSummary: { 5: 0, 4: 0, 3: 0, 2: 0, 1: 0 },
+              badges: p.badges || [],
+            }));
+
+            filteredProperties = [...allProperties];
+
+            // Update UI with fetched properties
+            updatePropertiesList(filteredProperties);
+            addPropertyMarkers(filteredProperties);
+          }
+        } catch (error) {
+          console.error('Failed to fetch properties:', error);
+          // Show error state
+          const container = document.getElementById('properties-list');
+          container.innerHTML = `
+            <div class="empty-state">
+              <span class="empty-state-icon" data-icon="exclamationCircle" data-icon-width="48" data-icon-height="48" data-icon-stroke-width="1.5"></span>
+              <h3 class="empty-state-title">Failed to load properties</h3>
+              <p class="empty-state-description">Please try again later</p>
+            </div>
+          `;
+        }
+      }
 
       // Initialize the map
       function initMap() {
@@ -232,8 +177,8 @@
         // Add OpenStreetMap tiles
         L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {}).addTo(map);
 
-        // Add property markers
-        addPropertyMarkers(sampleProperties);
+        // Fetch and display properties
+        fetchProperties();
 
         // Setup event listeners
         setupEventListeners();
@@ -254,23 +199,35 @@
         });
 
         properties.forEach(property => {
-          // Create custom popup content
+          // Create custom popup content with image
+          const amenitiesHtml =
+            property.amenities && property.amenities.length > 0
+              ? property.amenities
+                  .slice(0, 3)
+                  .map(a => `<span class="amenity-badge">${a}</span>`)
+                  .join('')
+              : '<span class="amenity-badge">No amenities listed</span>';
+
           const popupContent = `
-            <div class="property-popup">
-              <div class="property-popup-image"></div>
-              <div class="property-popup-content">
-                <h3 class="property-popup-title">${property.title}</h3>
-                <div class="property-popup-location">
-                  <span data-icon="location" data-icon-width="12" data-icon-height="12" data-icon-stroke-width="2"></span>
+            <div class="property-popup" style="min-width: 250px;">
+              <div class="property-popup-image" style="width: 100%; height: 120px; background: url('${
+                property.image
+              }') center/cover no-repeat; border-radius: 8px 8px 0 0; background-color: #f0f0f0;"></div>
+              <div class="property-popup-content" style="padding: 12px;">
+                <h3 class="property-popup-title" style="font-size: 14px; font-weight: 600; margin: 0 0 8px 0; color: #1a1a1a;">${
+                  property.title
+                }</h3>
+                <div class="property-popup-location" style="font-size: 12px; color: #555; margin-bottom: 8px; display: flex; align-items: center; gap: 4px;">
+                  <span>📍</span>
                   ${property.location}
                 </div>
-                <div class="property-popup-price">₱${property.price.toLocaleString()}/month</div>
-                <div class="property-popup-amenities">
-                  ${property.amenities
-                    .slice(0, 3)
-                    .map(a => `<span class="amenity-badge">${a}</span>`)
-                    .join('')}
+                <div class="property-popup-price" style="font-size: 16px; font-weight: 700; color: #4a7c23; margin-bottom: 8px;">₱${property.price.toLocaleString()}/month</div>
+                <div class="property-popup-amenities" style="display: flex; gap: 4px; flex-wrap: wrap; margin-bottom: 8px;">
+                  ${amenitiesHtml}
                 </div>
+                <button onclick="viewProperty(${
+                  property.id
+                })" style="width: 100%; padding: 8px; background: #4a7c23; color: white; border: none; border-radius: 6px; font-size: 13px; font-weight: 600; cursor: pointer;">View Details</button>
               </div>
             </div>
           `;
@@ -278,7 +235,16 @@
           // Create marker with pin icon
           const marker = L.marker([property.lat, property.lng], { icon: pinIcon })
             .addTo(map)
-            .bindPopup(popupContent);
+            .bindPopup(popupContent, {
+              maxWidth: 280,
+              className: 'custom-popup',
+            });
+
+          // Add click event to open property detail
+          marker.on('click', function () {
+            // Popup will open automatically, but we can also trigger detail view
+            console.log('Marker clicked:', property.id);
+          });
 
           markers.push(marker);
         });
@@ -314,7 +280,6 @@
         if (zoomOutBtn) zoomOutBtn.addEventListener('click', () => map.zoomOut());
       }
 
-      // Perform search with filters
       // Update properties list (simplified - no filters)
       function updatePropertiesList(properties) {
         const container = document.getElementById('properties-list');
@@ -334,8 +299,12 @@
         container.innerHTML = properties
           .map(
             property => `
-          <div class="property-card" data-id="${property.id}">
-            <div class="property-card-image"></div>
+          <div class="property-card" data-id="${property.id}" onclick="viewProperty(${
+              property.id
+            })">
+            <div class="property-card-image" style="background: url('${
+              property.image
+            }') center/cover no-repeat; background-color: #f0f0f0;"></div>
             <div class="property-card-content">
               <div class="property-card-header">
                 <h3 class="property-card-title">${property.title}</h3>
@@ -350,7 +319,7 @@
               </div>
               <div class="property-card-footer">
                 <div class="property-card-price">₱${property.price.toLocaleString()}<span>/month</span></div>
-                <button class="property-card-btn" onclick="viewProperty(${
+                <button class="property-card-btn" onclick="event.stopPropagation(); viewProperty(${
                   property.id
                 })">View</button>
               </div>
@@ -387,106 +356,6 @@
         } else {
           alert('Geolocation is not supported by your browser.');
         }
-      }
-
-      // View property (show detail sidebar)
-      function viewProperty(id) {
-        const property = sampleProperties.find(p => p.id === id);
-        if (!property) return;
-
-        // Populate property details
-        document.getElementById('detail-title').textContent = property.title;
-        document.getElementById('detail-rating-number').textContent = property.rating;
-        document.getElementById('detail-rating-count').textContent = `(${
-          property.reviewCount || 36
-        })`;
-
-        // Populate photos/videos
-        const photoVideoGrid = document.getElementById('photo-video-grid');
-        photoVideoGrid.innerHTML = (property.photos || [])
-          .map(
-            photo => `
-            <div class="photo-video-item">
-              <div class="photo-placeholder"></div>
-              <div class="photo-label">${photo.label}</div>
-            </div>
-          `
-          )
-          .join('');
-
-        // Populate review summary
-        const reviewScore = document.getElementById('review-score');
-        const reviewTotal = document.getElementById('review-total');
-        reviewScore.textContent = property.rating;
-        reviewTotal.textContent = `${property.reviewCount || 36} reviews`;
-
-        // Update review bars
-        const reviewSummary = property.reviewSummary || {};
-        const totalReviews = property.reviewCount || 36;
-        for (let i = 1; i <= 5; i++) {
-          const bar = document.getElementById(`review-bar-${i}`);
-          if (bar) {
-            const count = reviewSummary[i] || 0;
-            const percentage = totalReviews > 0 ? (count / totalReviews) * 100 : 0;
-            bar.style.width = `${percentage}%`;
-          }
-        }
-
-        // Populate reviews
-        const reviewsContainer = document.getElementById('reviews-list');
-        const reviews = property.reviews || [
-          {
-            author: 'Princess Nicole Mora',
-            initial: 'P',
-            date: '3 months ago',
-            rating: 5,
-            text: "Just booked our overnight stay with them and it was very good! Place and room is very spacious and the food is great especially for breakfast as well. You get the rest that you crave for and it's been a wonderful experience for me 10/10",
-            tags: ['customer-service'],
-          },
-          {
-            author: 'Juan Dela Cruz',
-            initial: 'J',
-            date: '1 month ago',
-            rating: 4,
-            text: 'Great location near the university. The amenities are good and the landlord is responsive to concerns.',
-            tags: ['price'],
-          },
-        ];
-
-        reviewsContainer.innerHTML = reviews
-          .map(
-            review => `
-            <div class="review-item">
-              <div class="review-item-header">
-                <div class="review-author-avatar">${review.initial}</div>
-                <div class="review-author-info">
-                  <div class="review-author-name">${review.author}</div>
-                  <div class="review-date">${review.date}</div>
-                </div>
-                <div class="review-item-rating">
-                  ${Array.from(
-                    { length: 5 },
-                    (_, i) =>
-                      `<span data-icon="${
-                        i < review.rating ? 'starSolid' : 'star'
-                      }" data-icon-width="14" data-icon-height="14" style="color: ${
-                        i < review.rating ? '#f59e0b' : '#d1d5db'
-                      };"></span>`
-                  ).join('')}
-                </div>
-              </div>
-              <p class="review-text">${review.text}</p>
-            </div>
-          `
-          )
-          .join('');
-
-        // Switch to detail view
-        document.getElementById('search-state').style.display = 'none';
-        document.getElementById('property-detail-state').style.display = 'flex';
-
-        // Focus map on property
-        map.setView([property.lat, property.lng], 18);
       }
 
       // Switch back to search view

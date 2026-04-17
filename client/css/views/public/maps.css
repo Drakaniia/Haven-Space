@@ -216,3 +216,30 @@ body {
     min-width: 240px;
   }
 }
+
+/* Custom Leaflet Popup Styles */
+.leaflet-popup-content-wrapper {
+  padding: 0;
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+}
+
+.leaflet-popup-content {
+  margin: 0;
+  min-width: 250px;
+}
+
+.leaflet-popup-tip {
+  background: white;
+}
+
+.amenity-badge {
+  display: inline-block;
+  padding: 4px 8px;
+  background: #e8f5e9;
+  color: #4a7c23;
+  border-radius: 4px;
+  font-size: 11px;
+  font-weight: 500;
+}

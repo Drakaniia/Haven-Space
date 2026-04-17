@@ -104,6 +104,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
             p.title,
             p.description,
             p.address,
+            p.latitude,
+            p.longitude,
             p.price,
             p.status,
             p.listing_moderation_status,
@@ -119,7 +121,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
         LEFT JOIN landlord_profiles lp ON lp.user_id = p.landlord_id
         LEFT JOIN property_locations pl ON pl.landlord_id = lp.id AND pl.is_primary = TRUE
         WHERE p.landlord_id = ? AND p.deleted_at IS NULL
-        GROUP BY p.id, p.title, p.description, p.address, p.price, p.status, p.listing_moderation_status, p.created_at, lp.property_type, pl.city, pl.province
+        GROUP BY p.id, p.title, p.description, p.address, p.latitude, p.longitude, p.price, p.status, p.listing_moderation_status, p.created_at, lp.property_type, pl.city, pl.province
         ORDER BY p.created_at DESC
     ");
     $stmt->execute([$landlordId]);
@@ -176,6 +178,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
             'type' => $type,
             'description' => htmlspecialchars($property['description'] ?? ''),
             'address' => htmlspecialchars($property['address']),
+            'latitude' => $property['latitude'] ? floatval($property['latitude']) : null,
+            'longitude' => $property['longitude'] ? floatval($property['longitude']) : null,
             'city' => htmlspecialchars($property['city'] ?? ''),
             'province' => htmlspecialchars($property['province'] ?? ''),
             'price' => floatval($property['price']),

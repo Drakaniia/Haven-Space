@@ -4,6 +4,8 @@
    ========================================================================== */
 
 /* Remove conflicting dashboard layout styles - using boarder layout instead */
+
+.find-room-search-input {
   outline: none;
   font-size: 1rem;
   font-family: var(--font-main);
@@ -1163,7 +1165,6 @@
     font-size: 1.25rem;
   }
 }
-
 
 /* ==========================================================================
    Status Banner
