@@ -34,10 +34,12 @@
             <div class="lease-header-main">
               <div class="lease-property-badge">
                 <span class="icon-placeholder" data-icon="building"></span>
-                <span>Sunrise Dormitory</span>
+                <span id="lease-property-name">Property</span>
               </div>
-              <h1 class="lease-property-title">Room 402 • University Avenue</h1>
-              <p class="lease-property-subtitle">Your home away from home since September 2024</p>
+              <h1 class="lease-property-title" id="lease-room-title">Your Room</h1>
+              <p class="lease-property-subtitle" id="lease-property-subtitle">
+                Your home away from home
+              </p>
             </div>
             <div class="lease-status-pill active">
               <span class="lease-status-indicator"></span>
@@ -222,9 +224,12 @@
                     </svg>
                     <span>Property Address</span>
                   </div>
-                  <div class="lease-info-value" data-lease-info="property-address">
-                    Sunrise Dormitory, Room 402<br />
-                    123 University Avenue, College Town
+                  <div
+                    class="lease-info-value"
+                    data-lease-info="property-address"
+                    id="lease-property-address"
+                  >
+                    —
                   </div>
                 </div>
 
@@ -345,7 +350,7 @@
                     <div class="lease-contact-details">
                       <span class="lease-contact-name">Juan Dela Cruz</span>
                       <span class="lease-contact-role">Property Manager</span>
-                      <a href="mailto:manager@sunrisedorm.com" class="lease-contact-link">
+                      <a href="#" class="lease-contact-link" id="lease-manager-email">
                         <svg
                           xmlns="http://www.w3.org/2000/svg"
                           fill="none"
@@ -359,7 +364,7 @@
                             d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"
                           />
                         </svg>
-                        manager@sunrisedorm.com
+                        <span id="lease-manager-email-text">—</span>
                       </a>
                     </div>
                   </div>

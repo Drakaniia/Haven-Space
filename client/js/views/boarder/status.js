@@ -146,8 +146,10 @@ export function initBoarderStatus() {
     const displayStatus = currentStatus === 'applied_pending' ? 'pending' : currentStatus;
 
     const bannerHtml = renderStatusBanner(displayStatus, {
-      appName: urlParams.appName || 'Sunrise Dormitory',
-      date: urlParams.date || 'Jan 15, 2025',
+      appName: urlParams.appName || 'Property',
+      date:
+        urlParams.date ||
+        new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' }),
       rejectionReason: urlParams.rejectionReason,
     });
 

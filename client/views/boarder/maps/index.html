@@ -251,6 +251,7 @@
       import { initSidebar } from '../../../js/components/sidebar.js';
       import { initNavbar } from '../../../js/components/navbar.js';
       import { getState } from '../../../js/shared/state.js';
+      import CONFIG from '../../../js/config.js';
 
       let map;
       let markers = [];
@@ -260,57 +261,37 @@
       let appliedRooms = [];
       let currentDistanceFilter = 500; // meters
 
-      // Sample property data (replace with API call)
-      const sampleProperties = [
-        {
-          id: 1,
-          title: 'Sunrise Dormitory',
-          location: 'Sampaloc, Manila',
-          price: 5500,
-          lat: 8.15,
-          lng: 125.126,
-          rating: 4.5,
-          amenities: ['wifi', 'ac', 'laundry'],
-          type: 'dorm',
-          distance: 320,
-        },
-        {
-          id: 2,
-          title: 'Green Valley Boarding House',
-          location: 'Diliman, Quezon City',
-          price: 4500,
-          lat: 8.148,
-          lng: 125.124,
-          rating: 4.3,
-          amenities: ['wifi', 'kitchen', 'parking'],
-          type: 'boarding-house',
-          distance: 580,
-        },
-        {
-          id: 3,
-          title: 'Cozy Student Dorm',
-          location: 'Near University Ave',
-          price: 6000,
-          lat: 8.151,
-          lng: 125.127,
-          rating: 4.7,
-          amenities: ['wifi', 'ac', 'laundry', 'security'],
-          type: 'dorm',
-          distance: 450,
-        },
-        {
-          id: 4,
-          title: 'Campus View Boarding House',
-          location: 'University Belt, Manila',
-          price: 5000,
-          lat: 8.1495,
-          lng: 125.1255,
-          rating: 4.4,
-          amenities: ['wifi', 'laundry', 'security'],
-          type: 'boarding-house',
-          distance: 280,
-        },
-      ];
+      // Sample property data - will be replaced by API call
+      let sampleProperties = [];
+
+      // Fetch properties from API
+      async function fetchProperties() {
+        try {
+          const response = await fetch(`${CONFIG.API_BASE_URL}/api/rooms/public`, {
+            credentials: 'include',
+          });
+          if (!response.ok) throw new Error(`API error: ${response.status}`);
+          const result = await response.json();
+          const rooms = result.data?.rooms || result.data?.properties || [];
+          return rooms
+            .filter(r => r.latitude && r.longitude)
+            .map(r => ({
+              id: r.id,
+              title: r.name || r.title || 'Property',
+              location: [r.address, r.city].filter(Boolean).join(', '),
+              price: r.price || r.monthly_rate || 0,
+              lat: parseFloat(r.latitude),
+              lng: parseFloat(r.longitude),
+              rating: r.rating || 0,
+              amenities: Array.isArray(r.amenities) ? r.amenities : [],
+              type: r.type || 'boarding-house',
+              distance: 0,
+            }));
+        } catch (error) {
+          console.error('Failed to fetch properties for map:', error);
+          return [];
+        }
+      }
 
       // Initialize the page
       function initPage() {
@@ -363,7 +344,7 @@
       }
 
       // Initialize the map
-      function initMap() {
+      async function initMap() {
         const defaultLocation = currentUser?.location || [8.1489, 125.125];
 
         // Create map centered at user's university/location
@@ -385,15 +366,37 @@
           .addTo(map)
           .bindPopup('<strong>Your Location</strong><br>University Area');
 
-        // Add property markers
+        // Fetch and add property markers
+        sampleProperties = await fetchProperties();
         addPropertyMarkers(sampleProperties);
       }
 
       // Load user data (saved rooms, applications)
-      function loadUserData() {
-        // Simulate API calls - replace with actual API calls
-        savedRooms = [2]; // Sample saved room IDs
-        appliedRooms = [1]; // Sample applied room IDs
+      async function loadUserData() {
+        try {
+          const [savedRes, appliedRes] = await Promise.all([
+            fetch(`${CONFIG.API_BASE_URL}/api/boarder/saved-rooms`, {
+              credentials: 'include',
+            }).catch(() => null),
+            fetch(`${CONFIG.API_BASE_URL}/api/boarder/applications`, {
+              credentials: 'include',
+            }).catch(() => null),
+          ]);
+
+          if (savedRes && savedRes.ok) {
+            const savedData = await savedRes.json();
+            savedRooms = (savedData.data?.rooms || []).map(r => r.id);
+          }
+
+          if (appliedRes && appliedRes.ok) {
+            const appliedData = await appliedRes.json();
+            appliedRooms = (appliedData.data?.applications || []).map(
+              a => a.property_id || a.room_id
+            );
+          }
+        } catch (error) {
+          console.warn('Failed to load user data for map:', error);
+        }
 
         // Update badge counts
         document.getElementById('saved-count').textContent = savedRooms.length;

@@ -381,6 +381,65 @@
   color: var(--primary-green);
 }
 
+/* No Rooms Message */
+.no-rooms-message {
+  text-align: center;
+  padding: 3rem 2rem;
+  background: linear-gradient(135deg, rgba(239, 68, 68, 0.05) 0%, rgba(239, 68, 68, 0.1) 100%);
+  border: 2px solid rgba(239, 68, 68, 0.2);
+  border-radius: 16px;
+}
+
+.no-rooms-message .error-icon {
+  font-size: 3rem;
+  margin-bottom: 1rem;
+  display: block;
+}
+
+.no-rooms-message h3 {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--text-dark);
+  margin: 0 0 1rem;
+}
+
+.no-rooms-message p {
+  font-size: 1rem;
+  color: var(--text-gray);
+  line-height: 1.6;
+  margin: 0 0 2rem;
+  max-width: 400px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.contact-landlord-btn {
+  display: flex;
+  justify-content: center;
+}
+
+.contact-landlord-btn .btn {
+  padding: 0.875rem 1.5rem;
+  border-radius: 10px;
+  font-weight: 600;
+  text-decoration: none;
+  transition: all 0.2s ease;
+  border: none;
+  cursor: pointer;
+  font-family: 'Plus Jakarta Sans', sans-serif;
+}
+
+.contact-landlord-btn .btn-secondary {
+  background: var(--white);
+  color: var(--text-gray);
+  border: 2px solid #e5e7eb;
+}
+
+.contact-landlord-btn .btn-secondary:hover {
+  background: #f9fafb;
+  border-color: var(--text-gray);
+}
+
 /* Terms Section */
 .terms-section {
   background: var(--white);

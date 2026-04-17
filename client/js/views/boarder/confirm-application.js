@@ -86,8 +86,7 @@ async function loadPropertyData() {
     populatePropertyData(state.propertyData);
   } catch (error) {
     console.error('Error loading property data:', error);
-    // Use fallback data for development
-    useFallbackData();
+    throw error;
   }
 }
 
@@ -95,23 +94,9 @@ async function loadPropertyData() {
  * Use fallback data for development
  */
 function useFallbackData() {
-  state.propertyData = {
-    id: state.propertyId,
-    title: 'Sunrise Dormitory',
-    address: 'Katipunan Avenue, Quezon City, Metro Manila',
-    rating: 4.8,
-    reviews: 24,
-    price: 4500,
-    sharedPrice: 3000,
-    deposit: '2 months',
-    images: ['https://images.unsplash.com/photo-1555854877-bab0e564b8d5?w=600&q=80'],
-    rooms: [
-      { roomType: 'Single Room', price: 4500, capacity: 1, status: 'available' },
-      { roomType: 'Shared Room', price: 3000, capacity: 2, status: 'available' },
-    ],
-  };
-
-  populatePropertyData(state.propertyData);
+  // No longer using hardcoded fallback - show error instead
+  alert('Failed to load property details. Please try again.');
+  window.location.href = `./detail.html?id=${state.propertyId}`;
 }
 
 /**
@@ -195,44 +180,30 @@ function populatePropertyData(property) {
       state.monthlyRent = availableRooms[0].price;
     }
   } else {
-    // Fallback to default room types
-    const singlePrice = property.price || 4500;
-    const sharedPrice = property.sharedPrice || 3000;
-
-    // For properties without specific room data, we need to handle this differently
-    // We should either create rooms on the backend or use a different approach
-    console.warn('Property has no room data. This may cause issues with application submission.');
+    // Property has no room data - this should not happen after the fix
+    console.error('Property has no room data. This indicates a backend issue.');
 
     roomTypeOptions.innerHTML = `
-      <label class="room-type-option">
-        <input type="radio" name="room-type" value="single" checked data-price="${singlePrice}" data-room-id="" />
-        <div class="room-type-content">
-          <div class="room-type-info">
-            <span data-icon="user" data-icon-width="20" data-icon-height="20"></span>
-            <div class="room-type-text">
-              <span class="room-type-label">Single Room</span>
-              <span class="room-type-desc">Private room for one person</span>
-            </div>
-          </div>
-          <span class="room-type-price">₱${singlePrice.toLocaleString()}/mo</span>
+      <div class="no-rooms-message">
+        <div class="error-icon">⚠️</div>
+        <h3>No Rooms Available</h3>
+        <p>This property does not have available rooms configured. Please contact the landlord directly or choose a different property.</p>
+        <div class="contact-landlord-btn">
+          <button type="button" onclick="window.history.back()" class="btn btn-secondary">
+            Go Back
+          </button>
         </div>
-      </label>
-      <label class="room-type-option">
-        <input type="radio" name="room-type" value="shared" data-price="${sharedPrice}" data-room-id="" />
-        <div class="room-type-content">
-          <div class="room-type-info">
-            <span data-icon="userGroup" data-icon-width="20" data-icon-height="20"></span>
-            <div class="room-type-text">
-              <span class="room-type-label">Shared Room</span>
-              <span class="room-type-desc">Shared with other boarders</span>
-            </div>
-          </div>
-          <span class="room-type-price">₱${sharedPrice.toLocaleString()}/mo</span>
-        </div>
-      </label>
+      </div>
     `;
 
-    state.monthlyRent = singlePrice;
+    // Disable the submit button since we can't proceed
+    const submitButton = document.querySelector('.submit-application-btn');
+    if (submitButton) {
+      submitButton.disabled = true;
+      submitButton.textContent = 'No Rooms Available';
+    }
+
+    return; // Exit early, don't set monthly rent
   }
 
   // Calculate costs
