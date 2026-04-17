@@ -111,10 +111,13 @@ haven-space/
 ## COMMANDS
 
 ```bash
-# Development
+# Install dependencies
+npm install              # or bun install
+
+# Development servers
 npm run server          # PHP API server (localhost:8000)
-npm run client          # Apache frontend server
-npm run mysql           # MySQL dev server
+npm run client          # Apache frontend server (localhost:3000)
+npm run mysql           # MySQL dev server (Docker, port 3307)
 
 # Database
 npm run db:setup        # Create + migrate database
@@ -130,6 +133,7 @@ npm run lint:fix        # ESLint --fix client/js/**/*.js
 
 # Build
 npm run build           # Production build to dist/
+npm run serve           # Serve dist/ locally for testing
 
 # Git hooks (auto-installed via husky)
 npm run prepare         # Install husky hooks
@@ -188,3 +192,55 @@ Commit-msg hook runs:
 - Messages support attachments with separate `message_attachments` table
 - Landlord profiles are separate from users table (one-to-one relationship)
 - Leaflet map library available globally (exposed as `L` in ESLint globals)
+
+## AUTHENTICATION FLOW
+
+**Email/Password:**
+
+1. User submits credentials to `/api/auth/login.php`
+2. Server validates and returns JWT access token + refresh token
+3. Client stores token in localStorage, includes in `Authorization: Bearer <token>` header
+4. Token refresh via `/api/auth/refresh-token.php`
+
+**Google OAuth:**
+
+1. User clicks Google login → `/api/auth/google/authorize.php`
+2. Callback to `/api/auth/google/callback.php`
+3. New users enter "pending" state, existing users get JWT tokens
+4. Landlord signups require admin verification before write operations
+
+**Middleware:**
+
+- `Middleware::authenticate()` - Validates JWT token (supports `X-User-ID` header for testing)
+- `Middleware::authorize(['role'])` - Checks user role
+- `Middleware::authorizeVerifiedLandlord()` - Blocks write operations for unverified landlords
+
+## DATABASE SCHEMA HIGHLIGHTS
+
+**Core Tables:**
+
+- `users` - All user types (boarder, landlord, admin) with soft deletes
+- `properties` - Boarding house listings with dual moderation status
+- `rooms` - Individual rooms under a property
+- `applications` - Rental applications linking boarders to rooms
+- `landlord_profiles` - Extended landlord info (one-to-one with users)
+- `conversations`, `messages`, `message_attachments` - Messaging system
+- `notifications` - User notifications with JSON metadata
+- `payment_methods` - Landlord payment options (GCash, PayMaya, etc.)
+
+**Soft Deletes:** Most tables use `deleted_at` timestamp instead of hard deletes
+
+## ENVIRONMENT SETUP
+
+**Server `.env` (copy from `server/.env.example`):**
+
+- Database credentials (default: MySQL `haven_space` on localhost:3306)
+- JWT secret and expiration times
+- Google OAuth credentials
+- CORS allowed origins
+
+**Frontend Config:**
+
+- Auto-detects environment via `client/js/config.js`
+- Local dev: API at `http://localhost:8000`
+- Production: API at `https://haven-space-api.onrender.com`
