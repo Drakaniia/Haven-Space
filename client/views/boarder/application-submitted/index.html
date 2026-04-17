@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="icon" type="image/svg+xml" href="../../../assets/favicon.svg" />
+    <title>Application Submitted - Haven Space</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="../../../css/global.css" />
+    <link rel="stylesheet" href="../../../css/views/boarder/application-submitted.css" />
+  </head>
+  <body data-view="boarder" data-dashboard-type="application-submitted">
+    <div class="application-submitted-container">
+      <!-- Success Animation -->
+      <div class="success-animation">
+        <div class="success-checkmark">
+          <div class="check-icon">
+            <span class="icon-line line-tip"></span>
+            <span class="icon-line line-long"></span>
+            <div class="icon-circle"></div>
+            <div class="icon-fix"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Main Content -->
+      <div class="application-submitted-content">
+        <h1 class="application-submitted-title">Application Submitted Successfully!</h1>
+        <p class="application-submitted-description">
+          Your rental application has been sent to the landlord for review. You'll receive a
+          notification once they respond.
+        </p>
+
+        <!-- Application Details Card -->
+        <div class="application-details-card">
+          <div class="application-details-header">
+            <h3>Application Details</h3>
+            <span class="application-status-badge pending">Pending Review</span>
+          </div>
+
+          <div class="application-details-content">
+            <div class="property-info">
+              <img
+                id="property-image"
+                src="../../../assets/images/placeholder-property.svg"
+                alt="Property"
+                class="property-image"
+              />
+              <div class="property-details">
+                <h4 id="property-name" class="property-name">Loading...</h4>
+                <p id="property-location" class="property-location">Loading...</p>
+                <div class="property-meta">
+                  <span id="room-type" class="room-type">Loading...</span>
+                  <span class="separator">•</span>
+                  <span id="monthly-rent" class="monthly-rent">Loading...</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="application-meta">
+              <div class="meta-item">
+                <span class="meta-label">Application ID</span>
+                <span id="application-id" class="meta-value">#Loading...</span>
+              </div>
+              <div class="meta-item">
+                <span class="meta-label">Submitted On</span>
+                <span id="submission-date" class="meta-value">Loading...</span>
+              </div>
+              <div class="meta-item">
+                <span class="meta-label">Expected Response</span>
+                <span class="meta-value">Within 2-3 business days</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Next Steps -->
+        <div class="next-steps-card">
+          <h3>What Happens Next?</h3>
+          <div class="steps-timeline">
+            <div class="step completed">
+              <div class="step-indicator">
+                <span data-icon="check" data-icon-width="16" data-icon-height="16"></span>
+              </div>
+              <div class="step-content">
+                <h4>Application Submitted</h4>
+                <p>Your application has been sent to the landlord</p>
+              </div>
+            </div>
+
+            <div class="step pending">
+              <div class="step-indicator">
+                <span data-icon="clock" data-icon-width="16" data-icon-height="16"></span>
+              </div>
+              <div class="step-content">
+                <h4>Landlord Review</h4>
+                <p>
+                  The landlord will review your application and respond within 2-3 business days
+                </p>
+              </div>
+            </div>
+
+            <div class="step upcoming">
+              <div class="step-indicator">
+                <span data-icon="bell" data-icon-width="16" data-icon-height="16"></span>
+              </div>
+              <div class="step-content">
+                <h4>Get Notified</h4>
+                <p>You'll receive an email and in-app notification with the landlord's decision</p>
+              </div>
+            </div>
+
+            <div class="step upcoming">
+              <div class="step-indicator">
+                <span data-icon="home" data-icon-width="16" data-icon-height="16"></span>
+              </div>
+              <div class="step-content">
+                <h4>Move Forward</h4>
+                <p>If accepted, you'll be able to confirm your booking and proceed with payment</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Action Buttons -->
+        <div class="action-buttons">
+          <button id="view-applications-btn" class="btn btn-primary">
+            <span data-icon="document" data-icon-width="20" data-icon-height="20"></span>
+            View My Applications
+          </button>
+          <button id="find-more-rooms-btn" class="btn btn-outline">
+            <span data-icon="search" data-icon-width="20" data-icon-height="20"></span>
+            Find More Rooms
+          </button>
+        </div>
+
+        <!-- Additional Info -->
+        <div class="additional-info">
+          <div class="info-card">
+            <div class="info-icon">
+              <span
+                data-icon="questionMarkCircle"
+                data-icon-width="24"
+                data-icon-height="24"
+              ></span>
+            </div>
+            <div class="info-content">
+              <h4>Need Help?</h4>
+              <p>
+                If you have questions about your application or need assistance, feel free to
+                contact our support team.
+              </p>
+              <a href="#" class="info-link">Contact Support</a>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- JavaScript -->
+    <script type="module">
+      import { initApplicationSubmitted } from '../../../js/views/boarder/application-submitted.js';
+
+      document.addEventListener('DOMContentLoaded', () => {
+        initApplicationSubmitted();
+      });
+    </script>
+  </body>
+</html>

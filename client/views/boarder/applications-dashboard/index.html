@@ -1,0 +1,346 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="icon" type="image/svg+xml" href="../../../assets/favicon.svg" />
+    <title>My Applications - Haven Space</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="../../../css/global.css" />
+    <link rel="stylesheet" href="../../../css/components/sidebar.css" />
+    <link rel="stylesheet" href="../../../css/components/navbar.css" />
+    <link rel="stylesheet" href="../../../css/components/status-banner.css" />
+    <link rel="stylesheet" href="../../../css/views/boarder/boarder.css" />
+    <link rel="stylesheet" href="../../../css/views/boarder/boarder-applications-dashboard.css" />
+    <script type="module" src="../../../js/main.js"></script>
+    <!-- Leaflet CSS for Map -->
+    <link
+      rel="stylesheet"
+      href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+      integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY="
+      crossorigin=""
+    />
+  </head>
+  <body data-view="boarder-applications" data-dashboard-type="applications">
+    <div class="boarder-dashboard">
+      <!-- Sidebar Container -->
+      <div id="sidebar-container"></div>
+
+      <!-- Main Content -->
+      <main class="boarder-main">
+        <!-- Navbar Container -->
+        <div id="navbar-container"></div>
+
+        <!-- Content Wrapper -->
+        <div class="boarder-content">
+          <!-- Status Banner Container -->
+          <div
+            id="boarder-status-banner-container"
+            class="boarder-status-banner-wrapper"
+            style="display: none"
+          >
+            <!-- Banner will be injected here by JavaScript -->
+          </div>
+
+          <!-- Top Bar with Greeting -->
+          <div class="boarder-topbar">
+            <div class="boarder-greeting">
+              <h1 data-greeting>Your Applications</h1>
+              <p>Track your rental applications and continue searching for your perfect home</p>
+            </div>
+            <div class="boarder-topbar-actions">
+              <a href="../../public/find-a-room/index.html" class="boarder-btn boarder-btn-primary">
+                <span class="icon-placeholder" data-icon="search"></span>
+                Find More Properties
+              </a>
+            </div>
+          </div>
+
+          <!-- Application Stats Grid -->
+          <div class="boarder-stats-grid">
+            <!-- Total Applications Card -->
+            <div class="boarder-stat-card" data-stat="total-applications">
+              <div class="boarder-stat-header">
+                <span class="boarder-stat-label">Total Applications</span>
+                <div class="boarder-stat-icon blue">
+                  <span class="icon-placeholder" data-icon="clipboardList"></span>
+                </div>
+              </div>
+              <div class="boarder-stat-value" data-total-applications>0</div>
+              <div class="boarder-stat-description">Applications submitted</div>
+            </div>
+
+            <!-- Pending Applications Card -->
+            <div class="boarder-stat-card" data-stat="pending-applications">
+              <div class="boarder-stat-header">
+                <span class="boarder-stat-label">Pending Review</span>
+                <div class="boarder-stat-icon orange">
+                  <span class="icon-placeholder" data-icon="clock"></span>
+                </div>
+              </div>
+              <div class="boarder-stat-value" data-pending-applications>0</div>
+              <div class="boarder-stat-description">Awaiting landlord response</div>
+            </div>
+
+            <!-- Accepted Applications Card -->
+            <div class="boarder-stat-card" data-stat="accepted-applications">
+              <div class="boarder-stat-header">
+                <span class="boarder-stat-label">Accepted</span>
+                <div class="boarder-stat-icon green">
+                  <span class="icon-placeholder" data-icon="checkCircle"></span>
+                </div>
+              </div>
+              <div class="boarder-stat-value" data-accepted-applications>0</div>
+              <div class="boarder-stat-description">Ready for confirmation</div>
+            </div>
+
+            <!-- Saved Properties Card -->
+            <div class="boarder-stat-card" data-stat="saved-properties">
+              <div class="boarder-stat-header">
+                <span class="boarder-stat-label">Saved Properties</span>
+                <div class="boarder-stat-icon purple">
+                  <span class="icon-placeholder" data-icon="bookmark"></span>
+                </div>
+              </div>
+              <div class="boarder-stat-value" data-saved-properties>0</div>
+              <div class="boarder-stat-description">Properties you bookmarked</div>
+            </div>
+          </div>
+
+          <!-- Main Dashboard Grid -->
+          <div class="boarder-dashboard-grid">
+            <!-- Recent Applications -->
+            <div class="boarder-section">
+              <div class="boarder-section-header">
+                <h2 class="boarder-section-title">
+                  <span class="icon-placeholder" data-icon="clipboardList"></span>
+                  Recent Applications
+                </h2>
+                <a href="../applications/index.html" class="boarder-view-all">
+                  View all
+                  <span class="icon-placeholder" data-icon="chevronRight"></span>
+                </a>
+              </div>
+
+              <!-- Applications List -->
+              <div class="applications-list" id="recent-applications-list">
+                <!-- Applications will be loaded dynamically -->
+                <div class="boarder-loading-state">
+                  <p>Loading your applications...</p>
+                </div>
+              </div>
+            </div>
+
+            <!-- Quick Actions -->
+            <div class="boarder-section">
+              <div class="boarder-section-header">
+                <h2 class="boarder-section-title">
+                  <span class="icon-placeholder" data-icon="bolt"></span>
+                  Quick Actions
+                </h2>
+              </div>
+
+              <div class="boarder-quick-actions-grid">
+                <a href="../../public/find-a-room/index.html" class="boarder-action-btn">
+                  <div class="boarder-action-icon blue">
+                    <span class="icon-placeholder" data-icon="search"></span>
+                  </div>
+                  <span class="boarder-action-label">Find Properties</span>
+                </a>
+
+                <a href="../applications/index.html" class="boarder-action-btn">
+                  <div class="boarder-action-icon green">
+                    <span class="icon-placeholder" data-icon="clipboardList"></span>
+                  </div>
+                  <span class="boarder-action-label">My Applications</span>
+                </a>
+
+                <a href="#" class="boarder-action-btn" id="saved-properties-btn">
+                  <div class="boarder-action-icon purple">
+                    <span class="icon-placeholder" data-icon="bookmark"></span>
+                  </div>
+                  <span class="boarder-action-label">Saved Properties</span>
+                </a>
+
+                <a href="./settings/index.html" class="boarder-action-btn">
+                  <div class="boarder-action-icon pink">
+                    <span class="icon-placeholder" data-icon="cog"></span>
+                  </div>
+                  <span class="boarder-action-label">Profile Settings</span>
+                </a>
+              </div>
+
+              <!-- Application Tips -->
+              <div class="application-tips">
+                <h3 class="application-tips-title">
+                  <span class="icon-placeholder" data-icon="lightBulb"></span>
+                  Application Tips
+                </h3>
+                <div class="application-tips-list">
+                  <div class="application-tip">
+                    <span class="icon-placeholder" data-icon="checkCircle"></span>
+                    <span>Complete your profile to increase acceptance chances</span>
+                  </div>
+                  <div class="application-tip">
+                    <span class="icon-placeholder" data-icon="checkCircle"></span>
+                    <span>Upload valid ID and proof of income if available</span>
+                  </div>
+                  <div class="application-tip">
+                    <span class="icon-placeholder" data-icon="checkCircle"></span>
+                    <span>Respond quickly to landlord messages</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Second Row: Saved Properties & Search Alerts -->
+          <div class="boarder-dashboard-grid">
+            <!-- Saved Properties -->
+            <div class="boarder-section">
+              <div class="boarder-section-header">
+                <h2 class="boarder-section-title">
+                  <span class="icon-placeholder" data-icon="bookmark"></span>
+                  Saved Properties
+                </h2>
+                <button class="boarder-view-all boarder-btn-text" id="view-all-saved">
+                  View all
+                  <span class="icon-placeholder" data-icon="chevronRight"></span>
+                </button>
+              </div>
+
+              <div class="saved-properties-list" id="saved-properties-list">
+                <!-- Saved properties will be loaded dynamically -->
+                <div class="boarder-loading-state">
+                  <p>Loading saved properties...</p>
+                </div>
+              </div>
+            </div>
+
+            <!-- Search Alerts & Recommendations -->
+            <div class="boarder-section">
+              <div class="boarder-section-header">
+                <h2 class="boarder-section-title">
+                  <span class="icon-placeholder" data-icon="bell"></span>
+                  Search Alerts
+                </h2>
+                <button class="boarder-view-all boarder-btn-text" id="create-alert-btn">
+                  <span class="icon-placeholder" data-icon="plus"></span>
+                  New Alert
+                </button>
+              </div>
+
+              <div class="search-alerts-list" id="search-alerts-list">
+                <!-- Search alerts will be loaded dynamically -->
+                <div class="empty-state">
+                  <span class="icon-placeholder" data-icon="bell"></span>
+                  <h3>No Search Alerts Yet</h3>
+                  <p>Create alerts to get notified when new properties match your criteria</p>
+                  <button class="boarder-btn boarder-btn-outline" id="create-first-alert">
+                    <span class="icon-placeholder" data-icon="plus"></span>
+                    Create Your First Alert
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Third Row: Application History & Profile Completion -->
+          <div class="boarder-dashboard-grid">
+            <!-- Application Activity -->
+            <div class="boarder-section">
+              <div class="boarder-section-header">
+                <h2 class="boarder-section-title">
+                  <span class="icon-placeholder" data-icon="clock"></span>
+                  Recent Activity
+                </h2>
+              </div>
+
+              <div class="activity-timeline" id="activity-timeline">
+                <!-- Activity items will be loaded dynamically -->
+                <div class="boarder-loading-state">
+                  <p>Loading recent activity...</p>
+                </div>
+              </div>
+            </div>
+
+            <!-- Profile Completion -->
+            <div class="boarder-section">
+              <div class="boarder-section-header">
+                <h2 class="boarder-section-title">
+                  <span class="icon-placeholder" data-icon="user"></span>
+                  Profile Completion
+                </h2>
+              </div>
+
+              <div class="profile-completion">
+                <div class="profile-completion-header">
+                  <div class="profile-completion-progress">
+                    <div class="progress-circle" data-progress="75">
+                      <span class="progress-value">75%</span>
+                    </div>
+                  </div>
+                  <div class="profile-completion-info">
+                    <h3>Almost Complete!</h3>
+                    <p>Complete your profile to improve your application success rate</p>
+                  </div>
+                </div>
+
+                <div class="profile-completion-checklist">
+                  <div class="checklist-item completed">
+                    <span class="icon-placeholder" data-icon="checkCircle"></span>
+                    <span>Basic Information</span>
+                  </div>
+                  <div class="checklist-item completed">
+                    <span class="icon-placeholder" data-icon="checkCircle"></span>
+                    <span>Contact Details</span>
+                  </div>
+                  <div class="checklist-item completed">
+                    <span class="icon-placeholder" data-icon="checkCircle"></span>
+                    <span>Profile Photo</span>
+                  </div>
+                  <div class="checklist-item">
+                    <span class="icon-placeholder" data-icon="circle"></span>
+                    <span>Employment Information</span>
+                  </div>
+                  <div class="checklist-item">
+                    <span class="icon-placeholder" data-icon="circle"></span>
+                    <span>Emergency Contact</span>
+                  </div>
+                </div>
+
+                <a href="./settings/index.html" class="boarder-btn boarder-btn-primary">
+                  <span class="icon-placeholder" data-icon="user"></span>
+                  Complete Profile
+                </a>
+              </div>
+            </div>
+          </div>
+        </div>
+      </main>
+    </div>
+
+    <!-- JavaScript -->
+    <script type="module">
+      import { initApplicationsDashboard } from '../../../js/views/boarder/applications-dashboard.js';
+      import { getIcon } from '../../../js/shared/icons.js';
+
+      document.addEventListener('DOMContentLoaded', () => {
+        // Replace icon placeholders
+        document.querySelectorAll('.icon-placeholder').forEach(el => {
+          const iconName = el.dataset.icon;
+          const className = el.className.replace('icon-placeholder', '').trim();
+          const iconHtml = getIcon(iconName, { className });
+          el.outerHTML = iconHtml;
+        });
+
+        initApplicationsDashboard();
+      });
+    </script>
+  </body>
+</html>

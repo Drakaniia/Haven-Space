@@ -1,0 +1,475 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="icon" type="image/svg+xml" href="../../../../assets/favicon.svg" />
+    <title>Settings - Haven Space</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="../../../../css/global.css" />
+    <link rel="stylesheet" href="../../../../css/components/sidebar.css" />
+    <link rel="stylesheet" href="../../../../css/components/navbar.css" />
+    <link rel="stylesheet" href="../../../../css/views/boarder/boarder.css" />
+    <link rel="stylesheet" href="../../../../css/views/boarder/boarder-settings.css" />
+    <script type="module" src="../../../../js/main.js"></script>
+  </head>
+  <body data-view="boarder-applications" data-dashboard-type="applications">
+    <div class="boarder-dashboard">
+      <!-- Sidebar Container -->
+      <div id="sidebar-container"></div>
+
+      <!-- Main Content -->
+      <main class="boarder-main">
+        <!-- Navbar Container -->
+        <div id="navbar-container"></div>
+
+        <!-- Content Wrapper -->
+        <div class="boarder-content">
+          <!-- Page Header -->
+          <div class="page-header">
+            <div class="page-header-left">
+              <div class="page-icon-box">
+                <span class="icon-placeholder" data-icon="settings"></span>
+              </div>
+              <div class="page-text-content">
+                <h1 class="page-title">Settings</h1>
+                <p class="page-subtitle">Manage your account preferences and settings</p>
+              </div>
+            </div>
+          </div>
+
+          <!-- Settings Tabs -->
+          <div class="settings-tabs">
+            <button class="settings-tab active" data-tab="profile">
+              <span class="icon-placeholder" data-icon="user"></span>
+              Profile
+            </button>
+            <button class="settings-tab" data-tab="notifications">
+              <span class="icon-placeholder" data-icon="bell"></span>
+              Notifications
+            </button>
+            <button class="settings-tab" data-tab="privacy">
+              <span class="icon-placeholder" data-icon="shieldCheck"></span>
+              Privacy & Security
+            </button>
+            <button class="settings-tab" data-tab="documents">
+              <span class="icon-placeholder" data-icon="document"></span>
+              Documents
+            </button>
+          </div>
+
+          <!-- Tab Content -->
+          <div class="settings-content">
+            <!-- Profile Tab -->
+            <div class="settings-panel active" id="profile-panel">
+              <!-- Basic Information Section -->
+              <div class="settings-card">
+                <h2 class="settings-card-title">Basic Information</h2>
+                <p class="settings-card-description">
+                  Update your personal information and profile picture
+                </p>
+
+                <form class="settings-form" id="basic-info-form">
+                  <div class="profile-avatar-section">
+                    <img
+                      src="../../../../assets/images/sample.png"
+                      alt="Profile Avatar"
+                      class="profile-avatar"
+                      id="profile-avatar-preview"
+                    />
+                    <div class="profile-avatar-actions">
+                      <button type="button" class="btn btn-outline btn-sm" id="change-avatar-btn">
+                        Change Photo
+                      </button>
+                      <input type="file" id="avatar-input" accept="image/*" style="display: none" />
+                    </div>
+                  </div>
+
+                  <div class="form-row">
+                    <div class="form-group">
+                      <label for="first-name">First Name</label>
+                      <input
+                        type="text"
+                        id="first-name"
+                        class="form-control"
+                        value="Juan"
+                        required
+                      />
+                    </div>
+                    <div class="form-group">
+                      <label for="last-name">Last Name</label>
+                      <input
+                        type="text"
+                        id="last-name"
+                        class="form-control"
+                        value="Dela Cruz"
+                        required
+                      />
+                    </div>
+                  </div>
+
+                  <div class="form-row">
+                    <div class="form-group">
+                      <label for="date-of-birth">Date of Birth</label>
+                      <input type="date" id="date-of-birth" class="form-control" />
+                    </div>
+                    <div class="form-group">
+                      <label for="gender">Gender</label>
+                      <select id="gender" class="form-control">
+                        <option value="">Select Gender</option>
+                        <option value="male">Male</option>
+                        <option value="female">Female</option>
+                        <option value="other">Other</option>
+                        <option value="prefer-not-to-say">Prefer not to say</option>
+                      </select>
+                    </div>
+                  </div>
+
+                  <div class="form-group">
+                    <label for="bio">About Me</label>
+                    <textarea
+                      id="bio"
+                      class="form-control"
+                      rows="3"
+                      placeholder="Tell landlords a bit about yourself..."
+                    ></textarea>
+                  </div>
+
+                  <div class="form-actions">
+                    <button type="submit" class="btn btn-primary">Save Basic Information</button>
+                  </div>
+                </form>
+              </div>
+
+              <!-- Contact Details Section -->
+              <div class="settings-card">
+                <h2 class="settings-card-title">Contact Details</h2>
+                <p class="settings-card-description">
+                  Manage your contact information for landlord communication
+                </p>
+
+                <form class="settings-form" id="contact-form">
+                  <div class="form-group">
+                    <label for="email">Email Address</label>
+                    <input
+                      type="email"
+                      id="email"
+                      class="form-control"
+                      value="juan@example.com"
+                      required
+                    />
+                  </div>
+
+                  <div class="form-row">
+                    <div class="form-group">
+                      <label for="phone">Phone Number</label>
+                      <input type="tel" id="phone" class="form-control" value="+63 912 345 6789" />
+                    </div>
+                    <div class="form-group">
+                      <label for="alt-phone">Alternative Phone</label>
+                      <input
+                        type="tel"
+                        id="alt-phone"
+                        class="form-control"
+                        placeholder="Optional"
+                      />
+                    </div>
+                  </div>
+
+                  <div class="form-group">
+                    <label for="current-address">Current Address</label>
+                    <textarea
+                      id="current-address"
+                      class="form-control"
+                      rows="2"
+                      placeholder="Your current residential address"
+                    ></textarea>
+                  </div>
+
+                  <div class="form-actions">
+                    <button type="submit" class="btn btn-primary">Save Contact Details</button>
+                  </div>
+                </form>
+              </div>
+
+              <!-- Employment Information Section -->
+              <div class="settings-card">
+                <h2 class="settings-card-title">Employment Information</h2>
+                <p class="settings-card-description">
+                  Provide employment details to strengthen your rental applications
+                </p>
+
+                <form class="settings-form" id="employment-form">
+                  <div class="form-group">
+                    <label for="employment-status">Employment Status</label>
+                    <select id="employment-status" class="form-control">
+                      <option value="">Select Status</option>
+                      <option value="employed">Employed</option>
+                      <option value="student">Student</option>
+                      <option value="self-employed">Self-Employed</option>
+                      <option value="unemployed">Unemployed</option>
+                      <option value="retired">Retired</option>
+                    </select>
+                  </div>
+
+                  <div class="form-row">
+                    <div class="form-group">
+                      <label for="company-name">Company/School Name</label>
+                      <input type="text" id="company-name" class="form-control" />
+                    </div>
+                    <div class="form-group">
+                      <label for="job-title">Job Title/Course</label>
+                      <input type="text" id="job-title" class="form-control" />
+                    </div>
+                  </div>
+
+                  <div class="form-row">
+                    <div class="form-group">
+                      <label for="monthly-income">Monthly Income</label>
+                      <select id="monthly-income" class="form-control">
+                        <option value="">Select Range</option>
+                        <option value="below-15k">Below ₱15,000</option>
+                        <option value="15k-30k">₱15,000 - ₱30,000</option>
+                        <option value="30k-50k">₱30,000 - ₱50,000</option>
+                        <option value="50k-100k">₱50,000 - ₱100,000</option>
+                        <option value="above-100k">Above ₱100,000</option>
+                      </select>
+                    </div>
+                    <div class="form-group">
+                      <label for="work-schedule">Work Schedule</label>
+                      <select id="work-schedule" class="form-control">
+                        <option value="">Select Schedule</option>
+                        <option value="day-shift">Day Shift</option>
+                        <option value="night-shift">Night Shift</option>
+                        <option value="flexible">Flexible</option>
+                        <option value="part-time">Part-time</option>
+                      </select>
+                    </div>
+                  </div>
+
+                  <div class="form-group">
+                    <label for="company-address">Company/School Address</label>
+                    <textarea
+                      id="company-address"
+                      class="form-control"
+                      rows="2"
+                      placeholder="Address of your workplace or school"
+                    ></textarea>
+                  </div>
+
+                  <div class="form-actions">
+                    <button type="submit" class="btn btn-primary">
+                      Save Employment Information
+                    </button>
+                  </div>
+                </form>
+              </div>
+
+              <!-- Emergency Contact Section -->
+              <div class="settings-card">
+                <h2 class="settings-card-title">Emergency Contact</h2>
+                <p class="settings-card-description">
+                  Provide emergency contact information for safety purposes
+                </p>
+
+                <form class="settings-form" id="emergency-contact-form">
+                  <div class="form-row">
+                    <div class="form-group">
+                      <label for="emergency-name">Full Name</label>
+                      <input type="text" id="emergency-name" class="form-control" required />
+                    </div>
+                    <div class="form-group">
+                      <label for="emergency-relationship">Relationship</label>
+                      <select id="emergency-relationship" class="form-control" required>
+                        <option value="">Select Relationship</option>
+                        <option value="parent">Parent</option>
+                        <option value="sibling">Sibling</option>
+                        <option value="spouse">Spouse</option>
+                        <option value="guardian">Guardian</option>
+                        <option value="friend">Friend</option>
+                        <option value="relative">Relative</option>
+                        <option value="other">Other</option>
+                      </select>
+                    </div>
+                  </div>
+
+                  <div class="form-row">
+                    <div class="form-group">
+                      <label for="emergency-phone">Phone Number</label>
+                      <input type="tel" id="emergency-phone" class="form-control" required />
+                    </div>
+                    <div class="form-group">
+                      <label for="emergency-alt-phone">Alternative Phone</label>
+                      <input type="tel" id="emergency-alt-phone" class="form-control" />
+                    </div>
+                  </div>
+
+                  <div class="form-group">
+                    <label for="emergency-address">Address</label>
+                    <textarea
+                      id="emergency-address"
+                      class="form-control"
+                      rows="2"
+                      placeholder="Emergency contact's address"
+                    ></textarea>
+                  </div>
+
+                  <div class="form-actions">
+                    <button type="submit" class="btn btn-primary">Save Emergency Contact</button>
+                  </div>
+                </form>
+              </div>
+            </div>
+
+            <!-- Notifications Tab -->
+            <div class="settings-panel" id="notifications-panel">
+              <div class="settings-card">
+                <h2 class="settings-card-title">Notification Preferences</h2>
+                <p class="settings-card-description">
+                  Choose what notifications you receive and how
+                </p>
+
+                <div class="notification-settings">
+                  <div class="notification-item">
+                    <div class="notification-item-info">
+                      <h4>Application Updates</h4>
+                      <p>Get notified when landlords respond to your applications</p>
+                    </div>
+                    <label class="toggle-switch">
+                      <input type="checkbox" checked data-setting="application-updates" />
+                      <span class="toggle-slider"></span>
+                    </label>
+                  </div>
+
+                  <div class="notification-item">
+                    <div class="notification-item-info">
+                      <h4>New Listings</h4>
+                      <p>Get notified when new properties match your search criteria</p>
+                    </div>
+                    <label class="toggle-switch">
+                      <input type="checkbox" checked data-setting="new-listings" />
+                      <span class="toggle-slider"></span>
+                    </label>
+                  </div>
+
+                  <div class="notification-item">
+                    <div class="notification-item-info">
+                      <h4>Search Alerts</h4>
+                      <p>Notifications from your saved search alerts</p>
+                    </div>
+                    <label class="toggle-switch">
+                      <input type="checkbox" checked data-setting="search-alerts" />
+                      <span class="toggle-slider"></span>
+                    </label>
+                  </div>
+                </div>
+
+                <div class="form-actions">
+                  <button type="button" class="btn btn-primary" id="save-notifications">
+                    Save Preferences
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            <!-- Privacy & Security Tab -->
+            <div class="settings-panel" id="privacy-panel">
+              <div class="settings-card">
+                <h2 class="settings-card-title">Change Password</h2>
+                <p class="settings-card-description">
+                  Update your password to keep your account secure
+                </p>
+
+                <form class="settings-form" id="password-form">
+                  <div class="form-group">
+                    <label for="current-password">Current Password</label>
+                    <input type="password" id="current-password" class="form-control" required />
+                  </div>
+
+                  <div class="form-group">
+                    <label for="new-password">New Password</label>
+                    <input type="password" id="new-password" class="form-control" required />
+                  </div>
+
+                  <div class="form-group">
+                    <label for="confirm-password">Confirm New Password</label>
+                    <input type="password" id="confirm-password" class="form-control" required />
+                  </div>
+
+                  <div class="form-actions">
+                    <button type="submit" class="btn btn-primary">Update Password</button>
+                  </div>
+                </form>
+              </div>
+
+              <div class="settings-card">
+                <h2 class="settings-card-title">Two-Factor Authentication</h2>
+                <p class="settings-card-description">
+                  Add an extra layer of security to your account
+                </p>
+
+                <div class="two-factor-section">
+                  <div class="two-factor-status">
+                    <span class="icon-placeholder" data-icon="checkCircle"></span>
+                    <span>Two-factor authentication is currently disabled</span>
+                  </div>
+                  <button type="button" class="btn btn-outline" id="enable-2fa">Enable 2FA</button>
+                </div>
+              </div>
+            </div>
+
+            <!-- Documents Tab -->
+            <div class="settings-panel" id="documents-panel">
+              <div class="settings-card">
+                <h2 class="settings-card-title">My Documents</h2>
+                <p class="settings-card-description">
+                  Upload and manage documents for your rental applications
+                </p>
+
+                <div class="documents-list" id="boarder-documents-list">
+                  <div class="empty-state">
+                    <span class="icon-placeholder" data-icon="document"></span>
+                    <h3>No Documents Yet</h3>
+                    <p>
+                      Upload documents like valid ID or proof of income to strengthen your
+                      applications
+                    </p>
+                    <button class="btn btn-outline" id="upload-document-btn">
+                      <span class="icon-placeholder" data-icon="arrowUpTray"></span>
+                      Upload Document
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </main>
+    </div>
+
+    <script type="module">
+      import { getIcon } from '../../../../js/shared/icons.js';
+      import { initApplicationsDashboard } from '../../../../js/views/boarder/applications-dashboard.js';
+      import { initSettingsPage } from '../../../../js/views/boarder/settings.js';
+
+      document.addEventListener('DOMContentLoaded', () => {
+        document.querySelectorAll('.icon-placeholder').forEach(el => {
+          const iconName = el.dataset.icon;
+          const className = el.className.replace('icon-placeholder', '').trim();
+          const iconHtml = getIcon(iconName, { className });
+          el.outerHTML = iconHtml;
+        });
+
+        // Initialize the applications dashboard components (sidebar + navbar with pre-acceptance nav)
+        initApplicationsDashboard();
+        // Initialize settings page logic (tabs, forms, etc.)
+        initSettingsPage();
+      });
+    </script>
+  </body>
+</html>
