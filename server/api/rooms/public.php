@@ -125,12 +125,16 @@ try {
     $enrichedProperties = array_map(function($property) use ($pdo) {
         $propertyId = $property['id'];
         
-        // Get property details for amenities (if table exists)
+        // Get property details for amenities, capacity, and other info
         $amenities = [];
         $city = '';
         $province = '';
+        $capacity = '';
+        $minStay = '';
+        $availability = '';
+        $propertyTotalRooms = 0;
         try {
-            $detailStmt = $pdo->prepare("SELECT amenities, city, province, property_type FROM property_details WHERE property_id = ?");
+            $detailStmt = $pdo->prepare("SELECT amenities, city, province, property_type, capacity, min_stay, availability, total_rooms FROM property_details WHERE property_id = ?");
             $detailStmt->execute([$propertyId]);
             $detailData = $detailStmt->fetch(PDO::FETCH_ASSOC);
             if ($detailData) {
@@ -139,19 +143,55 @@ try {
                 }
                 $city = $detailData['city'] ?? '';
                 $province = $detailData['province'] ?? '';
+                $capacity = $detailData['capacity'] ?? '';
+                $minStay = $detailData['min_stay'] ?? '';
+                $availability = $detailData['availability'] ?? '';
+                $propertyTotalRooms = $detailData['total_rooms'] ? intval($detailData['total_rooms']) : 0;
             }
         } catch (PDOException $e) {
-            // property_details table doesn't exist
+            // property_details table doesn't exist or columns missing
         }
+
+        // Get room counts from rooms table
+        $roomsCount = 0;
+        $availableRooms = 0;
+        try {
+            $roomStmt = $pdo->prepare("
+                SELECT 
+                    COUNT(*) as total_rooms,
+                    SUM(CASE WHEN status = 'available' THEN 1 ELSE 0 END) as available_rooms
+                FROM rooms 
+                WHERE property_id = ? AND deleted_at IS NULL
+            ");
+            $roomStmt->execute([$propertyId]);
+            $roomData = $roomStmt->fetch(PDO::FETCH_ASSOC);
+            if ($roomData) {
+                $roomsCount = intval($roomData['total_rooms']);
+                $availableRooms = intval($roomData['available_rooms']);
+            }
+        } catch (PDOException $e) {
+            // rooms table doesn't exist
+        }
+
+        // Use property_total_rooms if available, otherwise use rooms count
+        $totalRooms = $propertyTotalRooms > 0 ? $propertyTotalRooms : $roomsCount;
 
         // Get property photo
         $image = '/assets/images/placeholder-room.svg';
+        $images = [];
         try {
-            $photoStmt = $pdo->prepare("SELECT photo_url FROM property_photos WHERE property_id = ? AND is_cover = 1 LIMIT 1");
+            $photoStmt = $pdo->prepare("SELECT photo_url, is_cover FROM property_photos WHERE property_id = ? ORDER BY display_order");
             $photoStmt->execute([$propertyId]);
-            $photoData = $photoStmt->fetch(PDO::FETCH_ASSOC);
-            if ($photoData && !empty($photoData['photo_url'])) {
-                $image = $photoData['photo_url'];
+            $photos = $photoStmt->fetchAll(PDO::FETCH_ASSOC);
+            foreach ($photos as $photo) {
+                $images[] = $photo['photo_url'];
+                if ($photo['is_cover'] == 1) {
+                    $image = $photo['photo_url'];
+                }
+            }
+            // If no cover image but we have photos, use the first one
+            if ($image === '/assets/images/placeholder-room.svg' && !empty($images)) {
+                $image = $images[0];
             }
         } catch (PDOException $e) {
             // property_photos table doesn't exist
@@ -173,6 +213,22 @@ try {
             }
         }
 
+        // Determine room type display
+        $roomTypeDisplay = 'Available';
+        if (!empty($capacity)) {
+            if ($capacity === '1') {
+                $roomTypeDisplay = 'Single Room';
+            } elseif ($capacity === '2') {
+                $roomTypeDisplay = 'Shared (2 persons)';
+            } elseif ($capacity === '3') {
+                $roomTypeDisplay = 'Shared (3 persons)';
+            } elseif ($capacity === '4') {
+                $roomTypeDisplay = 'Shared (4 persons)';
+            } elseif ($capacity === '5+') {
+                $roomTypeDisplay = 'Shared (5+ persons)';
+            }
+        }
+
         return [
             'id' => intval($property['id']),
             'title' => htmlspecialchars($property['title']),
@@ -185,12 +241,15 @@ try {
             'longitude' => $property['longitude'] ? floatval($property['longitude']) : null,
             'rating' => 4.5,
             'reviews' => 0,
-            'roomTypes' => 'Available',
-            'availableRooms' => 0,
-            'totalRooms' => 0,
+            'roomTypes' => $roomTypeDisplay,
+            'availableRooms' => $availableRooms,
+            'totalRooms' => $totalRooms,
+            'capacity' => $capacity,
+            'minStay' => $minStay,
+            'availability' => $availability,
             'amenities' => $amenities,
             'image' => $image,
-            'images' => [],
+            'images' => $images,
             'badges' => $badges,
             'rooms' => [],
             'landlord' => [

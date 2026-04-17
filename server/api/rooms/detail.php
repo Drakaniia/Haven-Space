@@ -69,6 +69,9 @@ try {
     $propertyType = '';
     $deposit = '';
     $minStay = '';
+    $capacity = '';
+    $availabilityStatus = '';
+    $propertyTotalRooms = 0;
     $houseRules = [];
     
     // Try to get amenities from property_amenities table
@@ -97,6 +100,9 @@ try {
                 property_type,
                 deposit,
                 min_stay,
+                capacity,
+                availability,
+                total_rooms,
                 house_rules
             FROM property_details 
             WHERE property_id = ?
@@ -110,6 +116,9 @@ try {
             $propertyType = $detailData['property_type'] ?? '';
             $deposit = $detailData['deposit'] ?? '';
             $minStay = $detailData['min_stay'] ?? '';
+            $capacity = $detailData['capacity'] ?? '';
+            $availabilityStatus = $detailData['availability'] ?? '';
+            $propertyTotalRooms = $detailData['total_rooms'] ? intval($detailData['total_rooms']) : 0;
             
             if (!empty($detailData['house_rules'])) {
                 $houseRules = json_decode($detailData['house_rules'], true) ?: [];
@@ -258,7 +267,47 @@ try {
             $availableRooms++;
         }
     }
-    $availability = $availableRooms > 0 ? 'Available Now' : 'No rooms available';
+    
+    // Use property_total_rooms if available, otherwise use rooms count
+    $totalRooms = $propertyTotalRooms > 0 ? $propertyTotalRooms : count($rooms);
+    
+    // Determine availability text based on availabilityStatus or room availability
+    $availability = 'Contact for details';
+    if (!empty($availabilityStatus)) {
+        switch ($availabilityStatus) {
+            case 'available-now':
+                $availability = 'Available Now';
+                break;
+            case 'available-soon':
+                $availability = 'Available Soon';
+                break;
+            case 'by-appointment':
+                $availability = 'By Appointment';
+                break;
+            default:
+                $availability = $availabilityStatus;
+        }
+    } elseif ($availableRooms > 0) {
+        $availability = 'Available Now';
+    } elseif (count($rooms) > 0) {
+        $availability = 'No rooms available';
+    }
+    
+    // Determine room type display based on capacity
+    $roomTypeDisplay = $roomTypesString;
+    if (!empty($capacity)) {
+        if ($capacity === '1') {
+            $roomTypeDisplay = 'Single Room';
+        } elseif ($capacity === '2') {
+            $roomTypeDisplay = 'Shared (2 persons)';
+        } elseif ($capacity === '3') {
+            $roomTypeDisplay = 'Shared (3 persons)';
+        } elseif ($capacity === '4') {
+            $roomTypeDisplay = 'Shared (4 persons)';
+        } elseif ($capacity === '5+') {
+            $roomTypeDisplay = 'Shared (5+ persons)';
+        }
+    }
 
     // Build response
     $response = [
@@ -274,12 +323,14 @@ try {
         'propertyType' => htmlspecialchars($propertyType),
         'deposit' => htmlspecialchars($deposit),
         'minStay' => htmlspecialchars($minStay),
+        'capacity' => htmlspecialchars($capacity),
+        'availabilityStatus' => htmlspecialchars($availabilityStatus),
         'rating' => 4.5, // TODO: Calculate from actual reviews
         'reviews' => 0, // TODO: Get actual review count
-        'roomTypes' => $roomTypesString,
+        'roomTypes' => $roomTypeDisplay,
         'availability' => $availability,
         'availableRooms' => $availableRooms,
-        'totalRooms' => count($rooms),
+        'totalRooms' => $totalRooms,
         'amenities' => $amenities,
         'houseRules' => $houseRules,
         'images' => $images,
