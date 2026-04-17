@@ -429,7 +429,7 @@
   display: none;
   align-items: center;
   justify-content: center;
-  z-index: 2000;
+  z-index: 10500;
 }
 
 .property-modal.active,
@@ -444,6 +444,7 @@
   width: 100%;
   height: 100%;
   background: rgba(0, 0, 0, 0.5);
+  cursor: pointer;
 }
 
 /* Modal Content */
@@ -457,6 +458,7 @@
   overflow: hidden;
   display: flex;
   flex-direction: column;
+  z-index: 10501;
 }
 
 .modal-header {
@@ -465,6 +467,8 @@
   align-items: center;
   padding: 1.25rem 1.5rem;
   border-bottom: 1px solid var(--border-color);
+  position: relative;
+  z-index: 10502;
 }
 
 .modal-header h2 {
@@ -484,16 +488,26 @@
   border-radius: 8px;
   cursor: pointer;
   transition: background-color 0.2s ease;
+  position: relative;
+  z-index: 10503;
+  pointer-events: auto;
 }
 
 .modal-close:hover {
   background-color: #f3f4f6;
 }
 
+.modal-close:focus {
+  outline: 2px solid var(--primary-green);
+  outline-offset: 2px;
+}
+
 .modal-body {
   flex: 1;
   overflow-y: auto;
   padding: 1.5rem;
+  position: relative;
+  z-index: 10501;
 }
 
 .modal-property-images {
@@ -606,6 +620,13 @@
   gap: 0.75rem;
   padding: 1.25rem 1.5rem;
   border-top: 1px solid var(--border-color);
+  position: relative;
+  z-index: 10502;
+}
+
+.modal-footer button {
+  cursor: pointer;
+  pointer-events: auto;
 }
 
 /* Buttons */
@@ -624,10 +645,18 @@
   text-decoration: none;
   cursor: pointer;
   transition: background-color 0.2s ease;
+  position: relative;
+  z-index: 10503;
+  pointer-events: auto;
 }
 
-.btn-primary:hover {
+.btn-primary:hover:not(:disabled) {
   background-color: var(--dark-green);
+}
+
+.btn-primary:focus {
+  outline: 2px solid var(--primary-green);
+  outline-offset: 2px;
 }
 
 .btn-outline {
@@ -644,10 +673,18 @@
   font-family: var(--font-main);
   cursor: pointer;
   transition: background-color 0.2s ease;
+  position: relative;
+  z-index: 10503;
+  pointer-events: auto;
 }
 
-.btn-outline:hover {
+.btn-outline:hover:not(:disabled) {
   background-color: var(--bg-green);
+}
+
+.btn-outline:focus {
+  outline: 2px solid var(--primary-green);
+  outline-offset: 2px;
 }
 
 .btn-danger {
@@ -666,8 +703,14 @@
   transition: background-color 0.2s ease;
 }
 
-.btn-danger:hover {
+.btn-danger:hover:not(:disabled) {
   background-color: #dc2626;
+}
+
+.btn-danger:disabled {
+  background-color: #9ca3af;
+  cursor: not-allowed;
+  opacity: 0.6;
 }
 
 /* Delete Modal */
@@ -678,6 +721,7 @@
   padding: 2rem;
   text-align: center;
   max-width: 400px;
+  z-index: 10501;
 }
 
 .delete-icon {
@@ -708,6 +752,11 @@
   display: flex;
   gap: 0.75rem;
   justify-content: center;
+}
+
+.delete-actions button {
+  cursor: pointer;
+  pointer-events: auto;
 }
 
 /* Responsive */

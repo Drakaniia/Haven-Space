@@ -1,6 +1,7 @@
 import { getIcon } from '../../shared/icons.js';
 import CONFIG from '../../config.js';
-import { getImageUrl } from '../../shared/image-utils.js';
+import { getImageUrl, setImageWithFallback } from '../../shared/image-utils.js';
+import { showToast } from '../../shared/toast.js';
 
 const amenityLabels = {
   wifi: 'WiFi',
@@ -181,9 +182,7 @@ function createPropertyCard(property) {
 
   card.innerHTML = `
     <div class="property-card-image">
-      <img src="${getImageUrl(photos[0])}" alt="${
-    property.name
-  }" onerror="this.onerror=null;this.src='/assets/images/placeholder-property.svg'" />
+      <img id="property-img-${property.id}" alt="${property.name}" />
       <span class="property-card-status status-${property.status}">${statusLabel}</span>
       <div class="property-card-photo-count">
         ${getIcon('photo')}
@@ -241,6 +240,13 @@ function createPropertyCard(property) {
       handlePropertyAction(action, id);
     });
   });
+
+  // Set the image with proper fallback after the card is created
+  const imgElement = card.querySelector(`#property-img-${property.id}`);
+  if (imgElement) {
+    const imageUrl = photos.length > 0 ? photos[0] : null;
+    setImageWithFallback(imgElement, imageUrl);
+  }
 
   return card;
 }
@@ -307,17 +313,17 @@ function openPropertyModal(property) {
 
   const photos = property.photos || [];
   const coverImage = document.getElementById('modal-cover-image');
-  coverImage.src = photos[0] || '/assets/images/placeholder-property.svg';
-  coverImage.alt = property.name;
+  const coverImageUrl = photos.length > 0 ? photos[0] : null;
+  setImageWithFallback(coverImage, coverImageUrl);
 
   const thumbsContainer = document.getElementById('modal-image-thumbs');
   thumbsContainer.innerHTML = '';
   photos.slice(1).forEach(photoUrl => {
     const img = document.createElement('img');
-    img.src = photoUrl;
     img.alt = property.name;
+    setImageWithFallback(img, photoUrl);
     img.addEventListener('click', () => {
-      coverImage.src = photoUrl;
+      setImageWithFallback(coverImage, photoUrl);
     });
     thumbsContainer.appendChild(img);
   });
@@ -367,12 +373,24 @@ function setupModalHandlers() {
     const closeBtn = document.getElementById('modal-close');
     const cancelBtn = document.getElementById('modal-cancel');
     const overlay = propertyModal.querySelector('.modal-overlay');
+    const modalContent = propertyModal.querySelector('.modal-content');
 
-    [closeBtn, cancelBtn, overlay].forEach(el => {
+    [closeBtn, cancelBtn].forEach(el => {
       if (el) {
         el.addEventListener('click', () => closeModal(propertyModal));
       }
     });
+
+    if (overlay) {
+      overlay.addEventListener('click', () => closeModal(propertyModal));
+    }
+
+    // Prevent modal from closing when clicking on modal content
+    if (modalContent) {
+      modalContent.addEventListener('click', e => {
+        e.stopPropagation();
+      });
+    }
   }
 
   const deleteModal = document.getElementById('delete-modal');
@@ -380,6 +398,7 @@ function setupModalHandlers() {
     const cancelBtn = document.getElementById('delete-cancel');
     const confirmBtn = document.getElementById('delete-confirm');
     const overlay = deleteModal.querySelector('.modal-overlay');
+    const modalContent = deleteModal.querySelector('.delete-modal-content');
 
     if (cancelBtn) {
       cancelBtn.addEventListener('click', () => closeModal(deleteModal));
@@ -389,10 +408,33 @@ function setupModalHandlers() {
       overlay.addEventListener('click', () => closeModal(deleteModal));
     }
 
+    // Prevent modal from closing when clicking on modal content
+    if (modalContent) {
+      modalContent.addEventListener('click', e => {
+        e.stopPropagation();
+      });
+    }
+
     if (confirmBtn) {
-      confirmBtn.addEventListener('click', () => {
-        deleteProperty(currentProperty);
-        closeModal(deleteModal);
+      confirmBtn.addEventListener('click', async () => {
+        if (!currentProperty) {
+          return;
+        }
+
+        // Disable button and show loading state
+        confirmBtn.disabled = true;
+        confirmBtn.textContent = 'Deleting...';
+
+        try {
+          await deleteProperty(currentProperty);
+          closeModal(deleteModal);
+        } catch (error) {
+          console.error('Delete failed:', error);
+        } finally {
+          // Re-enable button and restore text
+          confirmBtn.disabled = false;
+          confirmBtn.textContent = 'Delete Property';
+        }
       });
     }
   }
@@ -414,10 +456,49 @@ function closeModal(modal) {
   currentProperty = null;
 }
 
-function deleteProperty(property) {
-  propertiesData = propertiesData.filter(p => p.id !== property.id);
-  loadProperties();
-  alert(`Property "${property.name}" has been deleted successfully.`);
+async function deleteProperty(property) {
+  if (!property || !property.id) {
+    console.error('Invalid property for deletion');
+    showToast('Invalid property for deletion', 'error');
+    return;
+  }
+
+  try {
+    const token = localStorage.getItem('token');
+    const headers = {
+      'Content-Type': 'application/json',
+    };
+    if (token) {
+      headers['Authorization'] = `Bearer ${token}`;
+    }
+
+    const response = await fetch(
+      `${CONFIG.API_BASE_URL}/api/landlord/properties.php?id=${property.id}`,
+      {
+        method: 'DELETE',
+        headers,
+        credentials: 'include',
+      }
+    );
+
+    if (!response.ok) {
+      throw new Error(`Failed to delete property: ${response.status}`);
+    }
+
+    const result = await response.json();
+
+    if (result.success) {
+      // Remove from local array only after successful API deletion
+      propertiesData = propertiesData.filter(p => p.id !== property.id);
+      loadProperties();
+      showToast(`Property "${property.name}" has been deleted successfully.`, 'success');
+    } else {
+      throw new Error(result.message || 'Failed to delete property');
+    }
+  } catch (error) {
+    console.error('Error deleting property:', error);
+    showToast(`Failed to delete property "${property.name}". Please try again.`, 'error');
+  }
 }
 
 function handleSearch(e) {
