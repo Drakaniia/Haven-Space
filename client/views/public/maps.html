@@ -20,12 +20,30 @@
     />
     <link rel="stylesheet" href="../../css/global.css" />
     <link rel="stylesheet" href="../../css/views/public/maps.css" />
+
+    <script type="module">
+      import { initIconElements } from '../../js/shared/icons.js';
+      document.addEventListener('DOMContentLoaded', () => {
+        initIconElements();
+      });
+    </script>
   </head>
   <body>
     <div class="maps-container">
-      <!-- Map Section (Left) -->
+      <!-- Full Screen Map -->
       <div class="map-section">
         <div id="map"></div>
+
+        <!-- Close Button (Top Right) -->
+        <button class="map-close-btn" id="close-map" title="Close Map">
+          <span
+            data-icon="close"
+            data-icon-width="20"
+            data-icon-height="20"
+            data-icon-stroke-width="2"
+          ></span>
+          <span>Close</span>
+        </button>
 
         <!-- Map Controls -->
         <div class="map-controls">
@@ -53,365 +71,6 @@
               data-icon-stroke-width="2"
             ></span>
           </button>
-        </div>
-
-        <!-- Login CTA Overlay -->
-        <div class="login-cta-overlay">
-          <div class="login-cta-content">
-            <div class="login-cta-icon">
-              <span
-                data-icon="target"
-                data-icon-width="24"
-                data-icon-height="24"
-                data-icon-stroke-width="2"
-              ></span>
-            </div>
-            <h3 class="login-cta-title">Want to see rooms near your university?</h3>
-            <p class="login-cta-description">
-              Sign in to personalize your search, save favorites, and track applications.
-            </p>
-            <div class="login-cta-actions">
-              <a href="../auth/login.html" class="login-cta-btn login-cta-btn-primary">Sign In</a>
-              <a href="../auth/signup.html" class="login-cta-btn login-cta-btn-outline">Sign Up</a>
-            </div>
-            <button class="login-cta-dismiss" id="dismiss-cta">
-              <span
-                data-icon="close"
-                data-icon-width="24"
-                data-icon-height="24"
-                data-icon-stroke-width="2"
-              ></span>
-              Continue browsing
-            </button>
-          </div>
-        </div>
-      </div>
-
-      <!-- Search Panel (Right) -->
-      <div class="search-panel">
-        <!-- Search State (Default) -->
-        <div class="search-state" id="search-state">
-          <div class="search-panel-header">
-            <h1 class="search-panel-title">Find a Room</h1>
-            <p class="search-panel-subtitle">Browse available boarding houses</p>
-
-            <!-- Search Input -->
-            <div class="search-input-wrapper">
-              <span
-                class="search-icon"
-                data-icon="search"
-                data-icon-width="24"
-                data-icon-height="24"
-                data-icon-stroke-width="2"
-              ></span>
-              <input
-                type="text"
-                class="search-panel-input"
-                id="search-input"
-                placeholder="Search by location, university, or landmark..."
-              />
-            </div>
-
-            <!-- Active Filter Tags -->
-            <div class="filter-tags" id="filter-tags">
-              <!-- Dynamically added when filters are selected -->
-            </div>
-          </div>
-
-          <div class="search-panel-body">
-            <!-- Filters -->
-            <div class="filter-section">
-              <label class="filter-label">Price Range</label>
-              <select class="filter-select" id="price-filter">
-                <option value="">Any Price</option>
-                <option value="0-3000">₱0 - 3,000</option>
-                <option value="3000-5000">₱3,000 - ₱5,000</option>
-                <option value="5000-8000">₱5,000 - ₱8,000</option>
-                <option value="8000+">₱8,000+</option>
-              </select>
-
-              <label class="filter-label">Property Type</label>
-              <select class="filter-select" id="type-filter">
-                <option value="">Any Type</option>
-                <option value="dorm">Dorm</option>
-                <option value="boarding-house">Boarding House</option>
-                <option value="apartment">Apartment</option>
-              </select>
-
-              <label class="filter-label">Amenities</label>
-              <div class="amenities-grid">
-                <label class="amenity-checkbox">
-                  <input type="checkbox" value="wifi" />
-                  <span>WiFi</span>
-                </label>
-                <label class="amenity-checkbox">
-                  <input type="checkbox" value="ac" />
-                  <span>Air Conditioning</span>
-                </label>
-                <label class="amenity-checkbox">
-                  <input type="checkbox" value="kitchen" />
-                  <span>Kitchen</span>
-                </label>
-                <label class="amenity-checkbox">
-                  <input type="checkbox" value="laundry" />
-                  <span>Laundry</span>
-                </label>
-                <label class="amenity-checkbox">
-                  <input type="checkbox" value="parking" />
-                  <span>Parking</span>
-                </label>
-                <label class="amenity-checkbox">
-                  <input type="checkbox" value="security" />
-                  <span>Security</span>
-                </label>
-              </div>
-
-              <button class="search-panel-btn" id="search-btn">Search</button>
-            </div>
-
-            <!-- Results -->
-            <div class="filter-section">
-              <div class="results-header">
-                <span class="results-count"
-                  ><strong id="results-count">0</strong> properties found</span
-                >
-                <select class="sort-select" id="sort-select">
-                  <option value="distance">Nearest</option>
-                  <option value="price-low">Price: Low to High</option>
-                  <option value="price-high">Price: High to Low</option>
-                  <option value="rating">Top Rated</option>
-                </select>
-              </div>
-
-              <!-- Premium Feature Notice -->
-              <div class="premium-notice">
-                <span
-                  data-icon="key"
-                  data-icon-width="24"
-                  data-icon-height="24"
-                  data-icon-stroke-width="2"
-                ></span>
-                <div>
-                  <strong>Sign in to unlock features</strong><br />
-                  Save favorites, track applications, and see distances from your school
-                </div>
-              </div>
-
-              <div class="properties-list" id="properties-list">
-                <!-- Property cards will be dynamically loaded here -->
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <!-- Property Detail State (Hidden by default) -->
-        <div class="property-detail-state" id="property-detail-state" style="display: none">
-          <!-- Back Button -->
-          <div class="detail-back-button">
-            <button class="back-btn" id="back-to-search">
-              <span
-                data-icon="arrowLeft"
-                data-icon-width="20"
-                data-icon-height="20"
-                data-icon-stroke-width="2"
-              ></span>
-              Back to search
-            </button>
-          </div>
-
-          <!-- Property Image -->
-          <div class="detail-image-container">
-            <div class="detail-image" id="detail-image"></div>
-            <div class="detail-image-overlay">
-              <div class="image-counter">1/5</div>
-            </div>
-          </div>
-
-          <!-- Property Header Info -->
-          <div class="detail-header">
-            <h1 class="detail-title" id="detail-title">Almani Mountain Resort</h1>
-            <div class="detail-rating-section">
-              <div class="detail-rating">
-                <span class="rating-number" id="detail-rating-number">4.7</span>
-                <span class="rating-stars" id="detail-rating-stars">
-                  <span
-                    data-icon="starSolid"
-                    data-icon-width="16"
-                    data-icon-height="16"
-                    style="color: #f59e0b"
-                  ></span>
-                  <span
-                    data-icon="starSolid"
-                    data-icon-width="16"
-                    data-icon-height="16"
-                    style="color: #f59e0b"
-                  ></span>
-                  <span
-                    data-icon="starSolid"
-                    data-icon-width="16"
-                    data-icon-height="16"
-                    style="color: #f59e0b"
-                  ></span>
-                  <span
-                    data-icon="starSolid"
-                    data-icon-width="16"
-                    data-icon-height="16"
-                    style="color: #f59e0b"
-                  ></span>
-                  <span
-                    data-icon="star"
-                    data-icon-width="16"
-                    data-icon-height="16"
-                    style="color: #f59e0b"
-                  ></span>
-                </span>
-                <span class="rating-count" id="detail-rating-count">(36)</span>
-              </div>
-              <div class="detail-property-type">Boarding House</div>
-            </div>
-          </div>
-
-          <!-- Overview/Reviews Tabs -->
-          <div class="detail-tabs">
-            <button class="detail-tab active" data-tab="overview">Overview</button>
-            <button class="detail-tab" data-tab="reviews">Reviews</button>
-          </div>
-
-          <!-- Tab Content Container -->
-          <div class="detail-tab-content">
-            <!-- Overview Tab -->
-            <div class="detail-tab-panel active" id="overview-panel">
-              <!-- Photos & Videos Section -->
-              <div class="photos-videos-section">
-                <h3 class="detail-section-title">Photos & videos</h3>
-                <div class="photo-video-grid" id="photo-video-grid">
-                  <!-- Photos will be dynamically added -->
-                </div>
-                <button class="add-photos-btn">
-                  <span
-                    data-icon="plus"
-                    data-icon-width="20"
-                    data-icon-height="20"
-                    data-icon-stroke-width="2"
-                  ></span>
-                  Add photos & videos
-                </button>
-              </div>
-
-              <!-- Review Summary Section -->
-              <div class="review-summary-section">
-                <h3 class="detail-section-title">Review summary</h3>
-                <div class="review-summary">
-                  <div class="review-summary-left">
-                    <div class="review-bar-container">
-                      <div class="review-bar-item">
-                        <span class="review-bar-label">5</span>
-                        <div class="review-bar-track">
-                          <div class="review-bar-fill" id="review-bar-5" style="width: 80%"></div>
-                        </div>
-                      </div>
-                      <div class="review-bar-item">
-                        <span class="review-bar-label">4</span>
-                        <div class="review-bar-track">
-                          <div class="review-bar-fill" id="review-bar-4" style="width: 15%"></div>
-                        </div>
-                      </div>
-                      <div class="review-bar-item">
-                        <span class="review-bar-label">3</span>
-                        <div class="review-bar-track">
-                          <div class="review-bar-fill" id="review-bar-3" style="width: 5%"></div>
-                        </div>
-                      </div>
-                      <div class="review-bar-item">
-                        <span class="review-bar-label">2</span>
-                        <div class="review-bar-track">
-                          <div class="review-bar-fill" id="review-bar-2" style="width: 0%"></div>
-                        </div>
-                      </div>
-                      <div class="review-bar-item">
-                        <span class="review-bar-label">1</span>
-                        <div class="review-bar-track">
-                          <div class="review-bar-fill" id="review-bar-1" style="width: 0%"></div>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                  <div class="review-summary-right">
-                    <div class="review-score" id="review-score">4.7</div>
-                    <div class="review-stars" id="review-stars">
-                      <span
-                        data-icon="starSolid"
-                        data-icon-width="16"
-                        data-icon-height="16"
-                        style="color: #f59e0b"
-                      ></span>
-                      <span
-                        data-icon="starSolid"
-                        data-icon-width="16"
-                        data-icon-height="16"
-                        style="color: #f59e0b"
-                      ></span>
-                      <span
-                        data-icon="starSolid"
-                        data-icon-width="16"
-                        data-icon-height="16"
-                        style="color: #f59e0b"
-                      ></span>
-                      <span
-                        data-icon="starSolid"
-                        data-icon-width="16"
-                        data-icon-height="16"
-                        style="color: #f59e0b"
-                      ></span>
-                      <span
-                        data-icon="star"
-                        data-icon-width="16"
-                        data-icon-height="16"
-                        style="color: #f59e0b"
-                      ></span>
-                    </div>
-                    <div class="review-total" id="review-total">36 reviews</div>
-                  </div>
-                </div>
-                <button class="write-review-btn">
-                  <span
-                    data-icon="chatBubbleLeft"
-                    data-icon-width="18"
-                    data-icon-height="18"
-                    data-icon-stroke-width="2"
-                  ></span>
-                  Write a review
-                </button>
-              </div>
-            </div>
-
-            <!-- Reviews Tab -->
-            <div class="detail-tab-panel" id="reviews-panel">
-              <!-- Review Filters -->
-              <div class="review-filters">
-                <button class="review-filter-btn active" data-filter="all">
-                  <span
-                    data-icon="check"
-                    data-icon-width="16"
-                    data-icon-height="16"
-                    data-icon-stroke-width="2"
-                  ></span>
-                  All
-                </button>
-                <button class="review-filter-btn" data-filter="customer-service">
-                  customer service <span class="filter-count">2</span>
-                </button>
-                <button class="review-filter-btn" data-filter="price">
-                  price <span class="filter-count">2</span>
-                </button>
-              </div>
-
-              <!-- Reviews List -->
-              <div class="reviews-list" id="reviews-list">
-                <!-- Reviews will be dynamically loaded -->
-              </div>
-            </div>
-          </div>
         </div>
       </div>
     </div>
@@ -627,138 +286,46 @@
 
       // Setup event listeners
       function setupEventListeners() {
-        // Search button
-        document.getElementById('search-btn').addEventListener('click', performSearch);
+        // Close map button - redirect back to find-a-room page
+        const closeBtn = document.getElementById('close-map');
+        console.log('Close button element:', closeBtn);
 
-        // Search input enter key
-        document.getElementById('search-input').addEventListener('keypress', e => {
-          if (e.key === 'Enter') performSearch();
-        });
+        if (closeBtn) {
+          closeBtn.addEventListener('click', () => {
+            console.log('Close button clicked! Redirecting to find-a-room page...');
+            // Always redirect to public find-a-room page
+            window.location.href = './find-a-room.html';
+          });
+          console.log('Close button event listener attached successfully');
+        } else {
+          console.error('Close button not found!');
+        }
 
         // Locate me button
-        document.getElementById('locate-me').addEventListener('click', getUserLocation);
+        const locateBtn = document.getElementById('locate-me');
+        if (locateBtn) {
+          locateBtn.addEventListener('click', getUserLocation);
+        }
 
         // Zoom controls
-        document.getElementById('zoom-in').addEventListener('click', () => map.zoomIn());
-        document.getElementById('zoom-out').addEventListener('click', () => map.zoomOut());
-
-        // Filter changes
-        document.getElementById('price-filter').addEventListener('change', updateFilterTags);
-        document.getElementById('type-filter').addEventListener('change', updateFilterTags);
-        document.querySelectorAll('.amenity-checkbox input').forEach(cb => {
-          cb.addEventListener('change', updateFilterTags);
-        });
-
-        // Sort change
-        document.getElementById('sort-select').addEventListener('change', sortProperties);
+        const zoomInBtn = document.getElementById('zoom-in');
+        const zoomOutBtn = document.getElementById('zoom-out');
+        if (zoomInBtn) zoomInBtn.addEventListener('click', () => map.zoomIn());
+        if (zoomOutBtn) zoomOutBtn.addEventListener('click', () => map.zoomOut());
       }
 
       // Perform search with filters
-      function performSearch() {
-        const searchTerm = document.getElementById('search-input').value;
-        const priceRange = document.getElementById('price-filter').value;
-        const propertyType = document.getElementById('type-filter').value;
-        const amenities = Array.from(
-          document.querySelectorAll('.amenity-checkbox input:checked')
-        ).map(cb => cb.value);
-
-        // Filter properties (replace with API call)
-        let filtered = sampleProperties;
-
-        if (searchTerm) {
-          filtered = filtered.filter(
-            p =>
-              p.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-              p.location.toLowerCase().includes(searchTerm.toLowerCase())
-          );
-        }
-
-        if (priceRange) {
-          const [min, max] = priceRange.split('-').map(v => (v === '+' ? Infinity : parseInt(v)));
-          filtered = filtered.filter(p => p.price >= min && p.price <= (max || Infinity));
-        }
-
-        if (propertyType) {
-          filtered = filtered.filter(p => p.type === propertyType);
-        }
-
-        if (amenities.length > 0) {
-          filtered = filtered.filter(p => amenities.every(a => p.amenities.includes(a)));
-        }
-
-        // Update results
-        updatePropertiesList(filtered);
-        addPropertyMarkers(filtered);
-      }
-
-      // Update filter tags display
-      function updateFilterTags() {
-        const tagsContainer = document.getElementById('filter-tags');
-        const tags = [];
-
-        const priceFilter = document.getElementById('price-filter').value;
-        if (priceFilter) {
-          tags.push({ label: `Price: ${priceFilter}`, type: 'price', value: priceFilter });
-        }
-
-        const typeFilter = document.getElementById('type-filter').value;
-        if (typeFilter) {
-          tags.push({ label: `Type: ${typeFilter}`, type: 'type', value: typeFilter });
-        }
-
-        document.querySelectorAll('.amenity-checkbox input:checked').forEach(cb => {
-          tags.push({
-            label: cb.parentElement.querySelector('span').textContent,
-            type: 'amenity',
-            value: cb.value,
-          });
-        });
-
-        tagsContainer.innerHTML = tags
-          .map(
-            tag => `
-          <div class="filter-tag active" data-type="${tag.type}" data-value="${tag.value}">
-            ${tag.label}
-            <span class="remove-icon" data-icon="close" data-icon-width="16" data-icon-height="16" data-icon-stroke-width="2"></span>
-          </div>
-        `
-          )
-          .join('');
-
-        // Add remove handlers
-        tagsContainer.querySelectorAll('.filter-tag').forEach(tag => {
-          tag
-            .querySelector('.remove-icon')
-            .addEventListener('click', () => removeFilter(tag.dataset.type, tag.dataset.value));
-        });
-      }
-
-      // Remove a filter
-      function removeFilter(type, value) {
-        if (type === 'price') {
-          document.getElementById('price-filter').value = '';
-        } else if (type === 'type') {
-          document.getElementById('type-filter').value = '';
-        } else if (type === 'amenity') {
-          const cb = document.querySelector(`.amenity-checkbox input[value="${value}"]`);
-          if (cb) cb.checked = false;
-        }
-        updateFilterTags();
-      }
-
-      // Update properties list
+      // Update properties list (simplified - no filters)
       function updatePropertiesList(properties) {
         const container = document.getElementById('properties-list');
-        const countEl = document.getElementById('results-count');
-
-        countEl.textContent = properties.length;
+        if (!container) return;
 
         if (properties.length === 0) {
           container.innerHTML = `
             <div class="empty-state">
               <span class="empty-state-icon" data-icon="building" data-icon-width="48" data-icon-height="48" data-icon-stroke-width="1.5"></span>
               <h3 class="empty-state-title">No properties found</h3>
-              <p class="empty-state-description">Try adjusting your filters or search area</p>
+              <p class="empty-state-description">Try adjusting your search area</p>
             </div>
           `;
           return;
@@ -794,41 +361,6 @@
           .join('');
       }
 
-      // Sort properties
-      function sortProperties() {
-        const sortBy = document.getElementById('sort-select').value;
-        let sorted = [...sampleProperties];
-
-        switch (sortBy) {
-          case 'price-low':
-            sorted.sort((a, b) => a.price - b.price);
-            break;
-          case 'price-high':
-            sorted.sort((a, b) => b.price - a.price);
-            break;
-          case 'rating':
-            sorted.sort((a, b) => b.rating - a.rating);
-            break;
-          case 'distance':
-          default:
-            if (userLocation) {
-              sorted.sort((a, b) => {
-                const distA = Math.sqrt(
-                  Math.pow(a.lat - userLocation.lat, 2) + Math.pow(a.lng - userLocation.lng, 2)
-                );
-                const distB = Math.sqrt(
-                  Math.pow(b.lat - userLocation.lat, 2) + Math.pow(b.lng - userLocation.lng, 2)
-                );
-                return distA - distB;
-              });
-            }
-            break;
-        }
-
-        updatePropertiesList(sorted);
-        addPropertyMarkers(sorted);
-      }
-
       // Get user location
       function getUserLocation() {
         if (navigator.geolocation) {
@@ -847,9 +379,6 @@
                 .addTo(map)
                 .bindPopup('You are here')
                 .openPopup();
-
-              // Re-sort by distance
-              sortProperties();
             },
             error => {
               alert('Unable to get your location. Please enable location permissions.');
@@ -1002,80 +531,9 @@
         });
       }
 
-      // Setup event listeners
-      function setupEventListeners() {
-        // Search button
-        document.getElementById('search-btn').addEventListener('click', performSearch);
-
-        // Search input enter key
-        document.getElementById('search-input').addEventListener('keypress', e => {
-          if (e.key === 'Enter') performSearch();
-        });
-
-        // Locate me button
-        document.getElementById('locate-me').addEventListener('click', getUserLocation);
-
-        // Zoom controls
-        document.getElementById('zoom-in').addEventListener('click', () => map.zoomIn());
-        document.getElementById('zoom-out').addEventListener('click', () => map.zoomOut());
-
-        // Filter changes
-        document.getElementById('price-filter').addEventListener('change', updateFilterTags);
-        document.getElementById('type-filter').addEventListener('change', updateFilterTags);
-        document.querySelectorAll('.amenity-checkbox input').forEach(cb => {
-          cb.addEventListener('change', updateFilterTags);
-        });
-
-        // Sort change
-        document.getElementById('sort-select').addEventListener('change', sortProperties);
-
-        // Back to search button
-        document.getElementById('back-to-search')?.addEventListener('click', switchToSearch);
-
-        // Tab switching
-        setupTabSwitching();
-
-        // Review filter buttons
-        document.querySelectorAll('.review-filter-btn').forEach(btn => {
-          btn.addEventListener('click', () => {
-            // Remove active class from all buttons
-            document
-              .querySelectorAll('.review-filter-btn')
-              .forEach(b => b.classList.remove('active'));
-            // Add active class to clicked button
-            btn.classList.add('active');
-            // Filter reviews based on selected filter
-            const filter = btn.dataset.filter;
-            filterReviews(filter);
-          });
-        });
-      }
-
-      // Dismiss login CTA
-      function dismissLoginCta() {
-        const cta = document.querySelector('.login-cta-overlay');
-        if (cta) {
-          cta.style.display = 'none';
-          localStorage.setItem('loginCtaDismissed', 'true');
-        }
-      }
-
-      // Check if login CTA should be shown
-      function checkLoginCta() {
-        const dismissed = localStorage.getItem('loginCtaDismissed');
-        if (dismissed === 'true') {
-          const cta = document.querySelector('.login-cta-overlay');
-          if (cta) cta.style.display = 'none';
-        }
-      }
-
       // Initialize when page loads
       window.addEventListener('load', () => {
         initMap();
-        checkLoginCta();
-
-        // Add dismiss handler
-        document.getElementById('dismiss-cta')?.addEventListener('click', dismissLoginCta);
       });
     </script>
   </body>
