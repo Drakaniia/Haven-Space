@@ -29,9 +29,9 @@
 }
 
 .edit-listing-content {
-  max-width: 1200px;
+  max-width: 900px;
   margin: 0 auto;
-  padding: 2rem 2rem 4rem;
+  padding: 2rem 2rem 3rem;
 }
 
 /* Header */
@@ -58,14 +58,14 @@
 }
 
 .header-title-section h1 {
-  font-size: 2.25rem;
+  font-size: 1.75rem;
   font-weight: 700;
   color: var(--text-dark);
   margin-bottom: 0.5rem;
 }
 
 .header-title-section p {
-  font-size: 1.05rem;
+  font-size: 0.95rem;
   color: var(--text-medium);
   line-height: 1.5;
 }
@@ -110,8 +110,8 @@
 
 .form-section {
   background-color: var(--white);
-  border-radius: 16px;
-  padding: 2.5rem;
+  border-radius: 12px;
+  padding: 1.5rem;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
   border: 1px solid var(--border-color);
 }
@@ -124,19 +124,19 @@
   display: flex;
   justify-content: space-between;
   align-items: flex-start;
-  margin-bottom: 2rem;
-  padding-bottom: 1.5rem;
-  border-bottom: 2px solid var(--border-color);
+  margin-bottom: 1.5rem;
+  padding-bottom: 1rem;
+  border-bottom: 1px solid var(--border-color);
 }
 
 .section-title {
   display: flex;
   align-items: center;
-  gap: 0.75rem;
-  font-size: 1.5rem;
-  font-weight: 700;
+  gap: 0.625rem;
+  font-size: 1.1rem;
+  font-weight: 600;
   color: var(--text-dark);
-  margin-bottom: 0.5rem;
+  margin-bottom: 0.25rem;
 }
 
 .section-title svg {
@@ -144,10 +144,10 @@
 }
 
 .section-description {
-  font-size: 0.95rem;
+  font-size: 0.875rem;
   color: var(--text-medium);
   line-height: 1.5;
-  margin-top: 0.5rem;
+  margin-top: 0.25rem;
 }
 
 .photo-count-badge {
@@ -164,13 +164,13 @@
 .form-grid {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
-  gap: 1.5rem;
+  gap: 1rem;
 }
 
 .form-group {
   display: flex;
   flex-direction: column;
-  gap: 0.625rem;
+  gap: 0.5rem;
 }
 
 .form-group.full-width {
@@ -178,32 +178,32 @@
 }
 
 .form-group label {
-  font-size: 0.95rem;
+  font-size: 0.875rem;
   font-weight: 600;
   color: var(--text-dark);
   display: flex;
   flex-direction: column;
-  gap: 0.25rem;
+  gap: 0.2rem;
 }
 
 .label-hint {
-  font-size: 0.85rem;
+  font-size: 0.8rem;
   font-weight: 400;
   color: var(--text-light);
 }
 
 .field-hint {
-  font-size: 0.85rem;
+  font-size: 0.8rem;
   color: var(--text-light);
-  margin-top: 0.25rem;
+  margin-top: 0.2rem;
 }
 
 .form-group input,
 .form-group select,
 .form-group textarea {
-  padding: 0.875rem 1rem;
-  border: 2px solid var(--border-color);
-  border-radius: 10px;
+  padding: 0.75rem 1rem;
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
   font-size: 0.95rem;
   font-family: var(--font-main);
   color: var(--text-dark);
@@ -216,7 +216,7 @@
 .form-group textarea:focus {
   outline: none;
   border-color: var(--primary-green);
-  box-shadow: 0 0 0 4px rgba(52, 168, 83, 0.1);
+  box-shadow: 0 0 0 3px rgba(52, 168, 83, 0.1);
 }
 
 .form-group textarea {
@@ -367,16 +367,16 @@
 
 .photo-preview-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
-  gap: 1.25rem;
+  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+  gap: 1rem;
 }
 
 .photo-preview-card {
   position: relative;
   aspect-ratio: 4/3;
-  border-radius: 12px;
+  border-radius: 8px;
   overflow: hidden;
-  border: 3px solid var(--border-color);
+  border: 1px solid var(--border-color);
   cursor: move;
   transition: all 0.3s ease;
   background-color: var(--white);
@@ -384,8 +384,8 @@
 
 .photo-preview-card:hover {
   border-color: var(--primary-green);
-  transform: translateY(-4px);
-  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.12);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
 }
 
 .photo-preview-card.dragging {
@@ -478,9 +478,9 @@
 }
 
 .photo-upload-area {
-  border: 3px dashed var(--border-color);
-  border-radius: 16px;
-  padding: 3rem 2rem;
+  border: 2px dashed var(--border-color);
+  border-radius: 12px;
+  padding: 2rem;
   text-align: center;
   cursor: pointer;
   transition: all 0.3s ease;
@@ -503,8 +503,8 @@
 }
 
 .upload-icon {
-  width: 80px;
-  height: 80px;
+  width: 56px;
+  height: 56px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -515,13 +515,13 @@
 
 .upload-text {
   margin: 0;
-  font-size: 1.05rem;
+  font-size: 0.95rem;
   font-weight: 500;
   color: var(--text-dark);
 }
 
 .upload-hint {
-  font-size: 0.9rem;
+  font-size: 0.85rem;
   color: var(--text-light);
   margin: 0;
 }
@@ -564,10 +564,10 @@
   justify-content: flex-end;
   align-items: center;
   gap: 1rem;
-  padding: 2rem 2.5rem;
+  padding: 1.25rem 1.5rem;
   background-color: var(--white);
-  border-radius: 16px;
-  box-shadow: 0 -4px 12px rgba(0, 0, 0, 0.08);
+  border-radius: 12px;
+  box-shadow: 0 -2px 8px rgba(0, 0, 0, 0.06);
   position: sticky;
   bottom: 0;
   z-index: 100;
@@ -731,18 +731,17 @@
   box-shadow: 0 6px 16px rgba(52, 168, 83, 0.4);
 }
 
-/* Responsive */
 @media (max-width: 1024px) {
   .edit-listing-main {
     margin-left: 0;
   }
 
   .edit-listing-content {
-    padding: 1.5rem 1.5rem 3rem;
+    padding: 1.5rem 1.5rem 2.5rem;
   }
 
   .form-section {
-    padding: 2rem;
+    padding: 1.25rem;
   }
 }
 
@@ -752,16 +751,16 @@
   }
 
   .header-title-section h1 {
-    font-size: 1.75rem;
+    font-size: 1.5rem;
   }
 
   .form-section {
-    padding: 1.5rem;
+    padding: 1.25rem;
   }
 
   .section-header {
     flex-direction: column;
-    gap: 1rem;
+    gap: 0.75rem;
   }
 
   .photo-count-badge {
@@ -770,7 +769,7 @@
 
   .form-grid {
     grid-template-columns: 1fr;
-    gap: 1rem;
+    gap: 0.875rem;
   }
 
   .amenities-grid {
@@ -778,13 +777,13 @@
   }
 
   .photo-preview-grid {
-    grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
-    gap: 1rem;
+    grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+    gap: 0.75rem;
   }
 
   .form-actions {
     flex-direction: column-reverse;
-    padding: 1.5rem;
+    padding: 1rem;
     gap: 0.75rem;
   }
 
@@ -813,11 +812,11 @@
 
 @media (max-width: 480px) {
   .header-title-section h1 {
-    font-size: 1.5rem;
+    font-size: 1.35rem;
   }
 
   .section-title {
-    font-size: 1.25rem;
+    font-size: 1rem;
   }
 
   .photo-preview-grid {

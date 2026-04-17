@@ -52,7 +52,7 @@ export function initYourProperties() {
  * @returns {Promise<Array>} Array of property objects
  */
 async function fetchPropertiesFromApi() {
-  const response = await fetch(`${CONFIG.API_BASE_URL}/api/landlord/properties.php`, {
+  const response = await fetch(`${CONFIG.API_BASE_URL}/api/landlord/properties`, {
     credentials: 'include',
   });
 

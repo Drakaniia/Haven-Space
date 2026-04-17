@@ -1,5 +1,6 @@
 import { getIcon } from '../../shared/icons.js';
 import CONFIG from '../../config.js';
+import { getImageUrl } from '../../shared/image-utils.js';
 
 const amenityLabels = {
   wifi: 'WiFi',
@@ -180,7 +181,9 @@ function createPropertyCard(property) {
 
   card.innerHTML = `
     <div class="property-card-image">
-      <img src="${photos[0] || '/assets/images/placeholder-property.svg'}" alt="${property.name}" />
+      <img src="${getImageUrl(photos[0])}" alt="${
+    property.name
+  }" onerror="this.onerror=null;this.src='/assets/images/placeholder-property.svg'" />
       <span class="property-card-status status-${property.status}">${statusLabel}</span>
       <div class="property-card-photo-count">
         ${getIcon('photo')}
