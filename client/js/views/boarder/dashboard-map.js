@@ -4,43 +4,7 @@
  */
 
 import { getIcon } from '../../shared/icons.js';
-
-// Sample property data (replace with API calls in production)
-const dashboardMapProperties = [
-  {
-    id: 1,
-    title: 'Sunrise Dormitory',
-    location: 'Sampaloc, Manila',
-    price: 5500,
-    rating: 4.5,
-    distance: 0.5,
-    amenities: ['wifi', 'ac', 'laundry'],
-    lat: 8.15,
-    lng: 125.126,
-  },
-  {
-    id: 2,
-    title: 'Green Valley Boarding House',
-    location: 'Diliman, Quezon City',
-    price: 4500,
-    rating: 4.3,
-    distance: 1.2,
-    amenities: ['wifi', 'kitchen', 'parking'],
-    lat: 8.148,
-    lng: 125.124,
-  },
-  {
-    id: 3,
-    title: 'Cozy Student Dorm',
-    location: 'Near University Ave',
-    price: 6000,
-    rating: 4.7,
-    distance: 2.1,
-    amenities: ['wifi', 'ac', 'security'],
-    lat: 8.151,
-    lng: 125.127,
-  },
-];
+import CONFIG from '../../config.js';
 
 let dashboardMap = null;
 let dashboardMarkers = [];
@@ -75,11 +39,48 @@ export function initDashboardMap() {
     maxZoom: 19,
   }).addTo(dashboardMap);
 
-  // Add property markers
-  addDashboardPropertyMarkers(dashboardMapProperties);
+  // Fetch properties from API and add markers
+  fetchNearbyProperties().then(properties => {
+    addDashboardPropertyMarkers(properties);
+    updateDashboardMapStats(properties);
+  });
+}
 
-  // Update stats
-  updateDashboardMapStats(dashboardMapProperties);
+/**
+ * Fetch nearby properties from the public API
+ * @returns {Promise<Array>} Array of property objects with lat/lng
+ */
+async function fetchNearbyProperties() {
+  try {
+    const response = await fetch(`${CONFIG.API_BASE_URL}/api/rooms/public`, {
+      credentials: 'include',
+    });
+
+    if (!response.ok) {
+      throw new Error(`API error: ${response.status}`);
+    }
+
+    const result = await response.json();
+    const rooms = result.data?.rooms || result.data?.properties || [];
+
+    // Filter to only properties that have coordinates
+    return rooms
+      .filter(r => r.latitude && r.longitude)
+      .map(r => ({
+        id: r.id,
+        title: r.name || r.title || 'Property',
+        location: [r.address, r.city].filter(Boolean).join(', '),
+        price: r.price || r.monthly_rate || 0,
+        rating: r.rating || 0,
+        distance: r.distance || 0,
+        amenities: Array.isArray(r.amenities) ? r.amenities.slice(0, 3) : [],
+        lat: parseFloat(r.latitude),
+        lng: parseFloat(r.longitude),
+      }));
+  } catch (error) {
+    console.error('Failed to fetch nearby properties for map:', error);
+    return [];
+  }
 }
 
 /**
