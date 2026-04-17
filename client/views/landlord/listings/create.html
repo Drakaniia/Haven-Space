@@ -11,6 +11,13 @@
       href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap"
       rel="stylesheet"
     />
+    <!-- Leaflet CSS -->
+    <link
+      rel="stylesheet"
+      href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+      integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY="
+      crossorigin=""
+    />
     <link rel="stylesheet" href="../../../css/global.css" />
     <link rel="stylesheet" href="../../../css/components/navbar.css" />
     <link rel="stylesheet" href="../../../css/views/landlord/create-listing.css" />
@@ -189,6 +196,7 @@
               </div>
 
               <div class="form-group">
+                <label>Map Location</label>
                 <button type="button" id="set-location-btn" class="btn-set-location">
                   <span
                     data-icon="target"
@@ -196,10 +204,11 @@
                     data-icon-height="20"
                     data-icon-stroke-width="2"
                   ></span>
-                  Set Location on Map
+                  <span id="location-btn-text">Set Location on Map</span>
                 </button>
                 <input type="hidden" id="property-latitude" name="propertyLatitude" />
                 <input type="hidden" id="property-longitude" name="propertyLongitude" />
+                <p class="field-hint" id="coordinates-display">Click button to set coordinates</p>
               </div>
             </section>
 
@@ -443,6 +452,71 @@
         </div>
       </div>
     </div>
+
+    <!-- Map Location Modal -->
+    <div class="map-modal-overlay" id="map-modal" style="display: none">
+      <div class="map-modal">
+        <div class="map-modal-header">
+          <h3 class="map-modal-title">Set Property Location</h3>
+          <button type="button" class="map-modal-close" id="map-modal-close">
+            <span
+              data-icon="xMark"
+              data-icon-width="24"
+              data-icon-height="24"
+              data-icon-stroke-width="2"
+            ></span>
+          </button>
+        </div>
+        <div class="map-modal-body">
+          <div class="map-search-wrapper">
+            <input
+              type="text"
+              id="map-address-search"
+              class="map-search-input"
+              placeholder="Search for an address..."
+            />
+            <button type="button" id="geocode-address-btn" class="btn-geocode">
+              <span
+                data-icon="search"
+                data-icon-width="20"
+                data-icon-height="20"
+                data-icon-stroke-width="2"
+              ></span>
+              Search
+            </button>
+            <button type="button" id="use-current-location-btn" class="btn-current-location">
+              <span
+                data-icon="target"
+                data-icon-width="20"
+                data-icon-height="20"
+                data-icon-stroke-width="2"
+              ></span>
+              Use Current Location
+            </button>
+          </div>
+          <div class="map-search-results" id="map-search-results"></div>
+          <div id="create-map" class="create-map"></div>
+          <p class="map-hint">Click on the map or drag the marker to set the exact location</p>
+          <div class="map-coordinates">
+            <span id="map-lat-display">Lat: --</span>
+            <span id="map-lng-display">Lng: --</span>
+          </div>
+        </div>
+        <div class="map-modal-footer">
+          <button type="button" class="btn-secondary" id="map-cancel-btn">Cancel</button>
+          <button type="button" class="btn-primary" id="map-confirm-btn" disabled>
+            Confirm Location
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Leaflet JS -->
+    <script
+      src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+      integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo="
+      crossorigin=""
+    ></script>
 
     <script type="module" src="../../../js/views/landlord/create-listing.js"></script>
   </body>

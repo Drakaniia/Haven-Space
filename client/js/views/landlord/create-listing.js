@@ -1,5 +1,13 @@
 import CONFIG from '../../config.js';
 import { getIcon } from '../../shared/icons.js';
+import {
+  initMap,
+  setMarker,
+  reverseGeocode,
+  searchAddress,
+  getCurrentLocation,
+  debounce,
+} from '../../shared/map-utils.js';
 
 /**
  * Inject icons from centralized library into elements with data-icon attributes
@@ -27,6 +35,12 @@ const MAX_FILE_SIZE_MB = 5;
 
 // Store uploaded photos
 const uploadedPhotos = [];
+
+// Map variables
+let createMap = null;
+let createMapMarker = null;
+let tempLatitude = null;
+let tempLongitude = null;
 
 /**
  * Initialize the create listing form
@@ -244,10 +258,374 @@ function hideError() {
  * Handle set location button click
  */
 function handleSetLocation() {
-  // Open map in new window or navigate to map page
-  // For now, we'll navigate to the map page and return with coordinates
-  const currentUrl = encodeURIComponent(window.location.href);
-  window.location.href = `../maps/index.html?return=${currentUrl}`;
+  openMapModal();
+}
+
+/**
+ * Open map modal for setting location
+ */
+function openMapModal() {
+  const modal = document.getElementById('map-modal');
+  if (!modal) {
+    return;
+  }
+
+  modal.style.display = 'flex';
+  document.body.style.overflow = 'hidden';
+
+  // Initialize map if not already initialized
+  setTimeout(() => {
+    if (!createMap) {
+      initializeCreateMap();
+    } else {
+      createMap.invalidateSize();
+    }
+  }, 100);
+
+  // Setup modal event listeners
+  setupMapModalListeners();
+}
+
+/**
+ * Close map modal
+ */
+function closeMapModal() {
+  const modal = document.getElementById('map-modal');
+  if (!modal) {
+    return;
+  }
+
+  modal.style.display = 'none';
+  document.body.style.overflow = '';
+
+  // Reset temp coordinates
+  tempLatitude = null;
+  tempLongitude = null;
+}
+
+/**
+ * Initialize the create map
+ */
+function initializeCreateMap() {
+  const currentLat = document.getElementById('property-latitude').value;
+  const currentLng = document.getElementById('property-longitude').value;
+
+  const center =
+    currentLat && currentLng
+      ? [parseFloat(currentLat), parseFloat(currentLng)]
+      : [14.5995, 120.9842]; // Default: Manila
+
+  createMap = initMap('create-map', {
+    center,
+    zoom: currentLat && currentLng ? 16 : 13,
+    onMapClick: handleCreateMapClick,
+  });
+
+  // Add marker if coordinates exist
+  if (currentLat && currentLng) {
+    createMapMarker = setMarker(createMap, parseFloat(currentLat), parseFloat(currentLng), {
+      draggable: true,
+      onDragEnd: handleCreateMarkerDrag,
+    });
+
+    tempLatitude = parseFloat(currentLat);
+    tempLongitude = parseFloat(currentLng);
+
+    updateMapCoordinatesDisplay(tempLatitude, tempLongitude);
+    document.getElementById('map-confirm-btn').disabled = false;
+  }
+}
+
+/**
+ * Handle map click event
+ */
+async function handleCreateMapClick(e) {
+  const { lat, lng } = e.latlng;
+
+  tempLatitude = lat;
+  tempLongitude = lng;
+
+  // Update marker
+  if (createMapMarker) {
+    createMapMarker.setLatLng([lat, lng]);
+  } else {
+    createMapMarker = setMarker(createMap, lat, lng, {
+      draggable: true,
+      onDragEnd: handleCreateMarkerDrag,
+    });
+  }
+
+  updateMapCoordinatesDisplay(lat, lng);
+  document.getElementById('map-confirm-btn').disabled = false;
+
+  // Reverse geocode to get address
+  try {
+    const result = await reverseGeocode(lat, lng);
+    const searchInput = document.getElementById('map-address-search');
+    if (searchInput) {
+      searchInput.value = result.display_name || '';
+    }
+  } catch (error) {
+    console.error('Error reverse geocoding:', error);
+  }
+}
+
+/**
+ * Handle marker drag event
+ */
+async function handleCreateMarkerDrag(lat, lng) {
+  tempLatitude = lat;
+  tempLongitude = lng;
+
+  updateMapCoordinatesDisplay(lat, lng);
+  document.getElementById('map-confirm-btn').disabled = false;
+
+  // Reverse geocode to get address
+  try {
+    const result = await reverseGeocode(lat, lng);
+    const searchInput = document.getElementById('map-address-search');
+    if (searchInput) {
+      searchInput.value = result.display_name || '';
+    }
+  } catch (error) {
+    console.error('Error reverse geocoding:', error);
+  }
+}
+
+/**
+ * Update coordinates display in modal
+ */
+function updateMapCoordinatesDisplay(lat, lng) {
+  document.getElementById('map-lat-display').textContent = `Lat: ${lat.toFixed(6)}`;
+  document.getElementById('map-lng-display').textContent = `Lng: ${lng.toFixed(6)}`;
+}
+
+/**
+ * Setup map modal event listeners
+ */
+function setupMapModalListeners() {
+  const closeBtn = document.getElementById('map-modal-close');
+  const cancelBtn = document.getElementById('map-cancel-btn');
+  const confirmBtn = document.getElementById('map-confirm-btn');
+  const currentLocationBtn = document.getElementById('use-current-location-btn');
+  const searchInput = document.getElementById('map-address-search');
+
+  // Remove existing listeners by cloning nodes
+  if (closeBtn) {
+    const newCloseBtn = closeBtn.cloneNode(true);
+    closeBtn.parentNode.replaceChild(newCloseBtn, closeBtn);
+    newCloseBtn.addEventListener('click', closeMapModal);
+  }
+
+  if (cancelBtn) {
+    const newCancelBtn = cancelBtn.cloneNode(true);
+    cancelBtn.parentNode.replaceChild(newCancelBtn, cancelBtn);
+    newCancelBtn.addEventListener('click', closeMapModal);
+  }
+
+  if (confirmBtn) {
+    const newConfirmBtn = confirmBtn.cloneNode(true);
+    confirmBtn.parentNode.replaceChild(newConfirmBtn, confirmBtn);
+    newConfirmBtn.addEventListener('click', confirmMapLocation);
+  }
+
+  if (currentLocationBtn) {
+    const newCurrentLocationBtn = currentLocationBtn.cloneNode(true);
+    currentLocationBtn.parentNode.replaceChild(newCurrentLocationBtn, currentLocationBtn);
+    newCurrentLocationBtn.addEventListener('click', useCurrentLocation);
+  }
+
+  // Setup address search
+  if (searchInput) {
+    const debouncedSearch = debounce(handleAddressSearch, 500);
+    searchInput.addEventListener('input', e => {
+      debouncedSearch(e.target.value);
+    });
+  }
+}
+
+/**
+ * Confirm map location and update form
+ */
+async function confirmMapLocation() {
+  if (tempLatitude === null || tempLongitude === null) {
+    alert('Please select a location on the map');
+    return;
+  }
+
+  // Update form fields
+  document.getElementById('property-latitude').value = tempLatitude.toFixed(6);
+  document.getElementById('property-longitude').value = tempLongitude.toFixed(6);
+
+  // Update button text and coordinates display
+  document.getElementById('location-btn-text').textContent = 'Update Location';
+  document.getElementById('coordinates-display').textContent = `Coordinates: ${tempLatitude.toFixed(
+    6
+  )}, ${tempLongitude.toFixed(6)}`;
+
+  // Try to reverse geocode and update address fields
+  try {
+    const result = await reverseGeocode(tempLatitude, tempLongitude);
+
+    if (result && result.address) {
+      const address = result.address;
+
+      // Update address field with street information
+      const streetParts = [];
+      if (address.house_number) streetParts.push(address.house_number);
+      if (address.road) streetParts.push(address.road);
+      if (address.neighbourhood || address.suburb) {
+        streetParts.push(address.neighbourhood || address.suburb);
+      }
+      const streetAddress = streetParts.join(' ') || address.village || address.hamlet || '';
+
+      if (streetAddress) {
+        document.getElementById('property-address').value = streetAddress;
+      }
+
+      // Update city field
+      const city =
+        address.city ||
+        address.town ||
+        address.municipality ||
+        address.city_district ||
+        address.county ||
+        '';
+      if (city) {
+        document.getElementById('property-city').value = city;
+      }
+
+      // Update province field
+      const province = address.state || address.region || address.province || '';
+      if (province) {
+        document.getElementById('property-province').value = province;
+      }
+    }
+  } catch (error) {
+    console.error('Error reverse geocoding:', error);
+    // Continue anyway - coordinates are saved even if address lookup fails
+  }
+
+  closeMapModal();
+}
+
+/**
+ * Use current location from browser geolocation
+ */
+function useCurrentLocation() {
+  getCurrentLocation(
+    async (lat, lng) => {
+      tempLatitude = lat;
+      tempLongitude = lng;
+
+      // Update map view
+      createMap.setView([lat, lng], 16);
+
+      // Update marker
+      if (createMapMarker) {
+        createMapMarker.setLatLng([lat, lng]);
+      } else {
+        createMapMarker = setMarker(createMap, lat, lng, {
+          draggable: true,
+          onDragEnd: handleCreateMarkerDrag,
+        });
+      }
+
+      updateMapCoordinatesDisplay(lat, lng);
+      document.getElementById('map-confirm-btn').disabled = false;
+
+      // Reverse geocode to get address
+      try {
+        const result = await reverseGeocode(lat, lng);
+        const searchInput = document.getElementById('map-address-search');
+        if (searchInput) {
+          searchInput.value = result.display_name || '';
+        }
+      } catch (error) {
+        console.error('Error reverse geocoding:', error);
+      }
+    },
+    error => {
+      console.error('Geolocation error:', error);
+      alert('Unable to get your current location. Please select manually on the map.');
+    }
+  );
+}
+
+/**
+ * Handle address search
+ */
+async function handleAddressSearch(query) {
+  const resultsContainer = document.getElementById('map-search-results');
+
+  if (!query || query.length < 3) {
+    resultsContainer.innerHTML = '';
+    resultsContainer.style.display = 'none';
+    return;
+  }
+
+  try {
+    const results = await searchAddress(query);
+
+    if (results.length === 0) {
+      resultsContainer.innerHTML = '<div class="map-search-result">No results found</div>';
+      resultsContainer.style.display = 'block';
+      return;
+    }
+
+    resultsContainer.innerHTML = results
+      .map(
+        (result, index) => `
+        <div class="map-search-result" data-index="${index}">
+          <div class="map-search-result-name">${result.display_name.split(',')[0]}</div>
+          <div class="map-search-result-detail">${result.display_name}</div>
+        </div>
+      `
+      )
+      .join('');
+
+    // Store results for click handling
+    window._mapSearchResults = results;
+
+    // Add click handlers
+    resultsContainer.querySelectorAll('.map-search-result').forEach(el => {
+      el.addEventListener('click', () => {
+        const index = parseInt(el.dataset.index);
+        const result = window._mapSearchResults[index];
+
+        // Update map view
+        tempLatitude = result.latitude;
+        tempLongitude = result.longitude;
+
+        createMap.setView([result.latitude, result.longitude], 16);
+
+        // Update marker
+        if (createMapMarker) {
+          createMapMarker.setLatLng([result.latitude, result.longitude]);
+        } else {
+          createMapMarker = setMarker(createMap, result.latitude, result.longitude, {
+            draggable: true,
+            onDragEnd: handleCreateMarkerDrag,
+          });
+        }
+
+        updateMapCoordinatesDisplay(result.latitude, result.longitude);
+        document.getElementById('map-confirm-btn').disabled = false;
+
+        // Update search input
+        document.getElementById('map-address-search').value = result.display_name;
+
+        // Hide results
+        resultsContainer.style.display = 'none';
+      });
+    });
+
+    resultsContainer.style.display = 'block';
+  } catch (error) {
+    console.error('Error searching address:', error);
+    resultsContainer.innerHTML = '<div class="map-search-result">Error searching address</div>';
+    resultsContainer.style.display = 'block';
+  }
 }
 
 /**
@@ -504,7 +882,7 @@ function handleAddCustomAmenity() {
 /**
  * Remove custom amenity
  */
-function _removeCustomAmenity(value) {
+function removeCustomAmenity(value) {
   customAmenitiesList = customAmenitiesList.filter(a => a !== value);
 
   // Re-render list
@@ -529,6 +907,9 @@ function _removeCustomAmenity(value) {
     });
   }
 }
+
+// Make removeCustomAmenity globally accessible
+window.removeCustomAmenity = removeCustomAmenity;
 
 /**
  * Get custom amenities
