@@ -86,7 +86,8 @@ try {
 
     if ($user && password_verify($password, $user['password_hash'])) {
         $accountStatus = $user['account_status'] ?? 'active';
-        if ($accountStatus !== 'active') {
+        // Allow 'active' and 'pending_verification' (landlords waiting for verification)
+        if (!in_array($accountStatus, ['active', 'pending_verification'])) {
             RateLimiter::registerFailure($ip);
             http_response_code(403);
             echo json_encode(['error' => 'This account is suspended or banned. Contact support if you believe this is a mistake.']);
