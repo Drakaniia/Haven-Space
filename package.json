@@ -13,8 +13,8 @@
     "fix:rooms": "cd server && php ../scripts/fix-room-data.php",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
-    "lint": "eslint client/js/**/*.js",
-    "lint:fix": "eslint --fix client/js/**/*.js",
+    "lint": "eslint client/js --ext .js",
+    "lint:fix": "eslint --fix client/js --ext .js",
     "build": "node scripts/build.js",
     "prepare": "husky install"
   },

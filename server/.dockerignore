@@ -27,4 +27,3 @@ phpunit.xml
 phpstan.neon
 
 # Build artifacts
-composer.lock
