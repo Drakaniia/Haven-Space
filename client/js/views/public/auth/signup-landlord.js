@@ -5,6 +5,7 @@
 
 import CONFIG from '../../../config.js';
 import { getIcon } from '../../../shared/icons.js';
+import { getBasePath } from '../../../shared/routing.js';
 
 /**
  * Show toast notification
@@ -138,8 +139,8 @@ function isValidPhoneNumber(phone) {
   // 09XX XXX XXXX (11 digits starting with 0)
   // 9XX XXX XXXX (10 digits starting with 9)
 
-  if (cleaned.length === 13 && cleaned.startsWith('63') && cleaned.charAt(2) === '9') {
-    return true; // +63 9XX XXX XXXX format
+  if (cleaned.length === 12 && cleaned.startsWith('63') && cleaned.charAt(2) === '9') {
+    return true; // +63 9XX XXX XXXX format (63 + 10 digit mobile)
   }
 
   if (cleaned.length === 11 && cleaned.startsWith('09')) {
@@ -555,16 +556,28 @@ function setupEventListeners() {
 
         // Redirect to landlord dashboard (not login)
         setTimeout(() => {
-          // Detect base path (GitHub Pages vs local)
-          const pathname = window.location.pathname;
-          const basePath = pathname.includes('github.io')
-            ? '/Haven-Space/client/views/'
-            : '/views/';
-
+          const basePath = getBasePath();
           window.location.href = `${basePath}landlord/index.html`;
         }, 1500);
       } else {
-        throw new Error(result.message || 'Registration failed');
+        // Handle specific error cases
+        let errorMessage = result.message || result.error || 'Registration failed';
+
+        if (response.status === 409) {
+          if (errorMessage.includes('Email already exists') || errorMessage.includes('email')) {
+            errorMessage =
+              'This email address is already registered. Please use a different email or try logging in instead.';
+
+            // Highlight the email field
+            const emailField = document.getElementById('step1Form').email;
+            showInlineError(emailField, 'This email is already registered');
+
+            // Go back to step 1 to fix the email
+            goToStep(1);
+          }
+        }
+
+        throw new Error(errorMessage);
       }
     } catch (error) {
       console.error('Registration error:', error);

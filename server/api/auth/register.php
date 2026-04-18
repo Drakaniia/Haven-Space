@@ -95,7 +95,11 @@ $stmt = $pdo->prepare('SELECT id FROM users WHERE email = ?');
 $stmt->execute([$email]);
 if ($stmt->fetch()) {
     http_response_code(409);
-    echo json_encode(['error' => 'Email already exists']);
+    echo json_encode([
+        'success' => false,
+        'error' => 'Email already exists',
+        'message' => 'This email address is already registered. Please use a different email or try logging in instead.'
+    ]);
     exit;
 }
 

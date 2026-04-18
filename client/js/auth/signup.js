@@ -302,7 +302,27 @@ document.addEventListener('DOMContentLoaded', function () {
         const redirectPath = getBoarderRedirectPath(result.user);
         window.location.href = redirectPath;
       } else {
-        showToast(result.error || 'Registration failed', 'error');
+        // Handle specific error cases
+        let errorMessage = result.error || result.message || 'Registration failed';
+
+        if (response.status === 409) {
+          if (errorMessage.includes('Email already exists') || errorMessage.includes('email')) {
+            errorMessage =
+              'This email address is already registered. Please use a different email or try logging in instead.';
+
+            // Focus the email field
+            const emailField = document.getElementById('email');
+            if (emailField) {
+              emailField.focus();
+              emailField.style.borderColor = '#ef4444';
+              setTimeout(() => {
+                emailField.style.borderColor = '';
+              }, 3000);
+            }
+          }
+        }
+
+        showToast(errorMessage, 'error');
         submitBtn.disabled = false;
         submitBtn.textContent = originalText;
       }
