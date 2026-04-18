@@ -488,6 +488,11 @@ export async function initLandlordPermissions() {
     const isNewLandlord = localStorage.getItem('landlordStatus') === 'new';
     const shouldShowWelcome = isNewLandlord && !localStorage.getItem('landlordWelcomeDismissed');
 
+    // Clear the new landlord status after checking
+    if (isNewLandlord) {
+      localStorage.removeItem('landlordStatus');
+    }
+
     // Store last known status for change detection
     let lastKnownStatus = false;
 
