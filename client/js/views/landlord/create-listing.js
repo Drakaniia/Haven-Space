@@ -1,5 +1,6 @@
 import CONFIG from '../../config.js';
 import { getIcon } from '../../shared/icons.js';
+import { getAuthHeaders } from '../../shared/auth-headers.js';
 import {
   initMap,
   setMarker,
@@ -685,10 +686,7 @@ async function handleFormSubmit(e) {
 
     const response = await fetch(`${CONFIG.API_BASE_URL}/api/landlord/listings`, {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'X-User-Id': localStorage.getItem('user_id') || '4',
-      },
+      headers: getAuthHeaders('4'),
       body: JSON.stringify(data),
       credentials: 'include',
     });

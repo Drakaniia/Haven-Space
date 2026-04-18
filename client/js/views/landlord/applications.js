@@ -137,7 +137,7 @@ async function loadApplications() {
 
     if (!response.ok) {
       if (response.status === 401) {
-        window.location.href = '../../auth/login.html';
+        window.location.href = '/views/public/auth/login.html';
         return;
       }
       throw new Error('Failed to fetch applications');

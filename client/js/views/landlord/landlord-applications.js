@@ -5,6 +5,7 @@
  */
 
 import CONFIG from '../../config.js';
+import { getAuthHeaders } from '../../shared/auth-headers.js';
 
 /**
  * Fetch applications from API
@@ -13,12 +14,13 @@ import CONFIG from '../../config.js';
 async function fetchApplications() {
   try {
     const res = await fetch(`${CONFIG.API_BASE_URL}/api/landlord/applications`, {
+      headers: getAuthHeaders('4'),
       credentials: 'include',
     });
 
     if (!res.ok) {
       if (res.status === 401) {
-        window.location.href = '../auth/login.html';
+        window.location.href = '/views/public/auth/login.html';
         return [];
       }
       throw new Error('Failed to fetch applications');

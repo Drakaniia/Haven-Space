@@ -1,5 +1,6 @@
 import CONFIG from '../../config.js';
 import { getIcon } from '../../shared/icons.js';
+import { getAuthHeaders } from '../../shared/auth-headers.js';
 
 /**
  * Inject icons from centralized library into elements with data-icon attributes
@@ -94,10 +95,7 @@ async function loadDashboardData() {
   try {
     const response = await fetch(`${CONFIG.API_BASE_URL}/api/landlord/dashboard-stats.php`, {
       method: 'GET',
-      headers: {
-        'Content-Type': 'application/json',
-        'X-User-Id': localStorage.getItem('user_id') || '4',
-      },
+      headers: getAuthHeaders('4'),
       credentials: 'include',
     });
 
@@ -724,10 +722,7 @@ async function loadProperties() {
   try {
     const response = await fetch(`${CONFIG.API_BASE_URL}/api/landlord/properties`, {
       method: 'GET',
-      headers: {
-        'Content-Type': 'application/json',
-        'X-User-Id': localStorage.getItem('user_id') || '4',
-      },
+      headers: getAuthHeaders('4'),
       credentials: 'include',
     });
 
