@@ -98,3 +98,9 @@ Same verification requirements apply
 OAuth users skip password step but follow same verification flow
 Pre-populate available information from Google profile
 This approach balances user experience with platform security, ensuring legitimate landlords while keeping boarder onboarding friction-free.
+
+Landlord Profile
+
+about page
+
+boostrap
