@@ -191,7 +191,7 @@ body:has(.sidebar-collapsed) .admin-main {
   justify-content: center;
   gap: 8px;
   padding: 10px 20px;
-  border-radius: 9999px;
+  border-radius: 8px;
   font-size: 14px;
   font-weight: 600;
   cursor: pointer;
@@ -207,12 +207,12 @@ body:has(.sidebar-collapsed) .admin-main {
 }
 
 .admin-btn-primary {
-  background-color: var(--admin-primary);
-  color: white;
+  background-color: var(--primary-green);
+  color: var(--white);
 }
 
 .admin-btn-primary:hover:not(:disabled) {
-  background-color: var(--admin-primary-hover);
+  background-color: var(--dark-green);
 }
 
 .admin-btn-success {
@@ -235,23 +235,23 @@ body:has(.sidebar-collapsed) .admin-main {
 
 .admin-btn-outline {
   background-color: transparent;
-  border: 2px solid var(--admin-primary);
-  color: var(--admin-primary);
+  border: 2px solid var(--primary-green);
+  color: var(--primary-green);
 }
 
 .admin-btn-outline:hover:not(:disabled) {
-  background-color: var(--admin-surface-hover);
-  color: var(--admin-primary-hover);
+  background-color: var(--bg-green);
+  color: var(--dark-green);
 }
 
 .admin-btn-ghost {
   background-color: transparent;
-  color: var(--admin-text-secondary);
+  color: var(--text-gray);
 }
 
 .admin-btn-ghost:hover:not(:disabled) {
-  background-color: var(--admin-surface-hover);
-  color: var(--admin-primary);
+  background-color: var(--bg-green);
+  color: var(--primary-green);
 }
 
 .admin-btn-sm {

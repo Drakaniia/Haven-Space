@@ -7,8 +7,19 @@
 
 /* Meet Our Team Hero Section */
 .meet-team-hero {
+  position: relative;
   padding: 6rem 1.5rem 4rem;
   background: var(--white);
+  overflow: hidden;
+}
+
+.meet-team-hero .vision-grid-background {
+  z-index: 0;
+}
+
+.meet-team-hero .meet-team-container {
+  position: relative;
+  z-index: 1;
 }
 
 .meet-team-container {

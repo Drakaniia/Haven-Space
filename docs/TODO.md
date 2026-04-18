@@ -104,5 +104,3 @@ Landlord Profile
 about page
 
 boostrap
-
-in admin page,

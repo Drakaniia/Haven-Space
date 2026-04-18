@@ -23,6 +23,17 @@
 }
 
 /* Sidebar Toggle Button */
+.navbar-sidebar-icon,
+.navbar-theme-icon {
+  filter: brightness(0) saturate(100%) invert(35%);
+  transition: filter 0.2s;
+}
+
+.navbar-icon-btn:hover .navbar-sidebar-icon,
+.navbar-icon-btn:hover .navbar-theme-icon {
+  filter: brightness(0) saturate(100%) invert(20%);
+}
+
 .navbar-sidebar-toggle .navbar-icon {
   transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }

@@ -8,7 +8,7 @@
 import { initLogoCloud } from '../../components/logo-cloud.js';
 import { initPublicFindARoom } from './public-find-a-room.js';
 import { getState } from '../../shared/state.js';
-import { getIcon } from '../../shared/icons.js';
+import { getIcon, initIconElements } from '../../shared/icons.js';
 import { setupAuthenticatedNavigation } from '../../shared/routing.js';
 import { showToast } from '../../shared/toast.js';
 
@@ -260,6 +260,9 @@ function initPublicComponents() {
 
   // Check if user is authenticated and update navigation
   updateNavigationForAuthenticatedUser();
+
+  // Initialize data-icon elements (footer social icons, etc.)
+  initIconElements();
 
   // Setup authentication-aware navigation for find-a-room links
   setupAuthenticatedNavigation();
