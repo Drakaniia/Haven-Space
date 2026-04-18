@@ -13,6 +13,7 @@ import { initBoarderFindARoom } from './boarder-find-a-room-auth.js';
 import { initLeasePage } from './lease.js';
 import { initPaymentPage } from './boarder-payment-process.js';
 import { initSettingsPage } from './settings.js';
+import { getAuthHeadersOnly } from '../../shared/auth-headers.js';
 import { initAnnouncements } from './announcements.js';
 import { initDashboardMap } from './dashboard-map.js';
 import { initHouseRulesPage } from './house-rules.js';
@@ -23,12 +24,31 @@ import { updateNavbarNotifications } from '../../components/navbar.js';
 
 function loginPath() {
   const pathname = window.location.pathname;
+  const hostname = window.location.hostname;
+
   if (pathname.includes('github.io')) {
     return '/Haven-Space/client/views/public/auth/login.html';
   }
-  if (pathname.includes('/views/')) {
-    return '/views/public/auth/login.html';
+
+  // For localhost development
+  if (hostname === 'localhost' || hostname === '127.0.0.1') {
+    // Check if we're already in a views subdirectory
+    if (pathname.includes('/views/')) {
+      // Extract the base path up to /views/
+      const viewsIndex = pathname.indexOf('/views/');
+      const basePath = pathname.substring(0, viewsIndex + 7); // Include '/views/'
+      return `${basePath}public/auth/login.html`;
+    }
+
+    // Default for localhost - assume haven-space project structure
+    if (pathname.includes('/haven-space/')) {
+      return '/haven-space/client/views/public/auth/login.html';
+    }
+
+    // Fallback for localhost
+    return '/client/views/public/auth/login.html';
   }
+
   return '/views/public/auth/login.html';
 }
 
@@ -47,18 +67,20 @@ export async function initBoarderDashboard() {
   try {
     const res = await fetch(`${CONFIG.API_BASE_URL}/auth/me.php`, {
       method: 'GET',
-      headers: {
-        'X-User-Id': localStorage.getItem('user_id') || '3',
-      },
+      headers: getAuthHeadersOnly('3'),
       credentials: 'include',
     });
+
     if (!res.ok) {
+      console.error('Authentication failed:', res.status, res.statusText);
       window.location.href = loginPath();
       return;
     }
+
     const data = await res.json();
     user = data.user;
-  } catch {
+  } catch (error) {
+    console.error('Error during authentication:', error);
     window.location.href = loginPath();
     return;
   }
