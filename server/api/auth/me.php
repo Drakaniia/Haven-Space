@@ -44,7 +44,30 @@ function determineBoarderStatus($pdo, $boarderId) {
     return 'new';
 }
 
-$token = $_COOKIE['access_token'] ?? '';
+$token = '';
+
+// Check Authorization header first
+$authHeader = '';
+if (isset($_SERVER['HTTP_AUTHORIZATION'])) {
+    $authHeader = $_SERVER['HTTP_AUTHORIZATION'];
+} elseif (isset($_SERVER['REDIRECT_HTTP_AUTHORIZATION'])) {
+    $authHeader = $_SERVER['REDIRECT_HTTP_AUTHORIZATION'];
+} elseif (function_exists('apache_request_headers')) {
+    $headers = apache_request_headers();
+    if (isset($headers['Authorization'])) {
+        $authHeader = $headers['Authorization'];
+    }
+}
+
+if (preg_match('/Bearer\s(\S+)/', $authHeader, $matches)) {
+    $token = $matches[1];
+}
+
+// Fallback to cookie if no Authorization header
+if (empty($token)) {
+    $token = $_COOKIE['access_token'] ?? '';
+}
+
 $simulatedId = $_SERVER['HTTP_X_USER_ID'] ?? $_GET['user_id'] ?? null;
 
 if (empty($token) && $simulatedId) {
@@ -100,7 +123,7 @@ if ($userId > 0) {
 }
 
 if ($userRow) {
-    if (($userRow['account_status'] ?? 'active') !== 'active') {
+    if (in_array($userRow['account_status'] ?? 'active', ['suspended', 'banned'])) {
         http_response_code(403);
         echo json_encode(['error' => 'Account is suspended or banned']);
         exit;
