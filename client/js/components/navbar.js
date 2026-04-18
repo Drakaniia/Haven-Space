@@ -127,12 +127,19 @@ function updateNotificationCount(count) {
  */
 function setupThemeToggle() {
   const themeToggle = document.getElementById('navbar-theme-toggle');
-  if (themeToggle) {
-    themeToggle.addEventListener('click', () => {
-      // Theme toggle event dispatched
-      window.dispatchEvent(new CustomEvent('navbar:theme:toggle'));
-    });
-  }
+  if (!themeToggle) return;
+
+  const iconLight = document.getElementById('navbar-theme-icon-light');
+  const iconDark = document.getElementById('navbar-theme-icon-dark');
+
+  themeToggle.addEventListener('click', () => {
+    window.dispatchEvent(new CustomEvent('navbar:theme:toggle'));
+    if (iconLight && iconDark) {
+      const isDark = iconLight.style.display === 'none';
+      iconLight.style.display = isDark ? '' : 'none';
+      iconDark.style.display = isDark ? 'none' : '';
+    }
+  });
 }
 
 /**
@@ -480,9 +487,23 @@ function setupSidebarToggle() {
   const sidebarToggle = document.getElementById('navbar-sidebar-toggle');
   if (!sidebarToggle) return;
 
+  const iconLeft = document.getElementById('navbar-sidebar-icon-left');
+  const iconRight = document.getElementById('navbar-sidebar-icon-right');
+
+  // Reflect initial collapsed state
+  const isInitiallyCollapsed = localStorage.getItem('sidebar-collapsed') === 'true';
+  if (iconLeft && iconRight) {
+    iconLeft.style.display = isInitiallyCollapsed ? 'none' : '';
+    iconRight.style.display = isInitiallyCollapsed ? '' : 'none';
+  }
+
   sidebarToggle.addEventListener('click', () => {
-    // Dispatch custom event for sidebar toggle
     window.dispatchEvent(new CustomEvent('navbar:sidebar:toggle'));
+    if (iconLeft && iconRight) {
+      const nowCollapsed = iconLeft.style.display !== 'none';
+      iconLeft.style.display = nowCollapsed ? 'none' : '';
+      iconRight.style.display = nowCollapsed ? '' : 'none';
+    }
   });
 }
 
