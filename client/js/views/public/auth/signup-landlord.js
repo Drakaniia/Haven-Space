@@ -60,10 +60,10 @@ function showToast(message, type = 'error') {
 function showInlineError(field, message) {
   clearInlineError(field);
 
-  field.classList.add('error');
+  field.classList.add('input-error');
 
   const errorDiv = document.createElement('div');
-  errorDiv.className = 'form-error';
+  errorDiv.className = 'field-error';
   errorDiv.textContent = message;
 
   field.parentNode.appendChild(errorDiv);
@@ -74,8 +74,8 @@ function showInlineError(field, message) {
  * @param {HTMLElement} field - Form field element
  */
 function clearInlineError(field) {
-  field.classList.remove('error');
-  const errorDiv = field.parentNode.querySelector('.form-error');
+  field.classList.remove('input-error');
+  const errorDiv = field.parentNode.querySelector('.field-error');
   if (errorDiv) {
     errorDiv.remove();
   }
@@ -86,7 +86,7 @@ function clearInlineError(field) {
  * @param {HTMLElement} form - Form element
  */
 function clearAllInlineErrors(form) {
-  form.querySelectorAll('.error').forEach(field => {
+  form.querySelectorAll('.input-error').forEach(field => {
     clearInlineError(field);
   });
 }
@@ -233,9 +233,9 @@ function validateStep1() {
 function validateStep2() {
   const form = document.getElementById('step2Form');
   const businessName = form.businessName;
+  const phoneNumber = form.phoneNumber;
   const city = form.city;
   const province = form.province;
-  const phoneNumber = form.phoneNumber;
   const idType = form.idType;
   const idNumber = form.idNumber;
 
@@ -253,9 +253,21 @@ function validateStep2() {
     isValid = false;
   }
 
+  // Phone number validation
+  if (!phoneNumber.value.trim()) {
+    showInlineError(phoneNumber, 'Contact number is required');
+    isValid = false;
+  } else if (!isValidPhoneNumber(phoneNumber.value.trim())) {
+    showInlineError(phoneNumber, 'Please enter a valid Philippine phone number');
+    isValid = false;
+  }
+
   // City validation
   if (!city.value.trim()) {
-    showInlineError(city, 'City/Municipality is required');
+    showInlineError(city, 'City is required');
+    isValid = false;
+  } else if (city.value.trim().length < 2) {
+    showInlineError(city, 'City must be at least 2 characters');
     isValid = false;
   }
 
@@ -263,14 +275,8 @@ function validateStep2() {
   if (!province.value.trim()) {
     showInlineError(province, 'Province is required');
     isValid = false;
-  }
-
-  // Phone number validation
-  if (!phoneNumber.value.trim()) {
-    showInlineError(phoneNumber, 'Contact number is required');
-    isValid = false;
-  } else if (!isValidPhoneNumber(phoneNumber.value.trim())) {
-    showInlineError(phoneNumber, 'Please enter a valid Philippine phone number');
+  } else if (province.value.trim().length < 2) {
+    showInlineError(province, 'Province must be at least 2 characters');
     isValid = false;
   }
 
@@ -356,11 +362,11 @@ function populateReview() {
   // Landlord profile info
   document.getElementById('reviewBusinessName').textContent =
     signupState.step2.businessName || 'Not set';
+  document.getElementById('reviewPhone').textContent = signupState.step2.phoneNumber || 'Not set';
   document.getElementById('reviewLocation').textContent =
     signupState.step2.city && signupState.step2.province
       ? `${signupState.step2.city}, ${signupState.step2.province}`
       : 'Not set';
-  document.getElementById('reviewPhone').textContent = signupState.step2.phoneNumber || 'Not set';
   document.getElementById('reviewIdType').textContent = formatIdType(signupState.step2.idType);
 }
 
@@ -465,9 +471,9 @@ function setupEventListeners() {
     signupState.step2 = {
       businessName: formData.get('businessName'),
       businessDescription: formData.get('businessDescription'),
+      phoneNumber: formData.get('phoneNumber'),
       city: formData.get('city'),
       province: formData.get('province'),
-      phoneNumber: formData.get('phoneNumber'),
       experienceLevel: formData.get('experienceLevel'),
       idType: formData.get('idType'),
       idNumber: formData.get('idNumber'),
@@ -503,9 +509,9 @@ function setupEventListeners() {
       // Landlord profile
       businessName: signupState.step2.businessName,
       businessDescription: signupState.step2.businessDescription,
+      phoneNumber: signupState.step2.phoneNumber,
       city: signupState.step2.city,
       province: signupState.step2.province,
-      phoneNumber: signupState.step2.phoneNumber,
       experienceLevel: signupState.step2.experienceLevel,
       idType: signupState.step2.idType,
       idNumber: signupState.step2.idNumber,
@@ -540,6 +546,9 @@ function setupEventListeners() {
         if (result.access_token) {
           localStorage.setItem('token', result.access_token);
         }
+
+        // Mark as new landlord for welcome banner
+        localStorage.setItem('landlordStatus', 'new');
 
         // Show success message
         showToast('Account created successfully! Redirecting to your dashboard...', 'success');
@@ -673,9 +682,9 @@ document.addEventListener('DOMContentLoaded', () => {
     const step2Form = document.getElementById('step2Form');
     step2Form.businessName.value = signupState.step2.businessName || '';
     step2Form.businessDescription.value = signupState.step2.businessDescription || '';
+    step2Form.phoneNumber.value = signupState.step2.phoneNumber || '';
     step2Form.city.value = signupState.step2.city || '';
     step2Form.province.value = signupState.step2.province || '';
-    step2Form.phoneNumber.value = signupState.step2.phoneNumber || '';
     step2Form.experienceLevel.value = signupState.step2.experienceLevel || '';
     step2Form.idType.value = signupState.step2.idType || '';
     step2Form.idNumber.value = signupState.step2.idNumber || '';

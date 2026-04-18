@@ -46,6 +46,10 @@
             >Haven Space</span
           >
         </a>
+        <div class="auth-header-link">
+          <span>Here to find a room?</span>
+          <a href="signup.html" id="headerRoleLink">Sign up as a Boarder</a>
+        </div>
       </div>
     </header>
 
@@ -213,31 +217,6 @@
             <div class="form-help-text">Optional - you can add this later</div>
           </div>
 
-          <div class="form-row">
-            <div class="form-group">
-              <label for="city" class="form-label">City/Municipality *</label>
-              <input
-                type="text"
-                id="city"
-                name="city"
-                class="form-input"
-                placeholder="e.g., Quezon City"
-                required
-              />
-            </div>
-            <div class="form-group">
-              <label for="province" class="form-label">Province *</label>
-              <input
-                type="text"
-                id="province"
-                name="province"
-                class="form-input"
-                placeholder="e.g., Metro Manila"
-                required
-              />
-            </div>
-          </div>
-
           <div class="form-group">
             <label for="phoneNumber" class="form-label">Contact number *</label>
             <input
@@ -249,6 +228,31 @@
               required
             />
             <div class="form-help-text">Boarders will use this to contact you</div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label for="city" class="form-label">City *</label>
+              <input
+                type="text"
+                id="city"
+                name="city"
+                class="form-input"
+                placeholder="e.g., Quezon City, Manila"
+                required
+              />
+            </div>
+            <div class="form-group">
+              <label for="province" class="form-label">Province *</label>
+              <input
+                type="text"
+                id="province"
+                name="province"
+                class="form-input"
+                placeholder="e.g., Metro Manila, Cebu"
+                required
+              />
+            </div>
           </div>
 
           <div class="form-group">
@@ -349,12 +353,12 @@
               <span class="review-value" id="reviewBusinessName"></span>
             </div>
             <div class="review-item">
-              <span class="review-label">Location:</span>
-              <span class="review-value" id="reviewLocation"></span>
-            </div>
-            <div class="review-item">
               <span class="review-label">Contact:</span>
               <span class="review-value" id="reviewPhone"></span>
+            </div>
+            <div class="review-item">
+              <span class="review-label">Location:</span>
+              <span class="review-value" id="reviewLocation"></span>
             </div>
             <div class="review-item">
               <span class="review-label">ID Type:</span>
