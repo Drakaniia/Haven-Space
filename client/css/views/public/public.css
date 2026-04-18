@@ -80,6 +80,7 @@
 .nav-logo {
   display: flex;
   align-items: center;
+  text-decoration: none;
 }
 
 .logo-text {
@@ -675,6 +676,16 @@
   font-weight: 700;
   color: var(--text-dark);
   margin: 0 0 1rem;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.5rem;
+}
+
+.vision-card-title-icon {
+  width: 67px;
+  height: 67px;
+  object-fit: contain;
 }
 
 .vision-card:first-child .vision-card-title {
@@ -1173,6 +1184,12 @@
   justify-content: center;
   color: var(--text-gray);
   transition: color 0.2s;
+}
+
+.social-link img {
+  display: block;
+  width: 20px;
+  height: 20px;
 }
 
 .social-link:hover {
