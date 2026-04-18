@@ -3,11 +3,11 @@
  * Handles role selection (boarder or landlord) before signup
  */
 
-import { loadIcons } from '../shared/icons.js';
+import { initIconElements } from '../shared/icons.js';
 
 // Initialize page
 document.addEventListener('DOMContentLoaded', () => {
-  loadIcons();
+  initIconElements();
   initializeRoleSelection();
 });
 
@@ -16,42 +16,70 @@ document.addEventListener('DOMContentLoaded', () => {
  */
 function initializeRoleSelection() {
   const continueBtn = document.getElementById('continueBtn');
-  const roleRadios = document.querySelectorAll('input[name="role"]');
+  const roleCards = document.querySelectorAll('.role-card');
 
-  // Enable continue button when a role is selected
-  roleRadios.forEach(radio => {
-    radio.addEventListener('change', () => {
+  console.log('Initializing role selection...', { continueBtn, roleCards });
+
+  // Function to update button based on selection
+  function updateButton() {
+    const selectedCard = document.querySelector('.role-card.selected');
+    const selectedRole = selectedCard?.getAttribute('data-role');
+    console.log('Selected role:', selectedRole);
+
+    if (selectedRole) {
       continueBtn.disabled = false;
+
+      // Update button text based on selected role
+      if (selectedRole === 'boarder') {
+        continueBtn.textContent = 'Apply as Boarder';
+      } else if (selectedRole === 'landlord') {
+        continueBtn.textContent = 'Join as Landlord';
+      }
+    } else {
+      continueBtn.disabled = true;
+      continueBtn.textContent = 'Continue';
+    }
+  }
+
+  // Handle card clicks
+  roleCards.forEach(card => {
+    card.addEventListener('click', () => {
+      const role = card.getAttribute('data-role');
+      console.log('Card clicked, role:', role);
+
+      // Remove selected class from all cards
+      roleCards.forEach(c => c.classList.remove('selected'));
+
+      // Add selected class to clicked card
+      card.classList.add('selected');
+
+      // Update the hidden radio button
+      const radio = card.querySelector('input[type="radio"]');
+      if (radio) {
+        radio.checked = true;
+      }
+
+      updateButton();
     });
   });
 
   // Handle continue button click
   continueBtn.addEventListener('click', () => {
-    const selectedRole = document.querySelector('input[name="role"]:checked');
+    const selectedCard = document.querySelector('.role-card.selected');
+    const selectedRole = selectedCard?.getAttribute('data-role');
 
     if (!selectedRole) {
+      console.log('No role selected');
       return;
     }
 
-    const role = selectedRole.value;
+    console.log('Navigating with role:', selectedRole);
 
     // Navigate to appropriate signup page
-    if (role === 'boarder') {
+    if (selectedRole === 'boarder') {
       window.location.href = 'signup.html';
-    } else if (role === 'landlord') {
+    } else if (selectedRole === 'landlord') {
       window.location.href = 'signup-landlord.html';
     }
-  });
-
-  // Allow clicking on card to select role
-  const cards = document.querySelectorAll('.choose-card');
-  cards.forEach(card => {
-    card.addEventListener('click', () => {
-      const radio = card.querySelector('input[type="radio"]');
-      if (radio) {
-        radio.checked = true;
-        radio.dispatchEvent(new Event('change'));
-      }
-    });
   });
 }

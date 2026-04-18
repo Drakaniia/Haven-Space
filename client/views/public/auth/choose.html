@@ -46,15 +46,14 @@
       <div class="choose-container">
         <h1 class="choose-title">Join as a landlord or boarder</h1>
 
-        <div class="choose-cards">
+        <div class="role-selection">
           <!-- Boarder Card -->
-          <div class="choose-card" data-role="boarder">
-            <input type="radio" name="role" id="roleBoarder" value="boarder" class="choose-radio" />
-            <label for="roleBoarder" class="choose-card-label">
-              <div class="choose-card-icon">
+          <div class="role-card" data-role="boarder">
+            <div class="role-card-content">
+              <div class="role-icon">
                 <svg
-                  width="32"
-                  height="32"
+                  width="24"
+                  height="24"
                   viewBox="0 0 24 24"
                   fill="none"
                   stroke="currentColor"
@@ -66,71 +65,47 @@
                   <polyline points="9 22 9 12 15 12 15 22"></polyline>
                 </svg>
               </div>
-              <div class="choose-card-content">
-                <p class="choose-card-text">I'm a boarder,</p>
-                <p class="choose-card-subtext">looking for a room</p>
-              </div>
-              <div class="choose-card-checkmark">
-                <svg
-                  width="20"
-                  height="20"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  stroke-width="3"
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                >
-                  <polyline points="20 6 9 17 4 12"></polyline>
-                </svg>
-              </div>
-            </label>
+              <div class="role-radio"></div>
+            </div>
+            <p class="role-text">I'm a boarder,<br />looking for a room</p>
+            <input
+              type="radio"
+              name="role"
+              id="roleBoarder"
+              value="boarder"
+              style="display: none"
+            />
           </div>
 
           <!-- Landlord Card -->
-          <div class="choose-card" data-role="landlord">
+          <div class="role-card" data-role="landlord">
+            <div class="role-card-content">
+              <div class="role-icon">
+                <svg
+                  width="24"
+                  height="24"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                >
+                  <path
+                    d="M15 10.5a3 3 0 1 1-6 0 3 3 0 0 1 6 0ZM19.5 10.5c0 7.142-7.5 11.25-7.5 11.25S4.5 17.642 4.5 10.5a7.5 7.5 0 1 1 15 0Z"
+                  ></path>
+                </svg>
+              </div>
+              <div class="role-radio"></div>
+            </div>
+            <p class="role-text">I'm a landlord,<br />looking for a boarder</p>
             <input
               type="radio"
               name="role"
               id="roleLandlord"
               value="landlord"
-              class="choose-radio"
+              style="display: none"
             />
-            <label for="roleLandlord" class="choose-card-label">
-              <div class="choose-card-icon">
-                <svg
-                  width="32"
-                  height="32"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  stroke-width="2"
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                >
-                  <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
-                  <polyline points="9 22 9 12 15 12 15 22"></polyline>
-                </svg>
-              </div>
-              <div class="choose-card-content">
-                <p class="choose-card-text">I'm a landlord,</p>
-                <p class="choose-card-subtext">looking for a boarder</p>
-              </div>
-              <div class="choose-card-checkmark">
-                <svg
-                  width="20"
-                  height="20"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  stroke-width="3"
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                >
-                  <polyline points="20 6 9 17 4 12"></polyline>
-                </svg>
-              </div>
-            </label>
           </div>
         </div>
 
@@ -140,97 +115,13 @@
       </div>
     </main>
 
-    <!-- Decorative Illustrations -->
-    <div class="choose-illustrations">
-      <div class="choose-illustration-left">
-        <svg
-          width="200"
-          height="200"
-          viewBox="0 0 200 200"
-          fill="none"
-          xmlns="http://www.w3.org/2000/svg"
-        >
-          <!-- Person walking -->
-          <circle cx="40" cy="30" r="12" stroke="#333" stroke-width="2" fill="none" />
-          <path
-            d="M40 42 L40 70 M40 50 L30 60 M40 50 L50 60 M40 70 L30 90 M40 70 L50 90"
-            stroke="#333"
-            stroke-width="2"
-            stroke-linecap="round"
-          />
-
-          <!-- House -->
-          <path
-            d="M80 80 L120 50 L160 80 L160 140 L80 140 Z"
-            stroke="#333"
-            stroke-width="2"
-            fill="none"
-          />
-          <rect x="100" y="100" width="20" height="25" stroke="#333" stroke-width="2" fill="none" />
-          <rect x="130" y="100" width="15" height="15" stroke="#333" stroke-width="2" fill="none" />
-
-          <!-- Location pin -->
-          <path
-            d="M140 20 C140 20 150 20 150 30 C150 35 145 40 140 50 C135 40 130 35 130 30 C130 20 140 20 140 20 Z"
-            stroke="#333"
-            stroke-width="2"
-            fill="none"
-          />
-          <circle cx="140" cy="30" r="3" fill="#333" />
-
-          <!-- Cloud -->
-          <path
-            d="M90 30 Q85 25 80 30 Q75 30 75 35 Q75 40 80 40 L100 40 Q105 40 105 35 Q105 30 100 30 Q95 25 90 30 Z"
-            stroke="#333"
-            stroke-width="1.5"
-            fill="none"
-          />
-        </svg>
+    <!-- Decorative Corner Images -->
+    <div class="signup-decorative-images">
+      <div class="signup-decorative-left">
+        <img src="../../../assets/images/public/signup_lower_right.png" alt="" />
       </div>
-      <div class="choose-illustration-right">
-        <svg
-          width="200"
-          height="200"
-          viewBox="0 0 200 200"
-          fill="none"
-          xmlns="http://www.w3.org/2000/svg"
-        >
-          <!-- Person with key -->
-          <circle cx="160" cy="30" r="12" stroke="#333" stroke-width="2" fill="none" />
-          <path
-            d="M160 42 L160 70 M160 50 L150 60 M160 50 L170 60 M160 70 L150 90 M160 70 L170 90"
-            stroke="#333"
-            stroke-width="2"
-            stroke-linecap="round"
-          />
-
-          <!-- Key -->
-          <circle cx="145" cy="55" r="4" stroke="#333" stroke-width="2" fill="none" />
-          <path
-            d="M149 55 L160 55 M155 52 L155 58 M158 52 L158 58"
-            stroke="#333"
-            stroke-width="2"
-            stroke-linecap="round"
-          />
-
-          <!-- Building -->
-          <rect x="40" y="60" width="80" height="80" stroke="#333" stroke-width="2" fill="none" />
-          <rect x="50" y="75" width="15" height="15" stroke="#333" stroke-width="2" fill="none" />
-          <rect x="75" y="75" width="15" height="15" stroke="#333" stroke-width="2" fill="none" />
-          <rect x="100" y="75" width="15" height="15" stroke="#333" stroke-width="2" fill="none" />
-          <rect x="50" y="100" width="15" height="15" stroke="#333" stroke-width="2" fill="none" />
-          <rect x="75" y="100" width="15" height="15" stroke="#333" stroke-width="2" fill="none" />
-          <rect x="100" y="100" width="15" height="15" stroke="#333" stroke-width="2" fill="none" />
-          <rect x="70" y="120" width="20" height="20" stroke="#333" stroke-width="2" fill="none" />
-
-          <!-- Cloud -->
-          <path
-            d="M130 100 Q125 95 120 100 Q115 100 115 105 Q115 110 120 110 L140 110 Q145 110 145 105 Q145 100 140 100 Q135 95 130 100 Z"
-            stroke="#333"
-            stroke-width="1.5"
-            fill="none"
-          />
-        </svg>
+      <div class="signup-decorative-right">
+        <img src="../../../assets/images/public/signup_lower_left.png" alt="" />
       </div>
     </div>
 

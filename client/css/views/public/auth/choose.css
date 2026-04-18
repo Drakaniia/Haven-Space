@@ -14,9 +14,9 @@
 .choose-main {
   min-height: 100vh;
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   justify-content: center;
-  padding: 120px 24px 80px;
+  padding: 140px 24px 80px;
   background: #ffffff;
 }
 
@@ -35,116 +35,97 @@
   line-height: 1.2;
 }
 
-.choose-cards {
+/* Role Selection - Using exact styles from auth.css */
+.role-selection {
   display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 24px;
-  margin-bottom: 40px;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
 }
 
-.choose-card {
-  position: relative;
-}
-
-.choose-radio {
-  position: absolute;
-  opacity: 0;
-  pointer-events: none;
-}
-
-.choose-card-label {
+.role-card {
   display: flex;
   flex-direction: column;
   align-items: center;
-  padding: 40px 32px;
-  border: 2px solid #e5e7eb;
+  padding: 1.5rem 1rem;
+  border: 2px solid var(--border-color);
   border-radius: 12px;
-  background: #ffffff;
   cursor: pointer;
   transition: all 0.2s ease;
-  position: relative;
-  min-height: 220px;
+  background: var(--white);
 }
 
-.choose-card-label:hover {
-  border-color: #10b981;
-  box-shadow: 0 4px 12px rgba(16, 185, 129, 0.1);
+.role-card:hover {
+  border-color: #bbb;
+  background: #fafafa;
 }
 
-.choose-radio:checked + .choose-card-label {
-  border-color: #10b981;
-  background: #f0fdf4;
-  box-shadow: 0 4px 16px rgba(16, 185, 129, 0.15);
+.role-card.selected {
+  border-color: var(--primary-green);
+  background: #f0f7e6;
 }
 
-.choose-card-icon {
-  width: 64px;
-  height: 64px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: #f3f4f6;
-  border-radius: 50%;
-  margin-bottom: 24px;
-  color: #6b7280;
-  transition: all 0.2s ease;
+.role-card.selected .role-radio {
+  border-color: var(--primary-green);
+  background: var(--primary-green);
 }
 
-.choose-radio:checked + .choose-card-label .choose-card-icon {
-  background: #10b981;
-  color: #ffffff;
-}
-
-.choose-card-content {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-}
-
-.choose-card-text {
-  font-family: 'Plus Jakarta Sans', sans-serif;
-  font-size: 18px;
-  font-weight: 600;
-  color: #1a1a1a;
-  margin: 0 0 4px 0;
-}
-
-.choose-card-subtext {
-  font-family: 'Plus Jakarta Sans', sans-serif;
-  font-size: 14px;
-  font-weight: 400;
-  color: #6b7280;
-  margin: 0;
-}
-
-.choose-card-checkmark {
-  position: absolute;
-  top: 16px;
-  right: 16px;
-  width: 28px;
-  height: 28px;
-  border-radius: 50%;
-  background: #e5e7eb;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: #ffffff;
-  opacity: 0;
-  transition: all 0.2s ease;
-}
-
-.choose-radio:checked + .choose-card-label .choose-card-checkmark {
-  background: #10b981;
+.role-card.selected .role-radio::after {
   opacity: 1;
+}
+
+.role-card-content {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+  margin-bottom: 0.75rem;
+}
+
+.role-icon {
+  color: var(--text-dark);
+  display: flex;
+  align-items: center;
+}
+
+.role-radio {
+  width: 20px;
+  height: 20px;
+  border: 2px solid var(--border-color);
+  border-radius: 50%;
+  position: relative;
+  transition: all 0.2s ease;
+}
+
+.role-radio::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 10px;
+  height: 10px;
+  background: var(--white);
+  border-radius: 50%;
+  opacity: 0;
+  transition: opacity 0.2s ease;
+}
+
+.role-text {
+  font-size: 0.9rem;
+  font-weight: 500;
+  color: var(--text-dark);
+  text-align: center;
+  line-height: 1.4;
+  margin: 0;
 }
 
 .choose-btn {
   width: 100%;
   max-width: 400px;
   padding: 16px 32px;
-  background: #10b981;
-  color: #ffffff;
+  background: var(--primary-green);
+  color: var(--white);
   border: none;
   border-radius: 8px;
   font-family: 'Plus Jakarta Sans', sans-serif;
@@ -157,9 +138,9 @@
 }
 
 .choose-btn:hover:not(:disabled) {
-  background: #059669;
+  background: var(--dark-green);
   transform: translateY(-1px);
-  box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
+  box-shadow: 0 4px 12px rgba(74, 124, 35, 0.3);
 }
 
 .choose-btn:disabled {
@@ -176,7 +157,7 @@
 }
 
 .choose-footer-text a {
-  color: #10b981;
+  color: var(--primary-green);
   text-decoration: none;
   font-weight: 600;
 }
@@ -185,25 +166,35 @@
   text-decoration: underline;
 }
 
-/* Decorative Illustrations */
-.choose-illustrations {
+/* Signup Decorative Corner Images */
+.signup-decorative-images {
   position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
   pointer-events: none;
   z-index: 1;
 }
 
-.choose-illustration-left {
-  position: fixed;
-  bottom: 40px;
-  left: 40px;
-  opacity: 0.6;
+.signup-decorative-left,
+.signup-decorative-right {
+  position: absolute;
+  bottom: 0;
 }
 
-.choose-illustration-right {
-  position: fixed;
-  bottom: 40px;
-  right: 40px;
-  opacity: 0.6;
+.signup-decorative-left {
+  left: 0;
+}
+
+.signup-decorative-right {
+  right: 0;
+}
+
+.signup-decorative-left img,
+.signup-decorative-right img {
+  height: auto;
+  max-width: 300px;
+  display: block;
 }
 
 /* Responsive Design */
@@ -221,38 +212,21 @@
     margin-bottom: 32px;
   }
 
-  .choose-cards {
+  .role-selection {
     grid-template-columns: 1fr;
-    gap: 16px;
   }
 
-  .choose-card-label {
-    padding: 32px 24px;
-    min-height: 180px;
-  }
-
-  .choose-card-icon {
-    width: 56px;
-    height: 56px;
-    margin-bottom: 16px;
-  }
-
-  .choose-card-icon svg {
-    width: 28px;
-    height: 28px;
-  }
-
-  .choose-card-text {
-    font-size: 16px;
+  .role-card {
+    padding: 1.25rem 1rem;
   }
 
   .choose-btn {
     max-width: 100%;
   }
 
-  .choose-illustration-left,
-  .choose-illustration-right {
-    display: none;
+  .signup-decorative-left img,
+  .signup-decorative-right img {
+    max-width: 200px;
   }
 }
 
