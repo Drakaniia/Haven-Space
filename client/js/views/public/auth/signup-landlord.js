@@ -543,21 +543,50 @@ function setupEventListeners() {
         clearState();
 
         // Store user info and token for automatic login
-        localStorage.setItem('user', JSON.stringify(result.user));
-        if (result.access_token) {
-          localStorage.setItem('token', result.access_token);
-        }
+        // Use synchronous storage to ensure data is written before redirect
+        const userData = {
+          id: result.user.id || result.user.user_id,
+          user_id: result.user.id || result.user.user_id,
+          first_name: result.user.first_name,
+          last_name: result.user.last_name,
+          email: result.user.email,
+          role: result.user.role,
+          account_status: result.user.account_status,
+          email_verified: result.user.email_verified,
+          verification_status: result.user.verification_status,
+        };
 
-        // Mark as new landlord for welcome banner
+        localStorage.setItem('user', JSON.stringify(userData));
+        localStorage.setItem('user_id', String(userData.id));
+        localStorage.setItem('token', result.access_token);
         localStorage.setItem('landlordStatus', 'new');
+
+        // Force localStorage to flush (some browsers need this)
+        localStorage.getItem('token');
 
         // Show success message
         showToast('Account created successfully! Redirecting to your dashboard...', 'success');
 
-        // Redirect to landlord dashboard (not login)
+        // Debug: Log what we stored and routing info
+        console.log('=== LANDLORD SIGNUP DEBUG ===');
+        console.log('Current URL:', window.location.href);
+        console.log('Stored user:', localStorage.getItem('user'));
+        console.log('Stored user_id:', localStorage.getItem('user_id'));
+        console.log('Stored token:', localStorage.getItem('token'));
+        console.log('Token length:', localStorage.getItem('token')?.length);
+        console.log('Stored landlordStatus:', localStorage.getItem('landlordStatus'));
+
+        const basePath = getBasePath();
+        const redirectUrl = `${basePath}landlord/index.html`;
+        console.log('Calculated base path:', basePath);
+        console.log('Full redirect URL:', redirectUrl);
+        console.log('=== END DEBUG ===');
+
+        // Redirect to landlord dashboard with sufficient delay for localStorage sync
         setTimeout(() => {
-          const basePath = getBasePath();
-          window.location.href = `${basePath}landlord/index.html`;
+          console.log('Executing redirect to:', redirectUrl);
+          // Use location.replace to avoid back button issues
+          window.location.replace(redirectUrl);
         }, 1500);
       } else {
         // Handle specific error cases

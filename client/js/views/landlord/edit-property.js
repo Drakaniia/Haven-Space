@@ -51,7 +51,8 @@ async function loadPropertyData(id) {
 
     if (!response.ok) {
       if (response.status === 401) {
-        window.location.href = '../../public/auth/login.html';
+        console.warn('Edit property API returned 401 - user may not be authenticated yet');
+        // Don't redirect here - let the main dashboard handle authentication
         return;
       }
       throw new Error(`API error: ${response.status}`);
@@ -364,8 +365,11 @@ function hasUnsavedChanges() {
  * Initialize photo upload functionality
  */
 function initPhotoUpload(uploadArea, fileInput) {
-  // Click to upload
-  uploadArea.addEventListener('click', () => fileInput.click());
+  // Click to upload (guard against bubbled clicks from the file input itself)
+  uploadArea.addEventListener('click', e => {
+    if (e.target === fileInput) return;
+    fileInput.click();
+  });
 
   // File selection
   fileInput.addEventListener('change', e => {

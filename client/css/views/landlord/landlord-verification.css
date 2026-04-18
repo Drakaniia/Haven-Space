@@ -447,6 +447,7 @@
   height: 100%;
   opacity: 0;
   cursor: pointer;
+  pointer-events: none;
 }
 
 .upload-placeholder p {

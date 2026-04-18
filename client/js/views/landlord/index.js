@@ -51,32 +51,141 @@ function initialsFrom(user) {
   return (a + b || 'L').toUpperCase();
 }
 
+function getStoredLandlordUser() {
+  try {
+    const storedUser = JSON.parse(localStorage.getItem('user') || 'null');
+    return storedUser?.role === 'landlord' ? storedUser : null;
+  } catch (error) {
+    console.warn('Failed to parse stored user', error);
+    return null;
+  }
+}
+
+function persistAuthenticatedUser(user) {
+  if (!user) {
+    return;
+  }
+
+  localStorage.setItem('user', JSON.stringify(user));
+
+  if (user.id || user.user_id) {
+    localStorage.setItem('user_id', String(user.user_id || user.id));
+  }
+}
+
 /**
  * Initialize Landlord Dashboard
  * Sets up sidebar, navbar, and initializes landlord dashboard
  */
 export async function initLandlordDashboardEntry() {
-  let user;
-  try {
-    const res = await fetch(`${CONFIG.API_BASE_URL}/auth/me.php`, {
-      method: 'GET',
-      headers: getAuthHeadersOnly('4'),
-      credentials: 'include',
-    });
+  console.log('=== LANDLORD DASHBOARD INIT ===');
+  console.log('Token in localStorage:', localStorage.getItem('token')?.substring(0, 20) + '...');
+  console.log('User in localStorage:', localStorage.getItem('user'));
 
-    if (!res.ok) {
-      console.error('Authentication failed:', res.status, res.statusText);
+  const storedLandlordUser = getStoredLandlordUser();
+  const hasStoredToken = !!localStorage.getItem('token');
+
+  // Check if this is a fresh registration (landlordStatus = 'new')
+  const landlordStatus = localStorage.getItem('landlordStatus');
+  const isNewRegistration = landlordStatus === 'new';
+
+  console.log('Is new registration:', isNewRegistration);
+  console.log('Has stored token:', hasStoredToken);
+  console.log('Has stored user:', !!storedLandlordUser);
+
+  // For new registrations, verify we have the essentials before proceeding
+  if (isNewRegistration) {
+    if (!hasStoredToken || !storedLandlordUser) {
+      console.error('New registration but missing token or user data. Redirecting to login.');
       window.location.href = loginPath();
       return;
     }
+    console.log('New landlord registration detected, adding delay for backend sync...');
+    // Add delay for new registrations to ensure backend is ready
+    await new Promise(resolve => setTimeout(resolve, 500));
+  }
 
-    const data = await res.json();
-    user = data.user;
-  } catch (error) {
-    console.error('Error during authentication:', error);
+  let user;
+  let retryCount = 0;
+  const maxRetries = isNewRegistration ? 3 : 1;
+
+  while (retryCount < maxRetries) {
+    try {
+      const token = localStorage.getItem('token');
+      if (!token) {
+        console.error('No token found in localStorage');
+        window.location.href = loginPath();
+        return;
+      }
+
+      const headers = {
+        Authorization: `Bearer ${token}`,
+        'Content-Type': 'application/json',
+      };
+
+      console.log('Attempting auth check (attempt', retryCount + 1, '/', maxRetries, ')');
+
+      const res = await fetch(`${CONFIG.API_BASE_URL}/auth/me.php`, {
+        method: 'GET',
+        headers: headers,
+        credentials: 'include',
+      });
+
+      console.log('Auth response status:', res.status);
+
+      if (res.ok) {
+        const data = await res.json();
+        console.log('Auth successful, user role:', data.user?.role);
+        user = data.user;
+        persistAuthenticatedUser(user);
+        console.log('=== AUTH SUCCESS ===');
+        break; // Success, exit retry loop
+      } else {
+        const errorText = await res.text();
+        console.error('Auth failed:', res.status, errorText);
+
+        if (retryCount < maxRetries - 1) {
+          console.log('Retrying in 1 second...');
+          await new Promise(resolve => setTimeout(resolve, 1000));
+          retryCount++;
+        } else if (storedLandlordUser && hasStoredToken && isNewRegistration) {
+          // For new registrations, trust the stored data if auth keeps failing
+          console.warn('Using stored landlord data for new registration');
+          user = storedLandlordUser;
+          break;
+        } else {
+          console.error('All auth attempts failed, redirecting to login');
+          window.location.href = loginPath();
+          return;
+        }
+      }
+    } catch (error) {
+      console.error('Auth error (attempt', retryCount + 1, '):', error);
+
+      if (retryCount < maxRetries - 1) {
+        console.log('Retrying in 1 second...');
+        await new Promise(resolve => setTimeout(resolve, 1000));
+        retryCount++;
+      } else if (storedLandlordUser && hasStoredToken && isNewRegistration) {
+        // For new registrations, trust the stored data if auth keeps failing
+        console.warn('Using stored landlord data for new registration after error');
+        user = storedLandlordUser;
+        break;
+      } else {
+        console.error('All auth attempts failed with errors, redirecting to login');
+        window.location.href = loginPath();
+        return;
+      }
+    }
+  }
+
+  if (!user || user.role !== 'landlord') {
+    console.error('Invalid user or role:', user?.role);
     window.location.href = loginPath();
     return;
   }
+
+  console.log('Proceeding with dashboard initialization for:', user.first_name, user.last_name);
 
   const name = [user.first_name, user.last_name].filter(Boolean).join(' ').trim() || 'Landlord';
   const initials = initialsFrom(user);

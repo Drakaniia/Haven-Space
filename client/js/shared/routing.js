@@ -80,7 +80,7 @@ export function getBasePath() {
     return '/Haven-Space/client/views/';
   }
 
-  // For localhost development
+  // For localhost development (Apache serves from /views/)
   if (hostname === 'localhost' || hostname === '127.0.0.1') {
     // Check if we're already in a views subdirectory
     if (pathname.includes('/views/')) {
@@ -89,13 +89,8 @@ export function getBasePath() {
       return pathname.substring(0, viewsIndex + 7); // Include '/views/'
     }
 
-    // Default for localhost - assume haven-space project structure
-    if (pathname.includes('/haven-space/')) {
-      return '/haven-space/client/views/';
-    }
-
-    // Fallback for localhost
-    return '/client/views/';
+    // Default for localhost Apache setup - views are served directly
+    return '/views/';
   }
 
   return '/views/';

@@ -213,7 +213,8 @@ function setupPhotoUpload() {
     return;
   }
 
-  uploadArea.addEventListener('click', () => {
+  uploadArea.addEventListener('click', e => {
+    if (e.target === fileInput) return;
     fileInput.click();
   });
 

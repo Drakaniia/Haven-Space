@@ -21,47 +21,402 @@ Haven Space is a boarding house rental platform connecting boarders with verifie
 
 ```
 haven-space/
-├── client/            # Frontend (JS/HTML/CSS)
-│   ├── index.html     # Redirects to views/public/
+├── .github/
+│   ├── CODEOWNERS
+│   ├── CONTRIBUTING.md
+│   ├── pull_request_template.md
+│   └── workflows/
+│       ├── docker-ci.yml
+│       ├── eslint-check.yml
+│       ├── github-pages.yml
+│       └── prettier-check.yml
+├── client/                              # Frontend (Vanilla JS/HTML/CSS)
+│   ├── index.html                       # Meta refresh → views/public/
+│   ├── assets/
+│   │   ├── favicon.svg
+│   │   ├── images/
+│   │   │   ├── Haven_Space_Logo.png
+│   │   │   ├── pin.png
+│   │   │   ├── placeholder-property.svg
+│   │   │   ├── placeholder-room.svg
+│   │   │   ├── icons/
+│   │   │   │   ├── sidebar_hide.png
+│   │   │   │   └── sidebar_show.png
+│   │   │   └── public/                  # Public-facing marketing images
+│   │   └── svg/
+│   │       ├── apple-dark-logo.svg
+│   │       └── google-icon-logo.svg
+│   ├── components/                      # Shared HTML partials
+│   │   ├── logo-cloud.html
+│   │   ├── navbar.html
+│   │   └── sidebar.html
+│   ├── css/
+│   │   ├── global.css
+│   │   ├── components/
+│   │   │   ├── accepted-applications-overlay.css
+│   │   │   ├── application-modal.css
+│   │   │   ├── logo-cloud.css
+│   │   │   ├── navbar.css
+│   │   │   ├── readonly-mode.css
+│   │   │   ├── sidebar.css
+│   │   │   └── status-banner.css
+│   │   └── views/
+│   │       ├── admin/
+│   │       │   └── admin.css
+│   │       ├── boarder/
+│   │       │   ├── application-submitted.css
+│   │       │   ├── boarder-announcements.css
+│   │       │   ├── boarder-applications-dashboard.css
+│   │       │   ├── boarder-applications.css
+│   │       │   ├── boarder-documents.css
+│   │       │   ├── boarder-find-a-room.css
+│   │       │   ├── boarder-house-rules.css
+│   │       │   ├── boarder-lease.css
+│   │       │   ├── boarder-maintenance-create.css
+│   │       │   ├── boarder-maintenance-detail.css
+│   │       │   ├── boarder-maintenance.css
+│   │       │   ├── boarder-messages.css
+│   │       │   ├── boarder-payment-process.css
+│   │       │   ├── boarder-payments.css
+│   │       │   ├── boarder-settings.css
+│   │       │   ├── boarder.css
+│   │       │   ├── confirm-application.css
+│   │       │   ├── confirm-booking.css
+│   │       │   ├── maps.css
+│   │       │   └── room-detail.css
+│   │       ├── landlord/
+│   │       │   ├── applications.css
+│   │       │   ├── create-listing.css
+│   │       │   ├── edit-listing.css
+│   │       │   ├── edit-property.css
+│   │       │   ├── landlord-activity.css
+│   │       │   ├── landlord-announcements.css
+│   │       │   ├── landlord-boarders.css
+│   │       │   ├── landlord-calendar.css
+│   │       │   ├── landlord-documents.css
+│   │       │   ├── landlord-listings.css
+│   │       │   ├── landlord-maintenance-detail.css
+│   │       │   ├── landlord-maintenance.css
+│   │       │   ├── landlord-messages.css
+│   │       │   ├── landlord-payment-record.css
+│   │       │   ├── landlord-payments.css
+│   │       │   ├── landlord-reports.css
+│   │       │   ├── landlord-settings.css
+│   │       │   ├── landlord-verification.css
+│   │       │   ├── landlord-welcome.css
+│   │       │   ├── landlord.css
+│   │       │   ├── maps.css
+│   │       │   ├── onboarding.css
+│   │       │   └── your-properties.css
+│   │       └── public/
+│   │           ├── auth/
+│   │           │   ├── choose.css
+│   │           │   └── signup-landlord.css
+│   │           ├── auth.css
+│   │           ├── find-a-room.css
+│   │           ├── for-landlords.css
+│   │           ├── haven-ai.css
+│   │           ├── maps.css
+│   │           ├── public.css
+│   │           ├── team.css
+│   │           └── tos.css
 │   ├── js/
-│   │   ├── main.js    # Entry point - view router (detects data-view on body)
-│   │   ├── config.js  # Environment detection, API URL config
-│   │   ├── auth/      # Login, signup, password recovery
-│   │   ├── shared/    # state.js (auth helpers), icons.js, permissions.js, toast.js, map-utils.js
-│   │   └── views/     # Role-specific: boarder/, landlord/, admin/
-│   ├── css/           # Global + per-role CSS files
-│   └── views/         # HTML templates per role
-├── server/            # Backend (PHP 8.2 + MySQL)
-│   ├── router.php     # Unified router (serves frontend + API)
+│   │   ├── config.js                    # Environment detection & API URL config
+│   │   ├── main.js                      # Entry point - view router (data-view on body)
+│   │   ├── auth/
+│   │   │   ├── choose.js
+│   │   │   ├── forgot-password.js
+│   │   │   ├── login.js
+│   │   │   ├── signup.js
+│   │   │   └── verify-email.js
+│   │   ├── components/
+│   │   │   ├── accepted-applications-overlay.js
+│   │   │   ├── logo-cloud.js
+│   │   │   ├── navbar.js
+│   │   │   └── sidebar.js
+│   │   ├── shared/
+│   │   │   ├── access-control.js
+│   │   │   ├── auth-headers.js
+│   │   │   ├── environment-check.js
+│   │   │   ├── icons.js
+│   │   │   ├── image-utils.js
+│   │   │   ├── map-utils.js
+│   │   │   ├── notifications.js
+│   │   │   ├── permissions.js
+│   │   │   ├── routing.js
+│   │   │   ├── state.js                 # Auth helpers, API fetch wrapper
+│   │   │   └── toast.js
+│   │   └── views/
+│   │       ├── admin/
+│   │       │   ├── admin-dashboard.js
+│   │       │   └── index.js
+│   │       ├── boarder/
+│   │       │   ├── access-control-init.js
+│   │       │   ├── announcements.js
+│   │       │   ├── application-submitted.js
+│   │       │   ├── applications-dashboard.js
+│   │       │   ├── applications.js
+│   │       │   ├── boarder-find-a-room-auth.js
+│   │       │   ├── boarder-find-a-room-init.js
+│   │       │   ├── boarder-find-a-room.js
+│   │       │   ├── boarder-maintenance.js
+│   │       │   ├── boarder-maps-init.js
+│   │       │   ├── boarder-payment-process.js
+│   │       │   ├── boarder-payments-data.js
+│   │       │   ├── boarder-payments.js
+│   │       │   ├── boarder-room-detail-init.js
+│   │       │   ├── confirm-application.js
+│   │       │   ├── confirm-booking.js
+│   │       │   ├── dashboard-map.js
+│   │       │   ├── dashboard.js
+│   │       │   ├── documents.js
+│   │       │   ├── house-rules.js
+│   │       │   ├── index.js
+│   │       │   ├── lease.js
+│   │       │   ├── messages.js
+│   │       │   ├── payments-page.js
+│   │       │   ├── room-detail.js
+│   │       │   ├── settings.js
+│   │       │   └── status.js
+│   │       ├── landlord/
+│   │       │   ├── activity.js
+│   │       │   ├── announcements.js
+│   │       │   ├── applications.js
+│   │       │   ├── create-listing.js
+│   │       │   ├── documents.js
+│   │       │   ├── edit-listing.js
+│   │       │   ├── edit-property.js
+│   │       │   ├── index.js
+│   │       │   ├── landlord-applications.js
+│   │       │   ├── landlord-boarders.js
+│   │       │   ├── landlord-calendar.js
+│   │       │   ├── landlord-listings.js
+│   │       │   ├── landlord-payment-record.js
+│   │       │   ├── landlord-payments.js
+│   │       │   ├── landlord.js
+│   │       │   ├── maps.js
+│   │       │   ├── messages.js
+│   │       │   ├── my-properties.js
+│   │       │   ├── onboarding.js
+│   │       │   ├── reports.js
+│   │       │   ├── settings.js
+│   │       │   ├── verification.js
+│   │       │   ├── welcome-message.js
+│   │       │   └── your-properties.js
+│   │       └── public/
+│   │           ├── auth/
+│   │           │   └── signup-landlord.js
+│   │           ├── find-a-room.js
+│   │           ├── haven-ai.js
+│   │           ├── index.js
+│   │           ├── maps.js
+│   │           ├── public-find-a-room.js
+│   │           └── room-detail.js
+│   └── views/
+│       ├── admin/
+│       │   └── index.html
+│       ├── boarder/
+│       │   ├── index.html
+│       │   ├── announcements/index.html
+│       │   ├── application-submitted/index.html
+│       │   ├── applications/index.html
+│       │   ├── applications-dashboard/index.html
+│       │   ├── confirm-booking/index.html
+│       │   ├── find-a-room/
+│       │   │   ├── confirm-application.html
+│       │   │   ├── detail.html
+│       │   │   └── index.html
+│       │   ├── house-rules/index.html
+│       │   ├── lease/index.html
+│       │   ├── maps/index.html
+│       │   ├── messages/index.html
+│       │   ├── payments/
+│       │   │   ├── index.html
+│       │   │   └── pay.html
+│       │   ├── rooms/detail.html
+│       │   └── settings/index.html
+│       ├── landlord/
+│       │   ├── index.html
+│       │   ├── onboarding.html
+│       │   ├── activity/index.html
+│       │   ├── announcements/index.html
+│       │   ├── applications/index.html
+│       │   ├── boarders/index.html
+│       │   ├── calendar/index.html
+│       │   ├── listings/
+│       │   │   ├── create.html
+│       │   │   ├── edit.html
+│       │   │   └── index.html
+│       │   ├── maps/index.html
+│       │   ├── messages/index.html
+│       │   ├── myproperties/index.html
+│       │   ├── payments/
+│       │   │   ├── index.html
+│       │   │   └── record.html
+│       │   ├── reports/index.html
+│       │   ├── settings/index.html
+│       │   └── verification/index.html
+│       └── public/
+│           ├── find-a-room.html
+│           ├── for-landlords.html
+│           ├── haven-ai.html
+│           ├── index.html
+│           ├── maps.html
+│           ├── privacy-policy.html
+│           ├── public-maps.html
+│           ├── team.html
+│           ├── terms-of-service.html
+│           ├── user-agreement.html
+│           ├── auth/
+│           │   ├── choose.html
+│           │   ├── forgot-password.html
+│           │   ├── login.html
+│           │   ├── signup-landlord.html
+│           │   ├── signup.html
+│           │   └── verify-email.html
+│           └── rooms/
+│               └── detail.html
+├── dist/                                # Production build output (flattened)
+├── docs/
+│   ├── MYSQL_SETUP.md
+│   ├── TODO.md
+│   └── plan.md
+├── scripts/
+│   ├── build.js                         # Production build (flattens client/ → dist/)
+│   ├── clear_user.php
+│   ├── list_users.php
+│   ├── reset-database.php
+│   ├── setup-database.php
+│   ├── start-apache.php
+│   └── start-mysql.php
+├── server/                              # Backend (PHP 8.2 + MySQL)
+│   ├── router.php                       # Unified router (frontend + API)
+│   ├── Dockerfile
+│   ├── composer.json
+│   ├── .env.example
 │   ├── api/
-│   │   ├── routes.php         # Router class + route definitions
-│   │   ├── middleware.php     # Auth middleware
-│   │   ├── cors.php           # CORS configuration
-│   │   └── {module}/          # auth/, admin/, landlord/, rooms/, users/, geocode/
-│   ├── src/                   # PHP source (PSR-4: App\)
-│   │   ├── Core/              # Database, Auth, Upload, Bootstrap, Env
-│   │   └── Modules/           # Application, Message, Notification, Onboarding
-│   └── database/
-│       ├── schema.sql         # Full MySQL schema
-│       └── migrations/        # Migration files
-├── scripts/           # Build tooling (build.js, database setup/reset)
-├── dist/              # Production build output
-├── .github/workflows/ # CI/CD (GitHub Actions)
-└── package.json       # Root Node manifest (build scripts)
+│   │   ├── routes.php                   # Router class + route definitions
+│   │   ├── middleware.php               # JWT auth middleware
+│   │   ├── cors.php                     # CORS configuration
+│   │   ├── health.php
+│   │   ├── admin/
+│   │   │   ├── applications.php
+│   │   │   ├── landlords.php
+│   │   │   ├── properties.php
+│   │   │   ├── reports.php
+│   │   │   ├── settings.php
+│   │   │   ├── summary.php
+│   │   │   └── users.php
+│   │   ├── auth/
+│   │   │   ├── login.php
+│   │   │   ├── logout.php
+│   │   │   ├── me.php
+│   │   │   ├── refresh-token.php
+│   │   │   ├── register.php
+│   │   │   ├── resend-verification.php
+│   │   │   ├── verification-status.php
+│   │   │   ├── verify-email.php
+│   │   │   └── google/                  # Google OAuth callback handlers
+│   │   ├── boarder/
+│   │   │   ├── announcements.php
+│   │   │   ├── dashboard-stats.php
+│   │   │   ├── lease.php
+│   │   │   └── saved-listings.php
+│   │   ├── geocode/
+│   │   │   └── search.php
+│   │   ├── landlord/
+│   │   │   ├── activity.php
+│   │   │   ├── announcements.php
+│   │   │   ├── boarders.php
+│   │   │   ├── calendar.php
+│   │   │   ├── create-listing.php
+│   │   │   ├── dashboard-stats.php
+│   │   │   ├── listing-photos.php
+│   │   │   ├── payment-methods.php
+│   │   │   ├── payment-overview.php
+│   │   │   ├── payment-summary.php
+│   │   │   ├── payments.php
+│   │   │   ├── profile.php
+│   │   │   ├── properties.php
+│   │   │   ├── property-location.php
+│   │   │   ├── reports.php
+│   │   │   ├── update-listing.php
+│   │   │   ├── upload-photos.php
+│   │   │   ├── upload-verification-document.php
+│   │   │   ├── verification-status.php
+│   │   │   └── welcome-settings.php
+│   │   ├── payments/
+│   │   │   ├── history.php
+│   │   │   ├── methods.php
+│   │   │   └── overview.php
+│   │   ├── properties/
+│   │   │   └── all.php
+│   │   ├── rooms/
+│   │   │   ├── detail.php
+│   │   │   ├── popular-locations.php
+│   │   │   └── public.php
+│   │   └── users/
+│   │       ├── avatar.php
+│   │       ├── profile.php
+│   │       └── search.php
+│   ├── config/
+│   │   ├── app.php
+│   │   ├── database.php
+│   │   └── google.php
+│   ├── database/
+│   │   ├── schema.sql                   # Full MySQL schema
+│   │   ├── migrate.php
+│   │   ├── migrations/                  # 017 migration files (001–017)
+│   │   └── seeds/
+│   ├── src/                             # PHP source (PSR-4: App\)
+│   │   ├── Core/
+│   │   │   ├── bootstrap.php
+│   │   │   ├── Env.php
+│   │   │   ├── Auth/
+│   │   │   │   ├── GoogleOAuth.php
+│   │   │   │   ├── JWT.php
+│   │   │   │   └── RateLimiter.php
+│   │   │   ├── Database/
+│   │   │   │   └── Connection.php
+│   │   │   └── Upload/
+│   │   │       ├── UploadController.php
+│   │   │       └── UploadHandler.php
+│   │   ├── Modules/
+│   │   │   ├── Application/             # Controllers, Repositories, Services
+│   │   │   ├── Maintenance/             # Controllers, Repositories, Services
+│   │   │   ├── Message/                 # Controllers, Entities, Repositories, Services
+│   │   │   ├── Notification/            # Controllers, Helpers, Repositories, Services
+│   │   │   ├── Onboarding/              # Controllers, Entities, Helpers, Repositories, Services
+│   │   │   └── Payment/                 # Repositories, Services
+│   │   └── Shared/
+│   │       └── Helpers/
+│   │           └── ResponseHelper.php
+│   └── storage/
+│       └── properties/                  # Uploaded property photos
+├── storage/
+│   └── uploads/
+├── docker-compose.yml
+├── package.json
+├── render.yaml
+├── commitlint.config.js
+├── .eslintrc.json
+├── .prettierrc
+└── AGENTS.md
 ```
 
 ## WHERE TO LOOK
 
-| Task               | Location                     | Notes                                     |
-| ------------------ | ---------------------------- | ----------------------------------------- |
-| Add public page    | `client/views/public/`       | Auth flows in `client/js/auth/`           |
-| Add dashboard view | `client/js/views/{role}/`    | Role: boarder, landlord, admin            |
-| API endpoint       | `server/api/{module}/`       | Routes defined in `server/api/routes.php` |
-| Styling            | `client/css/views/{role}/`   | Per-role CSS files                        |
-| DB schema          | `server/database/schema.sql` | MySQL schema + migrations                 |
-| Shared utilities   | `client/js/shared/state.js`  | Auth helpers, API fetch wrapper           |
-| PHP core logic     | `server/src/`                | PSR-4 autoloaded (App\ namespace)         |
-| Environment config | `server/.env.example`        | Database credentials, API keys            |
+| Task               | Location                     | Notes                                                                |
+| ------------------ | ---------------------------- | -------------------------------------------------------------------- |
+| Add public page    | `client/views/public/`       | Auth flows in `client/js/auth/`                                      |
+| Add dashboard view | `client/js/views/{role}/`    | Role: boarder, landlord, admin                                       |
+| API endpoint       | `server/api/{module}/`       | Routes defined in `server/api/routes.php`                            |
+| Styling            | `client/css/views/{role}/`   | Per-role CSS files                                                   |
+| DB schema          | `server/database/schema.sql` | MySQL schema + migrations                                            |
+| Shared utilities   | `client/js/shared/state.js`  | Auth helpers, API fetch wrapper                                      |
+| PHP core logic     | `server/src/`                | PSR-4 autoloaded (App\ namespace)                                    |
+| PHP modules        | `server/src/Modules/`        | Application, Maintenance, Message, Notification, Onboarding, Payment |
+| Environment config | `server/.env.example`        | Database credentials, API keys                                       |
 
 ## CODE MAP
 
@@ -182,6 +537,27 @@ Commit-msg hook runs:
 - `db`: MySQL 8.0 on port 3307
 - `frontend`: Node.js on port 3000
 
+## LOCAL DEVELOPMENT SERVER
+
+The frontend is served by **Apache on port 80** (already running — no need to start it or open ports manually).
+
+When using Playwright MCP or browser automation, always use:
+
+```
+http://localhost/views/<page>
+```
+
+**Never** use `localhost:8000` (PHP API server) or `localhost:3000` (Node dev server) for frontend pages.
+
+Examples:
+
+- `http://localhost/views/public/index.html`
+- `http://localhost/views/public/auth/login.html`
+- `http://localhost/views/boarder/boarder.html`
+- `http://localhost/views/landlord/landlord.html`
+
+The PHP API is still at `http://localhost:8000` but only for direct API calls, not page navigation.
+
 ## NOTES
 
 - Frontend redirects from `/` → `/views/public/` via meta refresh in `client/index.html`
@@ -238,9 +614,3 @@ Commit-msg hook runs:
 - JWT secret and expiration times
 - Google OAuth credentials
 - CORS allowed origins
-
-**Frontend Config:**
-
-- Auto-detects environment via `client/js/config.js`
-- Local dev: API at `http://localhost:8000`
-- Production: API at `https://haven-space-api.onrender.com`

@@ -6,6 +6,7 @@
  */
 
 import CONFIG from '../config.js';
+import { getAuthHeadersOnly } from './auth-headers.js';
 
 /**
  * Check if the current user is a verified landlord.
@@ -15,7 +16,8 @@ import CONFIG from '../config.js';
  */
 export async function checkLandlordVerification() {
   try {
-    const res = await fetch(`${CONFIG.API_BASE_URL}/api/auth/me.php`, {
+    const res = await fetch(`${CONFIG.API_BASE_URL}/auth/me.php`, {
+      headers: getAuthHeadersOnly(),
       credentials: 'include',
     });
 

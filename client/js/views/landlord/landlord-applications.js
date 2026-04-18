@@ -20,7 +20,8 @@ async function fetchApplications() {
 
     if (!res.ok) {
       if (res.status === 401) {
-        window.location.href = '/views/public/auth/login.html';
+        console.warn('Applications API returned 401 - user may not be authenticated yet');
+        // Don't redirect here - let the main dashboard handle authentication
         return [];
       }
       throw new Error('Failed to fetch applications');

@@ -391,7 +391,14 @@
                     name="propertyPhotos"
                     accept="image/*"
                     multiple
-                    hidden
+                    style="
+                      position: absolute;
+                      left: -9999px;
+                      opacity: 0;
+                      pointer-events: none;
+                      width: 0;
+                      height: 0;
+                    "
                   />
                   <div class="upload-placeholder">
                     <span
@@ -402,6 +409,9 @@
                     ></span>
                     <p><strong>Click to upload</strong> or drag and drop</p>
                     <p class="upload-hint">PNG, JPG, JPEG up to 5MB each (Max 10 photos)</p>
+                    <button type="button" id="upload-photos-btn" class="btn-upload-photos">
+                      Choose Files
+                    </button>
                   </div>
                 </div>
               </div>

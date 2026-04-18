@@ -58,7 +58,8 @@ async function fetchPropertiesFromApi() {
 
   if (!response.ok) {
     if (response.status === 401) {
-      window.location.href = '../../public/auth/login.html';
+      console.warn('Properties API returned 401 - user may not be authenticated yet');
+      // Don't redirect here - let the main dashboard handle authentication
       return [];
     }
     throw new Error(`API error: ${response.status}`);
