@@ -52,9 +52,9 @@ async function fetchPropertyData(userId) {
   try {
     const profileRes = await fetch(
       `${CONFIG.API_BASE_URL}/api/landlord/profile.php?userId=${userId}`,
-      { 
+      {
         headers: getAuthHeaders(),
-        credentials: 'include' 
+        credentials: 'include',
       }
     );
     const profileData = await profileRes.json();
@@ -75,9 +75,9 @@ async function fetchPropertyData(userId) {
     try {
       const locationRes = await fetch(
         `${CONFIG.API_BASE_URL}/api/landlord/property-location.php?userId=${userId}`,
-        { 
+        {
           headers: getAuthHeaders(),
-          credentials: 'include' 
+          credentials: 'include',
         }
       );
       locationData = await locationRes.json();
@@ -156,9 +156,9 @@ export async function initMyProperties() {
   // Fetch real user data
   let user;
   try {
-    const res = await fetch(`${CONFIG.API_BASE_URL}/auth/me.php`, { 
+    const res = await fetch(`${CONFIG.API_BASE_URL}/auth/me.php`, {
       headers: getAuthHeaders(),
-      credentials: 'include' 
+      credentials: 'include',
     });
     if (!res.ok) {
       window.location.href = loginPath();

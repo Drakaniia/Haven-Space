@@ -1,7 +1,6 @@
 import CONFIG from '../../config.js';
 import { getIcon } from '../../shared/icons.js';
 import { getAuthHeaders } from '../../shared/state.js';
-import { getAuthHeaders } from '../../shared/auth-headers.js';
 
 /**
  * Inject icons from centralized library into elements with data-icon attributes
