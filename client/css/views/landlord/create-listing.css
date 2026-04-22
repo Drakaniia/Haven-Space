@@ -781,13 +781,46 @@
 }
 
 .map-search-results {
-  display: none;
   background: var(--white);
   border: 1px solid var(--border-color);
   border-radius: 8px;
   max-height: 200px;
   overflow-y: auto;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.search-result-item {
+  padding: 0.75rem 1rem;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.search-result-item:last-child {
+  border-bottom: none;
+}
+
+.search-result-item:hover {
+  background-color: var(--bg-cream);
+}
+
+.search-result-name {
+  font-weight: 500;
+  color: var(--text-dark);
+  font-size: 0.9rem;
+}
+
+.search-loading,
+.search-no-results,
+.search-error {
+  padding: 1rem;
+  text-align: center;
+  color: var(--text-gray);
+  font-size: 0.9rem;
+}
+
+.search-error {
+  color: #ef4444;
 }
 
 .map-search-result {
