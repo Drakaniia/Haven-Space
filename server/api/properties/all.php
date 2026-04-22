@@ -46,7 +46,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
                 COALESCE(SUM(CASE WHEN r.status = 'occupied' THEN 1 ELSE 0 END), 0) as occupied_rooms,
                 u.first_name as landlord_first_name,
                 u.last_name as landlord_last_name,
-                lp.business_name as landlord_business_name
+                lp.boarding_house_name as landlord_business_name
             FROM properties p
             LEFT JOIN property_details pd ON pd.property_id = p.id
             LEFT JOIN rooms r ON p.id = r.property_id AND r.deleted_at IS NULL
@@ -57,7 +57,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
                 AND p.listing_moderation_status = 'approved'
                 AND p.latitude IS NOT NULL 
                 AND p.longitude IS NOT NULL
-            GROUP BY p.id, p.title, p.description, p.address, p.latitude, p.longitude, p.price, p.status, p.listing_moderation_status, p.created_at, p.landlord_id, pd.city, pd.province, pd.property_type, pd.total_rooms, u.first_name, u.last_name, lp.business_name
+            GROUP BY p.id, p.title, p.description, p.address, p.latitude, p.longitude, p.price, p.status, p.listing_moderation_status, p.created_at, p.landlord_id, pd.city, pd.province, pd.property_type, pd.total_rooms, u.first_name, u.last_name, lp.boarding_house_name
             ORDER BY p.created_at DESC
         ");
         $stmt->execute();
