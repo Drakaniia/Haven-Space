@@ -2,10 +2,20 @@ import CONFIG from '../../config.js';
 
 document.addEventListener('DOMContentLoaded', async () => {
   // Initialize the map, centered on Malaybalay City, Bukidnon
-  const defaultLat = 7.8183;
-  const defaultLng = 125.1333;
+  const defaultLat = 8.1569;
+  const defaultLng = 125.1297;
 
-  const map = L.map('map').setView([defaultLat, defaultLng], 13);
+  // Malaybalay City bounding box — restricts panning outside the city
+  const malaybalayBounds = L.latLngBounds(
+    [8.0500, 125.0500], // SW corner
+    [8.2500, 125.2500]  // NE corner
+  );
+
+  const map = L.map('map', {
+    maxBounds: malaybalayBounds,
+    maxBoundsViscosity: 1.0,
+    minZoom: 12,
+  }).setView([defaultLat, defaultLng], 13);
 
   // Add OpenStreetMap tiles
   L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
@@ -65,8 +75,6 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     if (result.data && result.data.properties && result.data.properties.length > 0) {
       const properties = result.data.properties;
-      const bounds = [];
-
       // Add markers for each property with valid coordinates
       properties.forEach(property => {
         // Check if property has valid latitude and longitude
@@ -152,17 +160,9 @@ document.addEventListener('DOMContentLoaded', async () => {
             `;
 
             marker.bindPopup(popupContent);
-
-            // Add to bounds for auto-fitting
-            bounds.push([lat, lng]);
           }
         }
       });
-
-      // Fit map to show all markers
-      if (bounds.length > 0) {
-        map.fitBounds(bounds, { padding: [50, 50] });
-      }
 
       // Update instruction text
       const instruction = document.querySelector('.map-instruction');
