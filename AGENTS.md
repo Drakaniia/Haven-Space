@@ -614,3 +614,23 @@ The PHP API is still at `http://localhost:8000` but only for direct API calls, n
 - JWT secret and expiration times
 - Google OAuth credentials
 - CORS allowed origins
+
+## TROUBLESHOOTING
+
+**`bun run db:setup` fails with "could not find driver"**
+
+PHP's `pdo_mysql` extension is not enabled. Fix for local Windows PHP install at `C:\php`:
+
+1. If `C:\php\php.ini` doesn't exist, copy from the template:
+   ```powershell
+   Copy-Item C:\php\php.ini-development C:\php\php.ini
+   ```
+2. Enable the extensions in `php.ini`:
+   ```powershell
+   (Get-Content C:\php\php.ini) -replace ';extension=pdo_mysql', 'extension=pdo_mysql' -replace ';extension=mysqli', 'extension=mysqli' | Set-Content C:\php\php.ini
+   ```
+3. Verify it's loaded:
+   ```powershell
+   php -m | Select-String -Pattern "pdo_mysql"
+   ```
+4. Re-run `bun run db:setup`

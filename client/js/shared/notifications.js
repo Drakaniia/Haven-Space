@@ -4,6 +4,7 @@
  */
 
 import CONFIG from '../config.js';
+import { getAuthHeaders } from './state.js';
 
 /**
  * Fetch all notifications for the current user
@@ -13,6 +14,7 @@ export async function fetchNotifications(limit = 50, offset = 0) {
   const res = await fetch(
     `${CONFIG.API_BASE_URL}/api/notifications?limit=${limit}&offset=${offset}`,
     {
+      headers: getAuthHeaders(),
       credentials: 'include',
     }
   );
@@ -26,6 +28,7 @@ export async function fetchNotifications(limit = 50, offset = 0) {
  */
 export async function fetchUnreadCount() {
   const res = await fetch(`${CONFIG.API_BASE_URL}/api/notifications/unread-count`, {
+    headers: getAuthHeaders(),
     credentials: 'include',
   });
   if (!res.ok) throw new Error('Failed to fetch unread count');

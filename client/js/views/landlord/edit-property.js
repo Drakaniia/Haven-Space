@@ -1,5 +1,6 @@
 import CONFIG from '../../config.js';
 import { getIcon } from '../../shared/icons.js';
+import { getAuthHeaders } from '../../shared/state.js';
 
 // Maximum number of photos allowed
 const MAX_PHOTOS = 10;
@@ -46,6 +47,7 @@ export function initEditProperty() {
 async function loadPropertyData(id) {
   try {
     const response = await fetch(`${CONFIG.API_BASE_URL}/api/landlord/properties.php?id=${id}`, {
+      headers: getAuthHeaders(),
       credentials: 'include',
     });
 
@@ -130,7 +132,10 @@ async function loadPropertyData(id) {
 async function loadDraftPropertyData(profileId) {
   try {
     // Fetch user data to get userId
-    const userRes = await fetch(`${CONFIG.API_BASE_URL}/auth/me.php`, { credentials: 'include' });
+    const userRes = await fetch(`${CONFIG.API_BASE_URL}/auth/me.php`, { 
+      headers: getAuthHeaders(),
+      credentials: 'include' 
+    });
     if (!userRes.ok) {
       throw new Error('Failed to fetch user data');
     }
@@ -140,7 +145,10 @@ async function loadDraftPropertyData(profileId) {
     // Fetch landlord profile data
     const profileRes = await fetch(
       `${CONFIG.API_BASE_URL}/api/landlord/profile.php?userId=${userId}`,
-      { credentials: 'include' }
+      { 
+        headers: getAuthHeaders(),
+        credentials: 'include' 
+      }
     );
 
     if (!profileRes.ok) {
@@ -158,7 +166,10 @@ async function loadDraftPropertyData(profileId) {
     try {
       const locationRes = await fetch(
         `${CONFIG.API_BASE_URL}/api/landlord/property-location.php?userId=${userId}`,
-        { credentials: 'include' }
+        { 
+          headers: getAuthHeaders(),
+          credentials: 'include' 
+        }
       );
       if (locationRes.ok) {
         const locData = await locationRes.json();
@@ -686,9 +697,7 @@ async function handleFormSubmit(e) {
       // Create new property in properties table
       response = await fetch(`${CONFIG.API_BASE_URL}/api/landlord/properties.php`, {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
+        headers: getAuthHeaders(),
         body: JSON.stringify(data),
         credentials: 'include',
       });
@@ -697,9 +706,7 @@ async function handleFormSubmit(e) {
       data.id = propertyId;
       response = await fetch(`${CONFIG.API_BASE_URL}/api/landlord/listings/${propertyId}`, {
         method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-        },
+        headers: getAuthHeaders(),
         body: JSON.stringify(data),
         credentials: 'include',
       });

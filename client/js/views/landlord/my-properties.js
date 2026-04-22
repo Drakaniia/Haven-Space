@@ -5,6 +5,7 @@
 
 import CONFIG from '../../config.js';
 import { getIcon } from '../../shared/icons.js';
+import { getAuthHeaders } from '../../shared/state.js';
 import { getImageUrl, setImageWithFallback } from '../../shared/image-utils.js';
 import { initSidebar } from '../../components/sidebar.js';
 import { initNavbar, updateNavbarNotifications } from '../../components/navbar.js';
@@ -51,7 +52,10 @@ async function fetchPropertyData(userId) {
   try {
     const profileRes = await fetch(
       `${CONFIG.API_BASE_URL}/api/landlord/profile.php?userId=${userId}`,
-      { credentials: 'include' }
+      { 
+        headers: getAuthHeaders(),
+        credentials: 'include' 
+      }
     );
     const profileData = await profileRes.json();
 
@@ -71,7 +75,10 @@ async function fetchPropertyData(userId) {
     try {
       const locationRes = await fetch(
         `${CONFIG.API_BASE_URL}/api/landlord/property-location.php?userId=${userId}`,
-        { credentials: 'include' }
+        { 
+          headers: getAuthHeaders(),
+          credentials: 'include' 
+        }
       );
       locationData = await locationRes.json();
       console.log('Location API response:', locationData);
@@ -149,7 +156,10 @@ export async function initMyProperties() {
   // Fetch real user data
   let user;
   try {
-    const res = await fetch(`${CONFIG.API_BASE_URL}/auth/me.php`, { credentials: 'include' });
+    const res = await fetch(`${CONFIG.API_BASE_URL}/auth/me.php`, { 
+      headers: getAuthHeaders(),
+      credentials: 'include' 
+    });
     if (!res.ok) {
       window.location.href = loginPath();
       return;

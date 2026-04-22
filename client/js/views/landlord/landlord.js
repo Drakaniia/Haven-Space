@@ -1,5 +1,6 @@
 import CONFIG from '../../config.js';
 import { getIcon } from '../../shared/icons.js';
+import { getAuthHeaders } from '../../shared/state.js';
 import { getAuthHeaders } from '../../shared/auth-headers.js';
 
 /**
@@ -95,7 +96,7 @@ async function loadDashboardData() {
   try {
     const response = await fetch(`${CONFIG.API_BASE_URL}/api/landlord/dashboard-stats.php`, {
       method: 'GET',
-      headers: getAuthHeaders('4'),
+      headers: getAuthHeaders(),
       credentials: 'include',
     });
 
@@ -363,9 +364,7 @@ async function loadRecentActivities() {
   try {
     const response = await fetch(`${CONFIG.API_BASE_URL}/api/landlord/activity.php`, {
       method: 'GET',
-      headers: {
-        'Content-Type': 'application/json',
-      },
+      headers: getAuthHeaders(),
       credentials: 'include',
     });
 
@@ -463,9 +462,7 @@ async function loadPaymentOverview() {
   try {
     const response = await fetch(`${CONFIG.API_BASE_URL}/api/landlord/payment-overview.php`, {
       method: 'GET',
-      headers: {
-        'Content-Type': 'application/json',
-      },
+      headers: getAuthHeaders(),
       credentials: 'include',
     });
 
@@ -722,7 +719,7 @@ async function loadProperties() {
   try {
     const response = await fetch(`${CONFIG.API_BASE_URL}/api/landlord/properties`, {
       method: 'GET',
-      headers: getAuthHeaders('4'),
+      headers: getAuthHeaders(),
       credentials: 'include',
     });
 
@@ -909,6 +906,7 @@ async function openEditModal(propertyId) {
     const response = await fetch(
       `${CONFIG.API_BASE_URL}/api/landlord/properties?id=${propertyId}`,
       {
+        headers: getAuthHeaders(),
         credentials: 'include',
       }
     );
@@ -984,9 +982,7 @@ async function savePropertyChanges(event) {
       {
         method: 'PUT',
         credentials: 'include',
-        headers: {
-          'Content-Type': 'application/json',
-        },
+        headers: getAuthHeaders(),
         body: JSON.stringify(updatedData),
       }
     );
