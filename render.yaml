@@ -1,14 +1,32 @@
 services:
-  # Backend API Service (Docker)
+  - type: pserv
+    name: haven-space-db
+    runtime: docker
+    region: singapore
+    plan: free
+    image: mysql/mysql-server:8.0
+    envVars:
+      - key: MYSQL_DATABASE
+        value: havenspace_db
+      - key: MYSQL_USER
+        value: havenspace_user
+      - key: MYSQL_PASSWORD
+        generateValue: true
+      - key: MYSQL_ROOT_PASSWORD
+        generateValue: true
+    disk:
+      name: mysql-data
+      mountPath: /var/lib/mysql
+      size: 1GB
+
   - type: web
     name: haven-space-api
-    env: docker
+    runtime: docker
     rootDir: server
     region: singapore
-    plan: starter
-    dockerContext: .
+    plan: free
     dockerfilePath: ./Dockerfile
-    healthCheckPath: /health.php
+    healthCheckPath: /api/health.php
     envVars:
       - key: APP_ENV
         value: production
@@ -21,39 +39,26 @@ services:
       - key: REFRESH_TOKEN_EXPIRATION
         value: '604800'
       - key: DB_HOST
-        sync: false
+        fromService:
+          name: haven-space-db
+          property: host
       - key: DB_PORT
-        sync: false
+        value: '3306'
       - key: DB_NAME
-        sync: false
+        value: havenspace_db
       - key: DB_USER
-        sync: false
+        value: havenspace_user
       - key: DB_PASSWORD
-        sync: false
+        fromService:
+          name: haven-space-db
+          envVarKey: MYSQL_PASSWORD
       - key: DB_SSL_MODE
-        value: REQUIRED
+        value: DISABLED
       - key: GOOGLE_CLIENT_ID
         sync: false
       - key: GOOGLE_CLIENT_SECRET
         sync: false
       - key: GOOGLE_REDIRECT_URI
-        value: https://haven-space-api.onrender.com/api/auth/google/callback.php
+        sync: false
       - key: ALLOWED_ORIGINS
         sync: false
-
-  # Frontend Static Site (Free)
-  - type: web
-    name: haven-space-frontend
-    env: static
-    rootDir: .
-    region: singapore
-    plan: free
-    buildCommand: npm install && npm run build
-    staticPublishPath: ./dist
-    routes:
-      - type: rewrite
-        source: /*
-        destination: /client/views/public/index.html
-    envVars:
-      - key: NODE_VERSION
-        value: 20

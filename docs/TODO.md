@@ -101,6 +101,6 @@ This approach balances user experience with platform security, ensuring legitima
 
 Landlord Profile
 
-about page
-
 boostrap
+
+light dark

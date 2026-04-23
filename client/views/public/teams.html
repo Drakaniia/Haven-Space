@@ -1,0 +1,449 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Development Team - Haven Space</title>
+    <link rel="icon" type="image/svg+xml" href="../../assets/favicon.svg" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="../../css/global.css" />
+    <link rel="stylesheet" href="../../css/views/public/public.css" />
+    <link rel="stylesheet" href="../../css/views/public/team.css" />
+
+    <script type="module">
+      import { initIconElements } from '../../js/shared/icons.js';
+      document.addEventListener('DOMContentLoaded', () => {
+        initIconElements();
+      });
+    </script>
+  </head>
+  <body data-view="public">
+    <!-- Navigation -->
+    <nav class="navbar">
+      <div class="nav-container">
+        <div class="nav-logo">
+          <a href="index.html" style="text-decoration: none">
+            <span class="logo-text">Haven Space</span>
+          </a>
+        </div>
+        <ul class="nav-links">
+          <li><a href="index.html">Home</a></li>
+          <li><a href="index.html#about">About</a></li>
+          <li><a href="teams.html" class="active">Our Team</a></li>
+          <li><a href="for-landlords.html">For Landlords</a></li>
+        </ul>
+        <div class="nav-actions">
+          <a href="auth/login.html" class="btn-login">Log in</a>
+          <a href="auth/choose.html" class="btn-join">Join now</a>
+        </div>
+      </div>
+    </nav>
+
+    <!-- Team Section -->
+    <main class="team-container">
+      <header class="team-header">
+        <h1>DEVELOPMENT TEAM</h1>
+        <p class="team-subtitle">BSIT 2B – The team behind Haven Space</p>
+        <div class="header-accent"></div>
+      </header>
+
+      <div class="team-grid" id="teamGrid">
+        <!-- Team Member 1 -->
+        <div class="team-card" data-member="1">
+          <div class="card-number">01</div>
+          <div class="card-image">
+            <img src="../../assets/images/public/dev_img1.png" alt="John Paul Digal" />
+          </div>
+          <div class="card-details">
+            <h2 class="member-name">JOHN PAUL DIGAL</h2>
+            <p class="member-role">Project Manager / Team Leader</p>
+            <div class="role-divider"></div>
+            <p class="member-course">BSIT 2B</p>
+            <p class="member-description">
+              Oversees project development, assigns tasks and ensures deadlines are met. Coordinates
+              documentation and final submission for Haven Space.
+            </p>
+            <div class="member-tags">
+              <span class="tag">Project Management</span>
+              <span class="tag">Team Coordination</span>
+              <span class="tag">Documentation</span>
+            </div>
+            <button class="collapse-btn">← Collapse</button>
+          </div>
+        </div>
+
+        <!-- Team Member 2 -->
+        <div class="team-card" data-member="2">
+          <div class="card-number">02</div>
+          <div class="card-image">
+            <img src="../../assets/images/public/dev_img1.png" alt="Alistair Ybanez" />
+          </div>
+          <div class="card-details">
+            <h2 class="member-name">ALISTAIR YBANEZ</h2>
+            <p class="member-role">Front-End Developer</p>
+            <div class="role-divider"></div>
+            <p class="member-course">BSIT 2B</p>
+            <p class="member-description">
+              Designs UI/UX using HTML, CSS, Bootstrap. Ensures responsiveness and usability across
+              all devices and implements client-side validation.
+            </p>
+            <div class="member-tags">
+              <span class="tag">UI/UX Design</span>
+              <span class="tag">Responsive Design</span>
+              <span class="tag">Front-End Dev</span>
+            </div>
+            <button class="collapse-btn">← Collapse</button>
+          </div>
+        </div>
+
+        <!-- Team Member 3 -->
+        <div class="team-card" data-member="3">
+          <div class="card-number">03</div>
+          <div class="card-image">
+            <img src="../../assets/images/public/dev_img1.png" alt="John Paul Abecia" />
+          </div>
+          <div class="card-details">
+            <h2 class="member-name">JOHN PAUL ABECIA</h2>
+            <p class="member-role">Back-End Developer</p>
+            <div class="role-divider"></div>
+            <p class="member-course">BSIT 2B</p>
+            <p class="member-description">
+              Develops PHP logic and server-side functionality. Handles authentication, business
+              logic, and connects application to database.
+            </p>
+            <div class="member-tags">
+              <span class="tag">PHP Development</span>
+              <span class="tag">Database Design</span>
+              <span class="tag">API Integration</span>
+            </div>
+            <button class="collapse-btn">← Collapse</button>
+          </div>
+        </div>
+
+        <!-- Team Member 4 -->
+        <div class="team-card" data-member="4">
+          <div class="card-number">04</div>
+          <div class="card-image">
+            <img src="../../assets/images/public/dev_img1.png" alt="Melvis Alfonse Palmares" />
+          </div>
+          <div class="card-details">
+            <h2 class="member-name">MELVIS ALFONSE PALMARES</h2>
+            <p class="member-role">QA / Tester / Documentation Lead</p>
+            <div class="role-divider"></div>
+            <p class="member-course">BSIT 2B</p>
+            <p class="member-description">
+              Tests system functionality and reports bugs. Ensures system meets requirements and
+              handles user manual and technical documentation.
+            </p>
+            <div class="member-tags">
+              <span class="tag">QA Testing</span>
+              <span class="tag">Bug Tracking</span>
+              <span class="tag">Documentation</span>
+            </div>
+            <button class="collapse-btn">← Collapse</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Project Mission Section -->
+      <section class="mission-section">
+        <div class="mission-container">
+          <div class="mission-icon">
+            <span
+              data-icon="target"
+              data-icon-width="48"
+              data-icon-height="48"
+              data-icon-stroke-width="1.5"
+            ></span>
+          </div>
+          <h2 class="mission-title">OUR MISSION</h2>
+          <p class="mission-statement">
+            Haven Space bridges the gap between boarders and boarding house owners through a
+            seamless digital platform. We empower students to find verified, affordable living
+            spaces near their schools—while giving landlords tools to manage properties efficiently.
+          </p>
+          <div class="mission-values">
+            <div class="value-item">
+              <span class="value-number">01</span>
+              <span class="value-text"> transparency in every listing</span>
+            </div>
+            <div class="value-item">
+              <span class="value-number">02</span>
+              <span class="value-text"> trust through verified properties</span>
+            </div>
+            <div class="value-item">
+              <span class="value-number">03</span>
+              <span class="value-text"> community over transactions</span>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Challenges Overcome Section -->
+      <section class="challenges-section">
+        <div class="challenges-container">
+          <h2 class="challenges-title">CHALLENGES WE OVERCAME</h2>
+          <div class="challenges-grid">
+            <div class="challenge-card">
+              <div class="challenge-number">01</div>
+              <h3 class="challenge-heading">Limited Online Presence</h3>
+              <p class="challenge-text">
+                Many boarding houses lacked visibility. We built a centralized platform where owners
+                can list and boarders can discover spaces effortlessly.
+              </p>
+            </div>
+            <div class="challenge-card">
+              <div class="challenge-number">02</div>
+              <h3 class="challenge-heading">Manual Inquiry Process</h3>
+              <p class="challenge-text">
+                Traditional boarding searches relied on phone calls and physical visits. We
+                digitized the entireprocess—application, verification, and communication.
+              </p>
+            </div>
+            <div class="challenge-card">
+              <div class="challenge-number">03</div>
+              <h3 class="challenge-heading">Trust Deficiency</h3>
+              <p class="challenge-text">
+                Boarders often doubted listing authenticity. We implemented verification workflows
+                and owner reviews to establish credibility in every transaction.
+              </p>
+            </div>
+            <div class="challenge-card">
+              <div class="challenge-number">04</div>
+              <h3 class="challenge-heading">Fragmented Management</h3>
+              <p class="challenge-text">
+                Landlords juggled multiple channels for inquiries and payments. Our unified
+                dashboard consolidates everything into one streamlined experience.
+              </p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Future Roadmap Section -->
+      <section class="roadmap-section">
+        <div class="roadmap-container">
+          <h2 class="roadmap-title">FUTURE ROADMAP</h2>
+          <p class="roadmap-subtitle">What's next for Haven Space</p>
+          <div class="roadmap-timeline">
+            <div class="roadmap-phase">
+              <div class="phase-marker">
+                <span class="phase-dot"></span>
+              </div>
+              <div class="phase-content">
+                <span class="phase-badge">PHASE 1</span>
+                <h3 class="phase-title">Core Platform Launch</h3>
+                <p class="phase-text">
+                  Initial release with listings, authentication, and basic dashboards for boarders
+                  and landlords.
+                </p>
+              </div>
+            </div>
+            <div class="roadmap-phase active">
+              <div class="phase-marker">
+                <span class="phase-dot"></span>
+              </div>
+              <div class="phase-content">
+                <span class="phase-badge">PHASE 2</span>
+                <h3 class="phase-title">Enhanced Features</h3>
+                <p class="phase-text">
+                  Map integration, advanced search filters, messaging system, and payment tracking.
+                  <span class="phase-status">(Current)</span>
+                </p>
+              </div>
+            </div>
+            <div class="roadmap-phase">
+              <div class="phase-marker">
+                <span class="phase-dot"></span>
+              </div>
+              <div class="phase-content">
+                <span class="phase-badge">PHASE 3</span>
+                <h3 class="phase-title">Mobile Application</h3>
+                <p class="phase-text">
+                  Native iOS and Android apps withPush notifications and offline access.
+                </p>
+              </div>
+            </div>
+            <div class="roadmap-phase">
+              <div class="phase-marker">
+                <span class="phase-dot"></span>
+              </div>
+              <div class="phase-content">
+                <span class="phase-badge">PHASE 4</span>
+                <h3 class="phase-title">AI Integration</h3>
+                <p class="phase-text">
+                  Smart recommendations, chat support, and automated Property verification using
+                  AI/ML.
+                </p>
+              </div>
+            </div>
+            <div class="roadmap-phase">
+              <div class="phase-marker">
+                <span class="phase-dot"></span>
+              </div>
+              <div class="phase-content">
+                <span class="phase-badge">PHASE 5</span>
+                <h3 class="phase-title">National Expansion</h3>
+                <p class="phase-text">
+                  Scale to boarding markets across the Philippines and Southeast Asia.
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- University Info Section -->
+      <section class="university-section">
+        <div class="university-container">
+          <div class="university-badge">
+            <span class="badge-icon">🎓</span>
+            <span class="badge-text">ACADEMIC PROJECT</span>
+          </div>
+          <div class="university-content">
+            <h2 class="university-title">UNIVERSITY INFORMATION</h2>
+            <div class="university-grid">
+              <div class="university-item">
+                <span class="item-label">Institution</span>
+                <span class="item-value">University of Cebu - Main Campus</span>
+              </div>
+              <div class="university-item">
+                <span class="item-label">Program</span>
+                <span class="item-value">Bachelor of Science in Information Technology</span>
+              </div>
+              <div class="university-item">
+                <span class="item-label">Year Level</span>
+                <span class="item-value">2nd Year</span>
+              </div>
+              <div class="university-item">
+                <span class="item-label">Section</span>
+                <span class="item-value">BSIT 2B</span>
+              </div>
+              <div class="university-item">
+                <span class="item-label">Academic Year</span>
+                <span class="item-value">2025 - 2026</span>
+              </div>
+              <div class="university-item">
+                <span class="item-label">Course</span>
+                <span class="item-value">IT 212 - IT Fundamentals</span>
+              </div>
+            </div>
+            <div class="university-signature">
+              <p class="signature-text">
+                Submitted in partial fulfillment of the requirements in IT 212
+              </p>
+              <p class="signature-course">IT Fundamentals - Final Requirement</p>
+            </div>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <!-- Footer Section -->
+    <footer class="footer">
+      <div class="footer-container">
+        <div class="footer-grid">
+          <!-- Brand Column -->
+          <div class="footer-brand">
+            <div class="footer-logo">
+              <span class="logo-text">Haven Space</span>
+            </div>
+            <p class="footer-tagline">Your trusted boarding house platform.</p>
+            <div class="footer-social">
+              <a href="#linkedin" class="social-link" aria-label="LinkedIn">
+                <span
+                  data-icon="linkedin"
+                  data-icon-width="20"
+                  data-icon-height="20"
+                  data-icon-stroke-width="1.5"
+                ></span>
+              </a>
+              <a href="#twitter" class="social-link" aria-label="Twitter">
+                <span
+                  data-icon="twitter"
+                  data-icon-width="20"
+                  data-icon-height="20"
+                  data-icon-stroke-width="1.5"
+                ></span>
+              </a>
+              <a href="#instagram" class="social-link" aria-label="Instagram">
+                <img src="../../assets/images/instagram.png" alt="" width="20" height="20" />
+              </a>
+            </div>
+            <div class="footer-status">
+              <span class="status-dot"></span>
+              <span>All Systems Normal</span>
+            </div>
+          </div>
+
+          <!-- Company Column -->
+          <div class="footer-column">
+            <h3 class="footer-column-title">Company</h3>
+            <ul class="footer-links">
+              <li><a href="#properties">Properties</a></li>
+              <li><a href="#new">What's New</a></li>
+              <li><a href="#about">About</a></li>
+              <li><a href="#press">Press</a></li>
+              <li><a href="#careers">Careers</a></li>
+            </ul>
+          </div>
+
+          <!-- Community Column -->
+          <div class="footer-column">
+            <h3 class="footer-column-title">Community</h3>
+            <ul class="footer-links">
+              <li><a href="#landlord-guide">Landlord Guide</a></li>
+              <li><a href="#boarder-guide">Boarder Guide</a></li>
+              <li><a href="#success-stories">Success Stories</a></li>
+              <li><a href="#trending">Trending</a></li>
+              <li><a href="#explore">Explore Listings</a></li>
+            </ul>
+          </div>
+
+          <!-- Support Column -->
+          <div class="footer-column">
+            <h3 class="footer-column-title">Support</h3>
+            <ul class="footer-links">
+              <li><a href="#help">Help Topics</a></li>
+              <li><a href="#getting-started">Getting Started</a></li>
+              <li><a href="#pro">Haven Pro</a></li>
+              <li><a href="#faqs">FAQs</a></li>
+              <li><a href="#report">Report a Violation</a></li>
+            </ul>
+          </div>
+        </div>
+
+        <!-- Footer Bottom -->
+        <div class="footer-bottom">
+          <div class="footer-copyright">
+            <p>
+              &copy; 2026 Haven Space. All rights reserved &bull; Built with
+              <span class="heart-icon">&hearts;</span> from the Philippines.
+            </p>
+          </div>
+          <div class="footer-legal">
+            <a href="terms-of-service.html">T&C</a>
+            <span class="separator">&bull;</span>
+            <a href="privacy-policy.html">Privacy Notice</a>
+            <span class="separator">&bull;</span>
+            <a href="#cookies">Cookie Notice</a>
+            <span class="separator">&bull;</span>
+            <a href="#trust">Trust Center</a>
+            <span class="separator">&bull;</span>
+            <a href="#cookie-preferences">Cookie Preferences</a>
+          </div>
+        </div>
+      </div>
+    </footer>
+
+    <script type="module" src="../../js/views/public/team.js"></script>
+
+    <!-- ES Module Entry Point -->
+    <script type="module" src="../../js/main.js"></script>
+  </body>
+</html>

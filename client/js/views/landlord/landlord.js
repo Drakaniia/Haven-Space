@@ -2,7 +2,6 @@ import CONFIG from '../../config.js';
 import { getIcon } from '../../shared/icons.js';
 import { getAuthHeaders } from '../../shared/state.js';
 
-
 /**
  * Inject icons from centralized library into elements with data-icon attributes
  * Replaces inline SVGs with centralized icon library calls

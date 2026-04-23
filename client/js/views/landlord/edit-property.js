@@ -132,9 +132,9 @@ async function loadPropertyData(id) {
 async function loadDraftPropertyData(profileId) {
   try {
     // Fetch user data to get userId
-    const userRes = await fetch(`${CONFIG.API_BASE_URL}/auth/me.php`, { 
+    const userRes = await fetch(`${CONFIG.API_BASE_URL}/auth/me.php`, {
       headers: getAuthHeaders(),
-      credentials: 'include' 
+      credentials: 'include',
     });
     if (!userRes.ok) {
       throw new Error('Failed to fetch user data');
@@ -145,9 +145,9 @@ async function loadDraftPropertyData(profileId) {
     // Fetch landlord profile data
     const profileRes = await fetch(
       `${CONFIG.API_BASE_URL}/api/landlord/profile.php?userId=${userId}`,
-      { 
+      {
         headers: getAuthHeaders(),
-        credentials: 'include' 
+        credentials: 'include',
       }
     );
 
@@ -166,9 +166,9 @@ async function loadDraftPropertyData(profileId) {
     try {
       const locationRes = await fetch(
         `${CONFIG.API_BASE_URL}/api/landlord/property-location.php?userId=${userId}`,
-        { 
+        {
           headers: getAuthHeaders(),
-          credentials: 'include' 
+          credentials: 'include',
         }
       );
       if (locationRes.ok) {
