@@ -923,7 +923,22 @@ function renderProperties(propertiesList) {
     return;
   }
 
-  grid.innerHTML = propertiesList
+  // Deduplicate properties by ID to prevent duplicate cards
+  const uniqueProperties = [];
+  const seenIds = new Set();
+
+  propertiesList.forEach(property => {
+    if (!seenIds.has(property.id)) {
+      seenIds.add(property.id);
+      uniqueProperties.push(property);
+    } else {
+      console.warn(
+        `Duplicate property detected and skipped: ID ${property.id}, Title: ${property.title}`
+      );
+    }
+  });
+
+  grid.innerHTML = uniqueProperties
     .map(
       property => `
     <div class="find-room-property-card" data-property-id="${property.id}">

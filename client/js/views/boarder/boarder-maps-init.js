@@ -32,7 +32,7 @@ function drawRadiusCircle(radius) {
 
   // Get current location (user location or default)
   const location = userLocation || currentUser?.location || { lat: 8.1569, lng: 125.1297 };
-  
+
   // Draw new circle
   radiusCircle = L.circle([location.lat, location.lng], {
     color: '#4a7c23',
@@ -40,7 +40,7 @@ function drawRadiusCircle(radius) {
     fillOpacity: 0.1,
     radius: radius,
     weight: 2,
-    dashArray: '5, 5'
+    dashArray: '5, 5',
   }).addTo(map);
 
   console.log(`Drew radius circle: ${radius}m around location:`, location);
@@ -52,11 +52,14 @@ function drawRadiusCircle(radius) {
 export function initBoarderMaps() {
   // Get current user from state
   const stateUser = getState().user;
-  currentUser = (stateUser && stateUser.name) ? stateUser : {
-    name: 'Juan Dela Cruz',
-    university: 'Bukidnon State University',
-    location: { lat: 8.1569, lng: 125.1297 }, // Default to Malaybalay, Bukidnon
-  };
+  currentUser =
+    stateUser && stateUser.name
+      ? stateUser
+      : {
+          name: 'Juan Dela Cruz',
+          university: 'Bukidnon State University',
+          location: { lat: 8.1569, lng: 125.1297 }, // Default to Malaybalay, Bukidnon
+        };
 
   // Initialize sidebar
   initSidebar({
@@ -87,7 +90,9 @@ export function initBoarderMaps() {
   // Update university subtitle
   const universitySubtitle = document.getElementById('university-subtitle');
   if (universitySubtitle) {
-    universitySubtitle.textContent = `Near ${currentUser.university || 'Bukidnon State University'}`;
+    universitySubtitle.textContent = `Near ${
+      currentUser.university || 'Bukidnon State University'
+    }`;
   }
 
   // Initialize map
@@ -446,7 +451,7 @@ function setupEventListeners() {
   // Locate me button
   const locateBtn = document.getElementById('locate-me');
   if (locateBtn) {
-    locateBtn.addEventListener('click', (e) => {
+    locateBtn.addEventListener('click', e => {
       e.preventDefault();
       e.stopPropagation();
       getUserLocation();
@@ -457,14 +462,14 @@ function setupEventListeners() {
   const zoomInBtn = document.getElementById('zoom-in');
   const zoomOutBtn = document.getElementById('zoom-out');
   if (zoomInBtn) {
-    zoomInBtn.addEventListener('click', (e) => {
+    zoomInBtn.addEventListener('click', e => {
       e.preventDefault();
       e.stopPropagation();
       if (map) map.zoomIn();
     });
   }
   if (zoomOutBtn) {
-    zoomOutBtn.addEventListener('click', (e) => {
+    zoomOutBtn.addEventListener('click', e => {
       e.preventDefault();
       e.stopPropagation();
       if (map) map.zoomOut();
@@ -493,10 +498,10 @@ function setupEventListeners() {
       document.querySelectorAll('.quick-filter-btn').forEach(b => b.classList.remove('active'));
       e.currentTarget.classList.add('active');
       currentDistanceFilter = parseInt(e.currentTarget.dataset.distance);
-      
+
       // Draw radius circle around current location
       drawRadiusCircle(currentDistanceFilter);
-      
+
       performSearch();
     });
   });
