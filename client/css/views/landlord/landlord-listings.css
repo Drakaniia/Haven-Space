@@ -645,9 +645,6 @@
   text-decoration: none;
   cursor: pointer;
   transition: background-color 0.2s ease;
-  position: relative;
-  z-index: 10503;
-  pointer-events: auto;
 }
 
 .btn-primary:hover:not(:disabled) {
@@ -673,9 +670,6 @@
   font-family: var(--font-main);
   cursor: pointer;
   transition: background-color 0.2s ease;
-  position: relative;
-  z-index: 10503;
-  pointer-events: auto;
 }
 
 .btn-outline:hover:not(:disabled) {

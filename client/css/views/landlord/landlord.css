@@ -72,7 +72,7 @@
 #navbar-container {
   position: sticky;
   top: 0;
-  z-index: 50;
+  z-index: 200;
   transition: opacity 0.2s ease-in-out;
 }
 
