@@ -470,6 +470,18 @@ function closeMapModal() {
   // Reset temp coordinates
   tempLatitude = null;
   tempLongitude = null;
+
+  // Restore original coordinates display if location was previously set
+  const latInput = document.getElementById('property-latitude');
+  const lngInput = document.getElementById('property-longitude');
+  
+  if (latInput.value && lngInput.value) {
+    // Restore the original coordinates display
+    const coordinatesDisplay = document.getElementById('coordinates-display');
+    if (coordinatesDisplay) {
+      coordinatesDisplay.textContent = `Coordinates: ${parseFloat(latInput.value).toFixed(6)}, ${parseFloat(lngInput.value).toFixed(6)}`;
+    }
+  }
 }
 
 /**

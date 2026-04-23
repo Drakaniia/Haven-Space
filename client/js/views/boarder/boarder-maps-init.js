@@ -18,16 +18,44 @@ let appliedRooms = [];
 let currentDistanceFilter = 500; // meters
 let allProperties = [];
 let filteredProperties = [];
+let radiusCircle = null; // Store the current radius circle
+
+/**
+ * Draw radius circle around current location
+ */
+function drawRadiusCircle(radius) {
+  // Remove existing circle
+  if (radiusCircle) {
+    map.removeLayer(radiusCircle);
+    radiusCircle = null;
+  }
+
+  // Get current location (user location or default)
+  const location = userLocation || currentUser?.location || { lat: 8.1569, lng: 125.1297 };
+  
+  // Draw new circle
+  radiusCircle = L.circle([location.lat, location.lng], {
+    color: '#4a7c23',
+    fillColor: '#4a7c23',
+    fillOpacity: 0.1,
+    radius: radius,
+    weight: 2,
+    dashArray: '5, 5'
+  }).addTo(map);
+
+  console.log(`Drew radius circle: ${radius}m around location:`, location);
+}
 
 /**
  * Initialize the boarder maps page
  */
 export function initBoarderMaps() {
   // Get current user from state
-  currentUser = getState().user || {
+  const stateUser = getState().user;
+  currentUser = (stateUser && stateUser.name) ? stateUser : {
     name: 'Juan Dela Cruz',
-    university: 'University of the Philippines',
-    location: { lat: 14.6507, lng: 121.1029 }, // Default to Manila
+    university: 'Bukidnon State University',
+    location: { lat: 8.1569, lng: 125.1297 }, // Default to Malaybalay, Bukidnon
   };
 
   // Initialize sidebar
@@ -59,7 +87,7 @@ export function initBoarderMaps() {
   // Update university subtitle
   const universitySubtitle = document.getElementById('university-subtitle');
   if (universitySubtitle) {
-    universitySubtitle.textContent = `Near ${currentUser.university || 'Your University'}`;
+    universitySubtitle.textContent = `Near ${currentUser.university || 'Bukidnon State University'}`;
   }
 
   // Initialize map
@@ -88,7 +116,7 @@ export function initBoarderMaps() {
 async function initMap() {
   const defaultLocation = currentUser?.location
     ? [currentUser.location.lat, currentUser.location.lng]
-    : [14.6507, 121.1029]; // Default to Manila
+    : [8.1569, 125.1297]; // Default to Malaybalay, Bukidnon
 
   // Create map centered at user's location
   map = L.map('map').setView(defaultLocation, 13);
@@ -98,19 +126,14 @@ async function initMap() {
     attribution: '© OpenStreetMap contributors',
   }).addTo(map);
 
-  // Draw user location circle (university radius)
-  L.circle(defaultLocation, {
-    color: '#4a7c23',
-    fillColor: '#4a7c23',
-    fillOpacity: 0.1,
-    radius: 1000,
-  }).addTo(map);
-
   // Add user location marker
   L.marker(defaultLocation)
     .addTo(map)
-    .bindPopup('<strong>Your Location</strong><br>University Area')
+    .bindPopup('<strong>Your Location</strong><br>Malaybalay, Bukidnon')
     .openPopup();
+
+  // Draw initial radius circle (500m by default)
+  drawRadiusCircle(currentDistanceFilter);
 
   console.log('Map initialized at:', defaultLocation);
 }
@@ -423,14 +446,30 @@ function setupEventListeners() {
   // Locate me button
   const locateBtn = document.getElementById('locate-me');
   if (locateBtn) {
-    locateBtn.addEventListener('click', getUserLocation);
+    locateBtn.addEventListener('click', (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      getUserLocation();
+    });
   }
 
   // Zoom controls
   const zoomInBtn = document.getElementById('zoom-in');
   const zoomOutBtn = document.getElementById('zoom-out');
-  if (zoomInBtn) zoomInBtn.addEventListener('click', () => map.zoomIn());
-  if (zoomOutBtn) zoomOutBtn.addEventListener('click', () => map.zoomOut());
+  if (zoomInBtn) {
+    zoomInBtn.addEventListener('click', (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      if (map) map.zoomIn();
+    });
+  }
+  if (zoomOutBtn) {
+    zoomOutBtn.addEventListener('click', (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      if (map) map.zoomOut();
+    });
+  }
 
   // Filter changes
   const priceFilter = document.getElementById('price-filter');
@@ -454,6 +493,10 @@ function setupEventListeners() {
       document.querySelectorAll('.quick-filter-btn').forEach(b => b.classList.remove('active'));
       e.currentTarget.classList.add('active');
       currentDistanceFilter = parseInt(e.currentTarget.dataset.distance);
+      
+      // Draw radius circle around current location
+      drawRadiusCircle(currentDistanceFilter);
+      
       performSearch();
     });
   });
@@ -742,6 +785,9 @@ function getUserLocation() {
           .addTo(map)
           .bindPopup('<strong>Your Current Location</strong>')
           .openPopup();
+
+        // Redraw radius circle at new location
+        drawRadiusCircle(currentDistanceFilter);
 
         // Recalculate distances
         allProperties.forEach(property => {
