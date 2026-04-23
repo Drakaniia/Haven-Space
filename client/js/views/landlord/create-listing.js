@@ -19,6 +19,9 @@ const MAX_FILE_SIZE_MB = 5;
 // Store uploaded photos
 const uploadedPhotos = [];
 
+// Store room data
+const roomsData = [];
+
 // Map state
 let mapInstance = null;
 let currentMarker = null;
@@ -73,6 +76,7 @@ export function initCreateListing() {
   initPropertyTypeToggle();
   initCapacityToggle();
   initCustomAmenities();
+  initRoomConfiguration();
 }
 
 /**
@@ -216,7 +220,8 @@ function handleFiles(files) {
  */
 function renderPhotoGrid() {
   const grid = document.getElementById('photo-preview-grid');
-  if (!grid) return;
+  const uploadArea = document.getElementById('photo-upload-area');
+  if (!grid || !uploadArea) return;
 
   grid.innerHTML = '';
 
@@ -249,6 +254,66 @@ function renderPhotoGrid() {
 
     grid.appendChild(item);
   });
+
+  // Update upload area appearance based on whether photos are uploaded
+  updateUploadAreaAppearance();
+}
+
+/**
+ * Update upload area appearance based on uploaded photos
+ */
+function updateUploadAreaAppearance() {
+  const uploadArea = document.getElementById('photo-upload-area');
+  if (!uploadArea) return;
+
+  if (uploadedPhotos.length > 0 && uploadedPhotos.length < MAX_PHOTOS) {
+    // Show green add more button - compact style
+    uploadArea.className = 'photo-upload-area has-photos';
+    uploadArea.innerHTML = `
+      <div class="add-more-placeholder">
+        <span data-icon="plus" data-icon-width="18" data-icon-height="18" data-icon-stroke-width="2"></span>
+        <p>Add More Photos</p>
+        <p class="upload-hint">(${uploadedPhotos.length}/${MAX_PHOTOS})</p>
+      </div>
+    `;
+    // Re-inject icons for the new plus icon
+    injectIcons();
+  } else if (uploadedPhotos.length >= MAX_PHOTOS) {
+    // Hide upload area when max photos reached
+    uploadArea.style.display = 'none';
+  } else {
+    // Show original upload area
+    uploadArea.className = 'photo-upload-area';
+    uploadArea.style.display = 'flex';
+    uploadArea.innerHTML = `
+      <div class="upload-placeholder">
+        <span
+          data-icon="photo"
+          data-icon-width="48"
+          data-icon-height="48"
+          data-icon-stroke-width="2"
+        ></span>
+        <p><strong>Click to upload</strong> or drag and drop</p>
+        <p class="upload-hint">PNG, JPG, JPEG up to 5MB each (Max ${MAX_PHOTOS} photos)</p>
+        <button type="button" id="upload-photos-btn" class="btn-upload-photos">
+          Choose Files
+        </button>
+      </div>
+    `;
+    // Re-inject icons and re-attach event listeners
+    injectIcons();
+    
+    // Re-attach button event listener
+    const uploadBtn = document.getElementById('upload-photos-btn');
+    if (uploadBtn) {
+      uploadBtn.addEventListener('click', e => {
+        e.preventDefault();
+        e.stopPropagation();
+        console.log('Upload button clicked');
+        triggerFileSelection();
+      });
+    }
+  }
 }
 
 /**
@@ -367,6 +432,13 @@ async function handleFormSubmit(e) {
     return;
   }
 
+  // Validate room configuration
+  const roomValidation = validateRoomConfiguration();
+  if (!roomValidation.valid) {
+    showError(roomValidation.message);
+    return;
+  }
+
   // Gather form data
   const formData = new FormData(e.target);
 
@@ -376,14 +448,19 @@ async function handleFormSubmit(e) {
     propertyType = formData.get('propertyTypeOther') || 'Others';
   }
 
-  // Get capacity (handle "custom" case)
-  let propertyCapacity = formData.get('propertyCapacity');
-  if (propertyCapacity === 'custom') {
-    propertyCapacity = formData.get('propertyCapacityCustom') || 'Custom';
-  }
-
   // Get custom amenities
   const customAmenities = getCustomAmenities();
+
+  // Calculate property capacity from room configurations
+  let propertyCapacity = '1'; // Default to single occupancy
+  if (roomsData.length > 0) {
+    // Use the most common room capacity, or the first room's capacity
+    const capacities = roomsData.map(room => room.capacity).filter(cap => cap);
+    if (capacities.length > 0) {
+      // Use the first room's capacity as the property capacity
+      propertyCapacity = capacities[0];
+    }
+  }
 
   const data = {
     propertyName: formData.get('propertyName'),
@@ -392,13 +469,19 @@ async function handleFormSubmit(e) {
     propertyPrice: parseFloat(formData.get('propertyPrice')),
     propertyDeposit: parseFloat(formData.get('propertyDeposit')),
     propertyRooms: parseInt(formData.get('propertyRooms')),
-    propertyCapacity: propertyCapacity,
+    propertyCapacity: propertyCapacity, // Add the missing field
     propertyAddress: formData.get('propertyAddress'),
     propertyCity: formData.get('propertyCity'),
     propertyProvince: formData.get('propertyProvince'),
     propertyLatitude: formData.get('propertyLatitude') || '14.5995',
     propertyLongitude: formData.get('propertyLongitude') || '120.9842',
     amenities: [...formData.getAll('amenities'), ...customAmenities],
+    rooms: roomsData.map(room => ({
+      name: room.name,
+      capacity: parseInt(room.capacity),
+      description: room.description,
+      photoCount: room.photos.length,
+    })),
   };
 
   const submitBtn = e.target.querySelector('button[type="submit"]');
@@ -426,33 +509,51 @@ async function handleFormSubmit(e) {
         logout();
         return;
       }
-      
+
       if (response.status === 403) {
         const errorCode = result.code;
         if (errorCode === 'EMAIL_NOT_VERIFIED') {
           alert('Please verify your email address before creating listings.');
         } else if (errorCode === 'VERIFICATION_PENDING') {
-          alert('Your landlord account is under review. You have read-only access until verification is complete.');
+          alert(
+            'Your landlord account is under review. You have read-only access until verification is complete.'
+          );
         } else if (errorCode === 'VERIFICATION_REJECTED') {
-          alert('Your account verification was rejected. Please review the feedback and resubmit required documents.');
+          alert(
+            'Your account verification was rejected. Please review the feedback and resubmit required documents.'
+          );
         } else {
           alert(result.message || 'You do not have permission to create listings.');
         }
         window.location.href = '../index.html';
         return;
       }
-      
+
       throw new Error(result.error || result.message || 'Failed to create listing');
     }
 
     const propertyId = result.data?.id;
 
+    // Upload property photos
     if (uploadedPhotos.length > 0 && propertyId) {
       try {
         await uploadPhotos(propertyId);
       } catch (photoError) {
-        console.error('Photo upload failed:', photoError);
+        console.error('Property photo upload failed:', photoError);
         showError(`Property created successfully, but photo upload failed: ${photoError.message}`);
+        setTimeout(() => hideError(), 8000);
+      }
+    }
+
+    // Upload room photos
+    if (roomsData.length > 0 && propertyId) {
+      try {
+        await uploadRoomPhotos(propertyId);
+      } catch (roomPhotoError) {
+        console.error('Room photo upload failed:', roomPhotoError);
+        showError(
+          `Property created successfully, but room photo upload failed: ${roomPhotoError.message}`
+        );
         setTimeout(() => hideError(), 8000);
       }
     }
@@ -497,6 +598,46 @@ async function uploadPhotos(propertyId) {
 
   const result = await response.json();
   console.log('Photos uploaded successfully:', result);
+}
+
+/**
+ * Upload room photos to the server
+ */
+async function uploadRoomPhotos(propertyId) {
+  console.log('Starting room photos upload for property:', propertyId);
+
+  for (let i = 0; i < roomsData.length; i++) {
+    const room = roomsData[i];
+    if (room.photos.length === 0) continue;
+
+    const roomPhotoFormData = new FormData();
+    room.photos.forEach((photo, photoIndex) => {
+      console.log(`Adding room ${i + 1} photo ${photoIndex + 1}:`, photo.file.name);
+      roomPhotoFormData.append('roomPhotos[]', photo.file);
+    });
+
+    // Add room identifier
+    roomPhotoFormData.append('roomIndex', i);
+    roomPhotoFormData.append('roomName', room.name);
+
+    const response = await fetch(
+      `${CONFIG.API_BASE_URL}/api/landlord/listings/${propertyId}/room-photos`,
+      {
+        method: 'POST',
+        headers: getAuthHeadersOnly(),
+        body: roomPhotoFormData,
+        credentials: 'include',
+      }
+    );
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.error || `Failed to upload photos for ${room.name}`);
+    }
+
+    const result = await response.json();
+    console.log(`Room ${i + 1} photos uploaded successfully:`, result);
+  }
 }
 
 /**
@@ -691,6 +832,507 @@ function getCustomAmenities() {
 }
 
 /**
+ * Initialize room configuration functionality
+ */
+function initRoomConfiguration() {
+  const roomsInput = document.getElementById('property-rooms');
+  if (roomsInput) {
+    roomsInput.addEventListener('input', handleRoomsNumberChange);
+    roomsInput.addEventListener('change', handleRoomsNumberChange);
+  }
+}
+
+/**
+ * Handle change in number of rooms
+ */
+function handleRoomsNumberChange() {
+  const roomsInput = document.getElementById('property-rooms');
+  const roomConfigSection = document.getElementById('room-configuration-section');
+
+  if (!roomsInput || !roomConfigSection) return;
+
+  const numRooms = parseInt(roomsInput.value) || 0;
+
+  if (numRooms > 0 && numRooms <= 20) {
+    roomConfigSection.style.display = 'block';
+    generateRoomCards(numRooms);
+  } else {
+    roomConfigSection.style.display = 'none';
+    clearRoomCards();
+  }
+}
+
+/**
+ * Generate room configuration cards
+ */
+function generateRoomCards(numRooms) {
+  const container = document.getElementById('rooms-container');
+  if (!container) return;
+
+  // Preserve existing room data when possible
+  const currentRooms = roomsData.length;
+
+  // Add new rooms if needed
+  for (let i = currentRooms; i < numRooms; i++) {
+    roomsData.push({
+      id: i + 1,
+      name: `Room ${i + 1}`,
+      capacity: '',
+      description: '',
+      photos: [],
+    });
+  }
+
+  // Remove excess rooms if needed
+  if (numRooms < currentRooms) {
+    // Clean up photo URLs for removed rooms
+    for (let i = numRooms; i < currentRooms; i++) {
+      if (roomsData[i] && roomsData[i].photos) {
+        roomsData[i].photos.forEach(photo => {
+          if (photo.preview) {
+            URL.revokeObjectURL(photo.preview);
+          }
+        });
+      }
+    }
+    roomsData.splice(numRooms);
+  }
+
+  renderRoomCards();
+}
+
+/**
+ * Render room configuration cards
+ */
+function renderRoomCards() {
+  const container = document.getElementById('rooms-container');
+  if (!container) return;
+
+  container.innerHTML = '';
+
+  roomsData.forEach((room, index) => {
+    const roomCard = createRoomCard(room, index);
+    container.appendChild(roomCard);
+  });
+
+  // Inject icons for the new elements
+  injectIcons();
+}
+
+/**
+ * Create a single room card
+ */
+function createRoomCard(room, index) {
+  const card = document.createElement('div');
+  card.className = 'room-card';
+  card.dataset.roomIndex = index;
+
+  card.innerHTML = `
+    <div class="room-card-header">
+      <h4 class="room-card-title">${room.name}</h4>
+      <button type="button" class="room-card-toggle" data-room-index="${index}">
+        <span>Collapse</span>
+        <span data-icon="chevronDown" data-icon-width="16" data-icon-height="16"></span>
+      </button>
+    </div>
+    
+    <div class="room-card-content">
+      <div class="room-form-row">
+        <div class="room-form-group">
+          <label for="room-name-${index}">Room Name/Label</label>
+          <input
+            type="text"
+            id="room-name-${index}"
+            name="rooms[${index}][name]"
+            value="${room.name}"
+            placeholder="e.g. Room 1, Master Bedroom"
+            required
+          />
+        </div>
+        <div class="room-form-group">
+          <label for="room-capacity-${index}">Person Capacity *</label>
+          <select id="room-capacity-${index}" name="rooms[${index}][capacity]" required>
+            <option value="">Select capacity</option>
+            <option value="1" ${room.capacity === '1' ? 'selected' : ''}>1 person</option>
+            <option value="2" ${room.capacity === '2' ? 'selected' : ''}>2 persons</option>
+            <option value="3" ${room.capacity === '3' ? 'selected' : ''}>3 persons</option>
+            <option value="4" ${room.capacity === '4' ? 'selected' : ''}>4 persons</option>
+            <option value="5" ${room.capacity === '5' ? 'selected' : ''}>5 persons</option>
+            <option value="6" ${room.capacity === '6' ? 'selected' : ''}>6+ persons</option>
+          </select>
+        </div>
+      </div>
+      
+      <div class="room-form-group">
+        <label for="room-description-${index}">Additional Info</label>
+        <textarea
+          id="room-description-${index}"
+          name="rooms[${index}][description]"
+          placeholder="Describe room features, amenities, or special notes..."
+          rows="2"
+        >${room.description}</textarea>
+      </div>
+      
+      <div class="room-photo-upload">
+        <label>Room Photos</label>
+        <div class="room-photo-upload-area" data-room-index="${index}">
+          <div class="room-photo-placeholder">
+            <span data-icon="photo" data-icon-width="32" data-icon-height="32"></span>
+            <p><strong>Click to upload</strong> or drag and drop</p>
+            <p class="upload-hint">PNG, JPG, JPEG up to 5MB each (max 4 photos)</p>
+          </div>
+        </div>
+        <div class="room-photo-grid" id="room-photo-grid-${index}"></div>
+        <div class="room-photo-count" id="room-photo-count-${index}">
+          ${room.photos.length} / 4 photos uploaded (max 4)
+        </div>
+        <div class="room-photo-error" id="room-photo-error-${index}"></div>
+      </div>
+    </div>
+  `;
+
+  // Add event listeners
+  setupRoomCardEventListeners(card, index);
+
+  return card;
+}
+
+/**
+ * Setup event listeners for a room card
+ */
+function setupRoomCardEventListeners(card, index) {
+  // Toggle collapse/expand
+  const toggleBtn = card.querySelector('.room-card-toggle');
+  if (toggleBtn) {
+    toggleBtn.addEventListener('click', () => {
+      card.classList.toggle('collapsed');
+      const span = toggleBtn.querySelector('span:first-child');
+      if (span) {
+        span.textContent = card.classList.contains('collapsed') ? 'Expand' : 'Collapse';
+      }
+    });
+  }
+
+  // Room name input
+  const nameInput = card.querySelector(`#room-name-${index}`);
+  if (nameInput) {
+    nameInput.addEventListener('input', e => {
+      roomsData[index].name = e.target.value;
+      // Update card title
+      const title = card.querySelector('.room-card-title');
+      if (title) {
+        title.textContent = e.target.value || `Room ${index + 1}`;
+      }
+    });
+  }
+
+  // Room capacity select
+  const capacitySelect = card.querySelector(`#room-capacity-${index}`);
+  if (capacitySelect) {
+    capacitySelect.addEventListener('change', e => {
+      roomsData[index].capacity = e.target.value;
+    });
+  }
+
+  // Room description textarea
+  const descriptionTextarea = card.querySelector(`#room-description-${index}`);
+  if (descriptionTextarea) {
+    descriptionTextarea.addEventListener('input', e => {
+      roomsData[index].description = e.target.value;
+    });
+  }
+
+  // Photo upload area
+  const uploadArea = card.querySelector('.room-photo-upload-area');
+  if (uploadArea) {
+    setupRoomPhotoUpload(uploadArea, index);
+  }
+
+  // Render existing photos
+  renderRoomPhotos(index);
+}
+
+/**
+ * Setup photo upload for a specific room
+ */
+function setupRoomPhotoUpload(uploadArea, roomIndex) {
+  // Click to upload
+  uploadArea.addEventListener('click', e => {
+    e.preventDefault();
+    e.stopPropagation();
+    triggerRoomFileSelection(roomIndex);
+  });
+
+  // Drag and drop
+  uploadArea.addEventListener('dragover', e => {
+    e.preventDefault();
+    uploadArea.classList.add('drag-over');
+  });
+
+  uploadArea.addEventListener('dragleave', e => {
+    e.preventDefault();
+    uploadArea.classList.remove('drag-over');
+  });
+
+  uploadArea.addEventListener('drop', e => {
+    e.preventDefault();
+    uploadArea.classList.remove('drag-over');
+    handleRoomFiles(e.dataTransfer.files, roomIndex);
+  });
+}
+
+/**
+ * Trigger file selection for room photos
+ */
+function triggerRoomFileSelection(roomIndex) {
+  const input = document.createElement('input');
+  input.type = 'file';
+  input.accept = 'image/*';
+  input.multiple = true;
+  input.style.display = 'none';
+
+  input.addEventListener('change', e => {
+    if (e.target.files.length > 0) {
+      handleRoomFiles(e.target.files, roomIndex);
+    }
+    document.body.removeChild(input);
+  });
+
+  document.body.appendChild(input);
+  setTimeout(() => input.click(), 10);
+}
+
+/**
+ * Handle room photo files
+ */
+function handleRoomFiles(files, roomIndex) {
+  const room = roomsData[roomIndex];
+  if (!room) return;
+
+  for (const file of files) {
+    // Check if we've reached max photos for this room
+    if (room.photos.length >= 4) {
+      showRoomPhotoError(roomIndex, 'Maximum 4 photos allowed per room.');
+      break;
+    }
+
+    // Check file type
+    if (!file.type.startsWith('image/')) {
+      showRoomPhotoError(roomIndex, 'Please upload image files only (PNG, JPG, JPEG).');
+      continue;
+    }
+
+    // Check file size
+    const fileSizeMB = file.size / (1024 * 1024);
+    if (fileSizeMB > MAX_FILE_SIZE_MB) {
+      showRoomPhotoError(roomIndex, `File "${file.name}" exceeds ${MAX_FILE_SIZE_MB}MB limit.`);
+      continue;
+    }
+
+    // Add photo
+    const photoData = {
+      file: file,
+      preview: URL.createObjectURL(file),
+      id: Date.now() + Math.random(),
+    };
+
+    room.photos.push(photoData);
+  }
+
+  renderRoomPhotos(roomIndex);
+  hideRoomPhotoError(roomIndex);
+}
+
+/**
+ * Render photos for a specific room
+ */
+function renderRoomPhotos(roomIndex) {
+  const grid = document.getElementById(`room-photo-grid-${roomIndex}`);
+  const counter = document.getElementById(`room-photo-count-${roomIndex}`);
+  const uploadArea = document.querySelector(`.room-photo-upload-area[data-room-index="${roomIndex}"]`);
+
+  if (!grid || !roomsData[roomIndex]) return;
+
+  const room = roomsData[roomIndex];
+
+  grid.innerHTML = '';
+
+  room.photos.forEach(photo => {
+    const item = document.createElement('div');
+    item.className = 'room-photo-item';
+    item.innerHTML = `
+      <img src="${photo.preview}" alt="Room photo" />
+      <div class="photo-overlay">
+        <button 
+          type="button"
+          class="room-photo-remove"
+          data-photo-id="${photo.id}"
+          title="Remove photo"
+        >
+          ${getIcon('xMark', { width: 12, height: 12 })}
+        </button>
+      </div>
+    `;
+
+    // Add remove event listener
+    const removeBtn = item.querySelector('.room-photo-remove');
+    removeBtn.addEventListener('click', e => {
+      e.stopPropagation();
+      removeRoomPhoto(roomIndex, photo.id);
+    });
+
+    grid.appendChild(item);
+  });
+
+  // Update counter
+  if (counter) {
+    const count = room.photos.length;
+    const maxAllowed = 4;
+    counter.textContent = `${count} / ${maxAllowed} photos uploaded (max ${maxAllowed})`;
+    counter.style.color = count > 0 ? 'var(--primary-green)' : 'var(--text-gray)';
+  }
+
+  // Update room upload area appearance
+  updateRoomUploadAreaAppearance(roomIndex, uploadArea);
+}
+
+/**
+ * Update room upload area appearance based on uploaded photos
+ */
+function updateRoomUploadAreaAppearance(roomIndex, uploadArea) {
+  if (!uploadArea || !roomsData[roomIndex]) return;
+
+  const room = roomsData[roomIndex];
+  const maxPhotos = 4;
+
+  if (room.photos.length > 0 && room.photos.length < maxPhotos) {
+    // Show green add more button - compact style
+    uploadArea.className = 'room-photo-upload-area has-photos';
+    uploadArea.innerHTML = `
+      <div class="room-add-more-placeholder">
+        <span data-icon="plus" data-icon-width="18" data-icon-height="18" data-icon-stroke-width="2"></span>
+        <p>Add More Photos</p>
+        <p class="upload-hint">(${room.photos.length}/${maxPhotos})</p>
+      </div>
+    `;
+    // Re-inject icons for the new plus icon
+    injectIcons();
+  } else if (room.photos.length >= maxPhotos) {
+    // Hide upload area when max photos reached
+    uploadArea.style.display = 'none';
+  } else {
+    // Show original upload area
+    uploadArea.className = 'room-photo-upload-area';
+    uploadArea.style.display = 'flex';
+    uploadArea.innerHTML = `
+      <div class="room-photo-placeholder">
+        <span data-icon="photo" data-icon-width="32" data-icon-height="32"></span>
+        <p><strong>Click to upload</strong> or drag and drop</p>
+        <p class="upload-hint">PNG, JPG, JPEG up to 5MB each (max ${maxPhotos} photos)</p>
+      </div>
+    `;
+    // Re-inject icons
+    injectIcons();
+  }
+}
+
+/**
+ * Remove a room photo
+ */
+function removeRoomPhoto(roomIndex, photoId) {
+  const room = roomsData[roomIndex];
+  if (!room) return;
+
+  const photoIndex = room.photos.findIndex(p => p.id === photoId);
+  if (photoIndex === -1) return;
+
+  // Revoke object URL
+  URL.revokeObjectURL(room.photos[photoIndex].preview);
+  room.photos.splice(photoIndex, 1);
+
+  renderRoomPhotos(roomIndex);
+}
+
+/**
+ * Show room photo error
+ */
+function showRoomPhotoError(roomIndex, message) {
+  const errorEl = document.getElementById(`room-photo-error-${roomIndex}`);
+  if (errorEl) {
+    errorEl.textContent = message;
+    errorEl.classList.add('visible');
+    setTimeout(() => hideRoomPhotoError(roomIndex), 5000);
+  }
+}
+
+/**
+ * Hide room photo error
+ */
+function hideRoomPhotoError(roomIndex) {
+  const errorEl = document.getElementById(`room-photo-error-${roomIndex}`);
+  if (errorEl) {
+    errorEl.classList.remove('visible');
+  }
+}
+
+/**
+ * Clear all room cards
+ */
+function clearRoomCards() {
+  // Clean up photo URLs
+  roomsData.forEach(room => {
+    if (room.photos) {
+      room.photos.forEach(photo => {
+        if (photo.preview) {
+          URL.revokeObjectURL(photo.preview);
+        }
+      });
+    }
+  });
+
+  // Clear data
+  roomsData.length = 0;
+
+  // Clear container
+  const container = document.getElementById('rooms-container');
+  if (container) {
+    container.innerHTML = '';
+  }
+}
+
+/**
+ * Validate room configuration
+ */
+function validateRoomConfiguration() {
+  const roomsInput = document.getElementById('property-rooms');
+  const numRooms = parseInt(roomsInput?.value) || 0;
+
+  if (numRooms === 0) {
+    return { valid: true }; // No rooms to validate
+  }
+
+  // Check if room configuration section is visible
+  const roomConfigSection = document.getElementById('room-configuration-section');
+  if (!roomConfigSection || roomConfigSection.style.display === 'none') {
+    return { valid: false, message: 'Please configure room details.' };
+  }
+
+  // Validate each room
+  for (let i = 0; i < roomsData.length; i++) {
+    const room = roomsData[i];
+
+    // Check capacity
+    if (!room.capacity) {
+      return { valid: false, message: `Please select capacity for ${room.name}.` };
+    }
+
+    // Photos are optional - no minimum requirement
+  }
+
+  return { valid: true };
+}
+
+/**
  * Initialize map modal handlers
  */
 function initMapModal() {
@@ -804,14 +1446,14 @@ function closeMapModal() {
   // Reset temporary selection if location wasn't confirmed
   const latInput = document.getElementById('property-latitude');
   const lngInput = document.getElementById('property-longitude');
-  
+
   // If no location was previously confirmed (inputs are empty), reset the button text
   if (!latInput.value || !lngInput.value) {
     const locationBtnText = document.getElementById('location-btn-text');
     if (locationBtnText) {
       locationBtnText.textContent = 'Set Location';
     }
-    
+
     const coordinatesDisplay = document.getElementById('coordinates-display');
     if (coordinatesDisplay) {
       coordinatesDisplay.textContent = '';
@@ -921,7 +1563,9 @@ async function confirmLocation() {
   // Update coordinates display
   const coordinatesDisplay = document.getElementById('coordinates-display');
   if (coordinatesDisplay) {
-    coordinatesDisplay.textContent = `Lat: ${selectedLat.toFixed(6)}, Lng: ${selectedLng.toFixed(6)}`;
+    coordinatesDisplay.textContent = `Lat: ${selectedLat.toFixed(6)}, Lng: ${selectedLng.toFixed(
+      6
+    )}`;
     coordinatesDisplay.style.color = 'var(--primary-green)';
     coordinatesDisplay.style.fontWeight = '600';
   }
