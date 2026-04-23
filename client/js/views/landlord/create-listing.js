@@ -80,6 +80,41 @@ export function initCreateListing() {
 }
 
 /**
+ * Trigger file selection for photo upload
+ */
+function triggerFileSelection() {
+  const fileInput = document.getElementById('property-photos');
+
+  if (!fileInput) {
+    console.error('File input not found');
+    return;
+  }
+
+  // Create a new file input to ensure it works
+  const input = document.createElement('input');
+  input.type = 'file';
+  input.accept = 'image/*';
+  input.multiple = true;
+  input.style.display = 'none';
+
+  input.addEventListener('change', event => {
+    console.log('Files selected:', event.target.files.length);
+    if (event.target.files.length > 0) {
+      handleFiles(event.target.files);
+    }
+    // Clean up
+    document.body.removeChild(input);
+  });
+
+  document.body.appendChild(input);
+
+  // Use setTimeout to ensure the input is properly added to DOM
+  setTimeout(() => {
+    input.click();
+  }, 10);
+}
+
+/**
  * Initialize photo upload functionality
  */
 function initPhotoUpload() {
@@ -93,34 +128,6 @@ function initPhotoUpload() {
     console.error('Photo upload elements not found');
     return;
   }
-
-  // Function to trigger file selection
-  const triggerFileSelection = () => {
-    console.log('Triggering file selection...');
-
-    // Create a new file input to ensure it works
-    const input = document.createElement('input');
-    input.type = 'file';
-    input.accept = 'image/*';
-    input.multiple = true;
-    input.style.display = 'none';
-
-    input.addEventListener('change', event => {
-      console.log('Files selected:', event.target.files.length);
-      if (event.target.files.length > 0) {
-        handleFiles(event.target.files);
-      }
-      // Clean up
-      document.body.removeChild(input);
-    });
-
-    document.body.appendChild(input);
-
-    // Use setTimeout to ensure the input is properly added to DOM
-    setTimeout(() => {
-      input.click();
-    }, 10);
-  };
 
   // Click to upload on area (but not on button)
   uploadArea.addEventListener('click', e => {
@@ -302,7 +309,7 @@ function updateUploadAreaAppearance() {
     `;
     // Re-inject icons and re-attach event listeners
     injectIcons();
-    
+
     // Re-attach button event listener
     const uploadBtn = document.getElementById('upload-photos-btn');
     if (uploadBtn) {
@@ -1149,7 +1156,9 @@ function handleRoomFiles(files, roomIndex) {
 function renderRoomPhotos(roomIndex) {
   const grid = document.getElementById(`room-photo-grid-${roomIndex}`);
   const counter = document.getElementById(`room-photo-count-${roomIndex}`);
-  const uploadArea = document.querySelector(`.room-photo-upload-area[data-room-index="${roomIndex}"]`);
+  const uploadArea = document.querySelector(
+    `.room-photo-upload-area[data-room-index="${roomIndex}"]`
+  );
 
   if (!grid || !roomsData[roomIndex]) return;
 
