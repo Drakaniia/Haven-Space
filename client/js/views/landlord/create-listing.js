@@ -1,4 +1,5 @@
 import CONFIG from '../../config.js';
+import AIService from '../../services/AIService.js';
 import { getIcon } from '../../shared/icons.js';
 import { getAuthHeaders, getAuthHeadersOnly } from '../../shared/auth-headers.js';
 import { requireAuth, isTokenExpired, logout } from '../../shared/auth-check.js';
