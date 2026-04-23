@@ -28,32 +28,11 @@ try {
     // Get query parameters
     $limit = min(intval($_GET['limit'] ?? 6), 20); // Default to 6, max 20
 
-    // Query to get popular locations based on property count
-    // We'll extract city names from addresses and count properties
-    $query = "
-        SELECT 
-            CASE 
-                WHEN pl.city IS NOT NULL AND pl.city != '' THEN pl.city
-                ELSE SUBSTRING_INDEX(SUBSTRING_INDEX(p.address, ',', -2), ',', 1)
-            END as location_name,
-            COUNT(DISTINCT p.id) as property_count,
-            AVG(p.price) as avg_price,
-            MIN(p.price) as min_price,
-            MAX(p.price) as max_price
-        FROM properties p
-        LEFT JOIN landlord_profiles lp ON p.landlord_id = lp.user_id
-        LEFT JOIN property_locations pl ON lp.id = pl.landlord_id AND pl.is_primary = TRUE
-        WHERE p.deleted_at IS NULL 
-          AND p.listing_moderation_status = 'published'
-          AND p.status = 'available'
-        GROUP BY location_name
-        HAVING location_name IS NOT NULL 
-          AND location_name != ''
-          AND TRIM(location_name) != ''
-          AND property_count >= 1
-        ORDER BY property_count DESC, avg_price ASC
-        LIMIT ?
-    ";
+    // Simple hardcoded query for testing
+    $query = "SELECT address, COUNT(*) as property_count FROM properties WHERE deleted_at IS NULL GROUP BY address LIMIT ?";
+    
+    error_log("Executing query: " . $query);
+    error_log("Limit parameter: " . $limit);
 
     $stmt = $pdo->prepare($query);
     $stmt->execute([$limit]);
