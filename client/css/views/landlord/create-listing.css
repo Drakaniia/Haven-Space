@@ -6,6 +6,38 @@
   background-color: var(--bg-cream);
 }
 
+/* AI Description Generator */
+.description-with-ai {
+  position: relative;
+}
+
+.btn-ai-generate {
+  position: absolute;
+  right: 10px;
+  bottom: 10px;
+  background-color: #1e90ff;
+  color: white;
+  border: none;
+  padding: 8px 12px;
+  border-radius: 20px;
+  cursor: pointer;
+  font-size: 12px;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  transition: background-color 0.2s;
+  z-index: 10;
+}
+
+.btn-ai-generate:hover {
+  background-color: #006edc;
+}
+
+.btn-ai-generate:disabled {
+  background-color: #ccc;
+  cursor: not-allowed;
+}
+
 .create-listing-main {
   flex: 1;
   display: flex;
