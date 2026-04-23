@@ -129,31 +129,25 @@
                     name="propertyRooms"
                     placeholder="5"
                     min="1"
+                    max="20"
                     required
                   />
                 </div>
-                <div class="form-group">
-                  <label for="property-capacity">Capacity per Room *</label>
-                  <select id="property-capacity" name="propertyCapacity" required>
-                    <option value="">Select capacity</option>
-                    <option value="1">1 person</option>
-                    <option value="2">2 persons</option>
-                    <option value="3">3 persons</option>
-                    <option value="4">4+ persons</option>
-                    <option value="custom">Custom</option>
-                  </select>
-                </div>
               </div>
 
-              <div class="form-group" id="property-capacity-custom-group" style="display: none">
-                <label for="property-capacity-custom">Specify Capacity (number of persons) *</label>
-                <input
-                  type="number"
-                  id="property-capacity-custom"
-                  name="propertyCapacityCustom"
-                  placeholder="e.g. 5, 6, 8"
-                  min="1"
-                />
+              <!-- Dynamic Room Configuration Section -->
+              <div
+                id="room-configuration-section"
+                class="room-configuration-section"
+                style="display: none"
+              >
+                <h3 class="room-config-title">Room Configuration</h3>
+                <p class="room-config-description">
+                  Configure each room individually with specific details and photos.
+                </p>
+                <div id="rooms-container" class="rooms-container">
+                  <!-- Dynamic room cards will be generated here -->
+                </div>
               </div>
             </section>
 
