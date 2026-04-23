@@ -83,9 +83,21 @@ function fixPaths(htmlContent, depth) {
   // Fix JS paths (../../js/ -> ../js/ or js/)
   fixed = fixed.replace(/(src=["'])(\.\.\/)*(js\/[^"']+\.js["'])/g, `$1${prefix}$3`);
 
+  // Fix inline script imports (import { ... } from '../../../js/...' -> 'js/...')
+  fixed = fixed.replace(
+    /(import\s+[^"']*from\s+["'])(\.\.\/)*(js\/[^"']+\.js["'])/g,
+    `$1${prefix}$3`
+  );
+
   // Fix image paths (../../assets/ -> ../assets/ or assets/)
   fixed = fixed.replace(
     /(src=["'])(\.\.\/)*(assets\/[^"']+\.(png|jpg|svg|webp|jpeg|gif|ico|webm)["'])/g,
+    `$1${prefix}$3`
+  );
+
+  // Fix favicon and other asset links in href attributes
+  fixed = fixed.replace(
+    /(href=["'])(\.\.\/)*(assets\/[^"']+\.(png|jpg|svg|webp|jpeg|gif|ico|webm)["'])/g,
     `$1${prefix}$3`
   );
 
