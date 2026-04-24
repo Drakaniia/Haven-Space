@@ -1,0 +1,310 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="icon" type="image/svg+xml" href="../../../assets/favicon.svg" />
+    <title>Manage Rooms - Haven Space</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="../../../css/global.css" />
+    <link rel="stylesheet" href="../../../css/components/sidebar.css" />
+    <link rel="stylesheet" href="../../../css/components/navbar.css" />
+    <link rel="stylesheet" href="../../../css/views/landlord/landlord.css" />
+    <link rel="stylesheet" href="../../../css/views/landlord/landlord-listings.css" />
+    <link rel="stylesheet" href="../../../css/views/landlord/room-edit.css" />
+  </head>
+  <body data-view="landlord" data-dashboard-type="landlord">
+    <div class="room-edit-page">
+      <!-- Sidebar Container -->
+      <div id="sidebar-container"></div>
+
+      <!-- Main Content -->
+      <main class="room-edit-main">
+        <!-- Navbar Container -->
+        <div id="navbar-container"></div>
+
+        <!-- Content -->
+        <div class="room-edit-content">
+          <!-- Header -->
+          <div class="room-edit-header">
+            <div class="header-left">
+              <h1 id="page-title">Manage Rooms</h1>
+              <p id="page-description">Add, edit, and manage rooms for this property.</p>
+            </div>
+            <div class="header-actions">
+              <button type="button" class="btn-outline" onclick="history.back()">
+                <span
+                  data-icon="arrowLeft"
+                  data-icon-width="20"
+                  data-icon-height="20"
+                  data-icon-stroke-width="2"
+                ></span>
+                Back to Listings
+              </button>
+              <button type="button" class="btn-primary" id="add-room-btn">
+                <span
+                  data-icon="plus"
+                  data-icon-width="20"
+                  data-icon-height="20"
+                  data-icon-stroke-width="2"
+                ></span>
+                Add New Room
+              </button>
+            </div>
+          </div>
+
+          <!-- Property Info -->
+          <div class="property-info">
+            <h2>Property Information</h2>
+            <div class="property-details">
+              <div class="property-detail">
+                <span class="property-detail-label">Property Name</span>
+                <span class="property-detail-value" id="property-name">Loading...</span>
+              </div>
+              <div class="property-detail">
+                <span class="property-detail-label">Location</span>
+                <span class="property-detail-value" id="property-location">Loading...</span>
+              </div>
+              <div class="property-detail">
+                <span class="property-detail-label">Type</span>
+                <span class="property-detail-value" id="property-type">Loading...</span>
+              </div>
+              <div class="property-detail">
+                <span class="property-detail-label">Total Rooms</span>
+                <span class="property-detail-value" id="property-total-rooms">Loading...</span>
+              </div>
+              <div class="property-detail">
+                <span class="property-detail-label">Occupied Rooms</span>
+                <span class="property-detail-value" id="property-occupied-rooms">Loading...</span>
+              </div>
+              <div class="property-detail">
+                <span class="property-detail-label">Occupancy Rate</span>
+                <span class="property-detail-value" id="property-occupancy-rate">Loading...</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Rooms Section -->
+          <div class="rooms-section">
+            <div class="rooms-header">
+              <h2>Rooms Management</h2>
+            </div>
+
+            <!-- Search and Filter Bar -->
+            <div class="rooms-toolbar">
+              <div class="search-box">
+                <span
+                  data-icon="magnifier"
+                  data-icon-width="20"
+                  data-icon-height="20"
+                  data-icon-stroke-width="2"
+                ></span>
+                <input
+                  type="text"
+                  id="search-rooms"
+                  placeholder="Search by room number or tenant name..."
+                />
+              </div>
+              <div class="filter-group">
+                <select id="filter-status">
+                  <option value="all">All Status</option>
+                  <option value="available">Available</option>
+                  <option value="occupied">Occupied</option>
+                  <option value="maintenance">Maintenance</option>
+                </select>
+                <select id="sort-rooms">
+                  <option value="room-number">Room Number</option>
+                  <option value="price-high">Price (High-Low)</option>
+                  <option value="price-low">Price (Low-High)</option>
+                  <option value="status">Status</option>
+                </select>
+              </div>
+            </div>
+
+            <!-- Rooms Grid -->
+            <div id="rooms-grid" class="rooms-grid">
+              <!-- Room cards will be dynamically loaded here -->
+            </div>
+
+            <!-- Empty State -->
+            <div id="rooms-empty-state" class="empty-state" style="display: none">
+              <span
+                data-icon="home"
+                data-icon-width="64"
+                data-icon-height="64"
+                data-icon-stroke-width="2"
+              ></span>
+              <h3>No Rooms Found</h3>
+              <p>
+                Start by adding your first room to this property. You can manage pricing,
+                availability, and tenant information.
+              </p>
+              <button type="button" class="btn-primary" id="empty-state-add-room">
+                <span
+                  data-icon="plus"
+                  data-icon-width="20"
+                  data-icon-height="20"
+                  data-icon-stroke-width="2"
+                ></span>
+                Add Your First Room
+              </button>
+            </div>
+
+            <!-- Loading State -->
+            <div id="rooms-loading-state" class="loading-state">
+              <div class="spinner"></div>
+              <p>Loading rooms...</p>
+            </div>
+          </div>
+        </div>
+      </main>
+    </div>
+
+    <!-- Floating Add Room Button -->
+    <button type="button" class="floating-add-btn" id="floating-add-room" title="Add New Room">
+      <span
+        data-icon="plus"
+        data-icon-width="24"
+        data-icon-height="24"
+        data-icon-stroke-width="3"
+      ></span>
+    </button>
+
+    <!-- Room Edit/Add Modal -->
+    <div id="room-modal" class="room-modal">
+      <div class="modal-overlay"></div>
+      <div class="modal-content">
+        <div class="modal-header">
+          <h2 id="modal-title">Add New Room</h2>
+          <button type="button" class="modal-close" id="modal-close">
+            <span
+              data-icon="close"
+              data-icon-width="24"
+              data-icon-height="24"
+              data-icon-stroke-width="2"
+            ></span>
+          </button>
+        </div>
+        <div class="modal-body">
+          <form id="room-form">
+            <div class="form-row">
+              <div class="form-group">
+                <label for="room-number">Room Number *</label>
+                <input type="text" id="room-number" name="room_number" required />
+              </div>
+              <div class="form-group">
+                <label for="room-price">Monthly Rent (₱) *</label>
+                <input type="number" id="room-price" name="price" min="0" step="100" required />
+              </div>
+            </div>
+            <div class="form-row">
+              <div class="form-group">
+                <label for="room-size">Room Size (sqm)</label>
+                <input type="number" id="room-size" name="size" min="0" step="0.1" />
+              </div>
+              <div class="form-group">
+                <label for="room-capacity">Max Occupancy</label>
+                <input
+                  type="number"
+                  id="room-capacity"
+                  name="capacity"
+                  min="1"
+                  max="10"
+                  value="1"
+                />
+              </div>
+            </div>
+            <div class="form-group">
+              <label for="room-status">Status</label>
+              <select id="room-status" name="status">
+                <option value="available">Available</option>
+                <option value="occupied">Occupied</option>
+                <option value="maintenance">Under Maintenance</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label for="room-description">Description</label>
+              <textarea
+                id="room-description"
+                name="description"
+                placeholder="Room features, amenities, etc."
+              ></textarea>
+            </div>
+            <div id="tenant-section" style="display: none">
+              <h3>Current Tenant Information</h3>
+              <div class="form-row">
+                <div class="form-group">
+                  <label for="tenant-name">Tenant Name</label>
+                  <input type="text" id="tenant-name" name="tenant_name" />
+                </div>
+                <div class="form-group">
+                  <label for="tenant-contact">Contact Number</label>
+                  <input type="tel" id="tenant-contact" name="tenant_contact" />
+                </div>
+              </div>
+              <div class="form-row">
+                <div class="form-group">
+                  <label for="lease-start">Lease Start Date</label>
+                  <input type="date" id="lease-start" name="lease_start" />
+                </div>
+                <div class="form-group">
+                  <label for="lease-end">Lease End Date</label>
+                  <input type="date" id="lease-end" name="lease_end" />
+                </div>
+              </div>
+            </div>
+          </form>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn-outline" id="modal-cancel">Cancel</button>
+          <button type="button" class="btn-primary" id="modal-save">
+            <span
+              data-icon="check"
+              data-icon-width="20"
+              data-icon-height="20"
+              data-icon-stroke-width="2"
+            ></span>
+            Save Room
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Delete Confirmation Modal -->
+    <div id="delete-room-modal" class="room-modal">
+      <div class="modal-overlay"></div>
+      <div class="modal-content" style="max-width: 400px">
+        <div class="modal-header">
+          <h2>Delete Room</h2>
+          <button type="button" class="modal-close" id="delete-modal-close">
+            <span
+              data-icon="close"
+              data-icon-width="24"
+              data-icon-height="24"
+              data-icon-stroke-width="2"
+            ></span>
+          </button>
+        </div>
+        <div class="modal-body">
+          <p>Are you sure you want to delete <strong id="delete-room-name">Room 101</strong>?</p>
+          <p style="color: var(--color-text-secondary); font-size: 0.875rem">
+            This action cannot be undone.
+          </p>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn-outline" id="delete-cancel">Cancel</button>
+          <button type="button" class="btn-danger" id="delete-confirm">Delete Room</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ES Module Entry Point -->
+    <script type="module" src="../../../js/main.js"></script>
+    <script type="module" src="../../../js/views/landlord/room-edit.js"></script>
+  </body>
+</html>

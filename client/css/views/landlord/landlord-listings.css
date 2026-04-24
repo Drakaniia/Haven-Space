@@ -1,4 +1,5 @@
 /* Landlord Listings - Manage All Properties Page Styles */
+/* Following Haven Space Design System - DESIGN.md */
 
 .landlord-listings-page {
   display: flex;
@@ -8,15 +9,15 @@
 
 .landlord-listings-main {
   flex: 1;
-  margin-left: 280px;
+  margin-left: 280px; /* var(--sidebar-width) */
   display: flex;
   flex-direction: column;
   min-height: 100vh;
-  transition: margin-left 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: margin-left var(--duration-slow) var(--ease-standard);
 }
 
 .landlord-listings-main.sidebar-collapsed {
-  margin-left: 72px;
+  margin-left: 72px; /* var(--sidebar-collapsed) */
 }
 
 .landlord-listings-content {
@@ -226,12 +227,58 @@
   position: relative;
   height: 180px;
   background-color: #f3f4f6;
+  cursor: pointer;
+  overflow: hidden;
+  border-radius: var(--radius-lg) var(--radius-lg) 0 0;
 }
 
 .property-card-image img {
   width: 100%;
   height: 100%;
   object-fit: cover;
+  transition: transform var(--duration-slow) var(--ease-standard);
+}
+
+.property-card-image::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: rgba(74, 124, 35, 0); /* var(--primary-green) with 0 opacity */
+  transition: background var(--duration-medium) var(--ease-standard);
+  z-index: 1;
+}
+
+.property-card-image:hover::before {
+  background: rgba(74, 124, 35, 0.18);
+}
+
+.property-card-image:hover img {
+  transform: scale(1.04);
+}
+
+.property-card-image-hint {
+  position: absolute;
+  bottom: 12px;
+  left: 50%;
+  transform: translateX(-50%) translateY(6px);
+  background: rgba(74, 124, 35, 0.92); /* var(--primary-green) with transparency */
+  color: var(--white);
+  font-size: 0.75rem;
+  font-weight: 600;
+  padding: 0.3rem 0.85rem;
+  border-radius: var(--radius-pill);
+  white-space: nowrap;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity var(--duration-medium) var(--ease-standard), 
+              transform var(--duration-medium) var(--ease-standard);
+  z-index: 2;
+  letter-spacing: 0.02em;
+}
+
+.property-card-image:hover .property-card-image-hint {
+  opacity: 1;
+  transform: translateX(-50%) translateY(0);
 }
 
 .property-card-status {
@@ -239,7 +286,7 @@
   top: 12px;
   left: 12px;
   padding: 0.25rem 0.75rem;
-  border-radius: 9999px;
+  border-radius: var(--radius-pill);
   font-size: 0.75rem;
   font-weight: 600;
   text-transform: uppercase;
@@ -271,7 +318,7 @@
   padding: 0.25rem 0.5rem;
   background: rgba(0, 0, 0, 0.6);
   color: var(--white);
-  border-radius: 6px;
+  border-radius: var(--radius-sm);
   font-size: 0.75rem;
 }
 
