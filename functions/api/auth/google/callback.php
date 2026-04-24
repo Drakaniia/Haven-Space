@@ -11,8 +11,13 @@
  * - Redirects to appropriate dashboard
  */
 
-require_once __DIR__ . '/../../cors.php';
-require_once __DIR__ . '/../../../src/Core/bootstrap.php';
+// Check if we're being included from main.php
+if (!defined('APPWRITE_FUNCTION_CONTEXT')) {
+    // Standalone execution - set up the context
+    define('APPWRITE_FUNCTION_CONTEXT', true);
+    require_once __DIR__ . '/../../cors.php';
+    require_once __DIR__ . '/../../../src/Core/bootstrap.php';
+}
 
 use App\Core\Auth\GoogleOAuth;
 use App\Core\Auth\JWT;
@@ -446,6 +451,8 @@ try {
         'last_name' => $lastName,
         'email' => $email,
         'role' => $userRole,
+        'access_token' => $jwtAccessToken,
+        'refresh_token' => $jwtRefreshToken,
     ];
     
     // Add boarder status if available
@@ -465,8 +472,22 @@ try {
     error_log('Google OAuth - Redirect path: ' . $redirectPath);
     error_log('Google OAuth - Final redirect URL: ' . $finalRedirectUrl);
     
-    header('Location: ' . $finalRedirectUrl);
-    exit;
+    if (defined('APPWRITE_FUNCTION_CONTEXT')) {
+        // In Appwrite context, set the result for the caller to use
+        $oauthResult = [
+            'success' => true,
+            'user' => $userData,
+            'tokens' => [
+                'access_token' => $jwtAccessToken,
+                'refresh_token' => $jwtRefreshToken,
+            ],
+            'redirect_url' => $finalRedirectUrl
+        ];
+    } else {
+        // Standalone execution - redirect
+        header('Location: ' . $finalRedirectUrl);
+        exit;
+    }
 
 } catch (\Exception $e) {
     error_log('Google OAuth callback error: ' . $e->getMessage());
@@ -477,8 +498,16 @@ try {
     unset($_SESSION['oauth_role_preference']);
     unset($_SESSION['pending_google_user']);
 
-    // Redirect to login with error
-    $errorMessage = urlencode('Google authentication failed: ' . $e->getMessage());
-    header('Location: ' . buildRedirectUrl($baseUrl, '/views/public/auth/login.html?error=' . $errorMessage));
-    exit;
+    if (defined('APPWRITE_FUNCTION_CONTEXT')) {
+        // In Appwrite context, set error result
+        $oauthResult = [
+            'success' => false,
+            'error' => 'Google authentication failed: ' . $e->getMessage()
+        ];
+    } else {
+        // Standalone execution - redirect to login with error
+        $errorMessage = urlencode('Google authentication failed: ' . $e->getMessage());
+        header('Location: ' . buildRedirectUrl($baseUrl, '/views/public/auth/login.html?error=' . $errorMessage));
+        exit;
+    }
 }
