@@ -1,4 +1,0 @@
-- generic [ref=e3]:
-  - generic [ref=e5]: Error 400
-  - 'heading "Invalid `provider` param: Value must be one of (amazon, apple, auth0, authentik, autodesk, bitbucket, bitly, box, dailymotion, discord, disqus, dropbox, etsy, facebook, figma, github, gitlab, google, linkedin, microsoft, notion, oidc, okta, paypal, paypalSandbox, podio, salesforce, slack, spotify, stripe, tradeshift, tradeshiftBox, twitch, wordpress, x, yahoo, yammer, yandex, zoho, zoom, mock, mock-unverified, githubImagine, googleImagine)" [level=1] [ref=e6]'
-  - generic [ref=e8]: general_argument_invalid
