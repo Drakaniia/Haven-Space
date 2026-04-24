@@ -37,7 +37,7 @@ try {
 
 function handleGet($pdo) {
     // Fetch all settings
-    $stmt = $pdo->query("SELECT setting_key, setting_value FROM settings");
+    $stmt = $pdo->query("SELECT setting_key, setting_value FROM platform_settings");
     $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
     
     // Convert to key-value array
@@ -81,7 +81,7 @@ function handlePatch($pdo) {
 
         // Upsert setting
         $stmt = $pdo->prepare("
-            INSERT INTO settings (setting_key, setting_value, updated_at)
+            INSERT INTO platform_settings (setting_key, setting_value, updated_at)
             VALUES (?, ?, NOW())
             ON DUPLICATE KEY UPDATE setting_value = VALUES(setting_value), updated_at = NOW()
         ");

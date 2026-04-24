@@ -29,21 +29,21 @@ try {
     $stmt = $pdo->query("
         SELECT
             COUNT(*) as total,
-            COALESCE(SUM(CASE WHEN role = 'boarder' THEN 1 ELSE 0 END), 0) as boarder,
-            COALESCE(SUM(CASE WHEN role = 'landlord' THEN 1 ELSE 0 END), 0) as landlord,
-            COALESCE(SUM(CASE WHEN role = 'admin' THEN 1 ELSE 0 END), 0) as admin
-        FROM users
-        WHERE deleted_at IS NULL
+            COALESCE(SUM(CASE WHEN u.role_id = 1 THEN 1 ELSE 0 END), 0) as boarder,
+            COALESCE(SUM(CASE WHEN u.role_id = 2 THEN 1 ELSE 0 END), 0) as landlord,
+            COALESCE(SUM(CASE WHEN u.role_id = 3 THEN 1 ELSE 0 END), 0) as admin
+        FROM users u
+        WHERE u.deleted_at IS NULL
     ");
     $userCounts = $stmt->fetch(PDO::FETCH_ASSOC);
     
     // Get landlord verification counts
     $stmt = $pdo->query("
         SELECT COUNT(*) as pending
-        FROM users
-        WHERE role = 'landlord' 
-            AND is_verified = 0 
-            AND deleted_at IS NULL
+        FROM users u
+        WHERE u.role_id = 2 
+            AND u.is_verified = 0 
+            AND u.deleted_at IS NULL
     ");
     $landlordsPending = $stmt->fetch(PDO::FETCH_ASSOC)['pending'];
     

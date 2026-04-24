@@ -685,9 +685,49 @@ function attachChipListeners() {
 }
 
 /**
+ * Handle Google OAuth redirect with user data in hash fragment
+ */
+function handleGoogleOAuthRedirect() {
+  try {
+    const hash = window.location.hash;
+    if (hash && hash.startsWith('#auth=')) {
+      const authData = hash.substring(6); // Remove '#auth='
+      const decodedData = decodeURIComponent(authData);
+      const userData = JSON.parse(decodedData);
+
+      // Store user data in localStorage
+      localStorage.setItem('user', JSON.stringify(userData));
+
+      // Also store a token if not already present (for compatibility)
+      if (!localStorage.getItem('token')) {
+        localStorage.setItem('token', 'google-oauth-token');
+      }
+
+      // Clean up the hash from URL
+      window.history.replaceState(
+        {},
+        document.title,
+        window.location.pathname + window.location.search
+      );
+
+      console.log('Google OAuth user data stored in localStorage:', userData);
+
+      return true; // Indicates Google OAuth redirect was handled
+    }
+  } catch (error) {
+    console.error('Error handling Google OAuth redirect:', error);
+  }
+
+  return false; // No Google OAuth redirect handled
+}
+
+/**
  * Initialize all enhanced features
  */
 export function initFindARoomEnhanced() {
+  // Handle Google OAuth redirect first
+  const isGoogleOAuthRedirect = handleGoogleOAuthRedirect();
+
   if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', setupEnhancedFeatures);
   } else {
@@ -1188,16 +1228,16 @@ function initProfileDropdown() {
       try {
         // Import logout function from auth-check.js
         const { logout } = await import('../../shared/auth-check.js');
-        
+
         // Call the proper logout function which handles Appwrite session deletion
         await logout();
       } catch (error) {
         console.error('Logout failed:', error);
-        
+
         // Fallback: clear local storage and redirect manually
         localStorage.removeItem('token');
         localStorage.removeItem('user');
-        
+
         // Store logout message in sessionStorage to display after redirect
         sessionStorage.setItem('logoutToast', 'You have successfully logged out');
         sessionStorage.setItem('logoutToastType', 'success');
@@ -1208,8 +1248,6 @@ function initProfileDropdown() {
           : '/views/';
         window.location.href = `${basePath}public/index.html`;
       }
-    });
-  }
     });
   }
 

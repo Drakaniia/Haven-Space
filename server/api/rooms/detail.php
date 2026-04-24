@@ -38,16 +38,17 @@ try {
             p.id,
             p.title,
             p.description,
-            p.address,
+            a.address_line_1 as address,
+            a.latitude,
+            a.longitude,
             p.price,
-            p.latitude,
-            p.longitude,
             p.listing_moderation_status,
             p.created_at,
             p.landlord_id,
             u.first_name as landlord_first_name,
             u.last_name as landlord_last_name
         FROM properties p
+        LEFT JOIN addresses a ON p.address_id = a.id
         LEFT JOIN users u ON p.landlord_id = u.id
         WHERE p.id = ? 
           AND p.deleted_at IS NULL 
@@ -77,9 +78,10 @@ try {
     // Try to get amenities from property_amenities table
     try {
         $amenityStmt = $pdo->prepare("
-            SELECT amenity_name 
-            FROM property_amenities 
-            WHERE property_id = ?
+            SELECT a.amenity_name 
+            FROM property_amenities pa
+            JOIN amenities a ON pa.amenity_id = a.id
+            WHERE pa.property_id = ?
         ");
         $amenityStmt->execute([$propertyId]);
         $amenityRows = $amenityStmt->fetchAll(PDO::FETCH_ASSOC);

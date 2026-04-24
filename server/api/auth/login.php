@@ -81,7 +81,7 @@ try {
     $config = require __DIR__ . '/../../config/app.php';
 
     $stmt = $pdo->prepare('
-        SELECT u.id, u.first_name, u.last_name, u.email, u.password_hash, 
+        SELECT u.id, u.first_name, u.last_name, u.email, u.password_hash, u.google_id,
                ur.role_name as role, u.is_verified, acs.status_name as account_status
         FROM users u
         JOIN user_roles ur ON u.role_id = ur.id
@@ -91,60 +91,75 @@ try {
     $stmt->execute([$email]);
     $user = $stmt->fetch();
 
-    if ($user && password_verify($password, $user['password_hash'])) {
-        $accountStatus = $user['account_status'] ?? 'active';
-        // Allow 'active' and 'pending_verification' (landlords waiting for verification)
-        if (!in_array($accountStatus, ['active', 'pending_verification'])) {
+    if ($user) {
+        // Check if user registered with Google OAuth (no password set)
+        if (empty($user['password_hash']) && !empty($user['google_id'])) {
             RateLimiter::registerFailure($ip);
-            http_response_code(403);
-            echo json_encode(['error' => 'This account is suspended or banned. Contact support if you believe this is a mistake.']);
+            http_response_code(401);
+            echo json_encode(['error' => 'This account was registered with Google. Please use Google login.']);
             exit;
         }
+        
+        if (password_verify($password, $user['password_hash'])) {
+            $accountStatus = $user['account_status'] ?? 'active';
+            // Allow 'active' and 'pending_verification' (landlords waiting for verification)
+            if (!in_array($accountStatus, ['active', 'pending_verification'])) {
+                RateLimiter::registerFailure($ip);
+                http_response_code(403);
+                echo json_encode(['error' => 'This account is suspended or banned. Contact support if you believe this is a mistake.']);
+                exit;
+            }
 
-        RateLimiter::reset($ip);
+            RateLimiter::reset($ip);
 
-        $payload = [
-            'user_id' => $user['id'],
-            'first_name' => $user['first_name'],
-            'last_name' => $user['last_name'],
-            'email' => $user['email'],
-            'role' => $user['role'],
-            'is_verified' => (bool) $user['is_verified'],
-            'account_status' => $accountStatus,
-        ];
+            $payload = [
+                'user_id' => $user['id'],
+                'first_name' => $user['first_name'],
+                'last_name' => $user['last_name'],
+                'email' => $user['email'],
+                'role' => $user['role'],
+                'is_verified' => (bool) $user['is_verified'],
+                'account_status' => $accountStatus,
+                'verification_status' => $user['verification_status'] ?? null,
+            ];
 
-        $accessToken = JWT::generate($payload, $config['jwt_expiration']);
-        $refreshToken = JWT::generate($payload, $config['refresh_token_expiration']);
+            $accessToken = JWT::generate($payload, $config['jwt_expiration']);
+            $refreshToken = JWT::generate($payload, $config['refresh_token_expiration']);
 
-        // Set authentication cookies
-        JWT::setAuthCookies($accessToken, $refreshToken, $config);
+            // Set authentication cookies
+            JWT::setAuthCookies($accessToken, $refreshToken, $config);
 
-        // Determine boarder status if user is a boarder
-        $boarderStatus = null;
-        if ($user['role'] === 'boarder') {
-            $boarderStatus = determineBoarderStatus($pdo, $user['id']);
+            // Determine boarder status if user is a boarder
+            $boarderStatus = null;
+            if ($user['role'] === 'boarder') {
+                $boarderStatus = determineBoarderStatus($pdo, $user['id']);
+            }
+
+            $userResponse = [
+                'id' => $user['id'],
+                'first_name' => $user['first_name'],
+                'last_name' => $user['last_name'],
+                'email' => $user['email'],
+                'role' => $user['role'],
+                'is_verified' => (bool) $user['is_verified'],
+                'account_status' => $accountStatus,
+            ];
+
+            // Add boarder status if applicable
+            if ($boarderStatus !== null) {
+                $userResponse['boarder_status'] = $boarderStatus;
+            }
+
+            echo json_encode([
+                'success' => true,
+                'access_token' => $accessToken,
+                'user' => $userResponse
+            ]);
+        } else {
+            RateLimiter::registerFailure($ip);
+            http_response_code(401);
+            echo json_encode(['error' => 'Invalid email or password']);
         }
-
-        $userResponse = [
-            'id' => $user['id'],
-            'first_name' => $user['first_name'],
-            'last_name' => $user['last_name'],
-            'email' => $user['email'],
-            'role' => $user['role'],
-            'is_verified' => (bool) $user['is_verified'],
-            'account_status' => $accountStatus,
-        ];
-
-        // Add boarder status if applicable
-        if ($boarderStatus !== null) {
-            $userResponse['boarder_status'] = $boarderStatus;
-        }
-
-        echo json_encode([
-            'success' => true,
-            'access_token' => $accessToken,
-            'user' => $userResponse
-        ]);
     } else {
         RateLimiter::registerFailure($ip);
         http_response_code(401);

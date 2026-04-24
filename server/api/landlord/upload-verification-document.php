@@ -87,7 +87,7 @@ $pdo = Connection::getInstance()->getPdo();
 
 try {
     // Create upload directory if it doesn't exist
-    $uploadDir = __DIR__ . '/../../uploads/verification-documents/' . $user['id'];
+    $uploadDir = __DIR__ . '/../../uploads/verification-documents/' . $user['user_id'];
     if (!is_dir($uploadDir)) {
         mkdir($uploadDir, 0755, true);
     }
@@ -109,9 +109,9 @@ try {
         VALUES (?, ?, ?, ?, ?, ?, ?)
     ');
     
-    $fileUrl = '/uploads/verification-documents/' . $user['id'] . '/' . $fileName;
+    $fileUrl = '/uploads/verification-documents/' . $user['user_id'] . '/' . $fileName;
     $stmt->execute([
-        $user['id'],
+        $user['user_id'],
         $documentType,
         $fileUrl,
         $file['name'],
@@ -128,7 +128,7 @@ try {
         FROM landlord_verification_documents 
         WHERE user_id = ? AND document_type IN (?, ?, ?)
     ');
-    $stmt->execute([$user['id'], 'government_id_front', 'government_id_back', 'selfie_with_id']);
+    $stmt->execute([$user['user_id'], 'government_id_front', 'government_id_back', 'selfie_with_id']);
     $result = $stmt->fetch(PDO::FETCH_ASSOC);
     
     $requiredDocsUploaded = $result['uploaded_count'] >= 3;

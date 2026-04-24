@@ -14,14 +14,6 @@
     <link rel="stylesheet" href="../../css/global.css" />
     <link rel="stylesheet" href="../../css/views/public/public.css" />
     <link rel="stylesheet" href="../../css/components/logo-cloud.css" />
-
-    <!-- Leaflet CSS -->
-    <link
-      rel="stylesheet"
-      href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
-      integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY="
-      crossorigin=""
-    />
   </head>
   <body data-view="public">
     <!-- Navigation -->
@@ -535,121 +527,6 @@
         </div>
       </div>
     </footer>
-
-    <!-- Leaflet JS -->
-    <script
-      src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
-      integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo="
-      crossorigin=""
-    ></script>
-
-    <!-- Map Initialization Script -->
-    <script>
-      // Determine API base URL (mirrors config.js logic)
-      const FIND_ROOM_MAP_API_BASE = window.location.origin.includes('github.io')
-        ? 'https://havenspace.com/server/api'
-        : window.location.origin.includes('localhost') ||
-          window.location.origin.includes('127.0.0.1') ||
-          window.location.hostname === 'localhost'
-        ? 'http://localhost:8000'
-        : '/server/api';
-
-      // Initialize the map when page loads
-      document.addEventListener('DOMContentLoaded', () => {
-        // Default location (Malaybalay City, Mindanao, Philippines)
-        const defaultLocation = [8.1489, 125.125];
-
-        // Create map centered at default location
-        const map = L.map('find-room-map').setView(defaultLocation, 15);
-
-        // Add OpenStreetMap tiles
-        L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {}).addTo(map);
-
-        // Custom pin icon (matches maps.html)
-        const pinIcon = L.icon({
-          iconUrl: '../../assets/images/pin.png',
-          iconSize: [40, 50],
-          iconAnchor: [20, 50],
-          popupAnchor: [0, -50],
-        });
-
-        /**
-         * Fetch published properties from the backend and place pins on the map.
-         * Only properties with valid latitude/longitude are shown.
-         */
-        async function loadPropertyPins() {
-          try {
-            const response = await fetch(`${FIND_ROOM_MAP_API_BASE}/api/rooms/public?limit=100`);
-
-            if (!response.ok) {
-              throw new Error(`HTTP ${response.status}`);
-            }
-
-            const result = await response.json();
-            const properties = (result.data && result.data.properties) || [];
-
-            // Filter to only properties that have coordinates
-            const geoProperties = properties.filter(p => p.latitude && p.longitude);
-
-            geoProperties.forEach(property => {
-              const location = property.city || property.address || '';
-              const price = Number(property.price || 0);
-
-              const popupContent = `
-                <div style="padding: 8px; min-width: 180px;">
-                  <h3 style="margin: 0 0 6px 0; font-size: 14px; font-weight: 600; color: #1a1a1a;">${
-                    property.title
-                  }</h3>
-                  <p style="margin: 0 0 4px 0; font-size: 12px; color: #666;">📍 ${location}</p>
-                  <p style="margin: 6px 0 8px 0; font-size: 15px; font-weight: 700; color: #4a7c23;">₱${price.toLocaleString()}/month</p>
-                  <a href="find-a-room.html" style="display: block; text-align: center; padding: 6px; background: #4a7c23; color: #fff; border-radius: 6px; font-size: 12px; font-weight: 600; text-decoration: none;">View Listings</a>
-                </div>
-              `;
-
-              L.marker([parseFloat(property.latitude), parseFloat(property.longitude)], {
-                icon: pinIcon,
-              })
-                .addTo(map)
-                .bindPopup(popupContent, { maxWidth: 240 });
-            });
-
-            // If we got properties with coordinates, fit the map to show them all
-            if (geoProperties.length > 0) {
-              const bounds = L.latLngBounds(
-                geoProperties.map(p => [parseFloat(p.latitude), parseFloat(p.longitude)])
-              );
-              map.fitBounds(bounds, { padding: [40, 40], maxZoom: 15 });
-            }
-          } catch (error) {
-            console.warn('Find-room map: failed to load property pins', error);
-          }
-        }
-
-        loadPropertyPins();
-
-        // Zoom controls
-        document.getElementById('zoom-in')?.addEventListener('click', () => map.zoomIn());
-        document.getElementById('zoom-out')?.addEventListener('click', () => map.zoomOut());
-
-        // Locate me button
-        document.getElementById('locate-me')?.addEventListener('click', () => {
-          if (navigator.geolocation) {
-            navigator.geolocation.getCurrentPosition(
-              position => {
-                const userLocation = [position.coords.latitude, position.coords.longitude];
-                map.setView(userLocation, 16);
-                L.marker(userLocation).addTo(map).bindPopup('You are here').openPopup();
-              },
-              () => {
-                alert('Unable to get your location. Please enable location permissions.');
-              }
-            );
-          } else {
-            alert('Geolocation is not supported by your browser.');
-          }
-        });
-      });
-    </script>
 
     <!-- ES Module Entry Point -->
     <script type="module" src="../../js/main.js"></script>

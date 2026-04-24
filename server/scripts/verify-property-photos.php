@@ -21,14 +21,15 @@ try {
         SELECT 
             p.id,
             p.title,
-            p.address,
+            a.address_line_1 as address,
             COUNT(pp.id) as photo_count,
             GROUP_CONCAT(pp.photo_url ORDER BY pp.display_order) as photo_urls
         FROM properties p
+        LEFT JOIN addresses a ON p.address_id = a.id
         LEFT JOIN property_photos pp ON p.id = pp.property_id
         WHERE p.deleted_at IS NULL 
           AND p.listing_moderation_status = 'published'
-        GROUP BY p.id, p.title, p.address
+        GROUP BY p.id, p.title, a.address_line_1
         ORDER BY photo_count DESC
         LIMIT 10
     ";
@@ -73,7 +74,7 @@ try {
             p.id,
             p.title,
             p.description,
-            p.address,
+            a.address_line_1 as address,
             p.price,
             p.latitude,
             p.longitude,
@@ -83,6 +84,7 @@ try {
             u.first_name as landlord_first_name,
             u.last_name as landlord_last_name
         FROM properties p
+        LEFT JOIN addresses a ON p.address_id = a.id
         LEFT JOIN users u ON p.landlord_id = u.id
         WHERE p.deleted_at IS NULL 
           AND p.listing_moderation_status = 'published'
@@ -132,6 +134,7 @@ try {
     $duplicateCheck = "
         SELECT title, address, COUNT(*) as count
         FROM properties 
+        LEFT JOIN addresses a ON properties.address_id = a.id
         WHERE deleted_at IS NULL 
         GROUP BY title, address 
         HAVING COUNT(*) > 1
@@ -171,7 +174,7 @@ try {
     }
     
     echo "🎉 Verification completed!\n";
-    echo "If you're still seeing duplicate property cards, the issue is likely in the frontend.\n";
+    echo "If you're still seeing duplicate property cards, the issue is likely in the frontend.";
     
 } catch (Exception $e) {
     echo "❌ Error: " . $e->getMessage() . "\n";

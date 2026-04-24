@@ -106,19 +106,25 @@ function initializeRoleSelection() {
           },
           body: JSON.stringify({
             role: selectedRole,
+            token: urlParams.get('token') ?? undefined,
           }),
         });
 
         const result = await response.json();
 
         if (result.success) {
-          // Redirect to appropriate dashboard
-          if (selectedRole === 'admin') {
-            window.location.href = '/views/admin/index.html';
-          } else if (selectedRole === 'landlord') {
-            window.location.href = '/views/landlord/index.html';
+          // Use the redirect URL from the response if available (includes auth data)
+          if (result.redirect_url) {
+            window.location.href = result.redirect_url;
           } else {
-            window.location.href = '/views/boarder/index.html';
+            // Fallback to default redirects
+            if (selectedRole === 'admin') {
+              window.location.href = '/views/admin/index.html';
+            } else if (selectedRole === 'landlord') {
+              window.location.href = '/views/landlord/index.html';
+            } else {
+              window.location.href = '/views/boarder/index.html';
+            }
           }
         } else {
           throw new Error(result.message || 'Registration failed');

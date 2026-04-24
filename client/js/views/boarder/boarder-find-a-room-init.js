@@ -6,11 +6,51 @@
 import { initFindARoomEnhanced } from '../public/find-a-room.js';
 
 /**
+ * Handle Google OAuth redirect with user data in hash fragment
+ */
+function handleGoogleOAuthRedirect() {
+  try {
+    const hash = window.location.hash;
+    if (hash && hash.startsWith('#auth=')) {
+      const authData = hash.substring(6); // Remove '#auth='
+      const decodedData = decodeURIComponent(authData);
+      const userData = JSON.parse(decodedData);
+
+      // Store user data in localStorage
+      localStorage.setItem('user', JSON.stringify(userData));
+
+      // Also store a token if not already present (for compatibility)
+      if (!localStorage.getItem('token')) {
+        localStorage.setItem('token', 'google-oauth-token');
+      }
+
+      // Clean up the hash from URL
+      window.history.replaceState(
+        {},
+        document.title,
+        window.location.pathname + window.location.search
+      );
+
+      console.log('Google OAuth user data stored in localStorage:', userData);
+
+      return userData; // Return the user data for immediate use
+    }
+  } catch (error) {
+    console.error('Error handling Google OAuth redirect:', error);
+  }
+
+  return null; // No Google OAuth redirect handled
+}
+
+/**
  * Initialize boarder find-a-room with forced authentication
  */
 export function initBoarderFindARoomAuth() {
-  // Get user from localStorage
-  const user = JSON.parse(localStorage.getItem('user') || '{}');
+  // Handle Google OAuth redirect first
+  const googleUserData = handleGoogleOAuthRedirect();
+
+  // Get user from localStorage (either from Google OAuth or existing)
+  const user = googleUserData || JSON.parse(localStorage.getItem('user') || '{}');
 
   if (!user || !user.id) {
     // Redirect to login if not authenticated

@@ -18,8 +18,6 @@ We are using the Appwrite platform for:
 
 **Documentation**: When prompting or working on Appwrite-related deployment tasks, always use the Appwrite MCP (Multi-Platform Client) for documentation and reference.
 
-**Note**: Do not push the `.playwrite-mcp` directory to the repository.
-
 **AGENTS**: Use Appwrite MCP for all agent-related tasks and interactions.
 
 **Note**: After implementing a feature, create a `.php` test script to verify functionality. Delete the test script once the feature is confirmed working.
@@ -28,25 +26,11 @@ We are using the Appwrite platform for:
 
 **Debugging**: When debugging from localhost and encountering errors like "Internal Server Error", "Unauthorized", or any other type of error, ensure to also include fixes for the production environment.
 
-**Run Server**: To run the server, use the command `bun run server`.
+**Run Server**: Do not run `bun run server` as it is already running by default. If issues arise (e.g., `localhost:8000` not running), do not run the server. Instead, investigate potential issues or check the latest error logs during the server run.
 
 **Frontend**: The frontend is running on `http://localhost` (no port provided by XAMPP). The default development server is port 80 (Apache).
 
-## Codebase Structure
-
-### Client
-
-- **components**: Reusable UI components
-- **css**: Global and component-specific styles
-- **js**: JavaScript modules and utilities
-- **views**: Role-specific views (admin, landlord, boarder)
-- **index.html**: Main entry point
-
-### Server
-
-- **api**: API endpoints and route handlers
-- **src**: Core application logic and services
-- **database**: Database-related files
+**Server**: The server is already running on port 8000.
 
 ## dufault supeadmin credentials
 

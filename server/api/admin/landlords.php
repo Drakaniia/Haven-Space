@@ -56,7 +56,7 @@ function handleGet($pdo) {
                 lp.boarding_house_name
             FROM users u
             LEFT JOIN landlord_profiles lp ON u.id = lp.user_id
-            WHERE u.id = ? AND u.role = 'landlord' AND u.deleted_at IS NULL
+            WHERE u.id = ? AND u.role_id = (SELECT id FROM user_roles WHERE role_name = 'landlord') AND u.deleted_at IS NULL
             LIMIT 1
         ");
         $stmt->execute([$id]);
@@ -105,7 +105,7 @@ function handleGet($pdo) {
     $limit = intval($params['limit'] ?? 50);
     $offset = intval($params['offset'] ?? 0);
 
-    $where = "u.role = 'landlord' AND u.deleted_at IS NULL";
+    $where = "u.role_id = (SELECT id FROM user_roles WHERE role_name = 'landlord') AND u.deleted_at IS NULL";
     $params_arr = [];
 
     if ($status === 'pending') {
@@ -144,10 +144,10 @@ function handlePost($pdo, $adminId = null) {
     $comment = $input['comment'] ?? '';
 
     if ($action === 'approve') {
-        $stmt = $pdo->prepare("UPDATE users SET is_verified = 1 WHERE id = ? AND role = 'landlord'");
+        $stmt = $pdo->prepare("UPDATE users u SET u.is_verified = 1 WHERE u.id = ? AND u.role_id = (SELECT id FROM user_roles WHERE role_name = 'landlord')");
         $stmt->execute([$landlordId]);
     } elseif ($action === 'reject') {
-        $stmt = $pdo->prepare("UPDATE users SET is_verified = 0 WHERE id = ? AND role = 'landlord'");
+        $stmt = $pdo->prepare("UPDATE users u SET u.is_verified = 0 WHERE u.id = ? AND u.role_id = (SELECT id FROM user_roles WHERE role_name = 'landlord')");
         $stmt->execute([$landlordId]);
     } else {
         json_response(400, ['error' => 'Invalid action. Use approve or reject']);

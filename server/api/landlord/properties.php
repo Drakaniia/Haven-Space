@@ -40,24 +40,38 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     try {
         $pdo = Connection::getInstance()->getPdo();
 
-        // Insert new property
-        $stmt = $pdo->prepare("
-            INSERT INTO properties 
-            (landlord_id, title, description, address, latitude, longitude, price, status, listing_moderation_status)
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, 'pending_review')
+        // First insert address
+        $addressStmt = $pdo->prepare("
+            INSERT INTO addresses 
+            (address_line_1, city, province, country_id, latitude, longitude, created_at, updated_at)
+            VALUES (?, ?, ?, ?, ?, ?, NOW(), NOW())
         ");
 
         $status = isset($input['propertyStatus']) ? $input['propertyStatus'] : 'available';
         $latitude = isset($input['propertyLatitude']) && $input['propertyLatitude'] !== '' ? floatval($input['propertyLatitude']) : null;
         $longitude = isset($input['propertyLongitude']) && $input['propertyLongitude'] !== '' ? floatval($input['propertyLongitude']) : null;
+        $city = isset($input['propertyCity']) ? $input['propertyCity'] : 'Unknown';
+        $province = isset($input['propertyProvince']) ? $input['propertyProvince'] : 'Unknown';
+        $countryId = isset($input['propertyCountryId']) && $input['propertyCountryId'] !== '' ? intval($input['propertyCountryId']) : 1; // Default to Philippines
+
+        $addressStmt->execute([
+            $input['propertyAddress'],
+            $city,
+            $province,
+            $countryId,
+            $latitude,
+            $longitude
+        ]);
+        $addressId = $pdo->lastInsertId();
+
+        // Insert new property with address_id
+        $stmt = $pdo->prepare("\n            INSERT INTO properties \n            (landlord_id, title, description, address_id, price, status, listing_moderation_status)\n            VALUES (?, ?, ?, ?, ?, ?, 'pending_review')\n        ");
 
         $stmt->execute([
             $landlordId,
             $input['propertyName'],
             $input['propertyDescription'] ?? '',
-            $input['propertyAddress'],
-            $latitude,
-            $longitude,
+            $addressId,
             floatval($input['propertyPrice']),
             $status
         ]);
@@ -66,10 +80,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
         // Insert amenities if provided
         if (isset($input['amenities']) && is_array($input['amenities'])) {
-            $amenityStmt = $pdo->prepare("
-                INSERT INTO property_amenities (property_id, amenity_name)
-                VALUES (?, ?)
-            ");
+            $amenityStmt = $pdo->prepare("\n                INSERT INTO property_amenities (property_id, amenity_name)\n                VALUES (?, ?)\n            ");
 
             foreach ($input['amenities'] as $amenity) {
                 $amenityStmt->execute([$propertyId, $amenity]);
@@ -108,10 +119,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'DELETE') {
         $pdo = Connection::getInstance()->getPdo();
 
         // First, verify the property belongs to this landlord
-        $checkStmt = $pdo->prepare("
-            SELECT id, title FROM properties 
-            WHERE id = ? AND landlord_id = ? AND deleted_at IS NULL
-        ");
+        $checkStmt = $pdo->prepare("\n            SELECT id, title FROM properties \n            WHERE id = ? AND landlord_id = ? AND deleted_at IS NULL\n        ");
         $checkStmt->execute([$propertyId, $landlordId]);
         $property = $checkStmt->fetch(PDO::FETCH_ASSOC);
 
@@ -124,19 +132,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'DELETE') {
 
         try {
             // Soft delete the property (set deleted_at timestamp)
-            $deleteStmt = $pdo->prepare("
-                UPDATE properties 
-                SET deleted_at = NOW(), status = 'deleted'
-                WHERE id = ? AND landlord_id = ?
-            ");
+            $deleteStmt = $pdo->prepare("\n                UPDATE properties \n                SET deleted_at = NOW(), status = 'deleted'\n                WHERE id = ? AND landlord_id = ?\n            ");
             $deleteStmt->execute([$propertyId, $landlordId]);
 
             // Also soft delete associated rooms
-            $deleteRoomsStmt = $pdo->prepare("
-                UPDATE rooms 
-                SET deleted_at = NOW(), status = 'deleted'
-                WHERE property_id = ?
-            ");
+            $deleteRoomsStmt = $pdo->prepare("\n                UPDATE rooms \n                SET deleted_at = NOW(), status = 'deleted'\n                WHERE property_id = ?\n            ");
             $deleteRoomsStmt->execute([$propertyId]);
 
             // Commit the transaction
@@ -180,35 +180,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
 
         if ($propertyId) {
             // Get single property with full details
-            $stmt = $pdo->prepare("
-                SELECT 
-                    p.id,
-                    p.title,
-                    p.description,
-                    a.address_line_1 as address,
-                    a.latitude,
-                    a.longitude,
-                    p.price,
-                    p.status,
-                    p.listing_moderation_status,
-                    p.created_at,
-                    pd.city,
-                    pd.province,
-                    pd.property_type,
-                    pd.deposit,
-                    pd.capacity,
-                    pd.min_stay,
-                    pd.availability,
-                    pd.total_rooms as property_total_rooms,
-                    COUNT(DISTINCT r.id) as rooms_count,
-                    COALESCE(SUM(CASE WHEN r.status = 'occupied' THEN 1 ELSE 0 END), 0) as occupied_rooms
-                FROM properties p
-                LEFT JOIN addresses a ON p.address_id = a.id
-                LEFT JOIN property_details pd ON pd.property_id = p.id
-                LEFT JOIN rooms r ON p.id = r.property_id
-                WHERE p.id = ? AND p.landlord_id = ? AND p.deleted_at IS NULL
-                GROUP BY p.id, p.title, p.description, a.address_line_1, a.latitude, a.longitude, p.price, p.status, p.listing_moderation_status, p.created_at, pd.city, pd.province, pd.property_type, pd.deposit, pd.capacity, pd.min_stay, pd.availability, pd.total_rooms
-            ");
+            $stmt = $pdo->prepare("\n                SELECT \n                    p.id,\n                    p.title,\n                    p.description,\n                    a.address_line_1 as address,\n                    a.latitude,\n                    a.longitude,\n                    p.price,\n                    p.status,\n                    p.listing_moderation_status,\n                    p.created_at,\n                    pd.city,\n                    pd.province,\n                    pd.property_type,\n                    pd.deposit,\n                    pd.capacity,\n                    pd.min_stay,\n                    pd.availability,\n                    pd.total_rooms as property_total_rooms,\n                    COUNT(DISTINCT r.id) as rooms_count,\n                    COALESCE(SUM(CASE WHEN r.status = 'occupied' THEN 1 ELSE 0 END), 0) as occupied_rooms\n                FROM properties p\n                LEFT JOIN addresses a ON p.address_id = a.id\n                LEFT JOIN property_details pd ON pd.property_id = p.id\n                LEFT JOIN rooms r ON p.id = r.property_id\n                WHERE p.id = ? AND p.landlord_id = ? AND p.deleted_at IS NULL\n                GROUP BY p.id, p.title, p.description, a.address_line_1, a.latitude, a.longitude, p.price, p.status, p.listing_moderation_status, p.created_at, pd.city, pd.province, pd.property_type, pd.deposit, pd.capacity, pd.min_stay, pd.availability, pd.total_rooms\n            ");
             $stmt->execute([$propertyId, $landlordId]);
             $property = $stmt->fetch(PDO::FETCH_ASSOC);
 
@@ -217,7 +189,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
             }
 
             // Get amenities
-            $amenitiesStmt = $pdo->prepare("SELECT amenity_name FROM property_amenities WHERE property_id = ?");
+            $amenitiesStmt = $pdo->prepare("SELECT a.amenity_name FROM property_amenities pa JOIN amenities a ON pa.amenity_id = a.id WHERE pa.property_id = ?");
             $amenitiesStmt->execute([$propertyId]);
             $amenities = $amenitiesStmt->fetchAll(PDO::FETCH_COLUMN);
 
@@ -279,36 +251,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
             json_response(200, ['data' => $transformedProperty]);
         } else {
             // List all properties
-            $stmt = $pdo->prepare("
-                SELECT 
-                    p.id,
-                    p.title,
-                    p.description,
-                    a.address_line_1 as address,
-                    a.latitude,
-                    a.longitude,
-                    p.price,
-                    p.status,
-                    p.listing_moderation_status,
-                    p.created_at,
-                    pd.total_rooms as property_total_rooms,
-                    COUNT(DISTINCT r.id) as rooms_count,
-                    COALESCE(SUM(CASE WHEN r.status = 'occupied' THEN 1 ELSE 0 END), 0) as occupied_rooms,
-                    COALESCE(SUM(CASE WHEN r.status = 'occupied' THEN r.price ELSE 0 END), 0) as monthly_revenue,
-                    pt.type_name as property_type,
-                    pl.city,
-                    pl.province
-                FROM properties p
-                LEFT JOIN addresses a ON p.address_id = a.id
-                LEFT JOIN property_details pd ON pd.property_id = p.id
-                LEFT JOIN rooms r ON p.id = r.property_id
-                LEFT JOIN landlord_profiles lp ON lp.user_id = p.landlord_id
-                LEFT JOIN property_types pt ON pt.id = lp.property_type_id
-                LEFT JOIN property_locations pl ON pl.landlord_id = lp.id AND pl.is_primary = TRUE
-                WHERE p.landlord_id = ? AND p.deleted_at IS NULL
-                GROUP BY p.id, p.title, p.description, a.address_line_1, a.latitude, a.longitude, p.price, p.status, p.listing_moderation_status, p.created_at, pd.total_rooms, pt.type_name, pl.city, pl.province
-                ORDER BY p.created_at DESC
-            ");
+            $stmt = $pdo->prepare("\n                SELECT \n                    p.id,\n                    p.title,\n                    p.description,\n                    a.address_line_1 as address,\n                    a.latitude,\n                    a.longitude,\n                    p.price,\n                    p.status,\n                    p.listing_moderation_status,\n                    p.created_at,\n                    pd.total_rooms as property_total_rooms,\n                    COUNT(DISTINCT r.id) as rooms_count,\n                    COALESCE(SUM(CASE WHEN r.status = 'occupied' THEN 1 ELSE 0 END), 0) as occupied_rooms,\n                    COALESCE(SUM(CASE WHEN r.status = 'occupied' THEN r.price ELSE 0 END), 0) as monthly_revenue,\n                    pt.type_name as property_type,\n                    pl.city,\n                    pl.province\n                FROM properties p\n                LEFT JOIN addresses a ON p.address_id = a.id\n                LEFT JOIN property_details pd ON pd.property_id = p.id\n                LEFT JOIN rooms r ON p.id = r.property_id\n                LEFT JOIN landlord_profiles lp ON lp.user_id = p.landlord_id\n                LEFT JOIN property_types pt ON pt.id = lp.property_type_id\n                LEFT JOIN property_locations pl ON pl.landlord_id = lp.id AND pl.is_primary = TRUE\n                WHERE p.landlord_id = ? AND p.deleted_at IS NULL\n                GROUP BY p.id, p.title, p.description, a.address_line_1, a.latitude, a.longitude, p.price, p.status, p.listing_moderation_status, p.created_at, pd.total_rooms, pt.type_name, pl.city, pl.province\n                ORDER BY p.created_at DESC\n            ");
             $stmt->execute([$landlordId]);
             $properties = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
@@ -318,11 +261,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
             $photosMap = [];
             if (!empty($propertyIds)) {
                 $placeholders = implode(',', array_fill(0, count($propertyIds), '?'));
-                $amenitiesStmt = $pdo->prepare("
-                    SELECT property_id, amenity_name 
-                    FROM property_amenities 
-                    WHERE property_id IN ($placeholders)
-                ");
+                $amenitiesStmt = $pdo->prepare("\n                    SELECT pa.property_id, a.amenity_name \n                    FROM property_amenities pa\n                    JOIN amenities a ON pa.amenity_id = a.id\n                    WHERE pa.property_id IN ($placeholders)\n                ");
                 $amenitiesStmt->execute($propertyIds);
                 $amenitiesRows = $amenitiesStmt->fetchAll(PDO::FETCH_ASSOC);
                 foreach ($amenitiesRows as $row) {
@@ -334,12 +273,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
 
                 // Get photos for all properties
                 try {
-                    $photosStmt = $pdo->prepare("
-                        SELECT property_id, photo_url, is_cover
-                        FROM property_photos
-                        WHERE property_id IN ($placeholders)
-                        ORDER BY property_id, display_order ASC
-                    ");
+                    $photosStmt = $pdo->prepare("\n                        SELECT property_id, photo_url, is_cover\n                        FROM property_photos\n                        WHERE property_id IN ($placeholders)\n                        ORDER BY property_id, display_order ASC\n                    ");
                     $photosStmt->execute($propertyIds);
                     $photosRows = $photosStmt->fetchAll(PDO::FETCH_ASSOC);
                     foreach ($photosRows as $row) {

@@ -28,8 +28,15 @@ export async function checkLandlordVerification() {
     const data = await res.json();
     const user = data.user || data;
 
+    // For landlords, check verification_status field
+    // is_verified is for email verification, verification_status is for admin approval
+    const isVerified =
+      user.role === 'landlord'
+        ? user.verification_status === 'approved'
+        : Boolean(user.is_verified);
+
     return {
-      isVerified: Boolean(user.is_verified),
+      isVerified: isVerified,
       user,
     };
   } catch {

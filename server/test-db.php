@@ -17,9 +17,9 @@ try {
     
     // Test simple query
     echo "\nTesting simple query:\n";
-    $stmt = $pdo->query("SELECT id, address, price, status, listing_moderation_status FROM properties LIMIT 3");
+    $stmt = $pdo->query("SELECT p.id, a.address_line_1 as address, p.price, p.status, p.listing_moderation_status FROM properties p LEFT JOIN addresses a ON p.address_id = a.id LIMIT 3");
     $results = $stmt->fetchAll(PDO::FETCH_ASSOC);
-    
+
     foreach ($results as $row) {
         echo "ID: " . $row['id'] . ", Address: " . $row['address'] . ", Price: " . $row['price'] . ", Status: " . $row['status'] . ", Moderation: " . $row['listing_moderation_status'] . "\n";
     }

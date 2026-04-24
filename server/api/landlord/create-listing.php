@@ -66,23 +66,60 @@ try {
     // Begin transaction
     $pdo->beginTransaction();
 
-    // Insert property
+    // First, insert the address into the addresses table
+    $addressStmt = $pdo->prepare("
+        INSERT INTO addresses (
+            address_line_1,
+            city,
+            province,
+            country_id,
+            latitude,
+            longitude,
+            created_at,
+            updated_at
+        ) VALUES (
+            ?,
+            ?,
+            ?,
+            ?,
+            ?,
+            ?,
+            NOW(),
+            NOW()
+        )
+    ");
+
+    $propertyAddress = trim($input['propertyAddress']);
+    $propertyCity = trim($input['propertyCity']);
+    $propertyProvince = trim($input['propertyProvince']);
+    $countryId = !empty($input['propertyCountryId']) ? intval($input['propertyCountryId']) : 1; // Default to Philippines
+    $latitude = !empty($input['propertyLatitude']) ? floatval($input['propertyLatitude']) : null;
+    $longitude = !empty($input['propertyLongitude']) ? floatval($input['propertyLongitude']) : null;
+
+    $addressStmt->execute([
+        $propertyAddress,
+        $propertyCity,
+        $propertyProvince,
+        $countryId,
+        $latitude,
+        $longitude,
+    ]);
+
+    $addressId = $pdo->lastInsertId();
+
+    // Insert property with address_id
     $stmt = $pdo->prepare("
         INSERT INTO properties (
             landlord_id,
             title,
             description,
-            address,
-            latitude,
-            longitude,
+            address_id,
             price,
             status,
             listing_moderation_status,
             created_at,
             updated_at
         ) VALUES (
-            ?,
-            ?,
             ?,
             ?,
             ?,
@@ -97,18 +134,13 @@ try {
 
     $propertyName = trim($input['propertyName']);
     $propertyDescription = trim($input['propertyDescription']);
-    $propertyAddress = trim($input['propertyAddress']);
-    $latitude = !empty($input['propertyLatitude']) ? floatval($input['propertyLatitude']) : null;
-    $longitude = !empty($input['propertyLongitude']) ? floatval($input['propertyLongitude']) : null;
     $price = floatval($input['propertyPrice']);
 
     $stmt->execute([
         $landlordId,
         $propertyName,
         $propertyDescription,
-        $propertyAddress,
-        $latitude,
-        $longitude,
+        $addressId,
         $price,
     ]);
 
@@ -129,6 +161,7 @@ try {
                 created_at,
                 updated_at
             ) VALUES (
+                ?,
                 ?,
                 ?,
                 ?,

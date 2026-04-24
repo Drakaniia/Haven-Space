@@ -2,6 +2,7 @@ import { getIcon } from '../../shared/icons.js';
 import CONFIG from '../../config.js';
 import { getImageUrl, setImageWithFallback } from '../../shared/image-utils.js';
 import { showToast } from '../../shared/toast.js';
+import { initLandlordPermissions } from '../../shared/permissions.js';
 
 const amenityLabels = {
   wifi: 'WiFi',
@@ -592,5 +593,8 @@ document.addEventListener('DOMContentLoaded', () => {
   // Only run listings initialization if we're on the listings index page
   if (window.location.pathname.includes('/listings/index')) {
     initLandlordListings();
+
+    // Check landlord verification status and apply read-only restrictions if pending
+    initLandlordPermissions();
   }
 });

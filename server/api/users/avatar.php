@@ -26,7 +26,7 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     return;
 }
 
-uploadAvatar($user['id']);
+uploadAvatar($user['user_id']);
 
 /**
  * Upload user avatar

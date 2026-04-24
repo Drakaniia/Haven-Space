@@ -42,10 +42,10 @@ try {
             p.id,
             p.title,
             p.description,
-            p.address,
+            a.address_line_1 as address,
+            a.latitude,
+            a.longitude,
             p.price,
-            p.latitude,
-            p.longitude,
             p.listing_moderation_status,
             p.created_at,
             p.landlord_id,
@@ -53,6 +53,7 @@ try {
             u.last_name as landlord_last_name,
             lp.boarding_house_name as landlord_business_name
         FROM properties p
+        LEFT JOIN addresses a ON p.address_id = a.id
         LEFT JOIN users u ON p.landlord_id = u.id
         LEFT JOIN landlord_profiles lp ON lp.user_id = p.landlord_id
         WHERE p.id = ? 

@@ -52,12 +52,12 @@ function handleGet($pdo) {
     }
 
     if ($role) {
-        $where .= " AND u.role = ?";
+        $where .= " AND ur.role_name = ?";
         $params_arr[] = $role;
     }
 
     // Get total count
-    $stmt = $pdo->prepare("SELECT COUNT(*) as total FROM users u WHERE $where");
+    $stmt = $pdo->prepare("SELECT COUNT(*) as total FROM users u LEFT JOIN user_roles ur ON u.role_id = ur.id WHERE $where");
     $stmt->execute($params_arr);
     $total = intval($stmt->fetch(PDO::FETCH_ASSOC)['total']);
 
@@ -66,9 +66,10 @@ function handleGet($pdo) {
     $offset = intval($offset);
     $stmt = $pdo->prepare("
         SELECT
-            u.id, u.first_name, u.last_name, u.email, u.role,
+            u.id, u.first_name, u.last_name, u.email, ur.role_name as role,
             u.is_verified, u.account_status, u.created_at
         FROM users u
+        LEFT JOIN user_roles ur ON u.role_id = ur.id
         WHERE $where
         ORDER BY u.created_at DESC
         LIMIT $limit OFFSET $offset

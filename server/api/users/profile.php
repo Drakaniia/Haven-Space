@@ -26,11 +26,11 @@ $db = Database::getInstance();
 
 switch ($method) {
     case 'GET':
-        getUserProfile($db, $user['id']);
+        getUserProfile($db, $user['user_id']);
         break;
     case 'PUT':
     case 'PATCH':
-        updateUserProfile($db, $user['id']);
+        updateUserProfile($db, $user['user_id']);
         break;
     default:
         json_response(405, ['error' => 'Method not allowed']);

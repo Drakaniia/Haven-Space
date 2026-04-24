@@ -32,11 +32,12 @@ try {
             u.account_status,
             u.verification_status,
             u.verification_notes,
-            u.role
+            ur.role_name as role
         FROM users u
+        JOIN user_roles ur ON u.role_id = ur.id
         WHERE u.id = ? AND u.deleted_at IS NULL
     ');
-    $stmt->execute([$user['id']]);
+    $stmt->execute([$user['user_id']]);
     $userStatus = $stmt->fetch(PDO::FETCH_ASSOC);
 
     if (!$userStatus) {
@@ -66,7 +67,7 @@ try {
             FROM landlord_profiles lp
             WHERE lp.user_id = ?
         ');
-        $stmt->execute([$user['id']]);
+        $stmt->execute([$user['user_id']]);
         $profileStatus = $stmt->fetch(PDO::FETCH_ASSOC);
 
         if ($profileStatus) {
@@ -87,7 +88,7 @@ try {
             WHERE user_id = ?
             ORDER BY uploaded_at DESC
         ');
-        $stmt->execute([$user['id']]);
+        $stmt->execute([$user['user_id']]);
         $documents = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
         $response['documents'] = $documents;
@@ -123,7 +124,7 @@ try {
             FROM boarder_profiles
             WHERE user_id = ?
         ');
-        $stmt->execute([$user['id']]);
+        $stmt->execute([$user['user_id']]);
         $profileStatus = $stmt->fetch(PDO::FETCH_ASSOC);
 
         $response['profileCompleted'] = $profileStatus ? (bool)$profileStatus['profile_completed'] : false;

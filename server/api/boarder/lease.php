@@ -38,7 +38,7 @@ if ($method === 'GET') {
                 DATEDIFF(DATE_ADD(a.created_at, INTERVAL 12 MONTH), NOW()) as days_until_end,
                 p.id as property_id,
                 p.title as property_name,
-                p.address,
+                addr.address_line_1 as address,
                 r.id as room_id,
                 r.title as room_title,
                 r.room_number,
@@ -52,6 +52,7 @@ if ($method === 'GET') {
                 DATEDIFF(DATE_ADD(LAST_DAY(NOW()), INTERVAL 1 DAY), NOW()) as days_until_payment
             FROM applications a
             JOIN properties p ON a.property_id = p.id
+            JOIN addresses addr ON p.address_id = addr.id
             JOIN rooms r ON a.room_id = r.id
             WHERE a.boarder_id = ? 
             AND a.status = 'accepted' 

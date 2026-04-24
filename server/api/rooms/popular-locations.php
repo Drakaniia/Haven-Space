@@ -29,18 +29,26 @@ try {
     $limit = min(intval($_GET['limit'] ?? 6), 20); // Default to 6, max 20
 
     // Simple hardcoded query for testing
-    $query = "SELECT address, COUNT(*) as property_count FROM properties WHERE deleted_at IS NULL GROUP BY address LIMIT ?";
+    $query = "SELECT a.city, a.province, COUNT(*) as property_count FROM properties p JOIN addresses a ON p.address_id = a.id WHERE p.deleted_at IS NULL GROUP BY a.city, a.province ORDER BY property_count DESC LIMIT :limit";
     
     error_log("Executing query: " . $query);
     error_log("Limit parameter: " . $limit);
 
     $stmt = $pdo->prepare($query);
-    $stmt->execute([$limit]);
+    $stmt->bindValue(':limit', $limit, PDO::PARAM_INT);
+    $stmt->execute();
     $locations = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
     // Clean and format the locations
     $popularLocations = array_map(function($location) {
-        $locationName = trim($location['location_name']);
+        $city = trim($location['city'] ?? '');
+        $province = trim($location['province'] ?? '');
+        
+        // Create location name from city and province
+        $locationName = $city;
+        if (!empty($province) && $province !== $city) {
+            $locationName .= ', ' . $province;
+        }
         
         // Clean up common location name issues
         $locationName = preg_replace('/^(City of|Municipality of)\s+/i', '', $locationName);
@@ -66,10 +74,10 @@ try {
             'name' => $displayName,
             'search_value' => $searchValue,
             'property_count' => intval($location['property_count']),
-            'avg_price' => floatval($location['avg_price']),
-            'min_price' => floatval($location['min_price']),
-            'max_price' => floatval($location['max_price']),
-            'price_range' => '₱' . number_format($location['min_price']) . ' - ₱' . number_format($location['max_price'])
+            'avg_price' => 0, // We'll add price calculations later
+            'min_price' => 0,
+            'max_price' => 0,
+            'price_range' => 'Various prices'
         ];
     }, $locations);
 

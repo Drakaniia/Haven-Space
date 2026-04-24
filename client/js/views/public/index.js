@@ -157,6 +157,23 @@ function updateNavigationForAuthenticatedUser() {
   const initials = (user.first_name?.[0] || user.last_name?.[0] || 'U').toUpperCase();
 
   // Replace login/signup buttons with user avatar dropdown
+  // Determine dropdown content based on user role
+  const isBoarder = user.role === 'boarder';
+
+  const boarderMenuItems = isBoarder
+    ? `
+    <a href="../boarder/applications/index.html" class="nav-user-menu-item">
+      <span data-icon="documentText" data-icon-width="18" data-icon-height="18"></span>
+      My Applications
+    </a>
+    <a href="../boarder/payments/index.html" class="nav-user-menu-item">
+      <span data-icon="creditCard" data-icon-width="18" data-icon-height="18"></span>
+      Payments
+    </a>
+    <div class="nav-user-divider"></div>
+  `
+    : '';
+
   navActions.innerHTML = `
     <div class="nav-user-menu">
       <button class="nav-user-button" id="nav-user-btn" aria-label="User menu">
@@ -171,15 +188,7 @@ function updateNavigationForAuthenticatedUser() {
           <div class="nav-user-info-role">${user.role || 'Boarder'}</div>
         </div>
         <div class="nav-user-divider"></div>
-        <a href="../boarder/applications/index.html" class="nav-user-menu-item">
-          <span data-icon="documentText" data-icon-width="18" data-icon-height="18"></span>
-          My Applications
-        </a>
-        <a href="../boarder/payments/index.html" class="nav-user-menu-item">
-          <span data-icon="creditCard" data-icon-width="18" data-icon-height="18"></span>
-          Payments
-        </a>
-        <div class="nav-user-divider"></div>
+        ${boarderMenuItems}
         <button class="nav-user-menu-item nav-user-logout" id="nav-logout-btn">
           <span data-icon="arrowRightOnRectangle" data-icon-width="18" data-icon-height="18"></span>
           Logout
@@ -218,16 +227,16 @@ function updateNavigationForAuthenticatedUser() {
       try {
         // Import logout function from auth-check.js
         const { logout } = await import('../../shared/auth-check.js');
-        
+
         // Call the proper logout function which handles Appwrite session deletion
         await logout();
       } catch (error) {
         console.error('Logout failed:', error);
-        
+
         // Fallback: clear local storage and redirect manually
         localStorage.removeItem('token');
         localStorage.removeItem('user');
-        
+
         // Store logout message in sessionStorage to display after redirect
         sessionStorage.setItem('logoutToast', 'You have successfully logged out');
         sessionStorage.setItem('logoutToastType', 'success');

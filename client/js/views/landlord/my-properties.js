@@ -8,6 +8,7 @@ import { getIcon } from '../../shared/icons.js';
 import { getAuthHeaders } from '../../shared/state.js';
 import { getImageUrl, setImageWithFallback } from '../../shared/image-utils.js';
 import { initSidebar } from '../../components/sidebar.js';
+import { initLandlordPermissions } from '../../shared/permissions.js';
 import { initNavbar, updateNavbarNotifications } from '../../components/navbar.js';
 
 // Amenity display names
@@ -772,4 +773,9 @@ function filterAndSortProperties(searchQuery = '') {
 }
 
 // Initialize on page load
-document.addEventListener('DOMContentLoaded', initMyProperties);
+document.addEventListener('DOMContentLoaded', () => {
+  initMyProperties();
+
+  // Check landlord verification status and apply read-only restrictions if pending
+  initLandlordPermissions();
+});

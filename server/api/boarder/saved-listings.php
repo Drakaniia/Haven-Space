@@ -35,9 +35,9 @@ function getSavedListings(): void
                 p.id as property_id,
                 p.title as property_title,
                 p.description as property_description,
-                p.address,
-                p.latitude,
-                p.longitude,
+                a.address_line_1 as address,
+                a.latitude,
+                a.longitude,
                 p.price as property_price,
                 p.status as property_status,
                 r.id as room_id,
@@ -48,6 +48,7 @@ function getSavedListings(): void
                 u.email as landlord_email
             FROM saved_listings sl
             INNER JOIN properties p ON sl.property_id = p.id
+            INNER JOIN addresses a ON p.address_id = a.id
             INNER JOIN users u ON p.landlord_id = u.id
             LEFT JOIN rooms r ON sl.room_id = r.id
             WHERE sl.boarder_id = ? 
@@ -59,7 +60,7 @@ function getSavedListings(): void
         ";
         
         $stmt = $db->prepare($query);
-        $stmt->execute([$user['id']]);
+        $stmt->execute([$user['user_id']]);
         $savedListings = $stmt->fetchAll(PDO::FETCH_ASSOC);
         
         // Format the response
@@ -170,7 +171,7 @@ function saveProperty(): void
             WHERE boarder_id = ? AND property_id = ? AND deleted_at IS NULL
         ";
         $stmt = $db->prepare($checkQuery);
-        $stmt->execute([$user['id'], $propertyId]);
+        $stmt->execute([$user['user_id'], $propertyId]);
         $existing = $stmt->fetch(PDO::FETCH_ASSOC);
         
         if ($existing) {
@@ -184,7 +185,7 @@ function saveProperty(): void
             VALUES (?, ?, ?, NOW())
         ";
         $stmt = $db->prepare($insertQuery);
-        $stmt->execute([$user['id'], $propertyId, $roomId]);
+        $stmt->execute([$user['user_id'], $propertyId, $roomId]);
         
         $savedListingId = $db->lastInsertId();
         
@@ -235,7 +236,7 @@ function removeSavedProperty(): void
             WHERE boarder_id = ? AND property_id = ? AND deleted_at IS NULL
         ";
         $stmt = $db->prepare($checkQuery);
-        $stmt->execute([$user['id'], $propertyId]);
+        $stmt->execute([$user['user_id'], $propertyId]);
         $savedListing = $stmt->fetch(PDO::FETCH_ASSOC);
         
         if (!$savedListing) {
@@ -250,7 +251,7 @@ function removeSavedProperty(): void
             WHERE boarder_id = ? AND property_id = ? AND deleted_at IS NULL
         ";
         $stmt = $db->prepare($deleteQuery);
-        $stmt->execute([$user['id'], $propertyId]);
+        $stmt->execute([$user['user_id'], $propertyId]);
         
         json_response(200, [
             'success' => true,
@@ -292,7 +293,7 @@ function checkSavedStatus(): void
             WHERE boarder_id = ? AND property_id = ? AND deleted_at IS NULL
         ";
         $stmt = $db->prepare($checkQuery);
-        $stmt->execute([$user['id'], $propertyId]);
+        $stmt->execute([$user['user_id'], $propertyId]);
         $savedListing = $stmt->fetch(PDO::FETCH_ASSOC);
         
         json_response(200, [

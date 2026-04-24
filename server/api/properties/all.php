@@ -30,9 +30,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
                 p.id,
                 p.title as name,
                 p.description,
-                p.address,
-                p.latitude,
-                p.longitude,
+                a.address_line_1 as address,
+                a.latitude,
+                a.longitude,
                 p.price,
                 p.status,
                 p.listing_moderation_status,
@@ -48,6 +48,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
                 u.last_name as landlord_last_name,
                 lp.boarding_house_name as landlord_business_name
             FROM properties p
+            LEFT JOIN addresses a ON p.address_id = a.id
             LEFT JOIN property_details pd ON pd.property_id = p.id
             LEFT JOIN rooms r ON p.id = r.property_id AND r.deleted_at IS NULL
             LEFT JOIN users u ON u.id = p.landlord_id
@@ -55,9 +56,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
             WHERE p.deleted_at IS NULL 
                 AND p.status IN ('available', 'active')
                 AND p.listing_moderation_status = 'published'
-                AND p.latitude IS NOT NULL 
-                AND p.longitude IS NOT NULL
-            GROUP BY p.id, p.title, p.description, p.address, p.latitude, p.longitude, p.price, p.status, p.listing_moderation_status, p.created_at, p.landlord_id, pd.city, pd.province, pd.property_type, pd.total_rooms, u.first_name, u.last_name, lp.boarding_house_name
+                AND a.latitude IS NOT NULL 
+                AND a.longitude IS NOT NULL
+            GROUP BY p.id, p.title, p.description, a.address_line_1, a.latitude, a.longitude, p.price, p.status, p.listing_moderation_status, p.created_at, p.landlord_id, pd.city, pd.province, pd.property_type, pd.total_rooms, u.first_name, u.last_name, lp.boarding_house_name
             ORDER BY p.created_at DESC
         ");
         $stmt->execute();
@@ -73,9 +74,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
             
             // Get amenities
             $amenitiesStmt = $pdo->prepare("
-                SELECT property_id, amenity_name 
-                FROM property_amenities 
-                WHERE property_id IN ($placeholders)
+                SELECT pa.property_id, a.amenity_name 
+                FROM property_amenities pa
+                JOIN amenities a ON pa.amenity_id = a.id
+                WHERE pa.property_id IN ($placeholders)
             ");
             $amenitiesStmt->execute($propertyIds);
             $amenitiesRows = $amenitiesStmt->fetchAll(PDO::FETCH_ASSOC);

@@ -72,27 +72,36 @@ document.addEventListener('DOMContentLoaded', function () {
       // Create Appwrite session
       await account.createEmailPasswordSession(data.email, data.password);
 
-      // Fetch the authenticated user (includes labels for role)
-      const user = await account.get();
+      // Also authenticate with PHP backend to get a proper JWT for API calls
+      const phpLoginRes = await fetch(`${CONFIG.API_BASE_URL}/auth/login.php`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({ email: data.email, password: data.password }),
+      });
 
-      // Role is stored as the first label on the Appwrite user
-      // e.g. labels: ['boarder'] | ['landlord'] | ['admin']
-      const role = user.labels?.[0] ?? 'boarder';
+      if (!phpLoginRes.ok) {
+        const errData = await phpLoginRes.json().catch(() => ({}));
+        throw new Error(errData.error || 'Login failed. Please check your credentials.');
+      }
+
+      const phpData = await phpLoginRes.json();
+      const phpUser = phpData.user;
+      const role = phpUser.role ?? 'boarder';
 
       // Build a user object compatible with the rest of the app
       const userRecord = {
-        id: user.$id,
-        name: user.name,
-        email: user.email,
+        id: phpUser.id,
+        name: [phpUser.first_name, phpUser.last_name].filter(Boolean).join(' ') || phpUser.email,
+        email: phpUser.email,
         role,
-        boarder_status: user.prefs?.boarder_status ?? 'new',
+        boarder_status: phpUser.boarder_status ?? 'new',
       };
 
       // Persist to localStorage so auth-check.js / routing.js keep working
       localStorage.setItem('user', JSON.stringify(userRecord));
-      // Store the Appwrite session JWT so auth-headers.js can attach it
-      const session = await account.getSession('current');
-      localStorage.setItem('token', session.providerAccessToken || session.$id);
+      // Store the PHP JWT so auth-headers.js / me.php can authenticate
+      localStorage.setItem('token', phpData.access_token);
 
       // Redirect based on role
       const pathname = window.location.pathname;

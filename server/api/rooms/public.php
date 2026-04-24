@@ -39,10 +39,12 @@ try {
             p.id,
             p.title,
             p.description,
-            p.address,
+            a.address_line_1 as address,
+            a.city,
+            a.province,
             p.price,
-            p.latitude,
-            p.longitude,
+            a.latitude,
+            a.longitude,
             p.listing_moderation_status,
             p.created_at,
             p.landlord_id,
@@ -50,6 +52,7 @@ try {
             u.last_name as landlord_last_name
         FROM properties p
         LEFT JOIN users u ON p.landlord_id = u.id
+        LEFT JOIN addresses a ON p.address_id = a.id
         WHERE p.deleted_at IS NULL 
           AND p.listing_moderation_status = 'published'
     ";
@@ -57,7 +60,7 @@ try {
 
     // Apply search filter
     if (!empty($search)) {
-        $query .= " AND (p.title LIKE ? OR p.address LIKE ? OR p.description LIKE ?)";
+        $query .= " AND (p.title LIKE ? OR a.address_line_1 LIKE ? OR p.description LIKE ?)";
         $searchParam = "%{$search}%";
         $params[] = $searchParam;
         $params[] = $searchParam;
@@ -94,10 +97,12 @@ try {
             p.id,
             p.title,
             p.description,
-            p.address,
+            a.address_line_1 as address,
+            a.city,
+            a.province,
             p.price,
-            p.latitude,
-            p.longitude,
+            a.latitude,
+            a.longitude,
             p.listing_moderation_status,
             p.created_at,
             p.landlord_id,

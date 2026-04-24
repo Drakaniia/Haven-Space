@@ -77,11 +77,14 @@ if (empty($token) && $simulatedId) {
     $stmt = $pdo->prepare(
         'SELECT u.id, u.first_name, u.last_name, u.email, 
                 ur.role_name as role, u.is_verified, acs.status_name as account_status, 
-                f.file_url as avatar_url
+                f.file_url as avatar_url, vr.verification_status_id,
+                vs.status_name as verification_status
          FROM users u
          JOIN user_roles ur ON u.role_id = ur.id
          JOIN account_statuses acs ON u.account_status_id = acs.id
          LEFT JOIN files f ON u.avatar_file_id = f.id
+         LEFT JOIN verification_records vr ON vr.entity_type = "user" AND vr.entity_id = u.id
+         LEFT JOIN verification_statuses vs ON vr.verification_status_id = vs.id
          WHERE u.id = ? AND u.deleted_at IS NULL'
     );
     $stmt->execute([$userId]);
@@ -152,6 +155,7 @@ if ($userRow) {
         'is_verified' => (bool) $userRow['is_verified'],
         'account_status' => $userRow['account_status'] ?? 'active',
         'avatar_url' => $userRow['avatar_url'],
+        'verification_status' => $userRow['verification_status'] ?? null,
     ];
     
     // Add boarder status if user is a boarder

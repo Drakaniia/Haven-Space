@@ -120,12 +120,13 @@ class NotificationRepository
     {
         $sql = 'SELECT a.id as application_id, a.status, a.created_at as applied_at,
                        r.title as room_title, r.price as room_price,
-                       p.id as property_id, p.title as property_name, p.address,
-                       p.latitude, p.longitude,
+                       p.id as property_id, p.title as property_name, a.address_line_1 as address,
+                       a.latitude, a.longitude,
                        u.first_name as landlord_first_name, u.last_name as landlord_last_name
                 FROM applications a
                 JOIN rooms r ON a.room_id = r.id
                 JOIN properties p ON a.property_id = p.id
+                JOIN addresses a ON p.address_id = a.id
                 JOIN users u ON a.landlord_id = u.id
                 WHERE a.boarder_id = ? AND a.status = ? AND a.deleted_at IS NULL
                 ORDER BY a.created_at DESC';
