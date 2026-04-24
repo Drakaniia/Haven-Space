@@ -3,8 +3,8 @@
 require_once __DIR__ . '/Env.php';
 \App\Core\Env::load(__DIR__ . '/../../.env');
 
-// Configure session before starting
-if (session_status() === PHP_SESSION_NONE) {
+// Configure session before starting (skip in Appwrite function context)
+if (!defined('APPWRITE_FUNCTION_CONTEXT') && session_status() === PHP_SESSION_NONE) {
     // Session cookie should be available across all paths
     ini_set('session.cookie_path', '/');
     ini_set('session.cookie_httponly', '1');
