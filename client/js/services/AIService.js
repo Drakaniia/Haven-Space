@@ -6,6 +6,17 @@
 import CONFIG from '../config.js';
 
 class AIService {
+  static getStoredValue(key) {
+    const value = localStorage.getItem(key);
+    return value && value !== 'null' && value !== 'undefined' ? value : null;
+  }
+
+  static isAppwriteExecutionRequest() {
+    return (
+      CONFIG.API_BASE_URL.includes('/functions/') && CONFIG.API_BASE_URL.endsWith('/executions')
+    );
+  }
+
   static async parseJsonResponse(response) {
     const contentType = response.headers.get('content-type') || '';
     const rawText = await response.text();
@@ -32,38 +43,53 @@ class AIService {
    */
   static async executeFunction(path, method = 'GET', data = null) {
     try {
+      const token = AIService.getStoredValue('token');
+      const sessionId = AIService.getStoredValue('session_id');
+      const userId = AIService.getStoredValue('user_id');
+      const isAppwriteExecution = AIService.isAppwriteExecutionRequest();
       const headers = {
         'Content-Type': 'application/json',
-        'X-Appwrite-Project': CONFIG.APPWRITE.PROJECT_ID,
+        Accept: 'application/json',
       };
 
-      // Add auth headers if available
-      const token = localStorage.getItem('token');
-      const sessionId = localStorage.getItem('session_id');
-      const userId = localStorage.getItem('user_id');
+      if (isAppwriteExecution) {
+        headers['X-Appwrite-Project'] = CONFIG.APPWRITE.PROJECT_ID;
+      } else {
+        if (token) {
+          headers['Authorization'] = `Bearer ${token}`;
+        }
+        if (sessionId) {
+          headers['X-Session-Id'] = sessionId;
+        }
+        if (userId) {
+          headers['X-User-Id'] = userId;
+        }
+      }
 
-      if (token && token !== 'null' && token !== 'undefined') {
-        headers['Authorization'] = `Bearer ${token}`;
-      }
-      if (sessionId && sessionId !== 'null' && sessionId !== 'undefined') {
-        headers['X-Session-Id'] = sessionId;
-      }
-      if (userId && userId !== 'null' && userId !== 'undefined') {
-        headers['X-User-Id'] = userId;
-      }
-
-      // For Appwrite function execution, send data directly with path info
-      const requestBody = {
-        ...data,
-        path: path,
-        method: method,
+      const requestOptions = {
+        method,
+        headers,
       };
 
-      const response = await fetch(CONFIG.API_BASE_URL, {
-        method: 'POST',
-        headers: headers,
-        body: JSON.stringify(requestBody),
-      });
+      let requestUrl = `${CONFIG.API_BASE_URL}${path}`;
+
+      if (isAppwriteExecution) {
+        requestUrl = CONFIG.API_BASE_URL;
+        requestOptions.method = 'POST';
+        requestOptions.body = JSON.stringify({
+          ...(data || {}),
+          path,
+          method,
+        });
+      } else {
+        requestOptions.credentials = 'include';
+
+        if (data && method !== 'GET') {
+          requestOptions.body = JSON.stringify(data);
+        }
+      }
+
+      const response = await fetch(requestUrl, requestOptions);
 
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
@@ -72,7 +98,7 @@ class AIService {
       const result = await AIService.parseJsonResponse(response);
       return result;
     } catch (error) {
-      console.error('Function execution failed:', error);
+      console.error(`Function execution failed for ${path}:`, error);
       throw error;
     }
   }
@@ -207,7 +233,7 @@ class AIService {
         localStorage.setItem('ai_session_id', chatData.session_id);
       }
 
-      return await AIService.executeFunction('/api/chat', 'POST', chatData);
+      return await AIService.executeFunction('/api/ai/chat', 'POST', chatData);
     } catch (error) {
       console.error('AI chat failed:', error);
       return {
