@@ -101,10 +101,9 @@ function showState(stateId) {
  */
 async function verifyEmail(token, email) {
   try {
-    const response = await AIService.executeFunction('/auth/verify-email.php', 'POST', {
+    const result = await AIService.executeFunction('/auth/verify-email.php', 'POST', {
       token: token,
       email: email,
-      }),
     });
 
     if (result.success) {
