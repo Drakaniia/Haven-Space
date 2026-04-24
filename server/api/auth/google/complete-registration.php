@@ -77,14 +77,47 @@ if (!in_array($selectedRole, ['boarder', 'landlord'])) {
     exit;
 }
 
-// Check if we have pending Google user data in session
-if (!isset($_SESSION['pending_google_user'])) {
+// Check if we have pending Google user data — via DB token (cross-port safe) or legacy session
+$googleUser = null;
+$pdo = null;
+
+// Prefer token-based lookup (works across Apache port 80 and PHP server port 8000)
+$pendingToken = $input['token'] ?? null;
+if ($pendingToken) {
+    try {
+        $pdo = Connection::getInstance()->getPdo();
+        $tokenStmt = $pdo->prepare('SELECT * FROM oauth_pending_registrations WHERE token = ? AND expires_at > UTC_TIMESTAMP()');
+        $tokenStmt->execute([$pendingToken]);
+        $pendingRow = $tokenStmt->fetch(\PDO::FETCH_ASSOC);
+
+        if ($pendingRow) {
+            $googleUser = [
+                'google_id'      => $pendingRow['google_id'],
+                'email'          => $pendingRow['email'],
+                'first_name'     => $pendingRow['first_name'],
+                'last_name'      => $pendingRow['last_name'],
+                'avatar_url'     => $pendingRow['avatar_url'],
+                'access_token'   => $pendingRow['access_token'],
+                'refresh_token'  => $pendingRow['refresh_token'],
+                'email_verified' => (bool) $pendingRow['email_verified'],
+                'came_from_login'=> (bool) $pendingRow['came_from_login'],
+            ];
+        }
+    } catch (\Exception $e) {
+        error_log('complete-registration token lookup error: ' . $e->getMessage());
+    }
+}
+
+// Fallback to session (legacy / same-port flow)
+if (!$googleUser && isset($_SESSION['pending_google_user'])) {
+    $googleUser = $_SESSION['pending_google_user'];
+}
+
+if (!$googleUser) {
     http_response_code(400);
     echo json_encode(['success' => false, 'message' => 'No pending Google registration found. Please try logging in with Google again.']);
     exit;
 }
-
-$googleUser = $_SESSION['pending_google_user'];
 
 // Validate required Google user data
 $requiredFields = ['google_id', 'email', 'first_name', 'last_name'];
@@ -97,9 +130,16 @@ foreach ($requiredFields as $field) {
 }
 
 try {
-    // Connect to database
-    $pdo = Connection::getInstance()->getPdo();
+    // Connect to database (may already be connected from token lookup above)
+    if (!isset($pdo)) {
+        $pdo = Connection::getInstance()->getPdo();
+    }
     $config = require __DIR__ . '/../../../config/app.php';
+
+    // Delete the used token
+    if ($pendingToken) {
+        $pdo->prepare('DELETE FROM oauth_pending_registrations WHERE token = ?')->execute([$pendingToken]);
+    }
 
     // Check if user already exists by Google ID or email
     $stmt = $pdo->prepare('
@@ -125,8 +165,11 @@ try {
         $roleRow = $stmt->fetch(\PDO::FETCH_ASSOC);
         $roleId = $roleRow ? $roleRow['id'] : 1; // Default to first role if not found
 
+        // Determine initial account status based on role (same logic as regular registration)
+        $accountStatusName = ($selectedRole === 'landlord') ? 'pending_verification' : 'active';
+        
         $stmt = $pdo->prepare('SELECT id FROM account_statuses WHERE status_name = ?');
-        $stmt->execute(['active']);
+        $stmt->execute([$accountStatusName]);
         $statusRow = $stmt->fetch(\PDO::FETCH_ASSOC);
         $accountStatusId = $statusRow ? $statusRow['id'] : 1;
 
@@ -179,7 +222,7 @@ try {
     $isVerified = $verifiedRow ? (bool) $verifiedRow['is_verified'] : false;
     $accountStatus = $verifiedRow['account_status'] ?? 'active';
 
-    if ($accountStatus !== 'active') {
+    if ($accountStatus !== 'active' && !($accountStatus === 'pending_verification' && $userRole === 'landlord')) {
         http_response_code(400);
         echo json_encode(['success' => false, 'message' => 'Your account is not active. Contact support.']);
         exit;
@@ -227,16 +270,26 @@ try {
     unset($_SESSION['oauth_action']);
     unset($_SESSION['oauth_role_preference']);
 
+    // Create user data for client-side storage
+    $userData = [
+        'id' => $userId,
+        'first_name' => $googleUser['first_name'],
+        'last_name' => $googleUser['last_name'],
+        'email' => $googleUser['email'],
+        'role' => $userRole,
+    ];
+    
+    // Add boarder status if available
+    if (isset($boarderStatus)) {
+        $userData['boarder_status'] = $boarderStatus;
+        $userData['boarderStatus'] = $boarderStatus; // Keep both for compatibility
+    }
+    
     echo json_encode([
         'success' => true,
         'message' => 'Registration completed successfully',
-        'user' => [
-            'id' => $userId,
-            'first_name' => $googleUser['first_name'],
-            'last_name' => $googleUser['last_name'],
-            'email' => $googleUser['email'],
-            'role' => $userRole,
-        ]
+        'user' => $userData,
+        'redirect_url' => $redirectPath . '#auth=' . urlencode(json_encode($userData))
     ]);
 
 } catch (\Exception $e) {

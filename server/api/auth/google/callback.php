@@ -215,30 +215,57 @@ try {
                 $userId = $user['id'];
                 $userRole = $user['role'];
             } else {
-                // Ask user to login with existing method first
-                header('Location: ' . buildRedirectUrl($baseUrl, '/views/public/auth/login.html?error=Email%20already%20registered.%20Please%20login%20with%20your%20existing%20account%20and%20link%20Google%20from%20your%20profile.'));
-                exit;
+                // For login action, automatically link Google to existing account and log them in
+                // This provides a better user experience - they don't need to manually link
+                
+                // First, create a file record for the avatar if it exists
+                $avatarFileId = null;
+                if ($avatarUrl) {
+                    $stmt = $pdo->prepare('INSERT INTO files (file_url, file_name, file_size, mime_type, uploaded_by) VALUES (?, ?, ?, ?, ?)');
+                    $stmt->execute([$avatarUrl, 'google_avatar.jpg', 0, 'image/jpeg', $user['id']]);
+                    $avatarFileId = $pdo->lastInsertId();
+                }
+                
+                // Link Google account to existing user
+                $stmt = $pdo->prepare('UPDATE users SET google_id = ?, google_token = ?, google_refresh_token = ?, avatar_file_id = ?, is_verified = ? WHERE id = ?');
+                $stmt->execute([$googleId, $accessToken, $refreshToken, $avatarFileId, $emailVerified ? true : $user['is_verified'], $user['id']]);
+
+                $userId = $user['id'];
+                $userRole = $user['role'];
             }
         } else {
             // New user - create account
             // For new users, we need to determine role
             // If role preference exists, use it; otherwise, redirect to choose page for role selection
             if (!$rolePreference) {
-                // Store Google data in session for the frontend to pick up
-                $_SESSION['pending_google_user'] = [
-                    'google_id' => $googleId,
-                    'email' => $email,
-                    'first_name' => $firstName,
-                    'last_name' => $lastName,
-                    'avatar_url' => $avatarUrl,
-                    'access_token' => $accessToken,
-                    'refresh_token' => $refreshToken,
-                    'email_verified' => $emailVerified,
-                    'came_from_login' => $action === 'login', // Track if user came from login
-                ];
+                // Store Google data in DB with a short-lived token (avoids cross-port session issues)
+                $pendingToken = bin2hex(random_bytes(32));
+                $expiresAt = gmdate('Y-m-d H:i:s', time() + 600); // 10 minutes (UTC)
 
-                // Redirect to choose page for role selection (production behavior)
-                header('Location: ' . buildRedirectUrl($baseUrl, '/views/public/auth/choose.html?oauth=google'));
+                // Clean up expired tokens first
+                $pdo->exec("DELETE FROM oauth_pending_registrations WHERE expires_at < UTC_TIMESTAMP()");
+
+                $pendingStmt = $pdo->prepare('
+                    INSERT INTO oauth_pending_registrations 
+                    (token, google_id, email, first_name, last_name, avatar_url, access_token, refresh_token, email_verified, came_from_login, expires_at)
+                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                ');
+                $pendingStmt->execute([
+                    $pendingToken,
+                    $googleId,
+                    $email,
+                    $firstName,
+                    $lastName,
+                    $avatarUrl,
+                    $accessToken,
+                    $refreshToken,
+                    $emailVerified ? 1 : 0,
+                    $action === 'login' ? 1 : 0,
+                    $expiresAt,
+                ]);
+
+                // Redirect to choose page with token for role selection
+                header('Location: ' . buildRedirectUrl($baseUrl, '/views/public/auth/choose.html?oauth=google&token=' . $pendingToken));
                 exit;
             }
 
@@ -249,8 +276,11 @@ try {
             $roleRow = $stmt->fetch(\PDO::FETCH_ASSOC);
             $roleId = $roleRow ? $roleRow['id'] : 1; // Default to first role if not found
 
+            // Determine initial account status based on role (same logic as regular registration)
+            $accountStatusName = ($rolePreference === 'landlord') ? 'pending_verification' : 'active';
+            
             $stmt = $pdo->prepare('SELECT id FROM account_statuses WHERE status_name = ?');
-            $stmt->execute(['active']);
+            $stmt->execute([$accountStatusName]);
             $statusRow = $stmt->fetch(\PDO::FETCH_ASSOC);
             $accountStatusId = $statusRow ? $statusRow['id'] : 1;
 
@@ -309,17 +339,22 @@ try {
 
     // Fetch verification and account status for the user
     $stmtVerified = $pdo->prepare('
-        SELECT u.is_verified, acs.status_name as account_status
+        SELECT u.is_verified, acs.status_name as account_status,
+               vr.verification_status_id,
+               vs.status_name as verification_status
         FROM users u
         JOIN account_statuses acs ON u.account_status_id = acs.id
+        LEFT JOIN verification_records vr ON vr.entity_type = "user" AND vr.entity_id = u.id
+        LEFT JOIN verification_statuses vs ON vr.verification_status_id = vs.id
         WHERE u.id = ?
     ');
     $stmtVerified->execute([$userId]);
     $verifiedRow = $stmtVerified->fetch();
     $isVerified = $verifiedRow ? (bool) $verifiedRow['is_verified'] : false;
     $accountStatus = $verifiedRow['account_status'] ?? 'active';
+    $verificationStatus = $verifiedRow['verification_status'] ?? null;
 
-    if ($accountStatus !== 'active') {
+    if ($accountStatus !== 'active' && !($accountStatus === 'pending_verification' && $userRole === 'landlord')) {
         header('Location: ' . buildRedirectUrl($baseUrl, '/views/public/auth/login.html?error=' . urlencode('Your account is not active. Contact support.')));
         exit;
     }
@@ -333,6 +368,7 @@ try {
         'role' => $userRole,
         'is_verified' => $isVerified,
         'account_status' => $accountStatus,
+        'verification_status' => $verificationStatus,
         'google_id' => $googleId,
     ];
 
@@ -402,6 +438,27 @@ try {
 
     // Ensure we're using the correct base URL
     $finalRedirectUrl = buildRedirectUrl($baseUrl, $redirectPath);
+    
+    // Create user data for client-side storage
+    $userData = [
+        'id' => $userId,
+        'first_name' => $firstName,
+        'last_name' => $lastName,
+        'email' => $email,
+        'role' => $userRole,
+    ];
+    
+    // Add boarder status if available
+    if (isset($boarderStatus)) {
+        $userData['boarder_status'] = $boarderStatus;
+        $userData['boarderStatus'] = $boarderStatus; // Keep both for compatibility
+    }
+    
+    // Encode user data for URL hash fragment
+    $userDataJson = urlencode(json_encode($userData));
+    
+    // Add hash fragment with user data
+    $finalRedirectUrl .= '#auth=' . $userDataJson;
     
     // Log for debugging
     error_log('Google OAuth - Base URL: ' . $baseUrl);
