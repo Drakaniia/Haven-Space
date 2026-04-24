@@ -26,6 +26,27 @@
   text-align: center;
 }
 
+/* OAuth Message */
+.oauth-message {
+  background: #f0f9ff;
+  border: 1px solid #0ea5e9;
+  border-radius: 8px;
+  padding: 16px;
+  margin-bottom: 32px;
+  text-align: center;
+}
+
+.oauth-message-content {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-size: 14px;
+  font-weight: 500;
+  color: #0369a1;
+}
+
 .choose-title {
   font-family: 'Plus Jakarta Sans', sans-serif;
   font-size: 32px;

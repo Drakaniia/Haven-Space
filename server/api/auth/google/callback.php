@@ -182,7 +182,7 @@ try {
         } else {
             // New user - create account
             // For new users, we need to determine role
-            // If role preference exists, use it; otherwise, redirect to signup for role selection
+            // If role preference exists, use it; otherwise, redirect to choose page for role selection
             if (!$rolePreference) {
                 // Store Google data in session for the frontend to pick up
                 $_SESSION['pending_google_user'] = [
@@ -197,10 +197,8 @@ try {
                     'came_from_login' => $action === 'login', // Track if user came from login
                 ];
 
-                // Redirect to signup page for role selection
-                // If came from login, show step 1 (role selection), otherwise show step 2
-                $oauthParam = $action === 'login' ? 'oauth=new' : 'oauth=pending';
-                header('Location: ' . buildRedirectUrl($baseUrl, '/views/public/auth/signup.html?' . $oauthParam));
+                // Redirect to choose page for role selection (production behavior)
+                header('Location: ' . buildRedirectUrl($baseUrl, '/views/public/auth/choose.html?oauth=google'));
                 exit;
             }
 
