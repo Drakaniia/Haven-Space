@@ -1,41 +1,26 @@
 {
-    "projectId": "69eae504002697b6749c",
-    "functions": [
-        {
-            "$id": "69eb0fbe001f297c8dab",
-            "name": "Haven-Space",
-            "runtime": "php-8.3",
-            "path": "functions/havenspace-api",
-            "entrypoint": "main.php",
-            "ignore": [
-                ".git",
-                "node_modules",
-                ".env",
-                "vendor"
-            ],
-            "execute": [
-                "any"
-            ],
-            "events": [],
-            "schedule": "",
-            "timeout": 30,
-            "enabled": true,
-            "logging": true,
-            "scopes": [
-                "databases.read",
-                "databases.write",
-                "documents.read",
-                "documents.write",
-                "users.read",
-                "users.write",
-                "storage.read",
-                "storage.write",
-                "files.read",
-                "files.write"
-            ],
-            "variables": {
-                "APPWRITE_DATABASE_ID": "69eae54800160ea97765"
-            }
-        }
-    ]
+  "projectId": "69eae504002697b6749c",
+  "projectName": "Haven Space",
+  "endpoint": "https://fra.cloud.appwrite.io/v1",
+  "functions": [
+    {
+      "$id": "api-function",
+      "name": "Haven Space API",
+      "runtime": "php-8.3",
+      "execute": ["any"],
+      "events": [],
+      "schedule": "",
+      "timeout": 15,
+      "enabled": true,
+      "logging": true,
+      "entrypoint": "main.php",
+      "commands": "composer install --no-dev --optimize-autoloader",
+      "ignore": ["node_modules", ".git", ".env"],
+      "path": "functions/api",
+      "vars": {
+        "APPWRITE_FUNCTION_ENDPOINT": "https://fra.cloud.appwrite.io/v1",
+        "APPWRITE_FUNCTION_PROJECT_ID": "69eae504002697b6749c"
+      }
+    }
+  ]
 }

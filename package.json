@@ -5,7 +5,7 @@
   "description": "Boarding house rental platform connecting boarders with verified landlords in the Philippines",
   "main": "index.js",
   "scripts": {
-    "server": "cd server && php -S localhost:8000 router.php",
+    "server": "cd functions && php -S localhost:8000 router.php",
     "client": "cd client && python -m http.server 3000",
     "mysql": "docker run --name haven-mysql -e MYSQL_ROOT_PASSWORD=root -e MYSQL_DATABASE=haven_space -p 3306:3306 -d mysql:8.0",
     "db:setup": "php scripts/setup-database.php",

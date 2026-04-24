@@ -1,12 +1,17 @@
 {
-  "name": "havenspace/api-function",
-  "description": "Haven Space API Function",
+  "name": "haven-space/api-function",
+  "description": "Haven Space API Function for Appwrite",
+  "type": "project",
   "require": {
-    "appwrite/appwrite": "^12.0"
+    "php": ">=8.0",
+    "appwrite/appwrite": "^15.0"
   },
   "autoload": {
     "psr-4": {
-      "App\\": "src/"
+      "HavenSpace\\Api\\": "src/"
     }
+  },
+  "config": {
+    "optimize-autoloader": true
   }
 }
