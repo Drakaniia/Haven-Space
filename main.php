@@ -6,6 +6,11 @@ return function ($context) {
     $req = $context->req;
     $res = $context->res;
 
+    // Signal to server code that we're running inside an Appwrite function
+    if (!defined('APPWRITE_FUNCTION_CONTEXT')) {
+        define('APPWRITE_FUNCTION_CONTEXT', true);
+    }
+
     // Inject env vars from function environment
     $_ENV['APPWRITE_ENDPOINT']    = $context->env['APPWRITE_FUNCTION_ENDPOINT'] ?? '';
     $_ENV['APPWRITE_PROJECT_ID']  = $context->env['APPWRITE_FUNCTION_PROJECT_ID'] ?? '';
@@ -48,13 +53,14 @@ return function ($context) {
         ]);
     }
 
-    // Capture output — routes.php echoes JSON directly
-    // header() calls inside routes.php are no-ops in this context (already sent by Appwrite)
     ob_start();
     $statusCode = 200;
 
     try {
         require_once __DIR__ . '/server/api/routes.php';
+    } catch (ResponseSentException $e) {
+        // json_response() threw this — use its status code
+        $statusCode = $e->statusCode;
     } catch (\Throwable $e) {
         ob_end_clean();
         return $res->text(json_encode([
@@ -70,9 +76,9 @@ return function ($context) {
 
     $output = ob_get_clean();
 
-    // Detect HTTP status from http_response_code() calls inside routes
+    // Also check http_response_code() for status set by routes
     $detectedStatus = http_response_code();
-    if ($detectedStatus && $detectedStatus !== 200) {
+    if ($detectedStatus && $detectedStatus !== 200 && $statusCode === 200) {
         $statusCode = $detectedStatus;
     }
 
@@ -84,4 +90,5 @@ return function ($context) {
         'Content-Type'                     => 'application/json',
     ]);
 };
+
 

@@ -8,6 +8,21 @@ require_once __DIR__ . '/../src/Core/Database/Connection.php';
 use App\Core\Auth\JWT;
 use App\Core\Database\Connection;
 
+/**
+ * Helper to send a JSON response and stop execution.
+ * In Appwrite function context, throws ResponseSentException instead of exit().
+ */
+function _respond(int $code, array $data): void
+{
+    http_response_code($code);
+    $body = json_encode($data);
+    echo $body;
+    if (defined('APPWRITE_FUNCTION_CONTEXT')) {
+        throw new \ResponseSentException($code, $body);
+    }
+    exit;
+}
+
 class Middleware
 {
     public static function authenticate()
@@ -30,12 +45,10 @@ class Middleware
             ');
             $stmt->execute([$userId]);
             $row = $stmt->fetch();
-            
+
             if ($row) {
                 if (($row['account_status'] ?? 'active') !== 'active') {
-                    http_response_code(403);
-                    echo json_encode(['error' => 'Account is suspended or banned']);
-                    exit;
+                    _respond(403, ['error' => 'Account is suspended or banned']);
                 }
                 return [
                     'user_id' => (int)$row['id'],
@@ -43,7 +56,7 @@ class Middleware
                     'is_verified' => (bool)$row['is_verified'],
                     'email_verified' => (bool)$row['email_verified'],
                     'account_status' => $row['account_status'],
-                    'verification_status' => $row['verification_status']
+                    'verification_status' => $row['verification_status'],
                 ];
             }
         }
@@ -59,7 +72,7 @@ class Middleware
                 $authHeader = $headers['Authorization'];
             }
         }
-        
+
         $token = '';
         if (preg_match('/Bearer\s(\S+)/', $authHeader, $matches)) {
             $token = $matches[1];
@@ -70,17 +83,13 @@ class Middleware
         }
 
         if (empty($token)) {
-            http_response_code(401);
-            echo json_encode(['error' => 'No token provided']);
-            exit;
+            _respond(401, ['error' => 'No token provided']);
         }
 
         $payload = JWT::validate($token);
 
         if (!$payload) {
-            http_response_code(401);
-            echo json_encode(['error' => 'Invalid or expired token']);
-            exit;
+            _respond(401, ['error' => 'Invalid or expired token']);
         }
 
         $userId = (int) ($payload['user_id'] ?? 0);
@@ -97,21 +106,16 @@ class Middleware
             ');
             $stmt->execute([$userId]);
             $row = $stmt->fetch();
-            
+
             if (!$row) {
-                http_response_code(401);
-                echo json_encode(['error' => 'User not found']);
-                exit;
+                _respond(401, ['error' => 'User not found']);
             }
-            
+
             $accountStatus = $row['account_status'] ?? 'active';
             if (in_array($accountStatus, ['suspended', 'banned'])) {
-                http_response_code(403);
-                echo json_encode(['error' => 'Account is suspended or banned']);
-                exit;
+                _respond(403, ['error' => 'Account is suspended or banned']);
             }
-            
-            // Add verification status to payload
+
             $payload['email_verified'] = (bool)$row['email_verified'];
             $payload['account_status'] = $accountStatus;
             $payload['verification_status'] = $row['verification_status'];
@@ -125,9 +129,7 @@ class Middleware
         $user = self::authenticate();
 
         if (!in_array($user['role'], $allowedRoles)) {
-            http_response_code(403);
-            echo json_encode(['error' => 'Forbidden: You do not have permission to access this resource']);
-            exit;
+            _respond(403, ['error' => 'Forbidden: You do not have permission to access this resource']);
         }
 
         return $user;
@@ -135,8 +137,6 @@ class Middleware
 
     /**
      * Require verified landlord for write operations.
-     * GET requests are allowed (read-only access for pending landlords).
-     * POST/PUT/PATCH/DELETE are blocked if the landlord is not verified.
      */
     public static function authorizeVerifiedLandlord()
     {
@@ -145,50 +145,40 @@ class Middleware
         $method = $_SERVER['REQUEST_METHOD'];
         $writeMethods = ['POST', 'PUT', 'PATCH', 'DELETE'];
 
-        // Check email verification first
         if (!($user['email_verified'] ?? false)) {
-            http_response_code(403);
-            echo json_encode([
+            _respond(403, [
                 'error' => 'Email verification required',
                 'code' => 'EMAIL_NOT_VERIFIED',
-                'message' => 'Please verify your email address before accessing landlord features.'
+                'message' => 'Please verify your email address before accessing landlord features.',
             ]);
-            exit;
         }
 
-        // For write operations, check full verification status
         if (in_array($method, $writeMethods)) {
             $accountStatus = $user['account_status'] ?? 'active';
             $verificationStatus = $user['verification_status'] ?? null;
-            
+
             if ($accountStatus === 'pending_verification' || $verificationStatus === 'pending') {
-                http_response_code(403);
-                echo json_encode([
+                _respond(403, [
                     'error' => 'Account verification pending',
                     'code' => 'VERIFICATION_PENDING',
-                    'message' => 'Your account is under review. You have read-only access until verification is complete.'
+                    'message' => 'Your account is under review. You have read-only access until verification is complete.',
                 ]);
-                exit;
             }
-            
+
             if ($verificationStatus === 'rejected') {
-                http_response_code(403);
-                echo json_encode([
+                _respond(403, [
                     'error' => 'Account verification rejected',
                     'code' => 'VERIFICATION_REJECTED',
-                    'message' => 'Your account verification was rejected. Please review the feedback and resubmit required documents.'
+                    'message' => 'Your account verification was rejected. Please review the feedback and resubmit required documents.',
                 ]);
-                exit;
             }
-            
+
             if (!($user['is_verified'] ?? false) && $verificationStatus !== 'approved') {
-                http_response_code(403);
-                echo json_encode([
+                _respond(403, [
                     'error' => 'Account verification required',
                     'code' => 'VERIFICATION_REQUIRED',
-                    'message' => 'Your account is pending verification. Write operations are not allowed until an admin approves your account.'
+                    'message' => 'Your account is pending verification. Write operations are not allowed until an admin approves your account.',
                 ]);
-                exit;
             }
         }
 
@@ -201,18 +191,15 @@ class Middleware
     public static function authorizeVerifiedBoarder()
     {
         $user = self::authorize(['boarder']);
-        
-        // Check email verification for critical actions
+
         if (!($user['email_verified'] ?? false)) {
-            http_response_code(403);
-            echo json_encode([
+            _respond(403, [
                 'error' => 'Email verification required',
                 'code' => 'EMAIL_NOT_VERIFIED',
-                'message' => 'Please verify your email address before applying to rooms.'
+                'message' => 'Please verify your email address before applying to rooms.',
             ]);
-            exit;
         }
-        
+
         return $user;
     }
 }

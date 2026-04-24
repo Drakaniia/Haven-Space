@@ -56,10 +56,14 @@ if ($origin === '' || in_array($origin, $allowed_origins) || $normalizedOrigin =
     // Return 403 for unauthorized origin
     http_response_code(403);
     header('Content-Type: application/json');
-    echo json_encode([
+    $body = json_encode([
         'error' => 'Unauthorized origin',
         'message' => isDebugMode() ? "Origin '$origin' is not allowed" : 'CORS policy violation'
     ]);
+    echo $body;
+    if (defined('APPWRITE_FUNCTION_CONTEXT')) {
+        throw new ResponseSentException(403, $body);
+    }
     exit;
 }
 
@@ -73,5 +77,8 @@ header('Access-Control-Max-Age: 86400'); // Cache preflight for 1 day
 if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
     // Some browsers require 200 or 204 for preflight
     http_response_code(200);
+    if (defined('APPWRITE_FUNCTION_CONTEXT')) {
+        throw new ResponseSentException(200, '');
+    }
     exit;
 }
