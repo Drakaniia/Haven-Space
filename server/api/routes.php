@@ -101,6 +101,25 @@ class Router
 }
 
 // ============================================
+// AUTH ROUTES
+// ============================================
+Router::post('/auth/register', function() {
+    require_once __DIR__ . '/auth/register.php';
+});
+
+Router::post('/auth/register.php', function() {
+    require_once __DIR__ . '/auth/register.php';
+});
+
+Router::post('/auth/login', function() {
+    require_once __DIR__ . '/auth/login.php';
+});
+
+Router::post('/auth/login.php', function() {
+    require_once __DIR__ . '/auth/login.php';
+});
+
+// ============================================
 // UPLOAD ROUTES
 // ============================================
 Router::post('/api/upload', [UploadController::class, 'upload']);

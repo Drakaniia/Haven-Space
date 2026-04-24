@@ -17,6 +17,13 @@ return function ($context) {
     $_ENV['GROQ_API_KEY']         = $context->env['GROQ_API_KEY'] ?? '';
     $_ENV['GROQ_BASE_URL']        = $context->env['GROQ_BASE_URL'] ?? '';
     $_ENV['GROQ_DEFAULT_MODEL']   = $context->env['GROQ_DEFAULT_MODEL'] ?? '';
+    // Ensure production origin is always in the allowed list for cors.php
+    $existingOrigins = $context->env['ALLOWED_ORIGINS'] ?? '';
+    $productionOrigin = 'https://haven-space.appwrite.network';
+    if (strpos($existingOrigins, $productionOrigin) === false) {
+        $existingOrigins = $existingOrigins ? $existingOrigins . ',' . $productionOrigin : $productionOrigin;
+    }
+    $_ENV['ALLOWED_ORIGINS'] = $existingOrigins;
 
     // Also set via putenv so getenv() calls work too
     foreach ($_ENV as $key => $value) {
@@ -27,6 +34,7 @@ return function ($context) {
     $_SERVER['REQUEST_METHOD']    = $req->method;
     $_SERVER['REQUEST_URI']       = $req->path;
     $_SERVER['HTTP_AUTHORIZATION'] = $req->headers['authorization'] ?? '';
+    $_SERVER['HTTP_ORIGIN']       = $req->headers['origin'] ?? 'https://haven-space.appwrite.network';
     $_GET  = $req->query ?? [];
     $_POST = (array) json_decode($req->body ?? '{}', true);
 
