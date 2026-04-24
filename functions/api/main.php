@@ -1,5 +1,7 @@
 <?php
 
+require_once __DIR__ . '/vendor/autoload.php';
+
 use Appwrite\Client;
 use Appwrite\Services\Account;
 use Appwrite\Services\Databases;
