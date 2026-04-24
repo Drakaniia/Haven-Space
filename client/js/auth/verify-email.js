@@ -1,4 +1,3 @@
-import CONFIG from '../config.js';
 import { getIcon } from '../shared/icons.js';
 import AIService from '../services/AIService.js';
 
@@ -149,7 +148,7 @@ async function resendVerificationEmail(email) {
   submitBtn.textContent = 'Sending...';
 
   try {
-    const response = await AIService.executeFunction('/auth/resend-verification.php', 'POST', {
+    const result = await AIService.executeFunction('/auth/resend-verification.php', 'POST', {
       email: email,
     });
 
