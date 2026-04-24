@@ -6,15 +6,27 @@
 import CONFIG from '../config.js';
 
 class AIService {
+  static appwriteClient = null;
+  static functions = null;
+
+  static initializeAppwrite() {
+    if (!this.appwriteClient && typeof Appwrite !== 'undefined') {
+      this.appwriteClient = new Appwrite.Client()
+        .setEndpoint(CONFIG.APPWRITE.ENDPOINT)
+        .setProject(CONFIG.APPWRITE.PROJECT_ID);
+      
+      this.functions = new Appwrite.Functions(this.appwriteClient);
+    }
+    return this.appwriteClient;
+  }
+
   static getStoredValue(key) {
     const value = localStorage.getItem(key);
     return value && value !== 'null' && value !== 'undefined' ? value : null;
   }
 
   static isAppwriteExecutionRequest() {
-    return (
-      CONFIG.API_BASE_URL.includes('/functions/') && CONFIG.API_BASE_URL.endsWith('/executions')
-    );
+    return CONFIG.isProduction();
   }
 
   static async parseJsonResponse(response) {
@@ -47,14 +59,48 @@ class AIService {
       const sessionId = AIService.getStoredValue('session_id');
       const userId = AIService.getStoredValue('user_id');
       const isAppwriteExecution = AIService.isAppwriteExecutionRequest();
-      const headers = {
-        'Content-Type': 'application/json',
-        Accept: 'application/json',
-      };
 
       if (isAppwriteExecution) {
-        headers['X-Appwrite-Project'] = CONFIG.APPWRITE.PROJECT_ID;
+        // Use Appwrite SDK for production
+        this.initializeAppwrite();
+        
+        if (!this.appwriteClient) {
+          throw new Error('Appwrite SDK not available');
+        }
+        
+        // Set session if available
+        if (sessionId) {
+          this.appwriteClient.setSession(sessionId);
+        }
+
+        const execution = await this.functions.createExecution(
+          CONFIG.APPWRITE.FUNCTION_ID,
+          JSON.stringify({
+            ...(data || {}),
+            path,
+            method,
+          }),
+          false, // async
+          path,
+          method,
+          {
+            'Content-Type': 'application/json',
+            ...(token && { 'Authorization': `Bearer ${token}` }),
+            ...(sessionId && { 'X-Session-Id': sessionId }),
+            ...(userId && { 'X-User-Id': userId }),
+          }
+        );
+
+        // Parse the response body
+        const result = JSON.parse(execution.responseBody || '{}');
+        return result;
       } else {
+        // Use direct HTTP for local development
+        const headers = {
+          'Content-Type': 'application/json',
+          Accept: 'application/json',
+        };
+
         if (token) {
           headers['Authorization'] = `Bearer ${token}`;
         }
@@ -64,39 +110,28 @@ class AIService {
         if (userId) {
           headers['X-User-Id'] = userId;
         }
-      }
 
-      const requestOptions = {
-        method,
-        headers,
-      };
-
-      let requestUrl = `${CONFIG.API_BASE_URL}${path}`;
-
-      if (isAppwriteExecution) {
-        requestUrl = CONFIG.API_BASE_URL;
-        requestOptions.method = 'POST';
-        requestOptions.body = JSON.stringify({
-          ...(data || {}),
-          path,
+        const requestOptions = {
           method,
-        });
-      } else {
-        requestOptions.credentials = 'include';
+          headers,
+          credentials: 'include',
+        };
+
+        let requestUrl = `${CONFIG.API_BASE_URL}${path}`;
 
         if (data && method !== 'GET') {
           requestOptions.body = JSON.stringify(data);
         }
+
+        const response = await fetch(requestUrl, requestOptions);
+
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+
+        const result = await AIService.parseJsonResponse(response);
+        return result;
       }
-
-      const response = await fetch(requestUrl, requestOptions);
-
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-
-      const result = await AIService.parseJsonResponse(response);
-      return result;
     } catch (error) {
       console.error(`Function execution failed for ${path}:`, error);
       throw error;
