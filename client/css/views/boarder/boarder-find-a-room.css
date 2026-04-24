@@ -1384,3 +1384,300 @@
     font-size: 0.9375rem;
   }
 }
+/* ==========================================================================
+   Room Detail Modal Styles
+   ========================================================================== */
+
+.find-room-room-detail-modal {
+  max-width: 800px;
+  width: 90vw;
+  max-height: 90vh;
+  overflow-y: auto;
+}
+
+.find-room-room-gallery {
+  margin-bottom: 1.5rem;
+}
+
+.find-room-room-main-image {
+  width: 100%;
+  height: 300px;
+  object-fit: cover;
+  border-radius: 12px;
+  margin-bottom: 1rem;
+}
+
+.find-room-room-thumbnails {
+  display: flex;
+  gap: 0.5rem;
+  overflow-x: auto;
+  padding-bottom: 0.5rem;
+}
+
+.find-room-room-thumbnail {
+  width: 80px;
+  height: 60px;
+  object-fit: cover;
+  border-radius: 8px;
+  cursor: pointer;
+  opacity: 0.7;
+  transition: opacity 0.2s ease;
+  border: 2px solid transparent;
+}
+
+.find-room-room-thumbnail:hover,
+.find-room-room-thumbnail.active {
+  opacity: 1;
+  border-color: var(--primary-green);
+}
+
+.find-room-room-info {
+  padding: 0;
+}
+
+.find-room-room-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 1rem;
+}
+
+.find-room-room-header h4 {
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: var(--text-dark);
+  margin: 0;
+}
+
+.find-room-room-status {
+  padding: 0.25rem 0.75rem;
+  border-radius: 20px;
+  font-size: 0.875rem;
+  font-weight: 500;
+}
+
+.find-room-room-status.available {
+  background: var(--success-light);
+  color: var(--success-dark);
+}
+
+.find-room-room-status.occupied {
+  background: var(--error-light);
+  color: var(--error-dark);
+}
+
+.find-room-room-details {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  margin-bottom: 1.5rem;
+}
+
+.find-room-room-detail-item {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  color: var(--text-gray);
+}
+
+.find-room-room-detail-item strong {
+  color: var(--text-dark);
+}
+
+.find-room-room-description {
+  margin-bottom: 1.5rem;
+}
+
+.find-room-room-description h5 {
+  font-size: 1.125rem;
+  font-weight: 600;
+  color: var(--text-dark);
+  margin: 0 0 0.5rem 0;
+}
+
+.find-room-room-description p {
+  color: var(--text-gray);
+  line-height: 1.6;
+  margin: 0;
+}
+
+.find-room-room-actions {
+  display: flex;
+  gap: 1rem;
+  padding-top: 1rem;
+  border-top: 1px solid var(--border-light);
+}
+
+/* ==========================================================================
+   Room Cards in Detail Panel
+   ========================================================================== */
+
+.find-room-detail-rooms-section,
+.find-room-detail-amenities-section {
+  margin-top: 2rem;
+}
+
+.find-room-detail-section-title {
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: var(--text-dark);
+  margin: 0 0 1rem 0;
+}
+
+.find-room-detail-rooms-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 1rem;
+}
+
+.find-room-detail-room-card {
+  border: 1px solid var(--border-light);
+  border-radius: 12px;
+  overflow: hidden;
+  transition: all 0.2s ease;
+  cursor: pointer;
+  background: var(--white);
+}
+
+.find-room-detail-room-card:hover {
+  border-color: var(--primary-green);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  transform: translateY(-2px);
+}
+
+.find-room-room-image-wrapper {
+  position: relative;
+  height: 200px;
+  overflow: hidden;
+}
+
+.find-room-room-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.find-room-room-badge {
+  position: absolute;
+  top: 0.75rem;
+  right: 0.75rem;
+  padding: 0.25rem 0.75rem;
+  border-radius: 20px;
+  font-size: 0.75rem;
+  font-weight: 500;
+}
+
+.find-room-room-available {
+  background: var(--success-light);
+  color: var(--success-dark);
+}
+
+.find-room-room-limited {
+  background: var(--warning-light);
+  color: var(--warning-dark);
+}
+
+.find-room-room-info {
+  padding: 1rem;
+}
+
+.find-room-room-type {
+  font-size: 1.125rem;
+  font-weight: 600;
+  color: var(--text-dark);
+  margin: 0 0 0.5rem 0;
+}
+
+.find-room-room-description {
+  color: var(--text-gray);
+  font-size: 0.875rem;
+  line-height: 1.5;
+  margin: 0 0 0.75rem 0;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.find-room-room-details {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 0.75rem;
+}
+
+.find-room-room-capacity {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  color: var(--text-gray);
+  font-size: 0.875rem;
+}
+
+.find-room-room-price {
+  display: flex;
+  align-items: baseline;
+  gap: 0.25rem;
+}
+
+.find-room-room-price-amount {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: var(--primary-green);
+}
+
+.find-room-room-price-period {
+  font-size: 0.875rem;
+  color: var(--text-gray);
+}
+
+/* ==========================================================================
+   Amenities Grid
+   ========================================================================== */
+
+.find-room-detail-amenities-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 0.75rem;
+}
+
+.find-room-detail-amenity-item {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.75rem;
+  background: var(--bg-light);
+  border-radius: 8px;
+  color: var(--text-gray);
+}
+
+.find-room-detail-amenity-item span:first-child {
+  color: var(--primary-green);
+}
+
+/* ==========================================================================
+   Responsive Design
+   ========================================================================== */
+
+@media (max-width: 768px) {
+  .find-room-room-detail-modal {
+    width: 95vw;
+    max-height: 95vh;
+  }
+
+  .find-room-room-main-image {
+    height: 250px;
+  }
+
+  .find-room-detail-rooms-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .find-room-detail-amenities-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .find-room-room-actions {
+    flex-direction: column;
+  }
+}

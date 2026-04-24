@@ -126,7 +126,22 @@ function renderProperties(properties, reset = false) {
 
   hideNoResultsState();
 
+  // Deduplicate properties by ID to prevent duplicate cards
+  const uniqueProperties = [];
+  const seenIds = new Set();
+
   properties.forEach(property => {
+    if (!seenIds.has(property.id)) {
+      seenIds.add(property.id);
+      uniqueProperties.push(property);
+    } else {
+      console.warn(
+        `Duplicate property detected and skipped: ID ${property.id}, Title: ${property.title}`
+      );
+    }
+  });
+
+  uniqueProperties.forEach(property => {
     const card = createPropertyCard(property);
     grid.appendChild(card);
   });
@@ -705,6 +720,9 @@ async function setupEnhancedFeatures() {
 
   // Initialize modals
   initModals();
+
+  // Initialize room modal
+  initRoomModal();
 
   // Update status badge (only for authenticated users)
   if (authState.isAuthenticated) {
@@ -1347,14 +1365,18 @@ function populateDetailPanel(property) {
   // Set rooms section
   const roomsSection = document.getElementById('detail-rooms-section');
   const roomsGrid = document.getElementById('detail-rooms-grid');
-  if (roomsSection && roomsGrid && property.rooms) {
+  if (roomsSection && roomsGrid && property.rooms && property.rooms.length > 0) {
     roomsSection.style.display = 'block';
     roomsGrid.innerHTML = property.rooms
       .map(
         (room, _index) => `
-      <div class="find-room-detail-room-card">
+      <div class="find-room-detail-room-card" onclick="openRoomDetailModal(${JSON.stringify(
+        room
+      ).replace(/"/g, '&quot;')}, ${JSON.stringify(property).replace(/"/g, '&quot;')})">
         <div class="find-room-room-image-wrapper">
-          <img src="${room.image}" alt="${room.type}" class="find-room-room-image" />
+          <img src="${getImageUrl(room.image)}" alt="${
+          room.type || room.room_name
+        }" class="find-room-room-image" onerror="this.src='${getImageUrl(null)}'" />
           <div class="find-room-room-badge ${
             room.availability === 'Available'
               ? 'find-room-room-available'
@@ -1364,10 +1386,18 @@ function populateDetailPanel(property) {
           </div>
         </div>
         <div class="find-room-room-info">
-          <h4 class="find-room-room-type">${room.type}</h4>
-          <p class="find-room-room-description">${room.description}</p>
+          <h4 class="find-room-room-type">${room.type || room.room_name || 'Room'}</h4>
+          <p class="find-room-room-description">${
+            room.description || 'Comfortable room with basic amenities.'
+          }</p>
+          <div class="find-room-room-details">
+            <span class="find-room-room-capacity">
+              <span data-icon="userCircle" data-icon-width="16" data-icon-height="16"></span>
+              ${room.capacity || 1} ${(room.capacity || 1) === 1 ? 'person' : 'persons'}
+            </span>
+          </div>
           <div class="find-room-room-price">
-            <span class="find-room-room-price-amount">₱${room.price.toLocaleString()}</span>
+            <span class="find-room-room-price-amount">₱${(room.price || 0).toLocaleString()}</span>
             <span class="find-room-room-price-period">/month</span>
           </div>
         </div>
@@ -1375,6 +1405,8 @@ function populateDetailPanel(property) {
     `
       )
       .join('');
+  } else if (roomsSection) {
+    roomsSection.style.display = 'none';
   }
 
   // Set amenities section
@@ -1844,3 +1876,211 @@ function showRejectionModal(propertyId) {
 if (typeof window !== 'undefined') {
   window.initFindARoomEnhanced = initFindARoomEnhanced;
 }
+
+/* ==========================================================================
+   Room Detail Modal
+   ========================================================================== */
+
+/**
+ * Open room detail modal
+ */
+function openRoomDetailModal(room, property) {
+  const modal = document.getElementById('room-detail-modal');
+  if (!modal) return;
+
+  // Populate room data
+  populateRoomModal(room, property);
+
+  // Show modal
+  modal.style.display = 'flex';
+
+  // Re-render icons
+  if (window.renderIcons) {
+    setTimeout(() => window.renderIcons(), 100);
+  }
+}
+
+/**
+ * Close room detail modal
+ */
+function closeRoomDetailModal() {
+  const modal = document.getElementById('room-detail-modal');
+  if (modal) {
+    modal.style.display = 'none';
+  }
+}
+
+/**
+ * Populate room modal with data
+ */
+function populateRoomModal(room, property) {
+  // Set room title
+  const titleEl = document.getElementById('room-detail-title');
+  if (titleEl) {
+    titleEl.textContent = `${room.room_name || room.type} - ${property.title}`;
+  }
+
+  // Set room name
+  const nameEl = document.getElementById('room-name');
+  if (nameEl) {
+    nameEl.textContent = room.room_name || room.type || 'Room';
+  }
+
+  // Set room status
+  const statusEl = document.getElementById('room-status');
+  if (statusEl) {
+    statusEl.textContent = room.availability || 'Available';
+    statusEl.className = `find-room-room-status ${
+      room.availability === 'Available' ? 'available' : 'occupied'
+    }`;
+  }
+
+  // Set capacity
+  const capacityEl = document.getElementById('room-capacity');
+  if (capacityEl) {
+    const capacity = room.capacity || 1;
+    capacityEl.textContent = `${capacity} ${capacity === 1 ? 'person' : 'persons'}`;
+  }
+
+  // Set price
+  const priceEl = document.getElementById('room-price');
+  if (priceEl) {
+    priceEl.textContent = `₱${(room.price || 0).toLocaleString()}/month`;
+  }
+
+  // Set description
+  const descEl = document.getElementById('room-description');
+  if (descEl) {
+    descEl.textContent = room.description || 'No description available.';
+  }
+
+  // Set main image
+  const mainImageEl = document.getElementById('room-main-image');
+  if (mainImageEl) {
+    const mainImage =
+      room.photos && room.photos.length > 0
+        ? room.photos[0]
+        : room.image || '/assets/images/placeholder-room.svg';
+    mainImageEl.src = getImageUrl(mainImage);
+    mainImageEl.alt = room.room_name || room.type || 'Room';
+    mainImageEl.onerror = function () {
+      this.src = getImageUrl(null);
+    };
+  }
+
+  // Set thumbnails
+  const thumbnailsEl = document.getElementById('room-thumbnails');
+  if (thumbnailsEl && room.photos && room.photos.length > 1) {
+    thumbnailsEl.innerHTML = room.photos
+      .map(
+        (photo, index) => `
+      <img 
+        src="${getImageUrl(photo)}" 
+        alt="Room photo ${index + 1}"
+        class="find-room-room-thumbnail ${index === 0 ? 'active' : ''}"
+        onclick="selectRoomImage('${photo}')"
+        onerror="this.src='${getImageUrl(null)}'"
+      />
+    `
+      )
+      .join('');
+  } else if (thumbnailsEl) {
+    thumbnailsEl.innerHTML = '';
+  }
+
+  // Set up apply button
+  const applyBtn = document.getElementById('apply-room-btn');
+  if (applyBtn) {
+    // Remove existing listeners
+    const newApplyBtn = applyBtn.cloneNode(true);
+    applyBtn.parentNode.replaceChild(newApplyBtn, applyBtn);
+
+    newApplyBtn.addEventListener('click', () => {
+      handleRoomApplication(room, property);
+    });
+  }
+}
+
+/**
+ * Select room image in gallery
+ */
+window.selectRoomImage = function (imageUrl) {
+  const mainImageEl = document.getElementById('room-main-image');
+  if (mainImageEl) {
+    mainImageEl.src = getImageUrl(imageUrl);
+  }
+
+  // Update active thumbnail
+  document.querySelectorAll('.find-room-room-thumbnail').forEach(thumb => {
+    thumb.classList.remove('active');
+  });
+  event.target.classList.add('active');
+};
+
+/**
+ * Handle room application
+ */
+async function handleRoomApplication(room, property) {
+  // Check if user is logged in
+  const token = localStorage.getItem('token');
+  if (!token) {
+    window.location.href =
+      '../auth/login.html?redirect=' + encodeURIComponent(window.location.href);
+    return;
+  }
+
+  try {
+    const response = await authenticatedFetch(`${CONFIG.API_BASE_URL}/api/boarder/applications`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        property_id: property.id,
+        room_id: room.id,
+        message: `Application for ${room.room_name || room.type} in ${property.title}`,
+      }),
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.error || 'Failed to submit application');
+    }
+
+    showToast('Application submitted successfully!', 'success');
+    closeRoomDetailModal();
+
+    // Refresh applications
+    await loadApplicationsFromAPI();
+    updateStatusBadge();
+    renderApplications();
+  } catch (error) {
+    console.error('Error submitting application:', error);
+    showToast(error.message || 'Failed to submit application', 'error');
+  }
+}
+
+/**
+ * Initialize room modal event listeners
+ */
+function initRoomModal() {
+  // Close button
+  const closeBtn = document.getElementById('room-detail-modal-close');
+  if (closeBtn) {
+    closeBtn.addEventListener('click', closeRoomDetailModal);
+  }
+
+  // Close on overlay click
+  const modal = document.getElementById('room-detail-modal');
+  if (modal) {
+    modal.addEventListener('click', e => {
+      if (e.target === modal) {
+        closeRoomDetailModal();
+      }
+    });
+  }
+}
+
+// Make functions globally available
+window.openRoomDetailModal = openRoomDetailModal;
+window.closeRoomDetailModal = closeRoomDetailModal;

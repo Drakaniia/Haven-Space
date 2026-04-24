@@ -7,8 +7,8 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   // Malaybalay City bounding box — restricts panning outside the city
   const malaybalayBounds = L.latLngBounds(
-    [8.0500, 125.0500], // SW corner
-    [8.2500, 125.2500]  // NE corner
+    [8.05, 125.05], // SW corner
+    [8.25, 125.25] // NE corner
   );
 
   const map = L.map('map', {

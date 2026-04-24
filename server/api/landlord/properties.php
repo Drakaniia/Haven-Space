@@ -221,7 +221,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
             // Get photos
             $photosStmt = $pdo->prepare("SELECT photo_url FROM property_photos WHERE property_id = ? ORDER BY display_order");
             $photosStmt->execute([$propertyId]);
-            $photos = $photosStmt->fetchAll(PDO::FETCH_COLUMN);
+            $rawPhotos = $photosStmt->fetchAll(PDO::FETCH_COLUMN);
+            // Normalize bare filenames (legacy data stored without path prefix)
+            $photos = array_map(function($photoUrl) use ($propertyId) {
+                if ($photoUrl && !str_starts_with($photoUrl, '/') && !str_starts_with($photoUrl, 'http')) {
+                    return '/storage/properties/' . $propertyId . '/' . $photoUrl;
+                }
+                return $photoUrl;
+            }, $rawPhotos);
 
             // Map property_type to frontend format
             $typeMapping = [
@@ -335,7 +342,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
                         if (!isset($photosMap[$pid])) {
                             $photosMap[$pid] = [];
                         }
-                        $photosMap[$pid][] = $row['photo_url'];
+                        $photoUrl = $row['photo_url'];
+                        // Normalize bare filenames (legacy data stored without path prefix)
+                        if ($photoUrl && !str_starts_with($photoUrl, '/') && !str_starts_with($photoUrl, 'http')) {
+                            $photoUrl = '/storage/properties/' . $pid . '/' . $photoUrl;
+                        }
+                        $photosMap[$pid][] = $photoUrl;
                     }
                 } catch (PDOException $e) {
                     // property_photos table may not exist yet

@@ -122,6 +122,12 @@ try {
     $properties = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
     // Build simplified response using use() to pass PDO
+    // Group properties by ID to prevent any potential duplicates from SQL query
+    $uniqueProperties = [];
+    foreach ($properties as $property) {
+        $uniqueProperties[$property['id']] = $property;
+    }
+    
     $enrichedProperties = array_map(function($property) use ($pdo) {
         $propertyId = $property['id'];
         
@@ -155,6 +161,7 @@ try {
         // Get room counts from rooms table
         $roomsCount = 0;
         $availableRooms = 0;
+        $rooms = [];
         try {
             $roomStmt = $pdo->prepare("
                 SELECT 
@@ -168,6 +175,57 @@ try {
             if ($roomData) {
                 $roomsCount = intval($roomData['total_rooms']);
                 $availableRooms = intval($roomData['available_rooms']);
+            }
+
+            // Get detailed room information
+            $roomDetailsStmt = $pdo->prepare("
+                SELECT 
+                    id,
+                    room_number,
+                    room_type,
+                    capacity,
+                    status,
+                    price as room_price,
+                    title
+                FROM rooms 
+                WHERE property_id = ? AND deleted_at IS NULL
+                ORDER BY room_number ASC
+            ");
+            $roomDetailsStmt->execute([$propertyId]);
+            $roomDetails = $roomDetailsStmt->fetchAll(PDO::FETCH_ASSOC);
+            
+            foreach ($roomDetails as $room) {
+                $roomId = $room['id'];
+                
+                // Get room photos
+                $roomPhotos = [];
+                try {
+                    $roomPhotoStmt = $pdo->prepare("
+                        SELECT photo_url 
+                        FROM room_photos 
+                        WHERE room_id = ? 
+                        ORDER BY display_order ASC
+                    ");
+                    $roomPhotoStmt->execute([$roomId]);
+                    $photos = $roomPhotoStmt->fetchAll(PDO::FETCH_ASSOC);
+                    $roomPhotos = array_column($photos, 'photo_url');
+                } catch (PDOException $e) {
+                    // room_photos table might not exist
+                }
+
+                $rooms[] = [
+                    'id' => intval($room['id']),
+                    'room_number' => $room['room_number'] ?? "Room " . $room['id'],
+                    'room_name' => $room['room_type'] ?? $room['room_number'] ?? "Room " . $room['id'],
+                    'type' => $room['room_type'] ?? 'Standard Room',
+                    'capacity' => intval($room['capacity'] ?? 1),
+                    'status' => $room['status'] ?? 'available',
+                    'availability' => ($room['status'] ?? 'available') === 'available' ? 'Available' : 'Occupied',
+                    'description' => $room['title'] ?? 'Comfortable room with all basic amenities.',
+                    'price' => $room['room_price'] ? floatval($room['room_price']) : floatval($property['price']),
+                    'photos' => $roomPhotos,
+                    'image' => !empty($roomPhotos) ? $roomPhotos[0] : '/assets/images/placeholder-room.svg'
+                ];
             }
         } catch (PDOException $e) {
             // rooms table doesn't exist
@@ -251,14 +309,14 @@ try {
             'image' => $image,
             'images' => $images,
             'badges' => $badges,
-            'rooms' => [],
+            'rooms' => $rooms,
             'landlord' => [
                 'id' => intval($property['landlord_id']),
                 'name' => htmlspecialchars(($property['landlord_first_name'] ?? '') . ' ' . ($property['landlord_last_name'] ?? '')),
             ],
             'createdAt' => $property['created_at'],
         ];
-    }, $properties);
+    }, array_values($uniqueProperties)); // Use array_values to reset keys after deduplication
 
     json_response(200, [
         'data' => [

@@ -54,7 +54,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
             LEFT JOIN landlord_profiles lp ON lp.user_id = p.landlord_id
             WHERE p.deleted_at IS NULL 
                 AND p.status IN ('available', 'active')
-                AND p.listing_moderation_status = 'approved'
+                AND p.listing_moderation_status = 'published'
                 AND p.latitude IS NOT NULL 
                 AND p.longitude IS NOT NULL
             GROUP BY p.id, p.title, p.description, p.address, p.latitude, p.longitude, p.price, p.status, p.listing_moderation_status, p.created_at, p.landlord_id, pd.city, pd.province, pd.property_type, pd.total_rooms, u.first_name, u.last_name, lp.boarding_house_name
