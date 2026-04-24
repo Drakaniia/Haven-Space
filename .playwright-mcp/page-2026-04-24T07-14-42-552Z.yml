@@ -1,0 +1,25 @@
+- generic [active] [ref=e1]:
+  - banner [ref=e2]:
+    - link "Haven Space Haven Space" [ref=e3] [cursor=pointer]:
+      - /url: ../index.html
+      - img "Haven Space" [ref=e4]
+      - generic [ref=e5]: Haven Space
+  - main [ref=e6]:
+    - generic [ref=e7]:
+      - heading "Join as a landlord or boarder" [level=1] [ref=e8]
+      - generic [ref=e9]:
+        - generic [ref=e10] [cursor=pointer]:
+          - img [ref=e13]
+          - paragraph [ref=e17]:
+            - text: I'm a boarder,
+            - text: looking for a room
+        - generic [ref=e18] [cursor=pointer]:
+          - img [ref=e21]
+          - paragraph [ref=e24]:
+            - text: I'm a landlord,
+            - text: looking for a boarder
+      - button "Join as Landlord" [ref=e28] [cursor=pointer]
+      - paragraph [ref=e26]:
+        - text: Already have an account?
+        - link "Log In" [ref=e27] [cursor=pointer]:
+          - /url: login.html

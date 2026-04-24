@@ -7,7 +7,6 @@ import {
   Databases,
   ID,
   Query,
-  OAuthProvider,
 } from 'https://cdn.jsdelivr.net/npm/appwrite@17.0.2/dist/esm/sdk.js';
 
 const APPWRITE_ENDPOINT = 'https://fra.cloud.appwrite.io/v1';
@@ -17,4 +16,4 @@ export const client = new Client().setEndpoint(APPWRITE_ENDPOINT).setProject(APP
 
 export const account = new Account(client);
 export const databases = new Databases(client);
-export { ID, Query, OAuthProvider };
+export { ID, Query };

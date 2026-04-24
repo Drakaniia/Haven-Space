@@ -11,12 +11,14 @@ function detectEnvironment() {
   const productionHosts = [
     'onrender.com',
     'github.io', // GitHub Pages
+    'appwrite.network', // Appwrite hosting
   ];
 
   if (
-    productionHosts.includes(hostname) ||
+    productionHosts.some(host => hostname.includes(host)) ||
     hostname.includes('render') ||
-    hostname.includes('github.io')
+    hostname.includes('github.io') ||
+    hostname.includes('appwrite')
   ) {
     return 'production';
   }
@@ -48,7 +50,7 @@ function getApiBaseUrl() {
   const env = detectEnvironment();
 
   const apiUrls = {
-    production: 'https://haven-space-api.onrender.com', // Production API on Render
+    production: 'https://69eb0fbe001f297c8dab.fra.appwrite.run', // Appwrite function domain
     'local-dev': 'http://localhost:8000', // PHP built-in server
     'local-apache': 'http://localhost:8000', // Apache/XAMPP - still use port 8000 for API
   };

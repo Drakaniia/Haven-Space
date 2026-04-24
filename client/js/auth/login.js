@@ -1,7 +1,7 @@
 import { getIcon } from '../shared/icons.js';
 import { getBoarderRedirectPath, updateBoarderStatus } from '../shared/routing.js';
 import { showToast } from '../shared/toast.js';
-import { account, OAuthProvider } from '../appwrite.js';
+import { account } from '../appwrite.js';
 
 /**
  * Inject icons from centralized library into elements with data-icon attributes
@@ -114,7 +114,7 @@ document.addEventListener('DOMContentLoaded', function () {
       ? window.location.origin + '/boarder/index.html'
       : window.location.origin + '/views/boarder/index.html';
     account.createOAuth2Session({
-      provider: OAuthProvider.Google,
+      provider: 'google',
       success: successPath,
       failure: window.location.href,
     });
