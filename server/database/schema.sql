@@ -32,6 +32,22 @@ INSERT IGNORE INTO account_statuses (status_name, description, is_active) VALUES
 ('banned', 'Account permanently banned', FALSE),
 ('pending_verification', 'Account awaiting verification', FALSE);
 
+-- Countries lookup table
+CREATE TABLE IF NOT EXISTS countries (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    code VARCHAR(3) NOT NULL UNIQUE,
+    name VARCHAR(100) NOT NULL UNIQUE,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+INSERT IGNORE INTO countries (code, name) VALUES
+('PH', 'Philippines'),
+('US', 'United States'),
+('CA', 'Canada'),
+('AU', 'Australia'),
+('UK', 'United Kingdom'),
+('XX', 'Unknown');
+
 -- Verification status lookup table
 CREATE TABLE IF NOT EXISTS verification_statuses (
     id INT AUTO_INCREMENT PRIMARY KEY,
@@ -109,15 +125,18 @@ CREATE TABLE IF NOT EXISTS addresses (
     city VARCHAR(100) NOT NULL,
     province VARCHAR(100) NOT NULL,
     postal_code VARCHAR(20) NULL,
+    country_id INT NOT NULL DEFAULT 1,
     latitude DECIMAL(10, 8) NULL,
     longitude DECIMAL(11, 8) NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    FOREIGN KEY (country_id) REFERENCES countries(id),
     INDEX idx_location (latitude, longitude),
-    INDEX idx_city_province (city, province)
+    INDEX idx_city_province (city, province),
+    INDEX idx_country (country_id)
 );
 
--- Files table (normalized file information)
+-- Files table (normalized file information) - created without FK constraint initially
 CREATE TABLE IF NOT EXISTS files (
     id INT AUTO_INCREMENT PRIMARY KEY,
     file_url VARCHAR(500) NOT NULL,
@@ -125,7 +144,7 @@ CREATE TABLE IF NOT EXISTS files (
     file_size INT NOT NULL,
     mime_type VARCHAR(100) NOT NULL,
     file_hash VARCHAR(64) NULL COMMENT 'For duplicate detection',
-    uploaded_by INT NOT NULL,
+    uploaded_by INT NULL COMMENT 'Will be NOT NULL after users table is created',
     uploaded_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     deleted_at TIMESTAMP NULL DEFAULT NULL,
     INDEX idx_hash (file_hash),
@@ -175,8 +194,7 @@ CREATE TABLE IF NOT EXISTS users (
 );
 
 -- Add FK from files to users (deferred to avoid circular dependency)
-ALTER TABLE files DROP FOREIGN KEY IF EXISTS fk_files_uploaded_by;
-ALTER TABLE files ADD CONSTRAINT fk_files_uploaded_by FOREIGN KEY (uploaded_by) REFERENCES users(id);
+-- This will be handled after all tables are created and populated
 
 -- User contacts junction table
 CREATE TABLE IF NOT EXISTS user_contacts (
@@ -578,6 +596,17 @@ INSERT IGNORE INTO users (first_name, last_name, email, password_hash, role_id, 
     ('Super', 'Admin', 'admin@mail.com', '$2y$12$T7quqln.QaMfVHroclj7B.QBk.lNVWIuY65qB5KerTPJG65piAGFy', 3, TRUE, 1);
 
 -- ============================================================================
+-- FOREIGN KEY CONSTRAINTS (Added after data insertion)
+-- ============================================================================
+
+-- Now that users table is populated, we can safely add the foreign key constraint for files
+-- Handle any existing orphaned data first
+DELETE FROM files WHERE uploaded_by IS NOT NULL AND uploaded_by NOT IN (SELECT id FROM users);
+UPDATE files SET uploaded_by = 1 WHERE uploaded_by IS NULL;
+ALTER TABLE files MODIFY uploaded_by INT NOT NULL;
+ALTER TABLE files ADD CONSTRAINT fk_files_uploaded_by FOREIGN KEY (uploaded_by) REFERENCES users(id);
+
+-- ============================================================================
 -- VIEWS FOR BACKWARD COMPATIBILITY (Optional)
 -- ============================================================================
 
@@ -692,4 +721,3 @@ CREATE TABLE IF NOT EXISTS boarder_document_acknowledgments (
     INDEX idx_document (document_id),
     INDEX idx_acknowledged (acknowledged)
 );
-JOIN addresses a ON p.address_id = a.id;

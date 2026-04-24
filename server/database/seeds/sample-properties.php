@@ -27,10 +27,7 @@ try {
     echo "Creating sample data...\n";
 
     // Create a sample landlord user
-    $stmt = $pdo->prepare("
-        INSERT IGNORE INTO users (id, first_name, last_name, email, role, is_verified, email_verified) 
-        VALUES (1, 'Juan', 'Dela Cruz', 'landlord@example.com', 'landlord', 1, 1)
-    ");
+    $stmt = $pdo->prepare("\n        INSERT IGNORE INTO users (id, first_name, last_name, email, role, is_verified, email_verified) \n        VALUES (1, 'Juan', 'Dela Cruz', 'landlord@example.com', 'landlord', 1, 1)\n    ");
     $stmt->execute();
 
     // Create sample properties
@@ -40,6 +37,8 @@ try {
             'title' => 'Cozy Student Boarding House',
             'description' => 'A comfortable and affordable boarding house perfect for students. Located near major universities with easy access to public transportation. Features include high-speed WiFi, 24/7 security, and a friendly community atmosphere.',
             'address' => '123 University Ave, Diliman, Quezon City',
+            'city' => 'Quezon City',
+            'province' => 'Metro Manila',
             'price' => 4500.00,
             'latitude' => 14.6537,
             'longitude' => 121.0685
@@ -49,6 +48,8 @@ try {
             'title' => 'Campus View Residences',
             'description' => 'Modern boarding house with excellent amenities and great views of the campus. Perfect for students who want comfort and convenience.',
             'address' => '456 Loyola Heights, Quezon City',
+            'city' => 'Quezon City',
+            'province' => 'Metro Manila',
             'price' => 6500.00,
             'latitude' => 14.6400,
             'longitude' => 121.0776
@@ -58,6 +59,8 @@ try {
             'title' => 'Greenfield Boarding House',
             'description' => 'Spacious rooms in a quiet neighborhood. Great for students who prefer a peaceful environment for studying.',
             'address' => '789 Commonwealth Ave, Quezon City',
+            'city' => 'Quezon City',
+            'province' => 'Metro Manila',
             'price' => 5200.00,
             'latitude' => 14.6760,
             'longitude' => 121.0437
@@ -67,6 +70,8 @@ try {
             'title' => 'Metro Student Hub',
             'description' => 'Centrally located boarding house with modern facilities and excellent connectivity to major universities.',
             'address' => '321 Katipunan Ave, Quezon City',
+            'city' => 'Quezon City',
+            'province' => 'Metro Manila',
             'price' => 5800.00,
             'latitude' => 14.6350,
             'longitude' => 121.0700
@@ -76,6 +81,8 @@ try {
             'title' => 'Haven Student Residence',
             'description' => 'Premium boarding house offering comfortable living spaces for students. Features include study areas, recreational facilities, and 24/7 security. Located in a safe and accessible area with nearby convenience stores and restaurants.',
             'address' => '567 Maginhawa St, Teachers Village, Quezon City',
+            'city' => 'Quezon City',
+            'province' => 'Metro Manila',
             'price' => 4500.00,
             'latitude' => 14.6421,
             'longitude' => 121.0658
@@ -83,164 +90,76 @@ try {
     ];
 
     foreach ($properties as $property) {
-        $stmt = $pdo->prepare("
-            INSERT IGNORE INTO properties (id, landlord_id, title, description, address, price, latitude, longitude, listing_moderation_status) 
-            VALUES (?, 1, ?, ?, ?, ?, ?, ?, 'published')
+        // First insert address
+        $addressStmt = $pdo->prepare("
+            INSERT IGNORE INTO addresses (address_line_1, city, province, country_id, latitude, longitude) 
+            VALUES (?, ?, ?, ?, ?, ?)
         ");
+        $addressStmt->execute([
+            $property['address'],
+            $property['city'],
+            $property['province'],
+            1, // Default to Philippines
+            $property['latitude'],
+            $property['longitude']
+        ]);
+        $addressId = $pdo->lastInsertId();
+
+        // Then insert property with address_id
+        $stmt = $pdo->prepare("\n            INSERT IGNORE INTO properties (id, landlord_id, title, description, address_id, price, listing_moderation_status) \n            VALUES (?, 1, ?, ?, ?, ?, 'published')\n        ");
         $stmt->execute([
             $property['id'],
             $property['title'],
             $property['description'],
-            $property['address'],
-            $property['price'],
-            $property['latitude'],
-            $property['longitude']
+            $addressId,
+            $property['price']
         ]);
     }
 
     // Create property details for property ID 5
     try {
-        $pdo->exec("
-            CREATE TABLE IF NOT EXISTS property_details (
-                id INT AUTO_INCREMENT PRIMARY KEY,
-                property_id INT NOT NULL,
-                city VARCHAR(100),
-                province VARCHAR(100),
-                property_type VARCHAR(100),
-                deposit VARCHAR(100),
-                min_stay VARCHAR(100),
-                capacity VARCHAR(10),
-                availability VARCHAR(50),
-                total_rooms INT,
-                house_rules JSON,
-                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-                FOREIGN KEY (property_id) REFERENCES properties(id) ON DELETE CASCADE
-            )
-        ");
+        $pdo->exec("\n            CREATE TABLE IF NOT EXISTS property_details (\n                id INT AUTO_INCREMENT PRIMARY KEY,\n                property_id INT NOT NULL,\n                city VARCHAR(100),\n                province VARCHAR(100),\n                property_type VARCHAR(100),\n                deposit VARCHAR(100),\n                rooms_available INT,\n                capacity_per_room INT,\n                amenities TEXT,\n                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,\n                updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP\n            )\n        ");
 
-        $stmt = $pdo->prepare("
-            INSERT IGNORE INTO property_details (property_id, city, province, property_type, deposit, min_stay, capacity, availability, total_rooms, house_rules) 
-            VALUES (5, 'Quezon City', 'Metro Manila', 'Boarding House', '2 months', '6 months', '1-2', 'available-now', 8, ?)
-        ");
-        $houseRules = json_encode([
-            ['title' => 'Curfew', 'desc' => 'Building locks at 11:00 PM on weekdays, 12:00 AM on weekends', 'icon' => 'clock'],
-            ['title' => 'No Smoking', 'desc' => 'Smoking is not allowed inside the building', 'icon' => 'noSmoking'],
-            ['title' => 'No Pets', 'desc' => 'Pets are not allowed on the premises', 'icon' => 'noPets'],
-            ['title' => 'Visitors', 'desc' => 'Visitors allowed until 9:00 PM only', 'icon' => 'userGroup']
+        $detailStmt = $pdo->prepare("\n            INSERT IGNORE INTO property_details (property_id, city, province, property_type, deposit, rooms_available, capacity_per_room, amenities) \n            VALUES (?, ?, ?, ?, ?, ?, ?, ?)\n        ");
+        $detailStmt->execute([
+            5,
+            'Quezon City',
+            'Metro Manila',
+            'Single unit',
+            '4500',
+            10,
+            2,
+            json_encode(['WiFi', 'Air Conditioning', 'Study Area', 'Laundry Service', '24/7 Security'])
         ]);
-        $stmt->execute([$houseRules]);
     } catch (PDOException $e) {
-        echo "Note: Could not create property_details table: " . $e->getMessage() . "\n";
-    }
-
-    // Create property amenities
-    try {
-        $pdo->exec("
-            CREATE TABLE IF NOT EXISTS property_amenities (
-                id INT AUTO_INCREMENT PRIMARY KEY,
-                property_id INT NOT NULL,
-                amenity_name VARCHAR(100) NOT NULL,
-                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-                FOREIGN KEY (property_id) REFERENCES properties(id) ON DELETE CASCADE
-            )
-        ");
-
-        $amenities = [
-            'High-Speed WiFi', 'Air Conditioning', 'Parking Space', 'Laundry Area',
-            '24/7 Security', 'CCTV Surveillance', 'Kitchen Access', 'Furnished Rooms',
-            'Backup Generator', 'Water Heater', 'Weekly Cleaning', 'Common Area'
-        ];
-
-        foreach ($amenities as $amenity) {
-            $stmt = $pdo->prepare("INSERT IGNORE INTO property_amenities (property_id, amenity_name) VALUES (5, ?)");
-            $stmt->execute([$amenity]);
-        }
-    } catch (PDOException $e) {
-        echo "Note: Could not create property_amenities table: " . $e->getMessage() . "\n";
+        // property_details table might not exist, continue without it
+        error_log('property_details insert failed: ' . $e->getMessage());
     }
 
     // Create rooms for property ID 5
     try {
-        $pdo->exec("
-            CREATE TABLE IF NOT EXISTS rooms (
-                id INT AUTO_INCREMENT PRIMARY KEY,
-                property_id INT NOT NULL,
-                room_number VARCHAR(10),
-                room_type VARCHAR(50),
-                price DECIMAL(10,2),
-                status ENUM('available', 'occupied', 'maintenance') DEFAULT 'available',
-                capacity INT DEFAULT 1,
-                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-                deleted_at TIMESTAMP NULL,
-                FOREIGN KEY (property_id) REFERENCES properties(id) ON DELETE CASCADE
-            )
-        ");
+        $pdo->exec("\n            CREATE TABLE IF NOT EXISTS rooms (\n                id INT AUTO_INCREMENT PRIMARY KEY,\n                property_id INT NOT NULL,\n                landlord_id INT NOT NULL,\n                title VARCHAR(255) NOT NULL,\n                price DECIMAL(10, 2) NOT NULL,\n                status ENUM('available', 'occupied', 'maintenance') DEFAULT 'available',\n                room_number VARCHAR(50),\n                room_type VARCHAR(50),\n                capacity INT,\n                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,\n                updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP\n            )\n        ");
 
         $rooms = [
-            ['room_number' => 'R101', 'room_type' => 'Single Room', 'price' => 4500.00, 'status' => 'available', 'capacity' => 1],
-            ['room_number' => 'R102', 'room_type' => 'Single Room', 'price' => 4500.00, 'status' => 'available', 'capacity' => 1],
-            ['room_number' => 'R103', 'room_type' => 'Shared Room', 'price' => 3000.00, 'status' => 'available', 'capacity' => 2],
-            ['room_number' => 'R104', 'room_type' => 'Shared Room', 'price' => 3000.00, 'status' => 'occupied', 'capacity' => 2],
-            ['room_number' => 'R201', 'room_type' => 'Single Room', 'price' => 4500.00, 'status' => 'available', 'capacity' => 1],
-            ['room_number' => 'R202', 'room_type' => 'Single Room', 'price' => 4500.00, 'status' => 'available', 'capacity' => 1],
-            ['room_number' => 'R203', 'room_type' => 'Shared Room', 'price' => 3000.00, 'status' => 'available', 'capacity' => 2],
-            ['room_number' => 'R204', 'room_type' => 'Shared Room', 'price' => 3000.00, 'status' => 'available', 'capacity' => 2]
+            ['Room 101', 4500.00, 'Room 101', 'single', 1],
+            ['Room 102', 4500.00, 'Room 102', 'single', 1],
+            ['Room 103', 4500.00, 'Room 103', 'shared', 2],
+            ['Room 104', 4500.00, 'Room 104', 'shared', 2],
+            ['Room 105', 4500.00, 'Room 105', 'single', 1],
         ];
+
+        $roomStmt = $pdo->prepare("\n            INSERT IGNORE INTO rooms (property_id, landlord_id, title, price, status, room_number, room_type, capacity) \n            VALUES (?, 1, ?, ?, 'available', ?, ?, ?)\n        ");
 
         foreach ($rooms as $room) {
-            $stmt = $pdo->prepare("
-                INSERT IGNORE INTO rooms (property_id, room_number, room_type, price, status, capacity) 
-                VALUES (5, ?, ?, ?, ?, ?)
-            ");
-            $stmt->execute([
-                $room['room_number'],
-                $room['room_type'],
-                $room['price'],
-                $room['status'],
-                $room['capacity']
-            ]);
+            $roomStmt->execute([5, $room[0], $room[1], $room[2], $room[3], $room[4]]);
         }
     } catch (PDOException $e) {
-        echo "Note: Could not create rooms table: " . $e->getMessage() . "\n";
-    }
-
-    // Create property photos
-    try {
-        $pdo->exec("
-            CREATE TABLE IF NOT EXISTS property_photos (
-                id INT AUTO_INCREMENT PRIMARY KEY,
-                property_id INT NOT NULL,
-                photo_url TEXT NOT NULL,
-                is_cover BOOLEAN DEFAULT FALSE,
-                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-                FOREIGN KEY (property_id) REFERENCES properties(id) ON DELETE CASCADE
-            )
-        ");
-
-        $photos = [
-            ['url' => 'https://images.unsplash.com/photo-1555854877-bab0e564b8d5?w=1200&q=80', 'is_cover' => true],
-            ['url' => 'https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?w=1200&q=80', 'is_cover' => false],
-            ['url' => 'https://images.unsplash.com/photo-1502672260266-1c1ef2d93688?w=1200&q=80', 'is_cover' => false],
-            ['url' => 'https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?w=1200&q=80', 'is_cover' => false],
-            ['url' => 'https://images.unsplash.com/photo-1560185127-6ed189bf02f4?w=1200&q=80', 'is_cover' => false]
-        ];
-
-        foreach ($photos as $photo) {
-            $stmt = $pdo->prepare("INSERT IGNORE INTO property_photos (property_id, photo_url, is_cover) VALUES (5, ?, ?)");
-            $stmt->execute([$photo['url'], $photo['is_cover']]);
-        }
-    } catch (PDOException $e) {
-        echo "Note: Could not create property_photos table: " . $e->getMessage() . "\n";
+        // rooms table might not exist, continue without it
+        error_log('rooms insert failed: ' . $e->getMessage());
     }
 
     echo "Sample data created successfully!\n";
-    echo "Properties created: " . count($properties) . "\n";
-    echo "Property ID 5 'Haven Student Residence' is ready for testing.\n";
-
 } catch (PDOException $e) {
-    echo "Database error: " . $e->getMessage() . "\n";
-    exit(1);
-} catch (Exception $e) {
-    echo "Error: " . $e->getMessage() . "\n";
+    echo "Error creating sample data: " . $e->getMessage() . "\n";
     exit(1);
 }
