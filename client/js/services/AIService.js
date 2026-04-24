@@ -10,12 +10,16 @@ class AIService {
   static functions = null;
 
   static initializeAppwrite() {
-    if (!this.appwriteClient && typeof Appwrite !== 'undefined') {
-      this.appwriteClient = new Appwrite.Client()
+    if (
+      !this.appwriteClient &&
+      typeof window !== 'undefined' &&
+      typeof window.Appwrite !== 'undefined'
+    ) {
+      this.appwriteClient = new window.Appwrite.Client()
         .setEndpoint(CONFIG.APPWRITE.ENDPOINT)
         .setProject(CONFIG.APPWRITE.PROJECT_ID);
-      
-      this.functions = new Appwrite.Functions(this.appwriteClient);
+
+      this.functions = new window.Appwrite.Functions(this.appwriteClient);
     }
     return this.appwriteClient;
   }
@@ -63,11 +67,11 @@ class AIService {
       if (isAppwriteExecution) {
         // Use Appwrite SDK for production
         this.initializeAppwrite();
-        
+
         if (!this.appwriteClient) {
           throw new Error('Appwrite SDK not available');
         }
-        
+
         // Set session if available
         if (sessionId) {
           this.appwriteClient.setSession(sessionId);
@@ -85,7 +89,7 @@ class AIService {
           method,
           {
             'Content-Type': 'application/json',
-            ...(token && { 'Authorization': `Bearer ${token}` }),
+            ...(token && { Authorization: `Bearer ${token}` }),
             ...(sessionId && { 'X-Session-Id': sessionId }),
             ...(userId && { 'X-User-Id': userId }),
           }
@@ -117,7 +121,7 @@ class AIService {
           credentials: 'include',
         };
 
-        let requestUrl = `${CONFIG.API_BASE_URL}${path}`;
+        const requestUrl = `${CONFIG.API_BASE_URL}${path}`;
 
         if (data && method !== 'GET') {
           requestOptions.body = JSON.stringify(data);
