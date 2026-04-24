@@ -301,26 +301,22 @@
   background: var(--white);
 }
 
-.demo-input-wrapper {
+.demo-input-field {
   flex: 1;
-  display: flex;
-  align-items: center;
   background: #f5f6f8;
   border: 2px solid transparent;
   border-radius: 24px;
   padding: 0.5rem 1rem;
+  font-size: 0.875rem;
+  color: #333;
   transition: all 0.2s;
+  outline: none;
 }
 
-.demo-input-wrapper:focus-within {
+.demo-input-field:focus {
   border-color: var(--primary-green);
   background: var(--white);
-}
-
-.demo-input-placeholder {
-  flex: 1;
-  color: #8a8f98;
-  font-size: 0.875rem;
+  box-shadow: 0 0 0 3px rgba(74, 124, 35, 0.1);
 }
 
 .demo-send-button {
@@ -335,11 +331,51 @@
   cursor: pointer;
   transition: all 0.2s;
   flex-shrink: 0;
+  border: none;
+  outline: none;
 }
 
 .demo-send-button:hover {
   background: var(--dark-green);
   transform: scale(1.05);
+}
+
+.demo-send-button:disabled {
+  background: #ccc;
+  cursor: not-allowed;
+  transform: none;
+}
+
+/* Typing indicator animation */
+.typing-dot {
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  background-color: #999;
+  border-radius: 50%;
+  margin: 0 2px;
+  animation: typing 1.4s infinite ease-in-out;
+}
+
+.typing-dot:nth-child(2) {
+  animation-delay: 0.2s;
+}
+
+.typing-dot:nth-child(3) {
+  animation-delay: 0.4s;
+}
+
+@keyframes typing {
+  0%,
+  60%,
+  100% {
+    transform: translateY(0);
+    background-color: #999;
+  }
+  30% {
+    transform: translateY(-3px);
+    background-color: #666;
+  }
 }
 
 /* ========================================

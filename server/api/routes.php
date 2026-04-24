@@ -24,6 +24,7 @@ use App\Modules\Maintenance\Controllers\MaintenanceController;
 use App\Modules\Onboarding\Controllers\OnboardingController;
 use App\Modules\Application\Controllers\ApplicationController;
 use App\Core\Upload\UploadController;
+use App\AI\GroqService;
 
 /**
  * Simple Router
@@ -398,6 +399,39 @@ Router::delete('/api/notifications/{id}', [NotificationController::class, 'destr
 // Boarder accepted applications (for overlay)
 Router::get('/api/boarder/accepted-applications', [NotificationController::class, 'getAcceptedApplications']);
 Router::get('/api/boarder/has-accepted-applications', [NotificationController::class, 'hasAcceptedApplications']);
+
+// ============================================
+// AI POWERED FEATURES
+// ============================================
+// Property description generator for landlords
+Router::post('/api/ai/generate-description', function() {
+    require_once __DIR__ . '/ai/generate-description.php';
+});
+
+// Smart search enhancement
+Router::post('/api/ai/enhance-search', function() {
+    require_once __DIR__ . '/ai/enhance-search.php';
+});
+
+// Maintenance request analysis
+Router::post('/api/ai/analyze-issue', function() {
+    require_once __DIR__ . '/ai/analyze-issue.php';
+});
+
+// Message drafting assistant
+Router::post('/api/ai/draft-message', function() {
+    require_once __DIR__ . '/ai/draft-message.php';
+});
+
+// Application analysis for landlords
+Router::post('/api/ai/analyze-application', function() {
+    require_once __DIR__ . '/ai/analyze-application.php';
+});
+
+// AI Chat endpoint for Haven AI assistant
+Router::post('/api/ai/chat', function() {
+    require_once __DIR__ . '/ai/chat.php';
+});
 
 // ============================================
 // DISPATCH THE REQUEST

@@ -1,4 +1,5 @@
 import CONFIG from '../../config.js';
+import AIService from '../../services/AIService.js';
 import { getIcon } from '../../shared/icons.js';
 import { getAuthHeaders, getAuthHeadersOnly } from '../../shared/auth-headers.js';
 import { requireAuth, isTokenExpired, logout } from '../../shared/auth-check.js';
@@ -382,6 +383,9 @@ function initFormHandlers() {
     setLocationBtn.addEventListener('click', openMapModal);
   }
 
+  // Initialize AI description generator
+  initAIDescriptionGenerator();
+
   // Initialize map modal handlers
   initMapModal();
 }
@@ -422,6 +426,85 @@ function initCustomAmenities() {
       if (e.key === 'Enter') {
         e.preventDefault();
         handleAddCustomAmenity();
+      }
+    });
+  }
+}
+
+/**
+ * Initialize AI description generator
+ */
+function initAIDescriptionGenerator() {
+  const aiGenerateBtn = document.getElementById('ai-generate-description');
+  const descriptionTextarea = document.getElementById('property-description');
+
+  if (aiGenerateBtn && descriptionTextarea) {
+    aiGenerateBtn.addEventListener('click', async () => {
+      try {
+        // Disable button during processing
+        aiGenerateBtn.disabled = true;
+        aiGenerateBtn.textContent = '🤖 Generating...';
+
+        // Show loading state
+        AIService.showLoading(
+          descriptionTextarea.parentElement,
+          'AI is crafting your description...'
+        );
+
+        // Gather property details from form
+        const propertyDetails = {
+          property_name: document.getElementById('property-name')?.value || '',
+          property_type: document.getElementById('property-type')?.value || '',
+          property_type_other: document.getElementById('property-type-other')?.value || '',
+          price: document.getElementById('property-price')?.value || '',
+          deposit: document.getElementById('property-deposit')?.value || '',
+          rooms_available: document.getElementById('property-rooms')?.value || '',
+          capacity: document.getElementById('property-capacity')?.value || '',
+          capacity_custom: document.getElementById('property-capacity-custom')?.value || '',
+          address: document.getElementById('property-address')?.value || '',
+          city: document.getElementById('property-city')?.value || '',
+          province: document.getElementById('property-province')?.value || '',
+          // Add amenities if available
+          amenities: Array.from(document.querySelectorAll('input[name="amenities"]:checked')).map(
+            el => el.value
+          ),
+        };
+
+        // Call AI service
+        const result = await AIService.generateDescription(propertyDetails);
+
+        if (result.success && result.description) {
+          // Set the generated description
+          descriptionTextarea.value = result.description;
+
+          // Show suggestion bubble with option to accept/revert
+          AIService.showSuggestion(descriptionTextarea.parentElement, result.description, () => {
+            // Already set, just focus the textarea
+            descriptionTextarea.focus();
+          });
+        } else {
+          // Show error
+          const errorElement = document.createElement('div');
+          errorElement.className = 'ai-error';
+          errorElement.textContent = result.error || 'Failed to generate description.';
+          descriptionTextarea.parentElement.appendChild(errorElement);
+        }
+      } catch (error) {
+        console.error('AI description generation error:', error);
+        const errorElement = document.createElement('div');
+        errorElement.className = 'ai-error';
+        errorElement.textContent = 'AI service error: ' + error.message;
+        descriptionTextarea.parentElement.appendChild(errorElement);
+      } finally {
+        // Re-enable button
+        aiGenerateBtn.disabled = false;
+        aiGenerateBtn.textContent = '🤖 Generate with AI';
+
+        // Remove loading state after a short delay
+        setTimeout(() => {
+          const loadingElements = descriptionTextarea.parentElement.querySelectorAll('.ai-loading');
+          loadingElements.forEach(el => el.remove());
+        }, 2000);
       }
     });
   }
