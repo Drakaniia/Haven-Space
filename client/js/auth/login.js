@@ -1,7 +1,6 @@
 import { getIcon } from '../shared/icons.js';
 import { getBoarderRedirectPath, updateBoarderStatus } from '../shared/routing.js';
 import { showToast } from '../shared/toast.js';
-import { account, OAuthProvider } from '../appwrite.js';
 import CONFIG from '../config.js';
 
 /**
@@ -62,17 +61,7 @@ document.addEventListener('DOMContentLoaded', function () {
     };
 
     try {
-      // First, try to clean up any existing sessions
-      try {
-        await account.deleteSession('current');
-      } catch (error) {
-        // Ignore errors - there might not be an existing session
-      }
-
-      // Create Appwrite session
-      await account.createEmailPasswordSession(data.email, data.password);
-
-      // Also authenticate with PHP backend to get a proper JWT for API calls
+      // Authenticate with PHP backend to get a JWT for API calls
       const phpLoginRes = await fetch(`${CONFIG.API_BASE_URL}/auth/login.php`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },

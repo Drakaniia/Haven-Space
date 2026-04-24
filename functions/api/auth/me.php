@@ -91,6 +91,10 @@ if (empty($token) && $simulatedId) {
     $userRow = $stmt->fetch();
     
     if ($userRow) {
+        $simVerificationStatus = $userRow['verification_status'] ?? null;
+        if ($userRow['role'] === 'landlord' && $simVerificationStatus === null) {
+            $simVerificationStatus = $userRow['is_verified'] ? 'approved' : 'pending';
+        }
         $user = [
             'id' => (int) $userRow['id'],
             'user_id' => (int) $userRow['id'],
@@ -101,6 +105,7 @@ if (empty($token) && $simulatedId) {
             'is_verified' => (bool) $userRow['is_verified'],
             'account_status' => $userRow['account_status'] ?? 'active',
             'avatar_url' => $userRow['avatar_url'],
+            'verification_status' => $simVerificationStatus,
         ];
         echo json_encode(['success' => true, 'user' => $user]);
         exit;
@@ -145,6 +150,15 @@ if ($userRow) {
         echo json_encode(['error' => 'Account is suspended or banned']);
         exit;
     }
+    // Derive verification_status for landlords:
+    // If a verification_records row exists, use its status_name.
+    // Otherwise fall back to is_verified flag so admin approvals via
+    // the simple is_verified=1 path are still recognised.
+    $verificationStatus = $userRow['verification_status'] ?? null;
+    if ($userRow['role'] === 'landlord' && $verificationStatus === null) {
+        $verificationStatus = $userRow['is_verified'] ? 'approved' : 'pending';
+    }
+
     $user = [
         'id' => (int) $userRow['id'],
         'user_id' => (int) $userRow['id'],
@@ -155,7 +169,7 @@ if ($userRow) {
         'is_verified' => (bool) $userRow['is_verified'],
         'account_status' => $userRow['account_status'] ?? 'active',
         'avatar_url' => $userRow['avatar_url'],
-        'verification_status' => $userRow['verification_status'] ?? null,
+        'verification_status' => $verificationStatus,
     ];
     
     // Add boarder status if user is a boarder
