@@ -230,7 +230,7 @@ document.addEventListener('DOMContentLoaded', function () {
           role: 'boarder',
         });
 
-        if (response.ok && result.success) {
+        if (result.success) {
           // Store user info and token
           localStorage.setItem('user', JSON.stringify(result.user));
           if (result.access_token) {

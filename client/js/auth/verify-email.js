@@ -107,9 +107,7 @@ async function verifyEmail(token, email) {
       }),
     });
 
-    const result = await response.json();
-
-    if (response.ok && result.success) {
+    if (result.success) {
       // Show success state
       document.getElementById('successMessage').textContent = result.message;
 
@@ -156,9 +154,7 @@ async function resendVerificationEmail(email) {
       email: email,
     });
 
-    const result = await response.json();
-
-    if (response.ok && result.success) {
+    if (result.success) {
       if (result.alreadyVerified) {
         showToast('Email is already verified. You can log in now.', 'success');
         setTimeout(() => {
