@@ -62,7 +62,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
     try {
       // Create Appwrite session
-      await account.createEmailPasswordSession({ email: data.email, password: data.password });
+      await account.createEmailPasswordSession(data.email, data.password);
 
       // Fetch the authenticated user (includes labels for role)
       const user = await account.get();
