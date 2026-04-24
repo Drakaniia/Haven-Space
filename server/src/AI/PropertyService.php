@@ -122,7 +122,7 @@ class PropertyService
 
             return $transformedProperties;
             
-        } catch (Exception $e) {
+        } catch (\Exception $e) {
             error_log('PropertyService error: ' . $e->getMessage());
             return [];
         }
