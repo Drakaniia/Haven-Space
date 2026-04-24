@@ -1,13 +1,13 @@
 <?php
 // Haven Space Database Configuration
-// Supports environment-specific database settings
+// Supports environment-specific database settings with single .env file
 
 // Load environment helper functions
 require_once __DIR__ . '/app.php';
 
 /**
- * Get database connection (PDO instance)
- * Creates and returns a singleton PDO connection
+ * Get MySQL database connection
+ * Uses the DB_* variables from .env file
  * 
  * @return PDO Database connection
  */
@@ -50,6 +50,44 @@ function getDB() {
     }
     
     return $pdo;
+}
+
+/**
+ * Get Appwrite database service (used for specific features)
+ * @return \Appwrite\Services\Databases
+ */
+function getAppwriteDB() {
+    static $appwriteDB = null;
+    
+    if ($appwriteDB === null) {
+        require_once __DIR__ . '/../vendor/autoload.php';
+        
+        $client = new \Appwrite\Client();
+        $client
+            ->setEndpoint(env('APPWRITE_ENDPOINT'))
+            ->setProject(env('APPWRITE_PROJECT_ID'))
+            ->setKey(env('APPWRITE_API_KEY'));
+        
+        $appwriteDB = new \Appwrite\Services\Databases($client);
+    }
+    
+    return $appwriteDB;
+}
+
+
+
+/**
+ * Get unified database adapter (recommended for new code)
+ * Automatically switches between MySQL and Appwrite based on environment
+ * @return \App\Core\Database\DatabaseInterface
+ */
+function getUnifiedDB() {
+    require_once __DIR__ . '/../src/Core/Database/DatabaseManager.php';
+    require_once __DIR__ . '/../src/Core/Database/DatabaseInterface.php';
+    require_once __DIR__ . '/../src/Core/Database/MySQLAdapter.php';
+    require_once __DIR__ . '/../src/Core/Database/AppwriteAdapter.php';
+    
+    return \App\Core\Database\DatabaseManager::getAdapter();
 }
 
 // Return config for backward compatibility (if needed)

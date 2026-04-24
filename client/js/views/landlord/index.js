@@ -14,6 +14,7 @@ import { initAnnouncements } from './announcements.js';
 import { initReports } from './reports.js';
 import { initLandlordPermissions } from '../../shared/permissions.js';
 import { getAuthHeadersOnly } from '../../shared/auth-headers.js';
+import { initDashboard } from '../../shared/dashboard-init.js';
 
 function loginPath() {
   const pathname = window.location.pathname;
@@ -187,8 +188,14 @@ export async function initLandlordDashboardEntry() {
 
   console.log('Proceeding with dashboard initialization for:', user.first_name, user.last_name);
 
-  const name = [user.first_name, user.last_name].filter(Boolean).join(' ').trim() || 'Landlord';
-  const initials = initialsFrom(user);
+  // Initialize profile data first
+  await initDashboard();
+
+  // Get updated user data
+  const updatedUser = JSON.parse(localStorage.getItem('user') || '{}');
+  const name =
+    [updatedUser.first_name, updatedUser.last_name].filter(Boolean).join(' ').trim() || 'Landlord';
+  const initials = initialsFrom(updatedUser);
 
   // Initialize sidebar
   const sidebarContainer = document.getElementById('sidebar-container');
@@ -199,21 +206,16 @@ export async function initLandlordDashboardEntry() {
         name,
         initials,
         role: 'Landlord',
-        email: user.email || '',
+        email: updatedUser.email || '',
       },
     });
   }
 
-  // Initialize navbar
+  // Initialize navbar with updated user data
   const navbarContainer = document.getElementById('navbar-container');
   if (navbarContainer) {
     initNavbar({
-      user: {
-        name,
-        initials,
-        avatarUrl: user.avatar_url || '',
-        email: user.email || '',
-      },
+      user: updatedUser,
     });
 
     // Fetch real notifications from API after navbar is initialized

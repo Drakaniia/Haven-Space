@@ -21,3 +21,9 @@ We are using the Appwrite platform for:
 **Note**: Do not push the `.playwrite-mcp` directory to the repository.
 
 **AGENTS**: Use Appwrite MCP for all agent-related tasks and interactions.
+
+**Note**: After implementing a feature, create a `.php` test script to verify functionality. Delete the test script once the feature is confirmed working.
+
+**Bun Commands**: Always use Bun commands for package management and task running.
+
+**Debugging**: When debugging from localhost and encountering errors like "Internal Server Error", "Unauthorized", or any other type of error, ensure to also include fixes for the production environment.

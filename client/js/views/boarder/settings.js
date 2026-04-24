@@ -3,7 +3,13 @@
  */
 
 import { authenticatedFetch, getState, setState } from '../../shared/state.js';
-import { CONFIG } from '../../config.js';
+import {
+  getDisplayName,
+  getUserInitials,
+  getAvatarUrl,
+  fetchAndUpdateProfile,
+} from '../../shared/profile-utils.js';
+import CONFIG from '../../config.js';
 
 /**
  * Initialize settings page
@@ -15,7 +21,9 @@ export function initSettingsPage() {
   initPasswordForm();
   initAvatarUpload();
   initLoadProfileButton();
-  // Don't auto-load profile data - let user choose to load it
+
+  // Load and display current profile data
+  loadAndDisplayProfile();
 }
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -24,6 +32,40 @@ document.addEventListener('DOMContentLoaded', () => {
     initSettingsPage();
   }
 });
+
+/**
+ * Load and display current profile data
+ */
+async function loadAndDisplayProfile() {
+  try {
+    // Get current user from localStorage
+    const currentUser = JSON.parse(localStorage.getItem('user') || '{}');
+
+    // Update avatar preview with current data
+    updateAvatarPreview(currentUser);
+
+    // Fetch fresh profile data from API
+    const updatedUser = await fetchAndUpdateProfile(CONFIG.API_BASE_URL);
+
+    if (updatedUser) {
+      // Update avatar preview with fresh data
+      updateAvatarPreview(updatedUser);
+    }
+  } catch (error) {
+    console.error('Error loading profile data:', error);
+  }
+}
+
+/**
+ * Update avatar preview with user data
+ */
+function updateAvatarPreview(user) {
+  const avatarPreview = document.getElementById('profile-avatar-preview');
+  if (avatarPreview && user) {
+    avatarPreview.src = getAvatarUrl(user);
+    avatarPreview.alt = `${getDisplayName(user)} Avatar`;
+  }
+}
 
 /**
  * Initialize load profile button

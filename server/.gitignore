@@ -1,2 +1,5 @@
 vendor/
+
+# Environment files (NEVER commit these!)
 .env
+!.env.example

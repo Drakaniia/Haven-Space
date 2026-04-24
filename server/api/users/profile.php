@@ -50,16 +50,18 @@ function getUserProfile($db, $userId) {
     try {
         $stmt = $db->prepare("
             SELECT 
-                id, first_name, last_name, email, phone, alt_phone,
-                date_of_birth, gender, bio, current_address, avatar_url,
-                employment_status, company_name, job_title, monthly_income,
-                work_schedule, company_address,
-                emergency_contact_name, emergency_contact_relationship,
-                emergency_contact_phone, emergency_contact_alt_phone,
-                emergency_contact_address,
-                created_at, updated_at
-            FROM users 
-            WHERE id = ? AND deleted_at IS NULL
+                u.id, u.first_name, u.last_name, u.email, u.phone, u.alt_phone,
+                u.date_of_birth, u.gender, u.bio, u.current_address, u.avatar_url,
+                u.employment_status, u.company_name, u.job_title, u.monthly_income,
+                u.work_schedule, u.company_address,
+                u.emergency_contact_name, u.emergency_contact_relationship,
+                u.emergency_contact_phone, u.emergency_contact_alt_phone,
+                u.emergency_contact_address,
+                u.created_at, u.updated_at,
+                f.file_url as avatar_file_url
+            FROM users u
+            LEFT JOIN files f ON u.avatar_file_id = f.id
+            WHERE u.id = ? AND u.deleted_at IS NULL
         ");
         
         $stmt->execute([$userId]);
@@ -69,6 +71,14 @@ function getUserProfile($db, $userId) {
             json_response(404, ['error' => 'User not found']);
             return;
         }
+        
+        // Use avatar_file_url if available, otherwise use avatar_url
+        if ($user['avatar_file_url']) {
+            $user['avatar_url'] = $user['avatar_file_url'];
+        }
+        
+        // Remove the temporary field
+        unset($user['avatar_file_url']);
         
         json_response(200, ['user' => $user]);
         
@@ -131,23 +141,33 @@ function updateUserProfile($db, $userId) {
             return;
         }
         
-        // Fetch updated user data
+        // Fetch updated user data with avatar
         $stmt = $db->prepare("
             SELECT 
-                id, first_name, last_name, email, phone, alt_phone,
-                date_of_birth, gender, bio, current_address, avatar_url,
-                employment_status, company_name, job_title, monthly_income,
-                work_schedule, company_address,
-                emergency_contact_name, emergency_contact_relationship,
-                emergency_contact_phone, emergency_contact_alt_phone,
-                emergency_contact_address,
-                created_at, updated_at
-            FROM users 
-            WHERE id = ? AND deleted_at IS NULL
+                u.id, u.first_name, u.last_name, u.email, u.phone, u.alt_phone,
+                u.date_of_birth, u.gender, u.bio, u.current_address, u.avatar_url,
+                u.employment_status, u.company_name, u.job_title, u.monthly_income,
+                u.work_schedule, u.company_address,
+                u.emergency_contact_name, u.emergency_contact_relationship,
+                u.emergency_contact_phone, u.emergency_contact_alt_phone,
+                u.emergency_contact_address,
+                u.created_at, u.updated_at,
+                f.file_url as avatar_file_url
+            FROM users u
+            LEFT JOIN files f ON u.avatar_file_id = f.id
+            WHERE u.id = ? AND u.deleted_at IS NULL
         ");
         
         $stmt->execute([$userId]);
         $updatedUser = $stmt->fetch(PDO::FETCH_ASSOC);
+        
+        // Use avatar_file_url if available, otherwise use avatar_url
+        if ($updatedUser['avatar_file_url']) {
+            $updatedUser['avatar_url'] = $updatedUser['avatar_file_url'];
+        }
+        
+        // Remove the temporary field
+        unset($updatedUser['avatar_file_url']);
         
         json_response(200, [
             'message' => 'Profile updated successfully',

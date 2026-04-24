@@ -2,6 +2,14 @@
  * Landlord Settings Page Logic
  */
 
+import {
+  getDisplayName,
+  getUserInitials,
+  getAvatarUrl,
+  fetchAndUpdateProfile,
+} from '../../shared/profile-utils.js';
+import CONFIG from '../../config.js';
+
 /**
  * Initialize settings page
  */
@@ -13,6 +21,9 @@ export function initLandlordSettings() {
   initAvatarUpload();
   initWelcomeMessageEditor();
   initDocumentUpload();
+
+  // Load and display current profile data
+  loadAndDisplayProfile();
 }
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -130,6 +141,40 @@ function initPasswordForm() {
     enable2faBtn.addEventListener('click', () => {
       showToast('2FA setup coming soon', 'info');
     });
+  }
+}
+
+/**
+ * Load and display current profile data
+ */
+async function loadAndDisplayProfile() {
+  try {
+    // Get current user from localStorage
+    const currentUser = JSON.parse(localStorage.getItem('user') || '{}');
+
+    // Update avatar preview with current data
+    updateAvatarPreview(currentUser);
+
+    // Fetch fresh profile data from API
+    const updatedUser = await fetchAndUpdateProfile(CONFIG.API_BASE_URL);
+
+    if (updatedUser) {
+      // Update avatar preview with fresh data
+      updateAvatarPreview(updatedUser);
+    }
+  } catch (error) {
+    console.error('Error loading profile data:', error);
+  }
+}
+
+/**
+ * Update avatar preview with user data
+ */
+function updateAvatarPreview(user) {
+  const avatarPreview = document.getElementById('profile-avatar-preview');
+  if (avatarPreview && user) {
+    avatarPreview.src = getAvatarUrl(user);
+    avatarPreview.alt = `${getDisplayName(user)} Avatar`;
   }
 }
 

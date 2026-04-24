@@ -6,6 +6,12 @@
 import { getIcon } from '../../shared/icons.js';
 import { loadState, getState, authenticatedFetch } from '../../shared/state.js';
 import { getImageUrl, getImageErrorHandler } from '../../shared/image-utils.js';
+import {
+  getDisplayName,
+  getUserInitials,
+  getAvatarUrl,
+  updateProfileElements,
+} from '../../shared/profile-utils.js';
 import CONFIG from '../../config.js';
 
 // State management for enhanced features
@@ -782,16 +788,13 @@ function renderAuthState(authState) {
 function updateUserProfile(user) {
   if (!user) return;
 
-  // Create full name from first_name and last_name
-  const fullName = `${user.first_name || ''} ${user.last_name || ''}`.trim() || 'User';
-
-  // Create initials from first and last name
-  const initials = `${user.first_name?.[0] || ''}${user.last_name?.[0] || ''}`.toUpperCase() || 'U';
+  const displayName = getDisplayName(user);
+  const initials = getUserInitials(user);
 
   // Update profile name
   const profileNames = document.querySelectorAll('.find-room-header-profile-name');
   profileNames.forEach(el => {
-    el.textContent = fullName;
+    el.textContent = displayName;
   });
 
   // Update profile avatar initials in dropdown
@@ -803,7 +806,7 @@ function updateUserProfile(user) {
   // Update profile menu name
   const menuNames = document.querySelectorAll('.find-room-profile-menu-name');
   menuNames.forEach(el => {
-    el.textContent = fullName;
+    el.textContent = displayName;
   });
 
   // Update profile menu email
@@ -815,9 +818,8 @@ function updateUserProfile(user) {
   // Update avatar image if available
   const avatarImg = document.querySelector('.find-room-header-profile-avatar');
   if (avatarImg) {
-    if (user.avatarUrl) {
-      avatarImg.src = user.avatarUrl;
-    }
+    avatarImg.src = getAvatarUrl(user);
+    avatarImg.alt = `${displayName} Avatar`;
   }
 }
 

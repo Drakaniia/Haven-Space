@@ -21,6 +21,7 @@ import { initBoarderStatus } from './status.js';
 import { openAcceptedApplicationsOverlay } from '../../components/accepted-applications-overlay.js';
 import { hasAcceptedApplications } from '../../shared/notifications.js';
 import { updateNavbarNotifications } from '../../components/navbar.js';
+import { initDashboard } from '../../shared/dashboard-init.js';
 
 function loginPath() {
   const pathname = window.location.pathname;
@@ -85,14 +86,20 @@ export async function initBoarderDashboard() {
     return;
   }
 
-  const name = [user.first_name, user.last_name].filter(Boolean).join(' ').trim() || 'Boarder';
-  const initials = initialsFrom(user);
+  // Initialize profile data first
+  await initDashboard();
+
+  // Get updated user data
+  const updatedUser = JSON.parse(localStorage.getItem('user') || '{}');
+  const name =
+    [updatedUser.first_name, updatedUser.last_name].filter(Boolean).join(' ').trim() || 'Boarder';
+  const initials = initialsFrom(updatedUser);
 
   // Initialize sidebar
   const sidebarContainer = document.getElementById('sidebar-container');
   if (sidebarContainer) {
     // Get boarder status from user data (default to accepted for main dashboard)
-    const boarderStatus = user.boarder_status || user.boarderStatus || 'accepted';
+    const boarderStatus = updatedUser.boarder_status || updatedUser.boarderStatus || 'accepted';
 
     initSidebar({
       role: 'boarder',
@@ -101,21 +108,16 @@ export async function initBoarderDashboard() {
         name,
         initials,
         role: 'Boarder',
-        email: user.email || '',
+        email: updatedUser.email || '',
       },
     });
   }
 
-  // Initialize navbar
+  // Initialize navbar with updated user data
   const navbarContainer = document.getElementById('navbar-container');
   if (navbarContainer) {
     initNavbar({
-      user: {
-        name,
-        initials,
-        avatarUrl: user.avatar_url || '',
-        email: user.email || '',
-      },
+      user: updatedUser,
       notificationCount: 0,
     });
 

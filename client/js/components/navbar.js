@@ -4,6 +4,12 @@
  */
 
 import { getIcon } from '../shared/icons.js';
+import {
+  getDisplayName,
+  getUserInitials,
+  getAvatarUrl,
+  updateProfileElements,
+} from '../shared/profile-utils.js';
 
 /**
  * Initialize navbar component
@@ -12,20 +18,15 @@ import { getIcon } from '../shared/icons.js';
  * @param {Object} options.user - User info object with name, initials, avatarUrl, email
  */
 export function initNavbar(options = {}) {
-  const {
-    containerId = 'navbar-container',
-    user = {
-      name: 'Juan Dela Cruz',
-      initials: 'JD',
-      avatarUrl: '',
-      email: 'juan@example.com',
-    },
-  } = options;
+  const { containerId = 'navbar-container', user = null } = options;
 
   const container = document.getElementById(containerId);
   if (!container) {
     return;
   }
+
+  // Get user from localStorage if not provided
+  const currentUser = user || JSON.parse(localStorage.getItem('user') || '{}');
 
   // Calculate base path from URL depth
   const basePath = resolveBasePath();
@@ -39,15 +40,15 @@ export function initNavbar(options = {}) {
       // Inject icons
       injectIcons();
 
-      // Update user info
-      updateUserInfo(user, basePath);
+      // Update user info with real profile data
+      updateUserInfo(currentUser, basePath);
 
       // Setup event handlers
       setupThemeToggle();
       setupNotificationHandler();
       setupNotificationPopup();
       setupUserMenu();
-      setupUserMenuHandlers(user);
+      setupUserMenuHandlers(currentUser);
       setupDocumentClickHandler();
       setupSidebarToggle();
     })
@@ -98,12 +99,8 @@ function injectIcons() {
 function updateUserInfo(user, basePath) {
   const avatarImg = document.getElementById('navbar-avatar-img');
   if (avatarImg) {
-    // Use provided avatarUrl or default to sample.png
-    const avatarSource =
-      user.avatarUrl && user.avatarUrl.trim()
-        ? user.avatarUrl
-        : `${basePath}/assets/images/sample.png`;
-    avatarImg.src = avatarSource;
+    avatarImg.src = getAvatarUrl(user, basePath);
+    avatarImg.alt = `${getDisplayName(user)} Avatar`;
   }
 }
 
@@ -361,19 +358,19 @@ function setupUserMenu() {
  * @param {Object} user - User info object
  */
 function setupUserMenuHandlers(user) {
-  // Update user menu info
+  // Update user menu info with real profile data
   const menuAvatar = document.getElementById('navbar-user-menu-avatar');
   const menuName = document.getElementById('navbar-user-menu-name');
   const menuEmail = document.getElementById('navbar-user-menu-email');
 
   if (menuAvatar) {
-    menuAvatar.textContent = user.initials || 'JD';
+    menuAvatar.textContent = getUserInitials(user);
   }
   if (menuName) {
-    menuName.textContent = user.name || 'Juan Dela Cruz';
+    menuName.textContent = getDisplayName(user);
   }
   if (menuEmail) {
-    menuEmail.textContent = user.email || 'juan@example.com';
+    menuEmail.textContent = user.email || '';
   }
 
   // Profile menu item

@@ -6,11 +6,15 @@ build/
 .DS_Store
 
 # Environment files (NEVER commit these!)
-.env
 .env.local
 .env.production
 !.env.example
 !.env.xampp
+
+# Test files
+test-database-switching.php
+server/api/test-environment.php
+server/api/users/profile-unified.php
 
 .idea/
 .vscode/.worktrees/
