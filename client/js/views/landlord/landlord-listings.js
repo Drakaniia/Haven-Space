@@ -247,6 +247,17 @@ function createPropertyCard(property) {
   if (imgElement) {
     const imageUrl = photos.length > 0 ? photos[0] : null;
     setImageWithFallback(imgElement, imageUrl);
+
+    // Add click handler to navigate to room-edit page
+    imgElement.addEventListener('click', e => {
+      e.stopPropagation();
+      e.preventDefault();
+      window.location.href = `room-edit.html?propertyId=${property.id}`;
+    });
+
+    // Add cursor pointer style
+    imgElement.style.cursor = 'pointer';
+    imgElement.title = 'Click to manage rooms';
   }
 
   return card;

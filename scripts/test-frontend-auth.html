@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Test Frontend Auth</title>
+  </head>
+  <body>
+    <h1>Frontend Authentication Test</h1>
+    <div id="results"></div>
+
+    <script type="module">
+      import CONFIG from '../client/js/config.js';
+
+      const results = document.getElementById('results');
+
+      function log(message) {
+        results.innerHTML += '<p>' + message + '</p>';
+        console.log(message);
+      }
+
+      // Test authentication
+      log('Testing authentication...');
+      log('API Base URL: ' + CONFIG.API_BASE_URL);
+      log('Environment: ' + CONFIG.ENV);
+
+      const token = localStorage.getItem('token');
+      log('Token exists: ' + !!token);
+
+      if (token) {
+        log('Token preview: ' + token.substring(0, 20) + '...');
+      }
+
+      // Test property API call
+      async function testPropertyAPI() {
+        try {
+          const headers = {
+            'Content-Type': 'application/json',
+          };
+          if (token) {
+            headers['Authorization'] = `Bearer ${token}`;
+          }
+
+          const response = await fetch(`${CONFIG.API_BASE_URL}/api/landlord/properties.php?id=7`, {
+            method: 'GET',
+            headers,
+            credentials: 'include',
+          });
+
+          log('Property API Status: ' + response.status);
+
+          const result = await response.json();
+          log('Property API Response: ' + JSON.stringify(result, null, 2));
+        } catch (error) {
+          log('Property API Error: ' + error.message);
+        }
+      }
+
+      // Test rooms API call
+      async function testRoomsAPI() {
+        try {
+          const headers = {
+            'Content-Type': 'application/json',
+          };
+          if (token) {
+            headers['Authorization'] = `Bearer ${token}`;
+          }
+
+          const response = await fetch(
+            `${CONFIG.API_BASE_URL}/api/landlord/rooms.php?property_id=7`,
+            {
+              method: 'GET',
+              headers,
+              credentials: 'include',
+            }
+          );
+
+          log('Rooms API Status: ' + response.status);
+
+          const result = await response.json();
+          log('Rooms API Response: ' + JSON.stringify(result, null, 2));
+        } catch (error) {
+          log('Rooms API Error: ' + error.message);
+        }
+      }
+
+      if (token) {
+        testPropertyAPI();
+        testRoomsAPI();
+      } else {
+        log('No token found - user needs to login first');
+      }
+    </script>
+  </body>
+</html>
