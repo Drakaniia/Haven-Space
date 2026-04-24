@@ -100,14 +100,15 @@ return function ($context) {
             case $path === '/':
                 return $context->res->json(generateResponse([
                     'service' => 'Haven Space API',
-                    'version' => '2.0.0',
+                    'version' => '2.0.0-COMPREHENSIVE',
                     'status' => 'active',
                     'endpoints' => [
                         'auth' => '/auth/*',
                         'api' => '/api/*',
                         'health' => '/health',
                         'test' => '/test'
-                    ]
+                    ],
+                    'deployment_test' => 'NEW_COMPREHENSIVE_API_DEPLOYED'
                 ]), 200, $headers);
 
             case $path === '/health':
