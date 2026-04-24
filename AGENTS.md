@@ -17,3 +17,5 @@ We are using the Appwrite platform for:
 **Important**: Always push changes to the repository so the Appwrite site will update automatically.
 
 **Documentation**: When prompting or working on Appwrite-related deployment tasks, always use the Appwrite MCP (Multi-Platform Client) for documentation and reference.
+
+**Note**: Do not push the `.playwrite-mcp` directory to the repository.
