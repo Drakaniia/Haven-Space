@@ -3,16 +3,238 @@
  * Handles room details display, gallery, and booking functionality
  */
 
+<<<<<<< HEAD
 import { updateBoarderStatus } from '../../shared/routing.js';
 import { getImageUrl } from '../../shared/image-utils.js';
 import CONFIG from '../../config.js';
+=======
+import { getIcon } from '../../shared/icons.js';
+import { updateBoarderStatus, getBoarderStatus } from '../../shared/routing.js';
+
+// Sample room data (replace with API calls in production)
+const roomData = {
+  1: {
+    id: 1,
+    title: 'Sunrise Dormitory',
+    address: 'Katipunan Avenue, Quezon City, Metro Manila',
+    location: 'University of the Philippines',
+    distance: '0.5 km from UP',
+    price: 4500,
+    sharedPrice: 3000,
+    rating: 4.8,
+    reviews: 24,
+    types: 'Single & Shared',
+    availability: 'Available Now',
+    minStay: '6 months',
+    deposit: '2 months',
+    description: `Sunrise Dormitory offers comfortable and affordable boarding accommodations for students near the University of the Philippines. Our property features modern amenities, 24/7 security, and a conducive environment for studying.
+
+Located in the heart of Katipunan, you'll have easy access to universities, shopping centers, restaurants, and public transportation. The property is regularly inspected and meets all safety and quality standards.`,
+    amenities: [
+      { icon: 'wifi', label: 'High-Speed WiFi' },
+      { icon: 'computerDesktop', label: 'Air Conditioning' },
+      { icon: 'check', label: 'Parking Space' },
+      { icon: 'laundryMachine', label: 'Laundry Area' },
+      { icon: 'shieldCheck', label: '24/7 Security' },
+      { icon: 'cctvCamera', label: 'CCTV Surveillance' },
+      { icon: 'list', label: 'Kitchen Access' },
+      { icon: 'square', label: 'Furnished Rooms' },
+      { icon: 'bolt', label: 'Backup Generator' },
+      { icon: 'drop', label: 'Water Heater' },
+      { icon: 'sparkles', label: 'Weekly Cleaning' },
+      { icon: 'userGroup', label: 'Common Area' },
+    ],
+    rules: [
+      {
+        icon: 'clock',
+        title: 'Curfew',
+        desc: 'Building locks at 11:00 PM on weekdays, 12:00 AM on weekends',
+      },
+      {
+        icon: 'noSmoking',
+        title: 'No Smoking',
+        desc: 'Smoking is not allowed inside the building',
+      },
+      { icon: 'noPets', title: 'No Pets', desc: 'Pets are not allowed on the premises' },
+      { icon: 'userGroup', title: 'Visitors', desc: 'Visitors allowed until 9:00 PM only' },
+    ],
+    images: [
+      'https://images.unsplash.com/photo-1555854877-bab0e564b8d5?w=1200&q=80',
+      'https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?w=1200&q=80',
+      'https://images.unsplash.com/photo-1502672260266-1c1ef2d93688?w=1200&q=80',
+      'https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?w=1200&q=80',
+      'https://images.unsplash.com/photo-1560185127-6ed189bf02f4?w=1200&q=80',
+    ],
+    badges: ['verified', 'new'],
+    landlord: {
+      name: 'Juan Dela Cruz',
+      properties: 5,
+      rating: 4.7,
+    },
+  },
+  2: {
+    id: 2,
+    title: 'Campus View Residences',
+    address: 'Loyola Heights, Quezon City, Metro Manila',
+    location: 'Ateneo de Manila',
+    distance: '1.2 km from Ateneo',
+    price: 6500,
+    sharedPrice: 4500,
+    rating: 4.6,
+    reviews: 18,
+    types: 'Studio & 1 BHK',
+    availability: 'Available Sept 1',
+    minStay: '12 months',
+    deposit: '3 months',
+    description: `Campus View Residences offers premium boarding accommodations with stunning views of the Ateneo de Manila University campus. Our modern facilities include studio and 1 BHK units perfect for students who value privacy and comfort.
+
+Enjoy easy access to Loyola Heights' vibrant community, with restaurants, cafes, and shops just steps away. The property features state-of-the-art amenities and professional management.`,
+    amenities: [
+      { icon: 'wifi', label: 'High-Speed WiFi' },
+      { icon: 'computerDesktop', label: 'Air Conditioning' },
+      { icon: 'check', label: 'Parking Space' },
+      { icon: 'cctvCamera', label: 'CCTV Surveillance' },
+      { icon: 'shieldCheck', label: '24/7 Security' },
+      { icon: 'square', label: 'Fully Furnished' },
+      { icon: 'bolt', label: 'Backup Generator' },
+      { icon: 'drop', label: 'Water Heater' },
+    ],
+    rules: [
+      { icon: 'clock', title: 'Curfew', desc: 'Building locks at 11:00 PM daily' },
+      {
+        icon: 'noSmoking',
+        title: 'No Smoking',
+        desc: 'Smoking is not allowed inside the building',
+      },
+      { icon: 'noPets', title: 'No Pets', desc: 'Pets are not allowed on the premises' },
+    ],
+    images: [
+      'https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?w=1200&q=80',
+      'https://images.unsplash.com/photo-1555854877-bab0e564b8d5?w=1200&q=80',
+      'https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?w=1200&q=80',
+      'https://images.unsplash.com/photo-1502672260266-1c1ef2d93688?w=1200&q=80',
+    ],
+    badges: ['verified'],
+    landlord: {
+      name: 'Maria Santos',
+      properties: 3,
+      rating: 4.8,
+    },
+  },
+  3: {
+    id: 3,
+    title: 'Greenfield Boarding House',
+    address: 'Commonwealth Avenue, Quezon City, Metro Manila',
+    location: 'Miriam College',
+    distance: '2.1 km from Miriam',
+    price: 3200,
+    sharedPrice: 2500,
+    rating: 4.5,
+    reviews: 32,
+    types: 'Shared Rooms',
+    availability: 'Available Now',
+    minStay: '3 months',
+    deposit: '1 month',
+    description: `Greenfield Boarding House provides budget-friendly accommodations for students attending Miriam College and nearby universities. Despite the affordable rates, we maintain high standards of cleanliness and security.
+
+Our communal living environment fosters friendships and study groups. With essential amenities and a prime location on Commonwealth Avenue, you get great value for your money.`,
+    amenities: [
+      { icon: 'wifi', label: 'High-Speed WiFi' },
+      { icon: 'laundryMachine', label: 'Laundry Area' },
+      { icon: 'list', label: 'Kitchen Access' },
+      { icon: 'check', label: 'Parking Space' },
+      { icon: 'shieldCheck', label: 'Security' },
+    ],
+    rules: [
+      {
+        icon: 'clock',
+        title: 'Curfew',
+        desc: 'Building locks at 10:00 PM on weekdays, 11:00 PM on weekends',
+      },
+      {
+        icon: 'noSmoking',
+        title: 'No Smoking',
+        desc: 'Designated smoking area outside the building',
+      },
+      { icon: 'userGroup', title: 'Visitors', desc: 'Visitors allowed until 8:00 PM only' },
+    ],
+    images: [
+      'https://images.unsplash.com/photo-1502672260266-1c1ef2d93688?w=1200&q=80',
+      'https://images.unsplash.com/photo-1555854877-bab0e564b8d5?w=1200&q=80',
+      'https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?w=1200&q=80',
+    ],
+    badges: ['promo'],
+    landlord: {
+      name: 'Pedro Reyes',
+      properties: 2,
+      rating: 4.5,
+    },
+  },
+  4: {
+    id: 4,
+    title: 'Metro Plaza Apartments',
+    address: 'Roxas Boulevard, Quezon City, Metro Manila',
+    location: 'University of the Philippines',
+    distance: '0.8 km from UP',
+    price: 7800,
+    sharedPrice: 5500,
+    rating: 4.9,
+    reviews: 41,
+    types: '1 BHK & Studio',
+    availability: 'Available Aug 15',
+    minStay: '12 months',
+    deposit: '3 months',
+    description: `Metro Plaza Apartments offers luxury boarding accommodations along the iconic Roxas Boulevard. Our premium 1 BHK and studio units are perfect for graduate students and young professionals who demand the best.
+
+Experience bay-side living with stunning views, modern amenities, and proximity to UP Diliman. The building features professional management and top-notch security systems.`,
+    amenities: [
+      { icon: 'wifi', label: 'High-Speed WiFi' },
+      { icon: 'computerDesktop', label: 'Air Conditioning' },
+      { icon: 'shieldCheck', label: '24/7 Security' },
+      { icon: 'cctvCamera', label: 'CCTV Surveillance' },
+      { icon: 'check', label: 'Parking Space' },
+      { icon: 'laundryMachine', label: 'Laundry Area' },
+      { icon: 'square', label: 'Fully Furnished' },
+      { icon: 'list', label: 'Kitchen Access' },
+      { icon: 'bolt', label: 'Backup Generator' },
+      { icon: 'drop', label: 'Water Heater' },
+      { icon: 'sparkles', label: 'Weekly Cleaning' },
+    ],
+    rules: [
+      { icon: 'clock', title: 'Curfew', desc: '24/7 access with key card' },
+      {
+        icon: 'noSmoking',
+        title: 'No Smoking',
+        desc: 'Smoking is not allowed inside the building',
+      },
+      { icon: 'userGroup', title: 'Visitors', desc: 'Visitors must register at reception' },
+    ],
+    images: [
+      'https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?w=1200&q=80',
+      'https://images.unsplash.com/photo-1555854877-bab0e564b8d5?w=1200&q=80',
+      'https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?w=1200&q=80',
+      'https://images.unsplash.com/photo-1502672260266-1c1ef2d93688?w=1200&q=80',
+      'https://images.unsplash.com/photo-1560185127-6ed189bf02f4?w=1200&q=80',
+    ],
+    badges: ['verified', 'new'],
+    landlord: {
+      name: 'Ana Garcia',
+      properties: 8,
+      rating: 4.9,
+    },
+  },
+};
+>>>>>>> didigzz/feat/room-availability-management
 
 // State management
 const state = {
   currentImageIndex: 0,
   roomId: null,
   isFavorite: false,
+<<<<<<< HEAD
   roomData: null, // Store fetched room data
+=======
+>>>>>>> didigzz/feat/room-availability-management
 };
 
 /**
@@ -38,6 +260,7 @@ export function initRoomDetail() {
 /**
  * Setup the page with room data
  */
+<<<<<<< HEAD
 async function setupPage() {
   try {
     // Show loading state
@@ -87,15 +310,31 @@ function hideLoadingState() {
     content.style.opacity = '1';
     content.style.pointerEvents = 'auto';
   }
+=======
+function setupPage() {
+  const room = roomData[state.roomId];
+
+  if (!room) {
+    showNotFound();
+    return;
+  }
+
+  populateRoomData(room);
+  setupGallery();
+  setupEventListeners(room);
+>>>>>>> didigzz/feat/room-availability-management
 }
 
 /**
  * Populate room data into the page
  */
 function populateRoomData(room) {
+<<<<<<< HEAD
   // Hide loading state
   hideLoadingState();
 
+=======
+>>>>>>> didigzz/feat/room-availability-management
   // Update page title
   document.title = `${room.title} - Haven Space`;
 
@@ -109,6 +348,7 @@ function populateRoomData(room) {
   const roomTitle = document.getElementById('room-title');
   if (roomTitle) roomTitle.textContent = room.title;
 
+<<<<<<< HEAD
   // Update badges
   const badgesContainer = document.querySelector('.room-detail-badges');
   if (badgesContainer && room.badges && room.badges.length > 0) {
@@ -187,13 +427,36 @@ function populateRoomData(room) {
   const roomAvailability = document.getElementById('room-availability');
   if (roomAvailability)
     roomAvailability.textContent = room.availability || 'Contact for availability';
+=======
+  const roomAddress = document.getElementById('room-address');
+  if (roomAddress) roomAddress.textContent = room.address;
+
+  const roomRating = document.getElementById('room-rating');
+  if (roomRating) roomRating.textContent = room.rating;
+
+  const roomReviews = document.getElementById('room-reviews');
+  if (roomReviews) roomReviews.textContent = `(${room.reviews} reviews)`;
+
+  const roomDistance = document.getElementById('room-distance');
+  if (roomDistance) roomDistance.textContent = room.distance;
+
+  const roomTypes = document.getElementById('room-types');
+  if (roomTypes) roomTypes.textContent = room.types;
+
+  const roomAvailability = document.getElementById('room-availability');
+  if (roomAvailability) roomAvailability.textContent = room.availability;
+>>>>>>> didigzz/feat/room-availability-management
 
   const roomPrice = document.getElementById('room-price');
   if (roomPrice) roomPrice.textContent = `₱${room.price.toLocaleString()}`;
 
   const bookingAvailability = document.getElementById('booking-availability');
+<<<<<<< HEAD
   if (bookingAvailability)
     bookingAvailability.textContent = room.availability || 'Contact for availability';
+=======
+  if (bookingAvailability) bookingAvailability.textContent = room.availability;
+>>>>>>> didigzz/feat/room-availability-management
 
   const roomDescription = document.getElementById('room-description');
   if (roomDescription) {
@@ -205,6 +468,7 @@ function populateRoomData(room) {
 
   // Update amenities
   const roomAmenities = document.getElementById('room-amenities');
+<<<<<<< HEAD
   if (roomAmenities && room.amenities && room.amenities.length > 0) {
     roomAmenities.innerHTML = room.amenities
       .map(amenity => {
@@ -217,11 +481,24 @@ function populateRoomData(room) {
             </div>
           `;
       })
+=======
+  if (roomAmenities) {
+    roomAmenities.innerHTML = room.amenities
+      .map(
+        amenity => `
+      <div class="amenity-item">
+        <span data-icon="${amenity.icon}" data-icon-width="20" data-icon-height="20"></span>
+        <span>${amenity.label}</span>
+      </div>
+    `
+      )
+>>>>>>> didigzz/feat/room-availability-management
       .join('');
   }
 
   // Update house rules
   const rulesContainer = document.querySelector('.room-detail-rules');
+<<<<<<< HEAD
   if (rulesContainer && room.houseRules && room.houseRules.length > 0) {
     rulesContainer.innerHTML = room.houseRules
       .map(rule => {
@@ -238,11 +515,27 @@ function populateRoomData(room) {
             </div>
           `;
       })
+=======
+  if (rulesContainer) {
+    rulesContainer.innerHTML = room.rules
+      .map(
+        rule => `
+      <div class="rule-item">
+        <span data-icon="${rule.icon}" data-icon-width="20" data-icon-height="20"></span>
+        <div class="rule-content">
+          <h4>${rule.title}</h4>
+          <p>${rule.desc}</p>
+        </div>
+      </div>
+    `
+      )
+>>>>>>> didigzz/feat/room-availability-management
       .join('');
   }
 
   // Update landlord info
   const landlordName = document.getElementById('landlord-name');
+<<<<<<< HEAD
   if (landlordName && room.landlord) {
     landlordName.textContent = room.landlord.name || 'Property Owner';
   }
@@ -337,10 +630,37 @@ function populateRoomData(room) {
   const depositElements = document.querySelectorAll('.booking-info-item strong');
   if (depositElements.length >= 3) {
     depositElements[2].textContent = room.deposit || 'Contact for details';
+=======
+  if (landlordName) landlordName.textContent = room.landlord.name;
+
+  // Update gallery images
+  const mainImage = document.getElementById('gallery-main-image');
+  if (mainImage) {
+    mainImage.src = room.images[0];
+    mainImage.alt = `${room.title} - Main View`;
+  }
+
+  const thumbnails = document.querySelectorAll('.gallery-thumb img');
+  room.images.forEach((img, index) => {
+    if (thumbnails[index]) {
+      thumbnails[index].src = img.replace('w=1200', 'w=300');
+    }
+  });
+
+  // Update booking section
+  const roomTypeOptions = document.querySelectorAll('.booking-room-option');
+  if (roomTypeOptions.length >= 2) {
+    const singlePrice = roomTypeOptions[0].querySelector('.booking-room-type-price');
+    if (singlePrice) singlePrice.textContent = `₱${room.price.toLocaleString()}/mo`;
+
+    const sharedPrice = roomTypeOptions[1].querySelector('.booking-room-type-price');
+    if (sharedPrice) sharedPrice.textContent = `₱${room.sharedPrice.toLocaleString()}/mo`;
+>>>>>>> didigzz/feat/room-availability-management
   }
 
   // Update reviews
   const reviewsAverage = document.getElementById('reviews-average');
+<<<<<<< HEAD
   if (reviewsAverage) reviewsAverage.textContent = room.rating || '0';
 
   const reviewsTotal = document.getElementById('reviews-total');
@@ -351,14 +671,25 @@ function populateRoomData(room) {
   if (ratingBreakdown && (!room.reviews || room.reviews === 0)) {
     ratingBreakdown.style.display = 'none';
   }
+=======
+  if (reviewsAverage) reviewsAverage.textContent = room.rating;
+
+  const reviewsTotal = document.getElementById('reviews-total');
+  if (reviewsTotal) reviewsTotal.textContent = room.reviews;
+>>>>>>> didigzz/feat/room-availability-management
 }
 
 /**
  * Setup gallery functionality
  */
 function setupGallery() {
+<<<<<<< HEAD
   const room = state.roomData;
   if (!room || !room.images || room.images.length === 0) return;
+=======
+  const room = roomData[state.roomId];
+  if (!room) return;
+>>>>>>> didigzz/feat/room-availability-management
 
   const totalImages = room.images.length;
 
@@ -413,6 +744,7 @@ function setupGallery() {
  * Update gallery main image
  */
 function updateGalleryImage() {
+<<<<<<< HEAD
   const room = state.roomData;
   if (!room || !room.images || room.images.length === 0) return;
 
@@ -422,6 +754,14 @@ function updateGalleryImage() {
     mainImage.onerror = function () {
       this.src = getImageUrl(null);
     };
+=======
+  const room = roomData[state.roomId];
+  if (!room) return;
+
+  const mainImage = document.getElementById('gallery-main-image');
+  if (mainImage) {
+    mainImage.src = room.images[state.currentImageIndex];
+>>>>>>> didigzz/feat/room-availability-management
   }
 
   // Update thumbnail active state
@@ -471,11 +811,16 @@ function setupEventListeners(room) {
  * Handle Apply Now action
  */
 function handleApplyNow(room) {
+<<<<<<< HEAD
   console.log('handleApplyNow called', room);
+=======
+  const boarderStatus = getBoarderStatus();
+>>>>>>> didigzz/feat/room-availability-management
 
   // Check if user is logged in
   const user = JSON.parse(localStorage.getItem('user') || '{}');
 
+<<<<<<< HEAD
   if (!user || !user.id || user.role !== 'boarder') {
     // Not logged in, redirect to login with correct relative path
     const redirectUrl = encodeURIComponent(window.location.href);
@@ -775,6 +1120,32 @@ function closeModal(modalOverlay) {
   setTimeout(() => {
     modalOverlay.remove();
   }, 300);
+=======
+  if (!user || user.role !== 'boarder') {
+    // Not logged in, redirect to login
+    const basePath = window.location.pathname.includes('github.io')
+      ? '/Haven-Space/client/views/public/auth/login.html'
+      : '/views/public/auth/login.html';
+
+    const redirectUrl = encodeURIComponent(window.location.href);
+    window.location.href = `${basePath}?redirect=${redirectUrl}`;
+    return;
+  }
+
+  // User is logged in, proceed with application
+  // TODO: Integrate with backend API
+  alert(`Application process for ${room.title} will begin. (Integration pending backend API)`);
+
+  // Update boarder status
+  updateBoarderStatus('applied_pending');
+
+  // Redirect to applications page
+  const basePath = window.location.pathname.includes('github.io')
+    ? '/Haven-Space/client/views/boarder/applications/index.html'
+    : '/views/boarder/applications/index.html';
+
+  window.location.href = basePath;
+>>>>>>> didigzz/feat/room-availability-management
 }
 
 /**
@@ -846,6 +1217,7 @@ function showNotFound() {
 // Initialize on module load for single-page apps
 if (typeof window !== 'undefined') {
   window.initRoomDetail = initRoomDetail;
+<<<<<<< HEAD
 
   // Auto-initialize if the room detail dashboard exists
   if (document.readyState === 'loading') {
@@ -860,4 +1232,6 @@ if (typeof window !== 'undefined') {
       initRoomDetail();
     }
   }
+=======
+>>>>>>> didigzz/feat/room-availability-management
 }

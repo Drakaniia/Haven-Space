@@ -4,22 +4,35 @@
  */
 
 import { getIcon } from '../../shared/icons.js';
+<<<<<<< HEAD
 import { updateBoarderStatus } from '../../shared/routing.js';
+=======
+import { updateBoarderStatus, getBoarderStatus } from '../../shared/routing.js';
+>>>>>>> didigzz/feat/room-availability-management
 
 /**
  * Initialize the confirm booking page
  */
 export function initConfirmBooking() {
+<<<<<<< HEAD
   // Get application data from URL params or localStorage
   const application = getApplicationData();
 
   if (!application) {
     // No application data found - show error instead of silent redirect
+=======
+  // Get accepted application from localStorage or URL params
+  const application = getAcceptedApplication();
+
+  if (!application) {
+    // No accepted application found - show error instead of silent redirect
+>>>>>>> didigzz/feat/room-availability-management
     console.error('No application data found for confirm-booking page');
     showMissingDataError();
     return;
   }
 
+<<<<<<< HEAD
   // Check if this is a new application (from Apply Now) or accepted application
   const isNewApplication = !application.status || application.status === 'new';
 
@@ -401,6 +414,23 @@ function showApplicationSubmittedSuccess(application) {
  * @param {Object} application - Application object
  */
 function setupAcceptedApplicationFlow(application) {
+=======
+  // Check if boarder already accepted a landlord
+  const user = JSON.parse(localStorage.getItem('user') || '{}');
+  if (user.boarderStatus === 'accepted') {
+    // Already confirmed a booking - cancel other applications and redirect to dashboard
+    cancelOtherApplications(application.id);
+    window.location.href = '../index.html';
+    return;
+  }
+
+  // Populate property details
+  populateApplicationDetails(application);
+
+  // Populate payment details
+  populatePaymentDetails(application);
+
+>>>>>>> didigzz/feat/room-availability-management
   // Setup terms checkbox
   const termsCheckbox = document.getElementById('terms-agreement');
   const acceptBtn = document.getElementById('confirm-accept-btn');
@@ -433,6 +463,7 @@ function setupAcceptedApplicationFlow(application) {
   const doneBtn = document.getElementById('modal-done-btn');
   if (doneBtn) {
     doneBtn.addEventListener('click', () => {
+<<<<<<< HEAD
       // Check if user is now fully accepted, if so go to main dashboard
       const user = JSON.parse(localStorage.getItem('user') || '{}');
       if (user.boarderStatus === 'accepted') {
@@ -441,11 +472,101 @@ function setupAcceptedApplicationFlow(application) {
         // Otherwise go to applications dashboard
         window.location.href = '../applications-dashboard/index.html';
       }
+=======
+      window.location.href = '../index.html';
+>>>>>>> didigzz/feat/room-availability-management
     });
   }
 }
 
 /**
+<<<<<<< HEAD
+=======
+ * Show error message when application data is missing
+ */
+function showMissingDataError() {
+  const container = document.querySelector('.confirm-booking-container');
+  if (!container) return;
+
+  container.innerHTML = `
+    <div class="confirm-booking-error">
+      ${getIcon('exclamation-triangle', {
+        width: 64,
+        height: 64,
+        className: 'confirm-booking-error-icon',
+      })}
+      <h2>Application Data Not Found</h2>
+      <p>We couldn't find the application details. Please try again from the Find a Room page.</p>
+      <a href="../../public/find-a-room.html" class="confirm-booking-error-btn">
+        ${getIcon('arrow-left', { width: 20, height: 20 })}
+        <span>Back to Find a Room</span>
+      </a>
+    </div>
+  `;
+}
+
+/**
+ * Get the accepted application from URL params or localStorage
+ * @returns {Object|null} Application object or null
+ */
+function getAcceptedApplication() {
+  // Check URL params first
+  const urlParams = new URLSearchParams(window.location.search);
+  const appId = urlParams.get('applicationId');
+
+  if (appId) {
+    const applications = JSON.parse(localStorage.getItem('applications') || '[]');
+    const application = applications.find(app => app.id === parseInt(appId));
+
+    if (application) {
+      console.log('Application found in localStorage:', application);
+      return application;
+    }
+
+    // Fallback: Try to reconstruct from URL params if not found in localStorage
+    console.warn(
+      'Application not found in localStorage, attempting to reconstruct from URL params'
+    );
+    return reconstructApplicationFromParams(appId);
+  }
+
+  // Fallback: get from localStorage (single accepted application)
+  return JSON.parse(localStorage.getItem('acceptedApplication') || 'null');
+}
+
+/**
+ * Reconstruct application object from URL parameters
+ * @param {string} appId - Application ID
+ * @returns {Object|null} Reconstructed application or null
+ */
+function reconstructApplicationFromParams(appId) {
+  const urlParams = new URLSearchParams(window.location.search);
+  const title = urlParams.get('title') || urlParams.get('property');
+  const price = urlParams.get('price') || urlParams.get('monthlyRent');
+  const address = urlParams.get('address') || urlParams.get('location');
+
+  if (!title && !price) {
+    console.error('Cannot reconstruct application - missing required params');
+    return null;
+  }
+
+  const reconstructed = {
+    id: parseInt(appId),
+    propertyId: parseInt(appId),
+    title: title || 'Unknown Property',
+    address: address || 'Address not available',
+    price: price ? parseInt(price) : 0,
+    monthlyRent: price ? parseInt(price) : 0,
+    status: 'pending_confirmation',
+    appliedDate: new Date().toISOString().split('T')[0],
+  };
+
+  console.log('Reconstructed application:', reconstructed);
+  return reconstructed;
+}
+
+/**
+>>>>>>> didigzz/feat/room-availability-management
  * Populate the application details in the UI
  * @param {Object} app - Application object
  */
@@ -465,6 +586,15 @@ function populateApplicationDetails(app) {
   if (acceptedDate)
     acceptedDate.textContent = formatDate(app.acceptedDate || app.appliedDate || new Date());
   if (landlordName) landlordName.textContent = app.landlordName || 'Property Owner';
+<<<<<<< HEAD
+=======
+
+  console.log('Populated application details:', {
+    title: app.title,
+    rent,
+    status: app.status,
+  });
+>>>>>>> didigzz/feat/room-availability-management
 }
 
 /**
@@ -492,6 +622,16 @@ function populatePaymentDetails(app) {
   if (paymentDueDateEl) {
     paymentDueDateEl.textContent = formatDate(dueDate);
   }
+<<<<<<< HEAD
+=======
+
+  console.log('Populated payment details:', {
+    securityDeposit,
+    firstMonthRent: rent,
+    totalDue,
+    dueDate: dueDate.toISOString(),
+  });
+>>>>>>> didigzz/feat/room-availability-management
 }
 
 /**
@@ -504,7 +644,11 @@ function setupPaymentMethodSelection() {
     const radio = option.querySelector('.confirm-payment-method-input');
     if (!radio) return;
 
+<<<<<<< HEAD
     option.addEventListener('click', _e => {
+=======
+    option.addEventListener('click', e => {
+>>>>>>> didigzz/feat/room-availability-management
       // Remove selected state from all options
       methodOptions.forEach(opt => opt.classList.remove('selected'));
 
@@ -546,6 +690,10 @@ async function handleAcceptBooking(application) {
 
     // Show loading state
     const acceptBtn = document.getElementById('confirm-accept-btn');
+<<<<<<< HEAD
+=======
+    const originalText = acceptBtn.innerHTML;
+>>>>>>> didigzz/feat/room-availability-management
     acceptBtn.disabled = true;
     acceptBtn.innerHTML =
       '<span data-icon="loading" data-icon-width="20" data-icon-height="20"></span> Confirming...';
@@ -619,8 +767,14 @@ function showSuccessModal(booking) {
 
 /**
  * Handle declining the booking (return to browsing)
+<<<<<<< HEAD
  */
 function handleDeclineBooking(_application) {
+=======
+ * @param {Object} application - Application object
+ */
+function handleDeclineBooking(application) {
+>>>>>>> didigzz/feat/room-availability-management
   // Keep status as 'pending_confirmation' or revert to 'applied_pending'
   // User can continue browsing rooms
   window.location.href = '../../public/find-a-room.html';
@@ -656,7 +810,11 @@ function formatDate(dateString) {
  * Update UI based on application status (pending vs accepted)
  * @param {Object} application - Application object
  */
+<<<<<<< HEAD
 function _updateUIForStatus(application) {
+=======
+function updateUIForStatus(application) {
+>>>>>>> didigzz/feat/room-availability-management
   const title = document.querySelector('.confirm-booking-title');
   const subtitle = document.querySelector('.confirm-booking-subtitle');
   const acceptBtn = document.getElementById('confirm-accept-btn');

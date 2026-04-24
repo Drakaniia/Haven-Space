@@ -25,6 +25,7 @@ const state = {
   markers: [],
   mapVisible: false,
   currentProperty: null,
+<<<<<<< HEAD
   properties: [], // Store fetched properties
   isLoading: false,
 };
@@ -111,6 +112,179 @@ async function fetchProperties() {
     state.isLoading = false;
   }
 }
+=======
+};
+
+// Sample property data (replace with API calls in production)
+const properties = [
+  {
+    id: 1,
+    title: 'Sunrise Dormitory',
+    address: 'Katipunan Avenue, Quezon City, Metro Manila',
+    location: 'University of the Philippines',
+    distance: 0.5,
+    price: 4500,
+    rating: 4.8,
+    reviews: 24,
+    type: 'single',
+    amenities: ['wifi', 'ac', 'parking', 'laundry', 'security', 'cctv'],
+    image: 'https://images.unsplash.com/photo-1555854877-bab0e564b8d5?w=800&q=80',
+    badges: ['verified', 'new'],
+    available: 'Now',
+    roomTypes: 'Single & Shared',
+    lat: 14.6417,
+    lng: 121.0705,
+    phone: '0906 460 1570',
+    locationCode: '58GX+JM Quezon City',
+    propertyType: 'Boarding House',
+    photos: [
+      'https://images.unsplash.com/photo-1555854877-bab0e564b8d5?w=800&q=80',
+      'https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?w=800&q=80',
+      'https://images.unsplash.com/photo-1502672260266-1c1ef2d93688?w=800&q=80',
+    ],
+    reviewsList: [
+      {
+        username: 'Maria Santos',
+        initials: 'MS',
+        reviewsCount: 12,
+        photosCount: 8,
+        rating: 5,
+        time: '2 months ago',
+        text: 'Great place to stay! Very clean and the landlord is accommodating. The WiFi is fast and perfect for online classes. Highly recommended!',
+      },
+      {
+        username: 'Juan Dela Cruz',
+        initials: 'JD',
+        reviewsCount: 5,
+        photosCount: 3,
+        rating: 4,
+        time: '3 months ago',
+        text: 'Good value for money. The room is spacious and well-ventilated. Only minor issue is the occasional water interruption but overall a solid choice.',
+      },
+    ],
+  },
+  {
+    id: 2,
+    title: 'Campus View Residences',
+    address: 'Loyola Heights, Quezon City, Metro Manila',
+    location: 'Ateneo de Manila',
+    distance: 1.2,
+    price: 6500,
+    rating: 4.6,
+    reviews: 18,
+    type: 'studio',
+    amenities: ['wifi', 'furnished', 'parking', 'cctv'],
+    image: 'https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?w=800&q=80',
+    badges: ['verified'],
+    available: 'Sept 1',
+    roomTypes: 'Studio & 1 BHK',
+    lat: 14.6385,
+    lng: 121.0733,
+    phone: '0917 123 4567',
+    locationCode: '58FX+KP Quezon City',
+    propertyType: 'Apartment',
+    photos: [
+      'https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?w=800&q=80',
+      'https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?w=800&q=80',
+      'https://images.unsplash.com/photo-1555854877-bab0e564b8d5?w=800&q=80',
+    ],
+    reviewsList: [
+      {
+        username: 'Ana Reyes',
+        initials: 'AR',
+        reviewsCount: 8,
+        photosCount: 5,
+        rating: 5,
+        time: '1 month ago',
+        text: 'Amazing location! Walking distance to Ateneo and very safe area. The rooms are modern and clean.',
+      },
+    ],
+  },
+  {
+    id: 3,
+    title: 'Greenfield Boarding House',
+    address: 'Commonwealth Avenue, Quezon City, Metro Manila',
+    location: 'Miriam College',
+    distance: 2.1,
+    price: 3200,
+    rating: 4.5,
+    reviews: 32,
+    type: 'shared',
+    amenities: ['wifi', 'laundry', 'kitchen', 'parking'],
+    image: 'https://images.unsplash.com/photo-1502672260266-1c1ef2d93688?w=800&q=80',
+    badges: ['promo'],
+    available: 'Now',
+    roomTypes: 'Shared Rooms',
+    lat: 14.6502,
+    lng: 121.0612,
+    phone: '0918 987 6543',
+    locationCode: '58HX+MN Quezon City',
+    propertyType: 'Boarding House',
+    photos: [
+      'https://images.unsplash.com/photo-1502672260266-1c1ef2d93688?w=800&q=80',
+      'https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?w=800&q=80',
+      'https://images.unsplash.com/photo-1555854877-bab0e564b8d5?w=800&q=80',
+    ],
+    reviewsList: [
+      {
+        username: 'Carlos Garcia',
+        initials: 'CG',
+        reviewsCount: 3,
+        photosCount: 2,
+        rating: 4,
+        time: '2 weeks ago',
+        text: 'Affordable and decent place. The shared kitchen is well-equipped and the landlord is friendly.',
+      },
+    ],
+  },
+  {
+    id: 4,
+    title: 'Metro Plaza Apartments',
+    address: 'Roxas Boulevard, Quezon City, Metro Manila',
+    location: 'University of the Philippines',
+    distance: 0.8,
+    price: 7800,
+    rating: 4.9,
+    reviews: 41,
+    type: '1bhk',
+    amenities: ['wifi', 'ac', 'security', 'cctv', 'parking', 'laundry', 'furnished', 'kitchen'],
+    image: 'https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?w=800&q=80',
+    badges: ['verified', 'new'],
+    available: 'Aug 15',
+    roomTypes: '1 BHK & Studio',
+    lat: 14.6352,
+    lng: 121.0661,
+    phone: '0920 555 1234',
+    locationCode: '58EW+QR Quezon City',
+    propertyType: 'Apartment',
+    photos: [
+      'https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?w=800&q=80',
+      'https://images.unsplash.com/photo-1555854877-bab0e564b8d5?w=800&q=80',
+      'https://images.unsplash.com/photo-1502672260266-1c1ef2d93688?w=800&q=80',
+    ],
+    reviewsList: [
+      {
+        username: 'Sofia Martinez',
+        initials: 'SM',
+        reviewsCount: 15,
+        photosCount: 10,
+        rating: 5,
+        time: '1 week ago',
+        text: 'Luxurious apartments with excellent amenities. The view is breathtaking and the security is top-notch. Worth every penny!',
+      },
+      {
+        username: 'Diego Torres',
+        initials: 'DT',
+        reviewsCount: 7,
+        photosCount: 4,
+        rating: 5,
+        time: '3 weeks ago',
+        text: 'Best boarding house I have stayed in. The management is professional and the facilities are well-maintained.',
+      },
+    ],
+  },
+];
+>>>>>>> didigzz/feat/room-availability-management
 
 /**
  * Initialize the Find a Room page
@@ -318,6 +492,10 @@ function setupEventListeners() {
   // Map toggle button
   const mapToggleBtn = document.getElementById('map-toggle-btn');
   const mapCloseBtn = document.getElementById('map-close-btn');
+<<<<<<< HEAD
+=======
+  const mapView = document.getElementById('map-view');
+>>>>>>> didigzz/feat/room-availability-management
 
   if (mapToggleBtn) {
     mapToggleBtn.addEventListener('click', () => {
@@ -350,7 +528,11 @@ function setupEventListeners() {
 /**
  * Open map view
  */
+<<<<<<< HEAD
 async function openMapView() {
+=======
+function openMapView() {
+>>>>>>> didigzz/feat/room-availability-management
   const mapView = document.getElementById('map-view');
   if (mapView) {
     mapView.style.display = 'flex';
@@ -358,13 +540,20 @@ async function openMapView() {
 
     // Initialize map if not already done
     if (!state.map) {
+<<<<<<< HEAD
       await initMap();
+=======
+      initMap();
+>>>>>>> didigzz/feat/room-availability-management
     } else {
       // Invalidate size to ensure proper rendering
       setTimeout(() => {
         state.map.invalidateSize();
+<<<<<<< HEAD
         // Update markers with current properties
         addPropertyMarkers(state.properties);
+=======
+>>>>>>> didigzz/feat/room-availability-management
       }, 100);
     }
   }
@@ -390,13 +579,18 @@ function closeMapView() {
 /**
  * Initialize Leaflet map
  */
+<<<<<<< HEAD
 async function initMap() {
+=======
+function initMap() {
+>>>>>>> didigzz/feat/room-availability-management
   // Check if Leaflet is loaded
   if (typeof L === 'undefined') {
     console.error('Leaflet is not loaded');
     return;
   }
 
+<<<<<<< HEAD
   // Ensure we have properties loaded
   if (state.properties.length === 0) {
     await fetchProperties();
@@ -421,6 +615,10 @@ async function initMap() {
 
   // Create map centered at calculated position
   state.map = L.map('find-room-map').setView([centerLat, centerLng], zoom);
+=======
+  // Create map centered at Malaybalay City
+  state.map = L.map('find-room-map').setView([8.1489, 125.125], 15);
+>>>>>>> didigzz/feat/room-availability-management
 
   // Add OpenStreetMap tiles
   L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
@@ -429,19 +627,27 @@ async function initMap() {
   }).addTo(state.map);
 
   // Add property markers
+<<<<<<< HEAD
   addPropertyMarkers(state.properties);
+=======
+  addPropertyMarkers(properties);
+>>>>>>> didigzz/feat/room-availability-management
 }
 
 /**
  * Add property markers to map
  */
 function addPropertyMarkers(propertiesList) {
+<<<<<<< HEAD
   if (!state.map) return;
 
+=======
+>>>>>>> didigzz/feat/room-availability-management
   // Clear existing markers
   state.markers.forEach(marker => state.map.removeLayer(marker));
   state.markers = [];
 
+<<<<<<< HEAD
   // Filter properties that have valid coordinates
   const validProperties = propertiesList.filter(
     property => property.lat && property.lng && !isNaN(property.lat) && !isNaN(property.lng)
@@ -453,6 +659,9 @@ function addPropertyMarkers(propertiesList) {
   }
 
   validProperties.forEach(property => {
+=======
+  propertiesList.forEach(property => {
+>>>>>>> didigzz/feat/room-availability-management
     // Create custom icon
     const icon = L.divIcon({
       className: 'custom-marker',
@@ -494,18 +703,22 @@ function addPropertyMarkers(propertiesList) {
 
     state.markers.push(marker);
   });
+<<<<<<< HEAD
 
   // Fit map bounds to show all markers if there are multiple properties
   if (validProperties.length > 1) {
     const bounds = L.latLngBounds(validProperties.map(p => [p.lat, p.lng]));
     state.map.fitBounds(bounds, { padding: [50, 50] });
   }
+=======
+>>>>>>> didigzz/feat/room-availability-management
 }
 
 /**
  * Create property popup content
  */
 function createPropertyPopup(property) {
+<<<<<<< HEAD
   const amenitiesHtml = Array.isArray(property.amenities)
     ? property.amenities
         .slice(0, 3)
@@ -513,6 +726,8 @@ function createPropertyPopup(property) {
         .join('')
     : '';
 
+=======
+>>>>>>> didigzz/feat/room-availability-management
   return `
     <div class="property-popup">
       <div class="property-popup-image" style="background-image: url('${
@@ -525,6 +740,7 @@ function createPropertyPopup(property) {
           ${property.address}
         </div>
         <div class="property-popup-meta">
+<<<<<<< HEAD
           ${
             property.distance
               ? `<span class="popup-distance">📍 ${property.distance} km away</span>`
@@ -534,6 +750,18 @@ function createPropertyPopup(property) {
         </div>
         <div class="property-popup-price">₱${property.price.toLocaleString()}/month</div>
         ${amenitiesHtml ? `<div class="property-popup-amenities">${amenitiesHtml}</div>` : ''}
+=======
+          <span class="popup-distance">📍 ${property.distance} km away</span>
+          <span class="popup-rating">⭐ ${property.rating} (${property.reviews})</span>
+        </div>
+        <div class="property-popup-price">₱${property.price.toLocaleString()}/month</div>
+        <div class="property-popup-amenities">
+          ${property.amenities
+            .slice(0, 3)
+            .map(a => `<span class="amenity-badge">${a}</span>`)
+            .join('')}
+        </div>
+>>>>>>> didigzz/feat/room-availability-management
         <div class="property-popup-actions">
           <button class="popup-btn popup-btn-primary" onclick="window.openDetailPanelById(${
             property.id
@@ -601,11 +829,16 @@ function populateDetailPanel(property) {
   // Set property image
   const propertyImage = document.getElementById('detail-property-image');
   if (propertyImage) {
+<<<<<<< HEAD
     propertyImage.src = getImageUrl(property.image);
     propertyImage.alt = property.title;
     propertyImage.onerror = function () {
       this.src = getImageUrl(null);
     };
+=======
+    propertyImage.src = property.image;
+    propertyImage.alt = property.title;
+>>>>>>> didigzz/feat/room-availability-management
   }
 
   // Set property title
@@ -750,7 +983,11 @@ function generateStarRating(rating, size = 16) {
  * Global function to open detail panel by property ID
  */
 window.openDetailPanelById = function (propertyId) {
+<<<<<<< HEAD
   const property = state.properties.find(p => p.id === parseInt(propertyId));
+=======
+  const property = properties.find(p => p.id === parseInt(propertyId));
+>>>>>>> didigzz/feat/room-availability-management
   if (property) {
     openDetailPanel(property);
   }

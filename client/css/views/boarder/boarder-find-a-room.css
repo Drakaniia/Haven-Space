@@ -1185,6 +1185,7 @@
 
   .find-room-card-price-amount {
     font-size: 1.25rem;
+<<<<<<< HEAD
   }
 }
 
@@ -1679,5 +1680,7 @@
 
   .find-room-room-actions {
     flex-direction: column;
+=======
+>>>>>>> didigzz/feat/room-availability-management
   }
 }

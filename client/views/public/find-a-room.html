@@ -31,7 +31,11 @@
   </head>
   <body data-view="public-find-room">
     <!-- Floating Smart Header -->
+<<<<<<< HEAD
     <header class="find-room-floating-header" id="find-room-floating-header">
+=======
+    <header class="find-room-floating-header hidden" id="find-room-floating-header">
+>>>>>>> didigzz/feat/room-availability-management
       <div class="find-room-floating-header-container">
         <!-- Left Side: Logo/Brand -->
         <div class="find-room-floating-header-left">
@@ -42,6 +46,7 @@
 
         <!-- Right Side: Controls -->
         <div class="find-room-floating-header-right">
+<<<<<<< HEAD
           <!-- Authenticated Controls -->
           <div class="find-room-auth-controls" id="find-room-auth-controls" style="display: none">
             <!-- Status Dropdown -->
@@ -127,10 +132,35 @@
                   <span data-icon="logout" data-icon-width="18" data-icon-height="18"></span>
                   <span>Log out</span>
                 </a>
+=======
+          <!-- Status Dropdown -->
+          <div class="find-room-header-dropdown" id="status-dropdown">
+            <button class="find-room-header-dropdown-btn" id="status-dropdown-btn">
+              <span data-icon="clipboard" data-icon-width="18" data-icon-height="18"></span>
+              <span>Status</span>
+              <span class="find-room-status-badge" id="status-badge" style="display: none">0</span>
+              <span data-icon="chevronDown" data-icon-width="16" data-icon-height="16"></span>
+            </button>
+            <div class="find-room-header-dropdown-menu" id="status-dropdown-menu">
+              <div class="find-room-status-header">
+                <h4>My Applications</h4>
+                <button class="find-room-status-close" id="find-room-status-close">
+                  <span data-icon="close" data-icon-width="18" data-icon-height="18"></span>
+                </button>
+              </div>
+              <div class="find-room-status-tabs">
+                <button class="find-room-status-tab active" data-status="all">All</button>
+                <button class="find-room-status-tab" data-status="pending">Pending</button>
+                <button class="find-room-status-tab" data-status="accepted">Accepted</button>
+              </div>
+              <div class="find-room-applications-list" id="applications-list">
+                <!-- Applications will be injected here -->
+>>>>>>> didigzz/feat/room-availability-management
               </div>
             </div>
           </div>
 
+<<<<<<< HEAD
           <!-- Unauthenticated Controls -->
           <div class="find-room-guest-controls" id="find-room-guest-controls" style="display: none">
             <!-- Login Button -->
@@ -138,6 +168,59 @@
               <span data-icon="user" data-icon-width="18" data-icon-height="18"></span>
               <span>Log In</span>
             </a>
+=======
+          <!-- Map View Button -->
+          <a href="maps.html" class="find-room-header-icon-btn" id="map-view-btn" title="View Map">
+            <span data-icon="map" data-icon-width="20" data-icon-height="20"></span>
+            <span class="find-room-header-btn-label">Map</span>
+          </a>
+
+          <!-- Profile Dropdown -->
+          <div class="find-room-header-dropdown" id="profile-dropdown">
+            <button class="find-room-header-profile-btn" id="profile-dropdown-btn">
+              <img
+                src="../../assets/images/sample.png"
+                alt="User Avatar"
+                class="find-room-header-profile-avatar"
+              />
+              <span class="find-room-header-profile-name">Juan Dela Cruz</span>
+              <span data-icon="chevronDown" data-icon-width="16" data-icon-height="16"></span>
+            </button>
+            <div
+              class="find-room-header-dropdown-menu find-room-profile-menu"
+              id="profile-dropdown-menu"
+            >
+              <div class="find-room-profile-menu-header">
+                <div class="find-room-profile-menu-avatar">JD</div>
+                <div class="find-room-profile-menu-info">
+                  <div class="find-room-profile-menu-name">Juan Dela Cruz</div>
+                  <div class="find-room-profile-menu-email">juan@example.com</div>
+                </div>
+              </div>
+              <div class="find-room-profile-menu-divider"></div>
+              <a
+                href="../boarder/profile/index.html"
+                class="find-room-profile-menu-item"
+                id="profile-menu-profile"
+              >
+                <span data-icon="user" data-icon-width="18" data-icon-height="18"></span>
+                <span>Profile</span>
+              </a>
+              <a href="#" class="find-room-profile-menu-item" id="profile-menu-settings">
+                <span data-icon="settings" data-icon-width="18" data-icon-height="18"></span>
+                <span>Settings</span>
+              </a>
+              <div class="find-room-profile-menu-divider"></div>
+              <a
+                href="#"
+                class="find-room-profile-menu-item find-room-profile-menu-logout"
+                id="profile-menu-logout"
+              >
+                <span data-icon="logout" data-icon-width="18" data-icon-height="18"></span>
+                <span>Log out</span>
+              </a>
+            </div>
+>>>>>>> didigzz/feat/room-availability-management
           </div>
         </div>
       </div>
@@ -336,6 +419,21 @@
               <!-- Quick Location Chips -->
               <div class="find-room-location-chips" id="auth-location-chips">
                 <span class="find-room-chip-label">Popular:</span>
+<<<<<<< HEAD
+=======
+                <button class="find-room-chip" data-location="University of the Philippines">
+                  <span data-icon="location" data-icon-width="16" data-icon-height="16"></span>
+                  UP Area
+                </button>
+                <button class="find-room-chip" data-location="Ateneo de Manila">
+                  <span data-icon="location" data-icon-width="16" data-icon-height="16"></span>
+                  Ateneo
+                </button>
+                <button class="find-room-chip" data-location="Miriam College">
+                  <span data-icon="location" data-icon-width="16" data-icon-height="16"></span>
+                  Miriam
+                </button>
+>>>>>>> didigzz/feat/room-availability-management
               </div>
             </div>
           </div>
@@ -488,7 +586,297 @@
 
         <!-- Property Grid -->
         <div class="find-room-properties-grid" id="properties-grid">
+<<<<<<< HEAD
           <!-- Properties will be dynamically loaded here -->
+=======
+          <!-- Property Card 1 -->
+          <div class="find-room-property-card" data-property-id="1">
+            <div class="find-room-card-image-wrapper">
+              <img
+                src="https://images.unsplash.com/photo-1555854877-bab0e564b8d5?w=800&q=80"
+                alt="Sunrise Dormitory"
+                class="find-room-card-image"
+              />
+              <div class="find-room-card-badges">
+                <span class="find-room-badge find-room-badge-verified">
+                  <span data-icon="badgeCheck" data-icon-width="16" data-icon-height="16"></span>
+                  Verified
+                </span>
+                <span class="find-room-badge find-room-badge-new">New</span>
+              </div>
+              <button class="find-room-favorite-btn" data-favorite="false">
+                <span data-icon="bookmark" data-icon-width="24" data-icon-height="24"></span>
+              </button>
+              <div class="find-room-card-amenities-preview">
+                <span class="find-room-amenity-icon" title="WiFi">
+                  <span data-icon="sparkles" data-icon-width="20" data-icon-height="20"></span>
+                </span>
+                <span class="find-room-amenity-icon" title="Air Conditioning">
+                  <span
+                    data-icon="computerDesktop"
+                    data-icon-width="20"
+                    data-icon-height="20"
+                  ></span>
+                </span>
+                <span class="find-room-amenity-icon" title="Parking">
+                  <span data-icon="checkSimple" data-icon-width="20" data-icon-height="20"></span>
+                </span>
+                <span class="find-room-amenity-more">+3</span>
+              </div>
+            </div>
+            <div class="find-room-card-content">
+              <div class="find-room-card-header">
+                <div class="find-room-card-location">
+                  <span data-icon="location" data-icon-width="20" data-icon-height="20"></span>
+                  <span class="find-room-card-distance">0.5 km from UP</span>
+                </div>
+                <div class="find-room-card-rating">
+                  <span data-icon="starSolid" data-icon-width="16" data-icon-height="16"></span>
+                  <span class="find-room-card-rating-value">4.8</span>
+                  <span class="find-room-card-rating-count">(24)</span>
+                </div>
+              </div>
+              <h3 class="find-room-card-title">Sunrise Dormitory</h3>
+              <p class="find-room-card-address">Katipunan Avenue, Quezon City, Metro Manila</p>
+              <div class="find-room-card-features">
+                <span class="find-room-feature">
+                  <span data-icon="userCircle" data-icon-width="20" data-icon-height="20"></span>
+                  Single & Shared
+                </span>
+                <span class="find-room-feature">
+                  <span data-icon="calendar" data-icon-width="20" data-icon-height="20"></span>
+                  Available Now
+                </span>
+              </div>
+              <div class="find-room-card-footer">
+                <div class="find-room-card-price">
+                  <span class="find-room-card-price-amount">₱4,500</span>
+                  <span class="find-room-card-price-period">/month</span>
+                </div>
+                <a href="./rooms/detail.html?id=1" class="find-room-card-btn">
+                  View Details
+                  <span
+                    data-icon="arrowRightSimple"
+                    data-icon-width="20"
+                    data-icon-height="20"
+                  ></span>
+                </a>
+              </div>
+            </div>
+          </div>
+
+          <!-- Property Card 2 -->
+          <div class="find-room-property-card" data-property-id="2">
+            <div class="find-room-card-image-wrapper">
+              <img
+                src="https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?w=800&q=80"
+                alt="Campus View Residences"
+                class="find-room-card-image"
+              />
+              <div class="find-room-card-badges">
+                <span class="find-room-badge find-room-badge-verified">
+                  <span data-icon="badgeCheck" data-icon-width="16" data-icon-height="16"></span>
+                  Verified
+                </span>
+              </div>
+              <button class="find-room-favorite-btn" data-favorite="true">
+                <span data-icon="heartSolid" data-icon-width="24" data-icon-height="24"></span>
+              </button>
+              <div class="find-room-card-amenities-preview">
+                <span class="find-room-amenity-icon" title="WiFi">
+                  <span data-icon="sparkles" data-icon-width="20" data-icon-height="20"></span>
+                </span>
+                <span class="find-room-amenity-icon" title="Furnished">
+                  <span data-icon="checkSimple" data-icon-width="20" data-icon-height="20"></span>
+                </span>
+                <span class="find-room-amenity-more">+2</span>
+              </div>
+            </div>
+            <div class="find-room-card-content">
+              <div class="find-room-card-header">
+                <div class="find-room-card-location">
+                  <span data-icon="location" data-icon-width="20" data-icon-height="20"></span>
+                  <span class="find-room-card-distance">1.2 km from Ateneo</span>
+                </div>
+                <div class="find-room-card-rating">
+                  <span data-icon="starSolid" data-icon-width="16" data-icon-height="16"></span>
+                  <span class="find-room-card-rating-value">4.6</span>
+                  <span class="find-room-card-rating-count">(18)</span>
+                </div>
+              </div>
+              <h3 class="find-room-card-title">Campus View Residences</h3>
+              <p class="find-room-card-address">Loyola Heights, Quezon City, Metro Manila</p>
+              <div class="find-room-card-features">
+                <span class="find-room-feature">
+                  <span data-icon="userCircle" data-icon-width="20" data-icon-height="20"></span>
+                  Studio & 1 BHK
+                </span>
+                <span class="find-room-feature">
+                  <span data-icon="calendar" data-icon-width="20" data-icon-height="20"></span>
+                  Available Sept 1
+                </span>
+              </div>
+              <div class="find-room-card-footer">
+                <div class="find-room-card-price">
+                  <span class="find-room-card-price-amount">₱6,500</span>
+                  <span class="find-room-card-price-period">/month</span>
+                </div>
+                <a href="./rooms/detail.html?id=2" class="find-room-card-btn">
+                  View Details
+                  <span
+                    data-icon="arrowRightSimple"
+                    data-icon-width="20"
+                    data-icon-height="20"
+                  ></span>
+                </a>
+              </div>
+            </div>
+          </div>
+
+          <!-- Property Card 3 -->
+          <div class="find-room-property-card" data-property-id="3">
+            <div class="find-room-card-image-wrapper">
+              <img
+                src="https://images.unsplash.com/photo-1502672260266-1c1ef2d93688?w=800&q=80"
+                alt="Greenfield Boarding House"
+                class="find-room-card-image"
+              />
+              <div class="find-room-card-badges">
+                <span class="find-room-badge find-room-badge-promo">Promo</span>
+              </div>
+              <button class="find-room-favorite-btn" data-favorite="false">
+                <span data-icon="bookmark" data-icon-width="24" data-icon-height="24"></span>
+              </button>
+              <div class="find-room-card-amenities-preview">
+                <span class="find-room-amenity-icon" title="WiFi">
+                  <span data-icon="sparkles" data-icon-width="20" data-icon-height="20"></span>
+                </span>
+                <span class="find-room-amenity-icon" title="Laundry">
+                  <span data-icon="wrench" data-icon-width="20" data-icon-height="20"></span>
+                </span>
+                <span class="find-room-amenity-icon" title="Kitchen">
+                  <span data-icon="wrench" data-icon-width="20" data-icon-height="20"></span>
+                </span>
+                <span class="find-room-amenity-more">+1</span>
+              </div>
+            </div>
+            <div class="find-room-card-content">
+              <div class="find-room-card-header">
+                <div class="find-room-card-location">
+                  <span data-icon="location" data-icon-width="20" data-icon-height="20"></span>
+                  <span class="find-room-card-distance">2.1 km from Miriam</span>
+                </div>
+                <div class="find-room-card-rating">
+                  <span data-icon="starSolid" data-icon-width="16" data-icon-height="16"></span>
+                  <span class="find-room-card-rating-value">4.5</span>
+                  <span class="find-room-card-rating-count">(32)</span>
+                </div>
+              </div>
+              <h3 class="find-room-card-title">Greenfield Boarding House</h3>
+              <p class="find-room-card-address">Commonwealth Avenue, Quezon City, Metro Manila</p>
+              <div class="find-room-card-features">
+                <span class="find-room-feature">
+                  <span data-icon="userCircle" data-icon-width="20" data-icon-height="20"></span>
+                  Shared Rooms
+                </span>
+                <span class="find-room-feature">
+                  <span data-icon="calendar" data-icon-width="20" data-icon-height="20"></span>
+                  Available Now
+                </span>
+              </div>
+              <div class="find-room-card-footer">
+                <div class="find-room-card-price">
+                  <span class="find-room-card-price-amount">₱3,200</span>
+                  <span class="find-room-card-price-period">/month</span>
+                </div>
+                <a href="./rooms/detail.html?id=3" class="find-room-card-btn">
+                  View Details
+                  <span
+                    data-icon="arrowRightSimple"
+                    data-icon-width="20"
+                    data-icon-height="20"
+                  ></span>
+                </a>
+              </div>
+            </div>
+          </div>
+
+          <!-- Property Card 4 -->
+          <div class="find-room-property-card" data-property-id="4">
+            <div class="find-room-card-image-wrapper">
+              <img
+                src="https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?w=800&q=80"
+                alt="Metro Plaza Apartments"
+                class="find-room-card-image"
+              />
+              <div class="find-room-card-badges">
+                <span class="find-room-badge find-room-badge-verified">
+                  <span data-icon="badgeCheck" data-icon-width="16" data-icon-height="16"></span>
+                  Verified
+                </span>
+                <span class="find-room-badge find-room-badge-new">New</span>
+              </div>
+              <button class="find-room-favorite-btn" data-favorite="false">
+                <span data-icon="bookmark" data-icon-width="24" data-icon-height="24"></span>
+              </button>
+              <div class="find-room-card-amenities-preview">
+                <span class="find-room-amenity-icon" title="WiFi">
+                  <span data-icon="sparkles" data-icon-width="20" data-icon-height="20"></span>
+                </span>
+                <span class="find-room-amenity-icon" title="Air Conditioning">
+                  <span
+                    data-icon="computerDesktop"
+                    data-icon-width="20"
+                    data-icon-height="20"
+                  ></span>
+                </span>
+                <span class="find-room-amenity-icon" title="Security">
+                  <span data-icon="shieldCheck" data-icon-width="20" data-icon-height="20"></span>
+                </span>
+                <span class="find-room-amenity-more">+4</span>
+              </div>
+            </div>
+            <div class="find-room-card-content">
+              <div class="find-room-card-header">
+                <div class="find-room-card-location">
+                  <span data-icon="location" data-icon-width="20" data-icon-height="20"></span>
+                  <span class="find-room-card-distance">0.8 km from UP</span>
+                </div>
+                <div class="find-room-card-rating">
+                  <span data-icon="starSolid" data-icon-width="16" data-icon-height="16"></span>
+                  <span class="find-room-card-rating-value">4.9</span>
+                  <span class="find-room-card-rating-count">(41)</span>
+                </div>
+              </div>
+              <h3 class="find-room-card-title">Metro Plaza Apartments</h3>
+              <p class="find-room-card-address">Roxas Boulevard, Quezon City, Metro Manila</p>
+              <div class="find-room-card-features">
+                <span class="find-room-feature">
+                  <span data-icon="userCircle" data-icon-width="20" data-icon-height="20"></span>
+                  1 BHK & Studio
+                </span>
+                <span class="find-room-feature">
+                  <span data-icon="calendar" data-icon-width="20" data-icon-height="20"></span>
+                  Available Aug 15
+                </span>
+              </div>
+              <div class="find-room-card-footer">
+                <div class="find-room-card-price">
+                  <span class="find-room-card-price-amount">₱7,800</span>
+                  <span class="find-room-card-price-period">/month</span>
+                </div>
+                <a href="./rooms/detail.html?id=4" class="find-room-card-btn">
+                  View Details
+                  <span
+                    data-icon="arrowRightSimple"
+                    data-icon-width="20"
+                    data-icon-height="20"
+                  ></span>
+                </a>
+              </div>
+            </div>
+          </div>
+>>>>>>> didigzz/feat/room-availability-management
         </div>
 
         <!-- Load More -->

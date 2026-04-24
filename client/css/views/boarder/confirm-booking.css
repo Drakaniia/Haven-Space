@@ -662,6 +662,7 @@
     flex-direction: column;
   }
 }
+<<<<<<< HEAD
 
 /* Moving Date Setup Styles */
 .moving-date-content {
@@ -877,3 +878,5 @@
     gap: 0.25rem;
   }
 }
+=======
+>>>>>>> didigzz/feat/room-availability-management
