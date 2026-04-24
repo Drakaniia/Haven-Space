@@ -33,6 +33,8 @@ return function ($context) {
     if (!empty($requestData['method'])) {
         $method = $requestData['method'];
     }
+    // Keep the original request data for processing
+    $originalRequestData = $requestData;
     
     // Enhanced CORS headers
     $headers = [
@@ -100,9 +102,6 @@ return function ($context) {
     }
 
     try {
-        // Parse request body
-        $requestData = parseJsonBody($body);
-        
         // Route handling with comprehensive API endpoints
         switch (true) {
             // Root endpoints
@@ -148,10 +147,10 @@ return function ($context) {
                     return $context->res->json(generateResponse(null, 405, 'Method not allowed'), 405, $headers);
                 }
                 
-                $email = $requestData['email'] ?? '';
-                $password = $requestData['password'] ?? '';
-                $name = $requestData['name'] ?? '';
-                $role = $requestData['role'] ?? 'boarder';
+                $email = $originalRequestData['email'] ?? '';
+                $password = $originalRequestData['password'] ?? '';
+                $name = $originalRequestData['name'] ?? '';
+                $role = $originalRequestData['role'] ?? 'boarder';
                 
                 if (empty($email) || empty($password)) {
                     return $context->res->json(generateResponse(null, 400, 'Email and password required'), 400, $headers);
@@ -187,8 +186,8 @@ return function ($context) {
                     return $context->res->json(generateResponse(null, 405, 'Method not allowed'), 405, $headers);
                 }
                 
-                $email = $requestData['email'] ?? '';
-                $password = $requestData['password'] ?? '';
+                $email = $originalRequestData['email'] ?? '';
+                $password = $originalRequestData['password'] ?? '';
                 
                 if (empty($email) || empty($password)) {
                     return $context->res->json(generateResponse(null, 400, 'Email and password required'), 400, $headers);
@@ -254,11 +253,11 @@ return function ($context) {
                     $user = $account->get();
                     
                     // Update account info
-                    if (!empty($requestData['name'])) {
-                        $account->updateName($requestData['name']);
+                    if (!empty($originalRequestData['name'])) {
+                        $account->updateName($originalRequestData['name']);
                     }
-                    if (!empty($requestData['email'])) {
-                        $account->updateEmail($requestData['email'], $requestData['password'] ?? '');
+                    if (!empty($originalRequestData['email'])) {
+                        $account->updateEmail($originalRequestData['email'], $originalRequestData['password'] ?? '');
                     }
                     
                     // Update profile in database
@@ -267,7 +266,7 @@ return function ($context) {
                     ]);
                     
                     if (!empty($userDocs['documents'])) {
-                        $profileData = array_merge($userDocs['documents'][0], $requestData);
+                        $profileData = array_merge($userDocs['documents'][0], $originalRequestData);
                         $profileData['updated_at'] = date('c');
                         
                         $databases->updateDocument($databaseId, $collections['users'], 
@@ -325,7 +324,7 @@ return function ($context) {
                     return $context->res->json(generateResponse($properties['documents']), 200, $headers);
                     
                 } elseif ($method === 'POST') {
-                    $propertyData = array_merge($requestData, [
+                    $propertyData = array_merge($originalRequestData, [
                         'landlord_id' => $user['$id'],
                         'status' => 'active',
                         'created_at' => date('c'),
@@ -389,7 +388,7 @@ return function ($context) {
                     return $context->res->json(generateResponse($applications['documents']), 200, $headers);
                     
                 } elseif ($method === 'POST') {
-                    $applicationData = array_merge($requestData, [
+                    $applicationData = array_merge($originalRequestData, [
                         'boarder_id' => $user['$id'],
                         'status' => 'pending',
                         'created_at' => date('c'),
@@ -445,7 +444,7 @@ return function ($context) {
                 $user = $account->get();
                 
                 if ($method === 'POST') {
-                    $messageData = array_merge($requestData, [
+                    $messageData = array_merge($originalRequestData, [
                         'sender_id' => $user['$id'],
                         'status' => 'sent',
                         'created_at' => date('c')
@@ -484,7 +483,7 @@ return function ($context) {
                     return $context->res->json(generateResponse($payments['documents']), 200, $headers);
                     
                 } elseif ($method === 'POST') {
-                    $paymentData = array_merge($requestData, [
+                    $paymentData = array_merge($originalRequestData, [
                         'user_id' => $user['$id'],
                         'status' => 'pending',
                         'created_at' => date('c')
@@ -517,9 +516,9 @@ return function ($context) {
                     return $context->res->json(generateResponse(null, 405, 'Method not allowed'), 405, $headers);
                 }
                 
-                $message = $requestData['message'] ?? '';
-                $sessionId = $requestData['session_id'] ?? uniqid();
-                $userId = $requestData['user_id'] ?? 'anonymous';
+                $message = $originalRequestData['message'] ?? '';
+                $sessionId = $originalRequestData['session_id'] ?? uniqid();
+                $userId = $originalRequestData['user_id'] ?? 'anonymous';
                 
                 if (empty($message)) {
                     return $context->res->json(generateResponse(null, 400, 'Message is required'), 400, $headers);
