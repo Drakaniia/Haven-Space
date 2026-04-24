@@ -28,9 +28,12 @@ We are using the Appwrite platform for:
 
 **Debugging**: When debugging from localhost and encountering errors like "Internal Server Error", "Unauthorized", or any other type of error, ensure to also include fixes for the production environment.
 
+**Run Server**: To run the server, use the command `bun run server`.
+
 ## Codebase Structure
 
 ### Client
+
 - **components**: Reusable UI components
 - **css**: Global and component-specific styles
 - **js**: JavaScript modules and utilities
@@ -38,6 +41,7 @@ We are using the Appwrite platform for:
 - **index.html**: Main entry point
 
 ### Server
+
 - **api**: API endpoints and route handlers
 - **src**: Core application logic and services
 - **database**: Database-related files
