@@ -182,13 +182,14 @@ function createPropertyCard(property) {
   const photoCount = photos.length;
 
   card.innerHTML = `
-    <div class="property-card-image">
+    <div class="property-card-image" title="Click to manage rooms">
       <img id="property-img-${property.id}" alt="${property.name}" />
       <span class="property-card-status status-${property.status}">${statusLabel}</span>
       <div class="property-card-photo-count">
         ${getIcon('photo')}
         ${photoCount}
       </div>
+      <span class="property-card-image-hint">Manage Rooms</span>
     </div>
     <div class="property-card-body">
       <h3 class="property-card-name">${property.name}</h3>
@@ -241,6 +242,17 @@ function createPropertyCard(property) {
       handlePropertyAction(action, id);
     });
   });
+
+  // Clicking the property image navigates to room management
+  const cardImage = card.querySelector('.property-card-image');
+  if (cardImage) {
+    cardImage.addEventListener('click', e => {
+      e.stopPropagation();
+      // Navigate to room-edit page with property ID parameter
+      // This implements the requirement: "after clicking property-img-1, it should navigate to room-edit"
+      window.location.href = `room-edit.html?propertyId=${property.id}`;
+    });
+  }
 
   // Set the image with proper fallback after the card is created
   const imgElement = card.querySelector(`#property-img-${property.id}`);

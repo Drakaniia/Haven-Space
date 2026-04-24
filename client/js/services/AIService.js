@@ -52,22 +52,16 @@ class AIService {
         headers['X-User-Id'] = userId;
       }
 
+      // For Appwrite function execution, send data directly with path info
       const requestBody = {
+        ...data,
         path: path,
         method: method,
-        headers: headers,
       };
-
-      if (data && (method === 'POST' || method === 'PUT' || method === 'PATCH')) {
-        requestBody.body = JSON.stringify(data);
-      }
 
       const response = await fetch(CONFIG.API_BASE_URL, {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'X-Appwrite-Project': CONFIG.APPWRITE.PROJECT_ID,
-        },
+        headers: headers,
         body: JSON.stringify(requestBody),
       });
 
@@ -76,16 +70,6 @@ class AIService {
       }
 
       const result = await AIService.parseJsonResponse(response);
-
-      // Handle Appwrite function response format
-      if (result.response && typeof result.response === 'string') {
-        try {
-          return JSON.parse(result.response);
-        } catch {
-          return { success: false, error: result.response };
-        }
-      }
-
       return result;
     } catch (error) {
       console.error('Function execution failed:', error);
