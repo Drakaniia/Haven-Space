@@ -517,25 +517,12 @@ return function ($context) {
                     return $context->res->json(generateResponse(null, 405, 'Method not allowed'), 405, $headers);
                 }
                 
-                // Debug: log the request data structure
-                error_log("AI Chat Debug - Raw body: " . $body);
-                error_log("AI Chat Debug - Parsed requestData: " . json_encode($requestData));
-                
                 $message = $requestData['message'] ?? '';
                 $sessionId = $requestData['session_id'] ?? uniqid();
                 $userId = $requestData['user_id'] ?? 'anonymous';
                 
                 if (empty($message)) {
-                    return $context->res->json(generateResponse([
-                        'error' => 'Message is required',
-                        'debug_info' => [
-                            'received_data' => $requestData,
-                            'body_length' => strlen($body),
-                            'method' => $method,
-                            'path' => $path,
-                            'raw_body' => $body
-                        ]
-                    ], 400, 'Message is required'), 400, $headers);
+                    return $context->res->json(generateResponse(null, 400, 'Message is required'), 400, $headers);
                 }
                 
                 // Simple AI response logic

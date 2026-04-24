@@ -42,13 +42,13 @@ class AIService {
       const sessionId = localStorage.getItem('session_id');
       const userId = localStorage.getItem('user_id');
 
-      if (token) {
+      if (token && token !== 'null' && token !== 'undefined') {
         headers['Authorization'] = `Bearer ${token}`;
       }
-      if (sessionId) {
+      if (sessionId && sessionId !== 'null' && sessionId !== 'undefined') {
         headers['X-Session-Id'] = sessionId;
       }
-      if (userId) {
+      if (userId && userId !== 'null' && userId !== 'undefined') {
         headers['X-User-Id'] = userId;
       }
 
@@ -207,7 +207,7 @@ class AIService {
         localStorage.setItem('ai_session_id', chatData.session_id);
       }
 
-      return await AIService.executeFunction('/api/ai/chat', 'POST', chatData);
+      return await AIService.executeFunction('/api/chat', 'POST', chatData);
     } catch (error) {
       console.error('AI chat failed:', error);
       return {
