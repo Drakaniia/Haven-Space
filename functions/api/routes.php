@@ -120,6 +120,25 @@ Router::post('/auth/login.php', function() {
 });
 
 // ============================================
+// GOOGLE OAUTH ROUTES
+// ============================================
+Router::get('/auth/google/authorize.php', function() {
+    require_once __DIR__ . '/auth/google/authorize.php';
+});
+
+Router::get('/auth/google/callback.php', function() {
+    require_once __DIR__ . '/auth/google/callback.php';
+});
+
+Router::post('/auth/google/complete-registration.php', function() {
+    require_once __DIR__ . '/auth/google/complete-registration.php';
+});
+
+Router::post('/auth/google/link.php', function() {
+    require_once __DIR__ . '/auth/google/link.php';
+});
+
+// ============================================
 // UPLOAD ROUTES
 // ============================================
 Router::post('/api/upload', [UploadController::class, 'upload']);
