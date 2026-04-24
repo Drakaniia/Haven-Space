@@ -18,6 +18,46 @@ use App\Core\Auth\GoogleOAuth;
 use App\Core\Auth\JWT;
 use App\Core\Database\Connection;
 
+/**
+ * Determine boarder status based on applications
+ * 
+ * @param \PDO $pdo Database connection
+ * @param int $boarderId Boarder user ID
+ * @return string Boarder status
+ */
+function determineBoarderStatus($pdo, $boarderId) {
+    // Check for accepted applications
+    $acceptedStmt = $pdo->prepare('SELECT COUNT(*) as count FROM applications WHERE boarder_id = ? AND status = ? AND deleted_at IS NULL');
+    $acceptedStmt->execute([$boarderId, 'accepted']);
+    $acceptedCount = $acceptedStmt->fetchColumn();
+    
+    if ($acceptedCount > 0) {
+        return 'accepted';
+    }
+    
+    // Check for pending applications
+    $pendingStmt = $pdo->prepare('SELECT COUNT(*) as count FROM applications WHERE boarder_id = ? AND status = ? AND deleted_at IS NULL');
+    $pendingStmt->execute([$boarderId, 'pending']);
+    $pendingCount = $pendingStmt->fetchColumn();
+    
+    if ($pendingCount > 0) {
+        return 'applied_pending';
+    }
+    
+    // Check for any applications (rejected/cancelled)
+    $anyStmt = $pdo->prepare('SELECT COUNT(*) as count FROM applications WHERE boarder_id = ? AND deleted_at IS NULL');
+    $anyStmt->execute([$boarderId]);
+    $anyCount = $anyStmt->fetchColumn();
+    
+    if ($anyCount > 0) {
+        // Has applications but none are pending or accepted (likely rejected)
+        return 'rejected';
+    }
+    
+    // No applications at all
+    return 'new';
+}
+
 // Dynamically determine the base URL for redirects
 $protocol = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') ? 'https' : 'http';
 $host = $_SERVER['HTTP_HOST'] ?? 'localhost';
@@ -323,9 +363,41 @@ try {
     } else if ($userRole === 'landlord') {
         $redirectPath = '/views/landlord/index.html';
     } else {
-        // Boarder - use routing logic based on status
-        // Redirect to boarder dashboard home
-        $redirectPath = '/views/boarder/index.html';
+        // Boarder - determine status and redirect accordingly
+        $boarderStatus = determineBoarderStatus($pdo, $userId);
+        
+        // Set boarder status in payload for JWT
+        $payload['boarder_status'] = $boarderStatus;
+        
+        // Generate new JWT with boarder status
+        $jwtAccessToken = JWT::generate($payload, $config['jwt_expiration']);
+        $jwtRefreshToken = JWT::generate($payload, $config['refresh_token_expiration']);
+        
+        // Update auth cookies with new tokens
+        JWT::setAuthCookies($jwtAccessToken, $jwtRefreshToken, $config);
+        
+        // Determine redirect path based on boarder status
+        switch ($boarderStatus) {
+            case 'new':
+            case 'browsing':
+                $redirectPath = '/views/boarder/find-a-room/index.html';
+                break;
+            case 'applied_pending':
+                $redirectPath = '/views/boarder/applications-dashboard/index.html';
+                break;
+            case 'pending_confirmation':
+                $redirectPath = '/views/boarder/confirm-booking/index.html';
+                break;
+            case 'accepted':
+                $redirectPath = '/views/boarder/index.html';
+                break;
+            case 'rejected':
+                $redirectPath = '/views/boarder/applications-dashboard/index.html';
+                break;
+            default:
+                $redirectPath = '/views/boarder/index.html';
+                break;
+        }
     }
 
     // Ensure we're using the correct base URL

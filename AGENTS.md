@@ -30,6 +30,8 @@ We are using the Appwrite platform for:
 
 **Run Server**: To run the server, use the command `bun run server`.
 
+**Frontend**: The frontend is running on `http://localhost` (no port provided by XAMPP). The default development server is port 80 (Apache).
+
 ## Codebase Structure
 
 ### Client
@@ -45,3 +47,8 @@ We are using the Appwrite platform for:
 - **api**: API endpoints and route handlers
 - **src**: Core application logic and services
 - **database**: Database-related files
+
+## dufault supeadmin credentials
+
+admin@mail.com
+Superadmin123

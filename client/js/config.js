@@ -9,7 +9,6 @@ function detectEnvironment() {
 
   // Production environments
   const productionHosts = [
-    'onrender.com',
     'github.io', // GitHub Pages
     'appwrite.network', // Appwrite hosting
   ];

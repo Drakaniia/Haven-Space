@@ -33,3 +33,6 @@ spl_autoload_register(function ($class) {
         require $file;
     }
 });
+
+// Manually require the Database class to ensure it's loaded
+require_once __DIR__ . '/Database/Database.php';

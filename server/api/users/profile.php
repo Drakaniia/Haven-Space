@@ -6,20 +6,13 @@
  */
 
 require_once __DIR__ . '/../../src/Core/bootstrap.php';
+require_once __DIR__ . '/../cors.php';
 require_once __DIR__ . '/../middleware.php';
 
-use App\Core\Database;
+use App\Core\Database\Database;
 use App\Api\Middleware;
 
-// Enable CORS
-header('Access-Control-Allow-Origin: *');
-header('Access-Control-Allow-Methods: GET, POST, PUT, PATCH, DELETE, OPTIONS');
-header('Access-Control-Allow-Headers: Content-Type, Authorization, X-User-ID');
-
-if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
-    http_response_code(200);
-    exit;
-}
+// CORS is handled by cors.php middleware
 
 // Authenticate user
 $user = Middleware::authenticate();
@@ -50,7 +43,7 @@ function getUserProfile($db, $userId) {
     try {
         $stmt = $db->prepare("
             SELECT 
-                u.id, u.first_name, u.last_name, u.email, u.phone, u.alt_phone,
+                u.id, u.first_name, u.last_name, u.email, u.phone_number, u.alt_phone,
                 u.date_of_birth, u.gender, u.bio, u.current_address, u.avatar_url,
                 u.employment_status, u.company_name, u.job_title, u.monthly_income,
                 u.work_schedule, u.company_address,
@@ -102,7 +95,7 @@ function updateUserProfile($db, $userId) {
         
         // Define allowed fields for update
         $allowedFields = [
-            'first_name', 'last_name', 'phone', 'alt_phone',
+            'first_name', 'last_name', 'phone_number', 'alt_phone',
             'date_of_birth', 'gender', 'bio', 'current_address',
             'employment_status', 'company_name', 'job_title', 
             'monthly_income', 'work_schedule', 'company_address',
@@ -144,7 +137,7 @@ function updateUserProfile($db, $userId) {
         // Fetch updated user data with avatar
         $stmt = $db->prepare("
             SELECT 
-                u.id, u.first_name, u.last_name, u.email, u.phone, u.alt_phone,
+                u.id, u.first_name, u.last_name, u.email, u.phone_number, u.alt_phone,
                 u.date_of_birth, u.gender, u.bio, u.current_address, u.avatar_url,
                 u.employment_status, u.company_name, u.job_title, u.monthly_income,
                 u.work_schedule, u.company_address,

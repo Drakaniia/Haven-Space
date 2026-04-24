@@ -30,7 +30,7 @@ class ApplicationRepository
                        u.first_name, u.last_name, u.email as landlord_email
                 FROM applications a
                 JOIN rooms r ON a.room_id = r.id
-                JOIN properties p ON r.property_id = p.id
+                JOIN v_properties_with_address p ON r.property_id = p.id
                 JOIN users u ON a.landlord_id = u.id
                 WHERE a.boarder_id = ? AND a.deleted_at IS NULL
                 ORDER BY a.created_at DESC';
@@ -52,7 +52,7 @@ class ApplicationRepository
                        u.first_name, u.last_name, u.email as boarder_email
                 FROM applications a
                 JOIN rooms r ON a.room_id = r.id
-                JOIN properties p ON r.property_id = p.id
+                JOIN v_properties_with_address p ON r.property_id = p.id
                 JOIN users u ON a.boarder_id = u.id
                 WHERE a.landlord_id = ? AND a.deleted_at IS NULL
                 ORDER BY a.created_at DESC';
@@ -78,7 +78,7 @@ class ApplicationRepository
                        ul.email as landlord_email, ul.avatar_url as landlord_avatar
                 FROM applications a
                 JOIN rooms r ON a.room_id = r.id
-                JOIN properties p ON r.property_id = p.id
+                JOIN v_properties_with_address p ON r.property_id = p.id
                 JOIN users ub ON a.boarder_id = ub.id
                 JOIN users ul ON a.landlord_id = ul.id
                 WHERE a.id = ? AND a.deleted_at IS NULL';

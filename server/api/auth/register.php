@@ -141,7 +141,7 @@ try {
     // Create user account
     $stmt = $pdo->prepare('
         INSERT INTO users 
-        (first_name, last_name, email, phone, password_hash, role_id,
+        (first_name, last_name, email, phone_number, password_hash, role_id,
          email_verification_token, email_verification_expires, account_status_id) 
         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
     ');
@@ -182,18 +182,6 @@ try {
         }
 
         // Store additional verification data
-        $pdo->exec('
-            CREATE TABLE IF NOT EXISTS landlord_verification_data (
-                id INT AUTO_INCREMENT PRIMARY KEY,
-                user_id INT NOT NULL,
-                phone_number VARCHAR(20),
-                experience_level VARCHAR(50),
-                id_type VARCHAR(50),
-                id_number VARCHAR(100),
-                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-                FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
-            )
-        ');
         $stmt = $pdo->prepare('
             INSERT INTO landlord_verification_data 
             (user_id, phone_number, experience_level, id_type, id_number) 

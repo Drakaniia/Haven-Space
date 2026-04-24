@@ -471,19 +471,19 @@ function setupLogoutHandler() {
         // Import logout function from auth-check.js
         const basePath = resolveBasePath();
         const { logout } = await import(`${basePath}/js/shared/auth-check.js`);
-        
+
         // Call the proper logout function which handles Appwrite session deletion
         await logout();
       } catch (error) {
         console.error('Logout failed:', error);
-        
+
         // Fallback: clear local storage and redirect manually
         localStorage.removeItem('token');
         localStorage.removeItem('user');
         localStorage.removeItem('user_id');
         localStorage.removeItem('haven_state');
         localStorage.removeItem('boarder_acceptance_status');
-        
+
         // Store logout message in sessionStorage to display after redirect
         sessionStorage.setItem('logoutToast', 'You have successfully logged out');
         sessionStorage.setItem('logoutToastType', 'success');
@@ -499,8 +499,9 @@ function setupLogoutHandler() {
           // Direct /views access
           window.location.href = '/views/public/auth/login.html';
         } else {
-        // Fallback: try development path
-        window.location.href = '/views/public/auth/login.html';
+          // Fallback: try development path
+          window.location.href = '/views/public/auth/login.html';
+        }
       }
     });
   }

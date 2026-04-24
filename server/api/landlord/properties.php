@@ -185,9 +185,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
                     p.id,
                     p.title,
                     p.description,
-                    p.address,
-                    p.latitude,
-                    p.longitude,
+                    a.address_line_1 as address,
+                    a.latitude,
+                    a.longitude,
                     p.price,
                     p.status,
                     p.listing_moderation_status,
@@ -203,10 +203,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
                     COUNT(DISTINCT r.id) as rooms_count,
                     COALESCE(SUM(CASE WHEN r.status = 'occupied' THEN 1 ELSE 0 END), 0) as occupied_rooms
                 FROM properties p
+                LEFT JOIN addresses a ON p.address_id = a.id
                 LEFT JOIN property_details pd ON pd.property_id = p.id
                 LEFT JOIN rooms r ON p.id = r.property_id
                 WHERE p.id = ? AND p.landlord_id = ? AND p.deleted_at IS NULL
-                GROUP BY p.id, p.title, p.description, p.address, p.latitude, p.longitude, p.price, p.status, p.listing_moderation_status, p.created_at, pd.city, pd.province, pd.property_type, pd.deposit, pd.capacity, pd.min_stay, pd.availability, pd.total_rooms
+                GROUP BY p.id, p.title, p.description, a.address_line_1, a.latitude, a.longitude, p.price, p.status, p.listing_moderation_status, p.created_at, pd.city, pd.province, pd.property_type, pd.deposit, pd.capacity, pd.min_stay, pd.availability, pd.total_rooms
             ");
             $stmt->execute([$propertyId, $landlordId]);
             $property = $stmt->fetch(PDO::FETCH_ASSOC);
@@ -283,9 +284,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
                     p.id,
                     p.title,
                     p.description,
-                    p.address,
-                    p.latitude,
-                    p.longitude,
+                    a.address_line_1 as address,
+                    a.latitude,
+                    a.longitude,
                     p.price,
                     p.status,
                     p.listing_moderation_status,
@@ -294,16 +295,18 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
                     COUNT(DISTINCT r.id) as rooms_count,
                     COALESCE(SUM(CASE WHEN r.status = 'occupied' THEN 1 ELSE 0 END), 0) as occupied_rooms,
                     COALESCE(SUM(CASE WHEN r.status = 'occupied' THEN r.price ELSE 0 END), 0) as monthly_revenue,
-                    lp.property_type,
+                    pt.type_name as property_type,
                     pl.city,
                     pl.province
                 FROM properties p
+                LEFT JOIN addresses a ON p.address_id = a.id
                 LEFT JOIN property_details pd ON pd.property_id = p.id
                 LEFT JOIN rooms r ON p.id = r.property_id
                 LEFT JOIN landlord_profiles lp ON lp.user_id = p.landlord_id
+                LEFT JOIN property_types pt ON pt.id = lp.property_type_id
                 LEFT JOIN property_locations pl ON pl.landlord_id = lp.id AND pl.is_primary = TRUE
                 WHERE p.landlord_id = ? AND p.deleted_at IS NULL
-                GROUP BY p.id, p.title, p.description, p.address, p.latitude, p.longitude, p.price, p.status, p.listing_moderation_status, p.created_at, pd.total_rooms, lp.property_type, pl.city, pl.province
+                GROUP BY p.id, p.title, p.description, a.address_line_1, a.latitude, a.longitude, p.price, p.status, p.listing_moderation_status, p.created_at, pd.total_rooms, pt.type_name, pl.city, pl.province
                 ORDER BY p.created_at DESC
             ");
             $stmt->execute([$landlordId]);

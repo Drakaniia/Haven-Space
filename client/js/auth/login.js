@@ -2,6 +2,7 @@ import { getIcon } from '../shared/icons.js';
 import { getBoarderRedirectPath, updateBoarderStatus } from '../shared/routing.js';
 import { showToast } from '../shared/toast.js';
 import { account, OAuthProvider } from '../appwrite.js';
+import CONFIG from '../config.js';
 
 /**
  * Inject icons from centralized library into elements with data-icon attributes
@@ -115,12 +116,10 @@ document.addEventListener('DOMContentLoaded', function () {
 
   // Google OAuth login
   document.querySelector('.social-btn-google')?.addEventListener('click', function () {
-    // Determine base path dynamically based on current URL structure
-    const isAppwriteHosted = window.location.hostname.includes('appwrite.network');
-    const successPath = isAppwriteHosted
-      ? window.location.origin + '/boarder/index.html'
-      : window.location.origin + '/views/boarder/index.html';
-    account.createOAuth2Session(OAuthProvider.Google, successPath, window.location.href);
+    // Redirect to server-side Google OAuth authorization endpoint
+    // This ensures proper user registration in database and role handling
+    const authUrl = `${CONFIG.API_BASE_URL}/auth/google/authorize.php?action=login`;
+    window.location.href = authUrl;
   });
 
   // Apple login button (placeholder for future implementation)

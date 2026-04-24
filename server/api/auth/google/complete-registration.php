@@ -12,6 +12,46 @@ require_once __DIR__ . '/../../../src/Core/bootstrap.php';
 use App\Core\Auth\JWT;
 use App\Core\Database\Connection;
 
+/**
+ * Determine boarder status based on applications
+ * 
+ * @param \PDO $pdo Database connection
+ * @param int $boarderId Boarder user ID
+ * @return string Boarder status
+ */
+function determineBoarderStatus($pdo, $boarderId) {
+    // Check for accepted applications
+    $acceptedStmt = $pdo->prepare('SELECT COUNT(*) as count FROM applications WHERE boarder_id = ? AND status = ? AND deleted_at IS NULL');
+    $acceptedStmt->execute([$boarderId, 'accepted']);
+    $acceptedCount = $acceptedStmt->fetchColumn();
+    
+    if ($acceptedCount > 0) {
+        return 'accepted';
+    }
+    
+    // Check for pending applications
+    $pendingStmt = $pdo->prepare('SELECT COUNT(*) as count FROM applications WHERE boarder_id = ? AND status = ? AND deleted_at IS NULL');
+    $pendingStmt->execute([$boarderId, 'pending']);
+    $pendingCount = $pendingStmt->fetchColumn();
+    
+    if ($pendingCount > 0) {
+        return 'applied_pending';
+    }
+    
+    // Check for any applications (rejected/cancelled)
+    $anyStmt = $pdo->prepare('SELECT COUNT(*) as count FROM applications WHERE boarder_id = ? AND deleted_at IS NULL');
+    $anyStmt->execute([$boarderId]);
+    $anyCount = $anyStmt->fetchColumn();
+    
+    if ($anyCount > 0) {
+        // Has applications but none are pending or accepted (likely rejected)
+        return 'rejected';
+    }
+    
+    // No applications at all
+    return 'new';
+}
+
 // Only allow POST requests
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     http_response_code(405);
@@ -145,6 +185,12 @@ try {
         exit;
     }
 
+    // Determine boarder status if user is a boarder
+    $boarderStatus = null;
+    if ($userRole === 'boarder') {
+        $boarderStatus = determineBoarderStatus($pdo, $userId);
+    }
+    
     // Generate JWT tokens
     $payload = [
         'user_id' => $userId,
@@ -156,6 +202,10 @@ try {
         'account_status' => $accountStatus,
         'google_id' => $googleUser['google_id'],
     ];
+    
+    if ($boarderStatus) {
+        $payload['boarder_status'] = $boarderStatus;
+    }
 
     $jwtAccessToken = JWT::generate($payload, $config['jwt_expiration']);
     $jwtRefreshToken = JWT::generate($payload, $config['refresh_token_expiration']);

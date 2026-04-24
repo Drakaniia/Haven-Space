@@ -270,6 +270,19 @@ CREATE TABLE IF NOT EXISTS landlord_profiles (
     UNIQUE KEY unique_user_landlord (user_id)
 );
 
+-- Landlord Verification Data Table
+CREATE TABLE IF NOT EXISTS landlord_verification_data (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    user_id INT NOT NULL,
+    phone_number VARCHAR(20),
+    experience_level VARCHAR(50),
+    id_type VARCHAR(50),
+    id_number VARCHAR(100),
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+    INDEX idx_user_id (user_id)
+);
+
 -- Payment Methods Table (normalized)
 CREATE TABLE IF NOT EXISTS payment_methods (
     id INT AUTO_INCREMENT PRIMARY KEY,
@@ -620,4 +633,63 @@ SELECT
     p.updated_at,
     p.deleted_at
 FROM properties p
+JOIN addresses a ON p.address_id = a.id;
+
+-- Landlord Documents Table
+CREATE TABLE IF NOT EXISTS landlord_documents (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    landlord_id INT NOT NULL,
+    property_id INT NULL,
+    document_name VARCHAR(255) NOT NULL,
+    document_url VARCHAR(512) NOT NULL,
+    document_type VARCHAR(100) NULL,
+    category VARCHAR(100) NOT NULL,
+    file_size INT NULL,
+    auto_send_to_new_boarders BOOLEAN DEFAULT FALSE,
+    is_active BOOLEAN DEFAULT TRUE,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    FOREIGN KEY (landlord_id) REFERENCES users(id) ON DELETE CASCADE,
+    FOREIGN KEY (property_id) REFERENCES properties(id) ON DELETE CASCADE,
+    INDEX idx_landlord (landlord_id),
+    INDEX idx_property (property_id),
+    INDEX idx_category (category),
+    INDEX idx_active (is_active)
+);
+
+-- Welcome Message Logs Table
+CREATE TABLE IF NOT EXISTS welcome_message_logs (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    boarder_id INT NOT NULL,
+    landlord_id INT NOT NULL,
+    property_id INT NULL,
+    conversation_id INT NULL,
+    message_sent TEXT NULL,
+    sent_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (boarder_id) REFERENCES users(id) ON DELETE CASCADE,
+    FOREIGN KEY (landlord_id) REFERENCES users(id) ON DELETE CASCADE,
+    FOREIGN KEY (property_id) REFERENCES properties(id) ON DELETE CASCADE,
+    FOREIGN KEY (conversation_id) REFERENCES conversations(id) ON DELETE SET NULL,
+    INDEX idx_boarder (boarder_id),
+    INDEX idx_landlord (landlord_id),
+    INDEX idx_property (property_id),
+    INDEX idx_sent_at (sent_at)
+);
+
+-- Boarder Document Acknowledgments Table
+CREATE TABLE IF NOT EXISTS boarder_document_acknowledgments (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    boarder_id INT NOT NULL,
+    document_id INT NOT NULL,
+    acknowledged BOOLEAN DEFAULT FALSE,
+    acknowledged_at TIMESTAMP NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    FOREIGN KEY (boarder_id) REFERENCES users(id) ON DELETE CASCADE,
+    FOREIGN KEY (document_id) REFERENCES landlord_documents(id) ON DELETE CASCADE,
+    UNIQUE KEY uk_boarder_document (boarder_id, document_id),
+    INDEX idx_boarder (boarder_id),
+    INDEX idx_document (document_id),
+    INDEX idx_acknowledged (acknowledged)
+);
 JOIN addresses a ON p.address_id = a.id;

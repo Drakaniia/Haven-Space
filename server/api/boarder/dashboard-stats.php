@@ -64,7 +64,7 @@ try {
     // Check user profile fields completion
     $stmt = $pdo->prepare("
         SELECT 
-            name, email, phone, address, date_of_birth, gender, occupation, 
+            name, email, phone_number, address, date_of_birth, gender, occupation, 
             emergency_contact_name, emergency_contact_phone, profile_picture_url
         FROM users 
         WHERE id = ?
@@ -76,7 +76,7 @@ try {
     $profileFields = [
         'name' => !empty($userProfile['name']),
         'email' => !empty($userProfile['email']),
-        'phone' => !empty($userProfile['phone']),
+        'phone' => !empty($userProfile['phone_number']),
         'address' => !empty($userProfile['address']),
         'date_of_birth' => !empty($userProfile['date_of_birth']),
         'gender' => !empty($userProfile['gender']),

@@ -381,7 +381,7 @@ async function loadDashboardData() {
         renderLeaseInfo(dashboardState.lease);
 
         // Render document vault and important info based on lease status
-        renderDocumentVault(dashboardState.lease);
+        await renderDocumentVault(dashboardState.lease);
         renderImportantInformation(dashboardState.lease);
       }
     } catch (error) {
@@ -916,9 +916,126 @@ function setContractStatus(status) {
 }
 
 /**
+ * Fetch documents from API
+ */
+async function fetchDocuments() {
+  try {
+    const token = localStorage.getItem('token');
+    const userId = getCurrentUserId();
+    const headers = {
+      'Content-Type': 'application/json',
+      'X-User-Id': userId,
+    };
+    if (token) {
+      headers['Authorization'] = `Bearer ${token}`;
+    }
+
+    const response = await fetch(`${CONFIG.API_BASE_URL}/api/boarder/documents`, {
+      method: 'GET',
+      headers: headers,
+      credentials: 'include',
+    });
+
+    if (response.ok) {
+      const data = await response.json();
+      return data.data || [];
+    } else {
+      console.error('Failed to fetch documents');
+      return [];
+    }
+  } catch (error) {
+    console.error('Error fetching documents:', error);
+    return [];
+  }
+}
+
+/**
+ * Render document cards from real API data
+ */
+function renderDocumentCards(documents) {
+  const documentsGrid = document.querySelector('.boarder-documents-grid');
+  if (!documentsGrid) return;
+
+  documentsGrid.innerHTML = '';
+
+  // Limit to 3 documents for dashboard preview
+  const limitedDocuments = documents.slice(0, 3);
+
+  limitedDocuments.forEach(doc => {
+    const documentCard = createDocumentCard(doc);
+    documentsGrid.appendChild(documentCard);
+  });
+}
+
+/**
+ * Create a document card from API data
+ */
+function createDocumentCard(doc) {
+  const card = document.createElement('div');
+  card.className = 'boarder-document-card';
+
+  // Determine document type and icon
+  const docType = doc.category?.toLowerCase() || 'document';
+  let iconClass = 'boarder-document-contract'; // default
+  let iconSvg =
+    '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />';
+
+  if (docType.includes('receipt') || docType.includes('payment')) {
+    iconClass = 'boarder-document-receipt';
+    iconSvg =
+      '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 14l6-6m-5.5.5a2.5 2.5 0 11-5 0 2.5 2.5 0 015 0zM19 10a2 2 0 11-4 0 2 2 0 014 0z" />';
+  } else if (docType.includes('id') || docType.includes('identification')) {
+    iconClass = 'boarder-document-id';
+    iconSvg =
+      '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V8a2 2 0 00-2-2h-5m-4 0V5a2 2 0 114 0v1m-4 0a2 2 0 104 0m-5 8a2 2 0 100-4 2 2 0 000 4zm0 0c1.306 0 2.417.835 2.83 2M9 14a3.001 3.001 0 00-2.83 2M15 11h3m-3 4h2" />';
+  }
+
+  // Format date
+  const receivedDate = doc.received_at
+    ? new Date(doc.received_at).toLocaleDateString('en-US', {
+        month: 'short',
+        day: 'numeric',
+        year: 'numeric',
+      })
+    : 'Unknown date';
+
+  // Format document info
+  let propertyInfo = doc.document_name || 'Document';
+  let dateInfo = `Received: ${receivedDate}`;
+
+  if (docType.includes('receipt') || docType.includes('payment')) {
+    const amount = doc.amount ? `₱${parseFloat(doc.amount).toLocaleString()}` : '';
+    propertyInfo = doc.description || 'Payment Receipt';
+    dateInfo = `${receivedDate} • ${amount}`;
+  }
+
+  card.innerHTML = `
+    <div class="boarder-document-icon ${iconClass}">
+      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        ${iconSvg}
+      </svg>
+    </div>
+    <div class="boarder-document-info">
+      <h4 class="boarder-document-name">${escapeHtml(doc.document_name || 'Document')}</h4>
+      <p class="boarder-document-property" id="dashboard-document-property">${escapeHtml(
+        propertyInfo
+      )}</p>
+      <p class="boarder-document-date">${escapeHtml(dateInfo)}</p>
+    </div>
+    <button class="boarder-document-action" data-document-id="${doc.id}">
+      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+      </svg>
+    </button>
+  `;
+
+  return card;
+}
+
+/**
  * Render document vault based on lease status
  */
-function renderDocumentVault(lease) {
+async function renderDocumentVault(lease) {
   const documentsGrid = document.querySelector('.boarder-documents-grid');
   if (!documentsGrid) return;
 
@@ -936,8 +1053,24 @@ function renderDocumentVault(lease) {
     return;
   }
 
-  // If there's a lease, keep the hardcoded documents for now
-  // In production, this would fetch actual documents from the API
+  // Fetch real documents from API
+  const documents = await fetchDocuments();
+
+  if (documents.length === 0) {
+    documentsGrid.innerHTML = `
+      <div class="boarder-empty-state" style="grid-column: 1 / -1; text-align: center; padding: 40px 20px; color: #6b7280;">
+        <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin: 0 auto 16px; opacity: 0.5;">
+          <path d="M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8m-9 4h4"></path>
+        </svg>
+        <p style="margin: 0; font-size: 14px; font-weight: 500;">No documents available</p>
+        <p style="margin: 8px 0 0 0; font-size: 13px;">Your rental contract and documents will appear here once you have an active lease</p>
+      </div>
+    `;
+    return;
+  }
+
+  // Render real documents
+  renderDocumentCards(documents);
 }
 
 /**

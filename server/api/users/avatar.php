@@ -6,20 +6,13 @@
  */
 
 require_once __DIR__ . '/../../src/Core/bootstrap.php';
+require_once __DIR__ . '/../cors.php';
 require_once __DIR__ . '/../middleware.php';
 
 use App\Core\Database;
 use App\Api\Middleware;
 
-// Enable CORS
-header('Access-Control-Allow-Origin: *');
-header('Access-Control-Allow-Methods: POST, OPTIONS');
-header('Access-Control-Allow-Headers: Content-Type, Authorization, X-User-ID');
-
-if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
-    http_response_code(200);
-    exit;
-}
+// CORS is handled by cors.php middleware
 
 // Authenticate user
 $user = Middleware::authenticate();
