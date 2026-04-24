@@ -59,7 +59,18 @@ export function isTokenExpired() {
 /**
  * Log the user out by clearing stored credentials and redirecting to login.
  */
-export function logout() {
+export async function logout() {
+  try {
+    // Import account from appwrite.js to delete the session
+    const { account } = await import('../appwrite.js');
+    
+    // Delete the current Appwrite session
+    await account.deleteSession('current');
+  } catch (error) {
+    console.warn('Failed to delete Appwrite session:', error);
+    // Continue with local cleanup even if session deletion fails
+  }
+  
   localStorage.removeItem('token');
   localStorage.removeItem('user');
   localStorage.removeItem('user_id');

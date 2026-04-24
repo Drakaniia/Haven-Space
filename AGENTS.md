@@ -27,3 +27,17 @@ We are using the Appwrite platform for:
 **Bun Commands**: Always use Bun commands for package management and task running.
 
 **Debugging**: When debugging from localhost and encountering errors like "Internal Server Error", "Unauthorized", or any other type of error, ensure to also include fixes for the production environment.
+
+## Codebase Structure
+
+### Client
+- **components**: Reusable UI components
+- **css**: Global and component-specific styles
+- **js**: JavaScript modules and utilities
+- **views**: Role-specific views (admin, landlord, boarder)
+- **index.html**: Main entry point
+
+### Server
+- **api**: API endpoints and route handlers
+- **src**: Core application logic and services
+- **database**: Database-related files

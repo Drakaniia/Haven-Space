@@ -216,24 +216,25 @@ function updateNavigationForAuthenticatedUser() {
   if (logoutBtn) {
     logoutBtn.addEventListener('click', async () => {
       try {
-        const { default: CONFIG } = await import('../../config.js');
-        await fetch(`${CONFIG.API_BASE_URL}/auth/logout.php`, {
-          method: 'POST',
-          credentials: 'include',
-        });
+        // Import logout function from auth-check.js
+        const { logout } = await import('../../shared/auth-check.js');
+        
+        // Call the proper logout function which handles Appwrite session deletion
+        await logout();
       } catch (error) {
-        // Continue with local cleanup even if logout fails
+        console.error('Logout failed:', error);
+        
+        // Fallback: clear local storage and redirect manually
+        localStorage.removeItem('token');
+        localStorage.removeItem('user');
+        
+        // Store logout message in sessionStorage to display after redirect
+        sessionStorage.setItem('logoutToast', 'You have successfully logged out');
+        sessionStorage.setItem('logoutToastType', 'success');
+
+        // Redirect to login page
+        window.location.href = 'auth/login.html';
       }
-
-      // Clear authentication data
-      localStorage.removeItem('user');
-
-      // Store logout message in sessionStorage to display after redirect
-      sessionStorage.setItem('logoutToast', 'You have successfully logged out');
-      sessionStorage.setItem('logoutToastType', 'success');
-
-      // Redirect to login page
-      window.location.href = 'auth/login.html';
     });
   }
 

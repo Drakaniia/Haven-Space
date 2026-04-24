@@ -1186,28 +1186,30 @@ function initProfileDropdown() {
       dropdownMenu.classList.remove('show');
 
       try {
-        // Attempt logout API call
-        await fetch('/api/auth/logout.php', {
-          method: 'POST',
-          credentials: 'include',
-        });
+        // Import logout function from auth-check.js
+        const { logout } = await import('../../shared/auth-check.js');
+        
+        // Call the proper logout function which handles Appwrite session deletion
+        await logout();
       } catch (error) {
-        // Continue with local cleanup
+        console.error('Logout failed:', error);
+        
+        // Fallback: clear local storage and redirect manually
+        localStorage.removeItem('token');
+        localStorage.removeItem('user');
+        
+        // Store logout message in sessionStorage to display after redirect
+        sessionStorage.setItem('logoutToast', 'You have successfully logged out');
+        sessionStorage.setItem('logoutToastType', 'success');
+
+        // Redirect to public homepage instead of login page
+        const basePath = window.location.pathname.includes('github.io')
+          ? '/Haven-Space/client/views/'
+          : '/views/';
+        window.location.href = `${basePath}public/index.html`;
       }
-
-      // Clear authentication data
-      localStorage.removeItem('user');
-      localStorage.removeItem('token');
-
-      // Store logout message in sessionStorage to display after redirect
-      sessionStorage.setItem('logoutToast', 'You have successfully logged out');
-      sessionStorage.setItem('logoutToastType', 'success');
-
-      // Redirect to public homepage instead of login page
-      const basePath = window.location.pathname.includes('github.io')
-        ? '/Haven-Space/client/views/'
-        : '/views/';
-      window.location.href = `${basePath}public/index.html`;
+    });
+  }
     });
   }
 

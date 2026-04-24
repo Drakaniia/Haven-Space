@@ -468,36 +468,37 @@ function setupLogoutHandler() {
       e.preventDefault();
 
       try {
+        // Import logout function from auth-check.js
         const basePath = resolveBasePath();
-        const configPath = `${basePath}/js/config.js`;
-        const { default: CONFIG } = await import(configPath);
-
-        await fetch(`${CONFIG.API_BASE_URL}/auth/logout.php`, {
-          method: 'POST',
-          credentials: 'include',
-        });
+        const { logout } = await import(`${basePath}/js/shared/auth-check.js`);
+        
+        // Call the proper logout function which handles Appwrite session deletion
+        await logout();
       } catch (error) {
-        console.error('Logout request failed:', error);
-      }
+        console.error('Logout failed:', error);
+        
+        // Fallback: clear local storage and redirect manually
+        localStorage.removeItem('token');
+        localStorage.removeItem('user');
+        localStorage.removeItem('user_id');
+        localStorage.removeItem('haven_state');
+        localStorage.removeItem('boarder_acceptance_status');
+        
+        // Store logout message in sessionStorage to display after redirect
+        sessionStorage.setItem('logoutToast', 'You have successfully logged out');
+        sessionStorage.setItem('logoutToastType', 'success');
 
-      // Clear authentication data
-      localStorage.removeItem('user');
+        // Redirect to login page
+        const pathname = window.location.pathname;
 
-      // Store logout message in sessionStorage to display after redirect
-      sessionStorage.setItem('logoutToast', 'You have successfully logged out');
-      sessionStorage.setItem('logoutToastType', 'success');
-
-      // Redirect to login page
-      const pathname = window.location.pathname;
-
-      // Determine correct login path based on current URL structure
-      if (pathname.includes('/dist/')) {
-        // Production mode (dist): auth folder is at root
-        window.location.href = '/auth/login.html';
-      } else if (pathname.includes('/views/')) {
-        // Direct /views access
-        window.location.href = '/views/public/auth/login.html';
-      } else {
+        // Determine correct login path based on current URL structure
+        if (pathname.includes('/dist/')) {
+          // Production mode (dist): auth folder is at root
+          window.location.href = '/auth/login.html';
+        } else if (pathname.includes('/views/')) {
+          // Direct /views access
+          window.location.href = '/views/public/auth/login.html';
+        } else {
         // Fallback: try development path
         window.location.href = '/views/public/auth/login.html';
       }

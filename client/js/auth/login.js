@@ -61,6 +61,13 @@ document.addEventListener('DOMContentLoaded', function () {
     };
 
     try {
+      // First, try to clean up any existing sessions
+      try {
+        await account.deleteSession('current');
+      } catch (error) {
+        // Ignore errors - there might not be an existing session
+      }
+
       // Create Appwrite session
       await account.createEmailPasswordSession(data.email, data.password);
 
@@ -83,7 +90,7 @@ document.addEventListener('DOMContentLoaded', function () {
       // Persist to localStorage so auth-check.js / routing.js keep working
       localStorage.setItem('user', JSON.stringify(userRecord));
       // Store the Appwrite session JWT so auth-headers.js can attach it
-      const session = await account.getSession({ sessionId: 'current' });
+      const session = await account.getSession('current');
       localStorage.setItem('token', session.providerAccessToken || session.$id);
 
       // Redirect based on role
