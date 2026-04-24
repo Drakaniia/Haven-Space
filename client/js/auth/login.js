@@ -1,7 +1,7 @@
 import { getIcon } from '../shared/icons.js';
 import { getBoarderRedirectPath, updateBoarderStatus } from '../shared/routing.js';
 import { showToast } from '../shared/toast.js';
-import { account } from '../appwrite.js';
+import { account, OAuthProvider } from '../appwrite.js';
 
 /**
  * Inject icons from centralized library into elements with data-icon attributes
@@ -62,7 +62,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
     try {
       // Create Appwrite session
-      await account.createEmailPasswordSession(data.email, data.password);
+      await account.createEmailPasswordSession({ email: data.email, password: data.password });
 
       // Fetch the authenticated user (includes labels for role)
       const user = await account.get();
@@ -83,7 +83,7 @@ document.addEventListener('DOMContentLoaded', function () {
       // Persist to localStorage so auth-check.js / routing.js keep working
       localStorage.setItem('user', JSON.stringify(userRecord));
       // Store the Appwrite session JWT so auth-headers.js can attach it
-      const session = await account.getSession('current');
+      const session = await account.getSession({ sessionId: 'current' });
       localStorage.setItem('token', session.providerAccessToken || session.$id);
 
       // Redirect based on role
@@ -108,12 +108,16 @@ document.addEventListener('DOMContentLoaded', function () {
 
   // Google OAuth login
   document.querySelector('.social-btn-google')?.addEventListener('click', function () {
-    // Appwrite OAuth2 — redirects back to this page on success
-    account.createOAuth2Session(
-      'google',
-      window.location.origin + '/views/boarder/index.html', // success redirect
-      window.location.href // failure redirect (back to login)
-    );
+    // Determine base path dynamically based on current URL structure
+    const isAppwriteHosted = window.location.hostname.includes('appwrite.network');
+    const successPath = isAppwriteHosted
+      ? window.location.origin + '/boarder/index.html'
+      : window.location.origin + '/views/boarder/index.html';
+    account.createOAuth2Session({
+      provider: OAuthProvider.Google,
+      success: successPath,
+      failure: window.location.href,
+    });
   });
 
   // Apple login button (placeholder for future implementation)
