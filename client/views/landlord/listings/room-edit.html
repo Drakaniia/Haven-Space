@@ -1,0 +1,1186 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="icon" type="image/svg+xml" href="../../../assets/favicon.svg" />
+    <title>Manage Rooms - Haven Space</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="../../../css/global.css" />
+    <link rel="stylesheet" href="../../../css/components/sidebar.css" />
+    <link rel="stylesheet" href="../../../css/components/navbar.css" />
+    <link rel="stylesheet" href="../../../css/views/landlord/landlord.css" />
+    <link rel="stylesheet" href="../../../css/views/landlord/landlord-listings.css" />
+    <style>
+      .room-edit-page {
+        display: flex;
+        min-height: 100vh;
+        background: #fef9f0;
+      }
+
+      .room-edit-main {
+        flex: 1;
+        margin-left: 280px;
+        transition: margin-left 0.3s ease;
+      }
+
+      .room-edit-content {
+        padding: 2rem;
+        max-width: 89rem;
+        margin: 0 auto;
+      }
+
+      .room-edit-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        margin-bottom: 2rem;
+        padding: 2rem;
+        background: linear-gradient(135deg, #4a7c23 0%, #2d4a14 100%);
+        border-radius: 12px;
+        color: white;
+        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+      }
+
+      .header-left h1 {
+        font-size: 1.75rem;
+        font-weight: 700;
+        color: white;
+        margin: 0 0 0.5rem 0;
+        text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+      }
+
+      .header-left p {
+        color: rgba(255, 255, 255, 0.9);
+        margin: 0;
+        font-size: 0.95rem;
+      }
+
+      .header-actions {
+        display: flex;
+        gap: 1rem;
+        align-items: center;
+      }
+
+      .header-actions .btn-outline {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        padding: 0.625rem 1.25rem;
+        background-color: rgba(255, 255, 255, 0.1);
+        border: 2px solid rgba(255, 255, 255, 0.3);
+        color: white;
+        border-radius: 8px;
+        font-size: 0.95rem;
+        font-weight: 600;
+        font-family: var(--font-main);
+        text-decoration: none;
+        cursor: pointer;
+        transition: background-color 0.2s ease;
+        backdrop-filter: blur(10px);
+      }
+
+      .header-actions .btn-outline:hover {
+        background-color: rgba(255, 255, 255, 0.2);
+        border-color: rgba(255, 255, 255, 0.5);
+      }
+
+      .header-actions .btn-primary {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        padding: 0.625rem 1.25rem;
+        background-color: var(--primary-green);
+        color: var(--white);
+        border: none;
+        border-radius: 8px;
+        font-size: 0.95rem;
+        font-weight: 600;
+        font-family: var(--font-main);
+        text-decoration: none;
+        cursor: pointer;
+        transition: background-color 0.2s ease;
+      }
+
+      .header-actions .btn-primary:hover {
+        background-color: var(--dark-green);
+      }
+
+      .property-info {
+        background: #ffffff;
+        border: 1px solid #e5e5e5;
+        border-radius: 0;
+        padding: 2rem;
+        margin-bottom: 2rem;
+        box-shadow: 0 10px 40px rgba(0, 0, 0, 0.15);
+        position: relative;
+        overflow: hidden;
+      }
+
+      .property-info::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 4px;
+        background: linear-gradient(90deg, #4a7c23 0%, #7cb342 50%, #2d4a14 100%);
+      }
+
+      .property-info h2 {
+        font-size: 1.25rem;
+        font-weight: 600;
+        color: #1a1a1a;
+        margin: 0 0 1.5rem 0;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+      }
+
+      .property-info h2::before {
+        content: '🏠';
+        font-size: 1.25rem;
+      }
+
+      .property-details {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+        gap: 1.5rem;
+      }
+
+      .property-detail {
+        display: flex;
+        flex-direction: column;
+        gap: 0.5rem;
+        padding: 1rem;
+        background: #e8f5e9;
+        border-radius: 12px;
+        border-left: 4px solid #4a7c23;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      }
+
+      .property-detail:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(74, 124, 35, 0.15);
+      }
+
+      .property-detail-label {
+        font-size: 0.875rem;
+        color: #555555;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+      }
+
+      .property-detail-value {
+        font-size: 1rem;
+        color: #1a1a1a;
+        font-weight: 600;
+      }
+
+      .rooms-section {
+        background: #ffffff;
+        border: 1px solid #e5e5e5;
+        border-radius: 0;
+        padding: 2rem;
+        box-shadow: 0 10px 40px rgba(0, 0, 0, 0.15);
+        position: relative;
+        overflow: hidden;
+      }
+
+      .rooms-section::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 4px;
+        background: linear-gradient(90deg, #4a7c23 0%, #7cb342 50%, #2d4a14 100%);
+      }
+
+      .rooms-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 2rem;
+      }
+
+      .rooms-header h2 {
+        font-size: 1.25rem;
+        font-weight: 600;
+        color: #1a1a1a;
+        margin: 0;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+      }
+
+      .rooms-header h2::before {
+        content: '🏠';
+        font-size: 1.25rem;
+      }
+
+      .rooms-toolbar {
+        display: flex;
+        gap: 1rem;
+        margin-bottom: 2rem;
+        flex-wrap: wrap;
+        padding: 1.5rem;
+        background: #e8f5e9;
+        border-radius: 12px;
+        border: 1px solid rgba(74, 124, 35, 0.1);
+      }
+
+      .search-box {
+        position: relative;
+        flex: 1;
+        min-width: 280px;
+      }
+
+      .search-box input {
+        width: 100%;
+        padding: 0.625rem 1rem 0.625rem 2.5rem;
+        border: 1px solid var(--border-color);
+        border-radius: 9999px;
+        font-size: 0.95rem;
+        font-family: var(--font-main);
+        color: var(--text-dark);
+        background-color: #f9fafb;
+        transition: border-color 0.2s ease;
+      }
+
+      .search-box input:focus {
+        outline: none;
+        border-color: var(--primary-green);
+        box-shadow: 0 0 0 3px rgba(74, 124, 35, 0.1);
+      }
+
+      .search-box span {
+        position: absolute;
+        left: 1rem;
+        top: 50%;
+        transform: translateY(-50%);
+        color: var(--text-gray);
+      }
+
+      .search-box input:focus {
+        border-color: #4a7c23;
+        box-shadow: 0 0 0 3px rgba(74, 124, 35, 0.1);
+        outline: none;
+      }
+
+      .search-box span {
+        position: absolute;
+        left: 1rem;
+        top: 50%;
+        transform: translateY(-50%);
+        color: #4a7c23;
+      }
+
+      .filter-group {
+        display: flex;
+        gap: 1rem;
+        flex-wrap: wrap;
+      }
+
+      .filter-group select {
+        padding: 0.625rem 1rem;
+        border: 1px solid var(--border-color);
+        border-radius: 8px;
+        font-size: 0.9rem;
+        font-family: var(--font-main);
+        color: var(--text-dark);
+        background-color: var(--white);
+        cursor: pointer;
+        transition: border-color 0.2s ease;
+      }
+
+      .filter-group select:focus {
+        outline: none;
+        border-color: var(--primary-green);
+      }
+
+      .filter-group select:focus {
+        border-color: #4a7c23;
+        box-shadow: 0 0 0 3px rgba(74, 124, 35, 0.1);
+        outline: none;
+      }
+
+      .rooms-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+        gap: 2rem;
+      }
+
+      .room-card {
+        background: #ffffff;
+        border: 1px solid #e5e5e5;
+        border-radius: 12px;
+        overflow: hidden;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        box-shadow: none;
+        position: relative;
+      }
+
+      .room-card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+      }
+
+      .room-card-image {
+        position: relative;
+        height: 220px;
+        background: linear-gradient(135deg, #4a7c23 0%, #2d4a14 100%);
+        overflow: hidden;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+
+      .room-card-image img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+      }
+
+      .room-card-image::after {
+        content: '🏠';
+        font-size: 4rem;
+        color: rgba(255, 255, 255, 0.3);
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+      }
+
+      .room-status {
+        position: absolute;
+        top: 12px;
+        right: 12px;
+        padding: 0.25rem 0.75rem;
+        border-radius: 9999px;
+        font-size: 0.75rem;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.025em;
+      }
+
+      .room-status.available {
+        background-color: var(--bg-green);
+        color: var(--primary-green);
+      }
+
+      .room-status.occupied {
+        background-color: #fef3c7;
+        color: #d97706;
+      }
+
+      .room-status.maintenance {
+        background-color: #fee2e2;
+        color: #dc2626;
+      }
+
+      .room-card-body {
+        padding: 1.5rem;
+      }
+
+      .room-card-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        margin-bottom: 1.25rem;
+      }
+
+      .room-number {
+        font-size: 1rem;
+        font-weight: 600;
+        color: #1a1a1a;
+        margin: 0;
+      }
+
+      .room-price {
+        font-size: 0.95rem;
+        font-weight: 600;
+        color: #4a7c23;
+      }
+
+      .room-details {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 0.75rem;
+        margin-bottom: 1rem;
+      }
+
+      .room-detail {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        font-size: 0.875rem;
+        color: #555555;
+      }
+
+      .room-detail span[data-icon] {
+        color: #555555;
+      }
+
+      .tenant-info {
+        padding: 0.75rem;
+        background: #e8f5e9;
+        border-radius: 8px;
+        margin-bottom: 1rem;
+      }
+
+      .tenant-name {
+        font-size: 0.875rem;
+        font-weight: 600;
+        color: #1a1a1a;
+        margin: 0 0 0.25rem 0;
+      }
+
+      .tenant-contact {
+        font-size: 0.75rem;
+        color: #555555;
+        margin: 0;
+      }
+
+      .room-actions {
+        display: flex;
+        gap: 0.5rem;
+        flex-wrap: wrap;
+        margin-top: 1rem;
+      }
+
+      .room-actions button {
+        flex: 1;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.375rem;
+        padding: 0.625rem 0.75rem;
+        border: none;
+        background: transparent;
+        font-size: 0.875rem;
+        font-weight: 500;
+        font-family: var(--font-main);
+        color: var(--text-gray);
+        cursor: pointer;
+        border-radius: 8px;
+        transition: background-color 0.2s ease, color 0.2s ease, transform 0.2s ease;
+      }
+
+      .room-actions button:hover {
+        background-color: var(--bg-green);
+        color: var(--primary-green);
+      }
+
+      .room-actions button.btn-danger:hover {
+        background-color: #fee2e2;
+        color: #ef4444;
+      }
+
+      .room-actions button:first-child {
+        background: #4a7c23;
+        color: white;
+        box-shadow: 0 1px 3px rgba(74, 124, 35, 0.3);
+      }
+
+      .room-actions button:first-child:hover {
+        background: #2d4a14;
+        transform: translateY(-1px);
+        box-shadow: 0 2px 6px rgba(74, 124, 35, 0.4);
+      }
+
+      .room-actions button:nth-child(2) {
+        background: #16a34a;
+        color: white;
+        box-shadow: 0 1px 3px rgba(22, 163, 74, 0.3);
+      }
+
+      .room-actions button:nth-child(2):hover {
+        background: #15803d;
+        transform: translateY(-1px);
+        box-shadow: 0 2px 6px rgba(22, 163, 74, 0.4);
+      }
+
+      .room-actions button.btn-danger {
+        background: #ef4444;
+        color: white;
+        box-shadow: 0 1px 3px rgba(239, 68, 68, 0.3);
+      }
+
+      .room-actions button.btn-danger:hover {
+        background: #dc2626;
+        transform: translateY(-1px);
+        box-shadow: 0 2px 6px rgba(239, 68, 68, 0.4);
+      }
+
+      /* Floating Add Room Button */
+      .floating-add-btn {
+        position: fixed;
+        bottom: 2rem;
+        right: 2rem;
+        width: 60px;
+        height: 60px;
+        background: linear-gradient(135deg, #ff6b6b 0%, #ee5a24 100%);
+        border: none;
+        border-radius: 50%;
+        color: white;
+        font-size: 1.5rem;
+        cursor: pointer;
+        box-shadow: 0 8px 25px rgba(238, 90, 36, 0.4);
+        transition: all 0.3s ease;
+        z-index: 100;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+
+      .floating-add-btn:hover {
+        transform: translateY(-3px) scale(1.1);
+        box-shadow: 0 12px 35px rgba(238, 90, 36, 0.6);
+      }
+
+      /* Floating Add Room Button */
+      .floating-add-btn {
+        position: fixed;
+        bottom: 1.5rem;
+        right: 1.5rem;
+        width: 48px;
+        height: 48px;
+        background: #4a7c23;
+        border: none;
+        border-radius: 50%;
+        color: white;
+        font-size: 1.25rem;
+        cursor: pointer;
+        box-shadow: 0 4px 12px rgba(74, 124, 35, 0.3);
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        z-index: 100;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+
+      .floating-add-btn:hover {
+        background: #2d4a14;
+        transform: translateY(-2px) scale(1.05);
+        box-shadow: 0 6px 16px rgba(74, 124, 35, 0.4);
+      }
+
+      .floating-add-btn:active {
+        transform: translateY(-1px) scale(1.02);
+      }
+
+      /* Enhanced Empty State */
+      .empty-state {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        padding: 4rem 2rem;
+        text-align: center;
+        background: #e8f5e9;
+        border-radius: 12px;
+        border: 2px dashed rgba(74, 124, 35, 0.2);
+      }
+
+      .empty-state span[data-icon] {
+        margin-bottom: 1.5rem;
+        color: #4a7c23;
+        font-size: 4rem;
+      }
+
+      .empty-state h3 {
+        font-size: 1.25rem;
+        font-weight: 600;
+        color: #1a1a1a;
+        margin: 0 0 1rem 0;
+      }
+
+      .empty-state p {
+        margin: 0 0 2rem 0;
+        color: #555555;
+        font-size: 0.95rem;
+      }
+
+      .empty-state .btn-primary {
+        background: #4a7c23;
+        padding: 0.75rem 1.5rem;
+        font-size: 0.875rem;
+        border-radius: 8px;
+        box-shadow: 0 2px 8px rgba(74, 124, 35, 0.3);
+        border: none;
+        color: white;
+        font-weight: 500;
+        cursor: pointer;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      }
+
+      .empty-state .btn-primary:hover {
+        background: #2d4a14;
+        transform: translateY(-1px);
+        box-shadow: 0 4px 12px rgba(74, 124, 35, 0.4);
+      }
+
+      .loading-state {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        padding: 3rem;
+        text-align: center;
+      }
+
+      .spinner {
+        width: 32px;
+        height: 32px;
+        border: 3px solid #e5e5e5;
+        border-top: 3px solid #4a7c23;
+        border-radius: 50%;
+        animation: spin 1s linear infinite;
+        margin-bottom: 1rem;
+      }
+
+      @keyframes spin {
+        0% {
+          transform: rotate(0deg);
+        }
+        100% {
+          transform: rotate(360deg);
+        }
+      }
+
+      /* Enhanced Modal Styles */
+      .room-modal {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        z-index: 1000;
+        display: none;
+        backdrop-filter: blur(8px);
+      }
+
+      .room-modal.active {
+        display: flex;
+      }
+
+      .modal-overlay {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.6);
+      }
+
+      .modal-content {
+        position: relative;
+        margin: auto;
+        background: #ffffff;
+        border-radius: 12px;
+        width: 90%;
+        max-width: 650px;
+        max-height: 90vh;
+        overflow-y: auto;
+        box-shadow: 0 10px 40px rgba(0, 0, 0, 0.15);
+        border: 1px solid #e5e5e5;
+      }
+
+      .modal-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 1.25rem 1.5rem;
+        background: linear-gradient(135deg, #4a7c23 0%, #2d4a14 100%);
+        color: white;
+        border-radius: 12px 12px 0 0;
+      }
+
+      .modal-header h2 {
+        font-size: 1.25rem;
+        font-weight: 600;
+        color: white;
+        margin: 0;
+        text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+      }
+
+      .modal-close {
+        background: rgba(255, 255, 255, 0.1);
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        padding: 0.5rem;
+        cursor: pointer;
+        color: white;
+        border-radius: 8px;
+        transition: all 0.3s ease;
+        backdrop-filter: blur(10px);
+      }
+
+      .modal-close:hover {
+        background: rgba(255, 255, 255, 0.2);
+        border-color: rgba(255, 255, 255, 0.4);
+        transform: scale(1.1);
+      }
+
+      .modal-body {
+        padding: 1.5rem;
+      }
+
+      .form-group {
+        margin-bottom: 1.75rem;
+      }
+
+      .form-group label {
+        display: block;
+        font-size: 0.875rem;
+        font-weight: 500;
+        color: var(--text-gray);
+        margin-bottom: 0.5rem;
+      }
+
+      .form-group input,
+      .form-group select,
+      .form-group textarea {
+        width: 100%;
+        padding: 0.625rem 1rem;
+        border: 1px solid var(--border-color);
+        border-radius: 8px;
+        font-size: 0.9rem;
+        font-family: var(--font-main);
+        color: var(--text-dark);
+        background-color: #f9fafb;
+        transition: border-color 0.2s ease;
+      }
+
+      .form-group input:focus,
+      .form-group select:focus,
+      .form-group textarea:focus {
+        outline: none;
+        border-color: var(--primary-green);
+        box-shadow: 0 0 0 3px rgba(74, 124, 35, 0.1);
+      }
+
+      .form-group input:focus,
+      .form-group select:focus,
+      .form-group textarea:focus {
+        outline: none;
+        border-color: #4a7c23;
+        box-shadow: 0 0 0 3px rgba(74, 124, 35, 0.1);
+        transform: translateY(-1px);
+      }
+
+      .form-group textarea {
+        resize: vertical;
+        min-height: 100px;
+      }
+
+      .form-row {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 1.5rem;
+      }
+
+      .modal-footer {
+        display: flex;
+        justify-content: flex-end;
+        gap: 0.75rem;
+        padding: 1.25rem 1.5rem;
+        border-top: 1px solid var(--border-color);
+      }
+
+      .btn-outline {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        padding: 0.625rem 1.25rem;
+        background-color: var(--white);
+        color: var(--primary-green);
+        border: 2px solid var(--primary-green);
+        border-radius: 8px;
+        font-size: 0.95rem;
+        font-weight: 600;
+        font-family: var(--font-main);
+        cursor: pointer;
+        transition: background-color 0.2s ease;
+        text-decoration: none;
+      }
+
+      .btn-outline:hover:not(:disabled) {
+        background-color: var(--bg-green);
+      }
+
+      .btn-primary {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        padding: 0.625rem 1.25rem;
+        background-color: var(--primary-green);
+        color: var(--white);
+        border: none;
+        border-radius: 8px;
+        font-size: 0.95rem;
+        font-weight: 600;
+        font-family: var(--font-main);
+        text-decoration: none;
+        cursor: pointer;
+        transition: background-color 0.2s ease;
+      }
+
+      .btn-primary:hover:not(:disabled) {
+        background-color: var(--dark-green);
+      }
+
+      .btn-danger {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        padding: 0.625rem 1.25rem;
+        background-color: #ef4444;
+        color: var(--white);
+        border: none;
+        border-radius: 8px;
+        font-size: 0.95rem;
+        font-weight: 600;
+        font-family: var(--font-main);
+        cursor: pointer;
+        transition: background-color 0.2s ease;
+      }
+
+      .btn-danger:hover:not(:disabled) {
+        background-color: #dc2626;
+      }
+
+      /* Responsive Design */
+      @media (max-width: 768px) {
+        .room-edit-main {
+          margin-left: 0;
+        }
+
+        .room-edit-content {
+          padding: 1rem;
+        }
+
+        .room-edit-header {
+          flex-direction: column;
+          gap: 1rem;
+        }
+
+        .rooms-toolbar {
+          flex-direction: column;
+        }
+
+        .search-box {
+          min-width: auto;
+        }
+
+        .rooms-grid {
+          grid-template-columns: 1fr;
+        }
+
+        .form-row {
+          grid-template-columns: 1fr;
+        }
+
+        .modal-content {
+          width: 95%;
+          margin: 1rem auto;
+        }
+      }
+    </style>
+  </head>
+  <body data-view="landlord" data-dashboard-type="landlord">
+    <div class="room-edit-page">
+      <!-- Sidebar Container -->
+      <div id="sidebar-container"></div>
+
+      <!-- Main Content -->
+      <main class="room-edit-main">
+        <!-- Navbar Container -->
+        <div id="navbar-container"></div>
+
+        <!-- Content -->
+        <div class="room-edit-content">
+          <!-- Header -->
+          <div class="room-edit-header">
+            <div class="header-left">
+              <h1 id="page-title">Manage Rooms</h1>
+              <p id="page-description">Add, edit, and manage rooms for this property.</p>
+            </div>
+            <div class="header-actions">
+              <button type="button" class="btn-outline" onclick="history.back()">
+                <span
+                  data-icon="arrowLeft"
+                  data-icon-width="20"
+                  data-icon-height="20"
+                  data-icon-stroke-width="2"
+                ></span>
+                Back to Listings
+              </button>
+              <button type="button" class="btn-primary" id="add-room-btn">
+                <span
+                  data-icon="plus"
+                  data-icon-width="20"
+                  data-icon-height="20"
+                  data-icon-stroke-width="2"
+                ></span>
+                Add New Room
+              </button>
+            </div>
+          </div>
+
+          <!-- Property Info -->
+          <div class="property-info">
+            <h2>Property Information</h2>
+            <div class="property-details">
+              <div class="property-detail">
+                <span class="property-detail-label">Property Name</span>
+                <span class="property-detail-value" id="property-name">Loading...</span>
+              </div>
+              <div class="property-detail">
+                <span class="property-detail-label">Location</span>
+                <span class="property-detail-value" id="property-location">Loading...</span>
+              </div>
+              <div class="property-detail">
+                <span class="property-detail-label">Type</span>
+                <span class="property-detail-value" id="property-type">Loading...</span>
+              </div>
+              <div class="property-detail">
+                <span class="property-detail-label">Total Rooms</span>
+                <span class="property-detail-value" id="property-total-rooms">Loading...</span>
+              </div>
+              <div class="property-detail">
+                <span class="property-detail-label">Occupied Rooms</span>
+                <span class="property-detail-value" id="property-occupied-rooms">Loading...</span>
+              </div>
+              <div class="property-detail">
+                <span class="property-detail-label">Occupancy Rate</span>
+                <span class="property-detail-value" id="property-occupancy-rate">Loading...</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Rooms Section -->
+          <div class="rooms-section">
+            <div class="rooms-header">
+              <h2>Rooms Management</h2>
+            </div>
+
+            <!-- Search and Filter Bar -->
+            <div class="rooms-toolbar">
+              <div class="search-box">
+                <span
+                  data-icon="magnifier"
+                  data-icon-width="20"
+                  data-icon-height="20"
+                  data-icon-stroke-width="2"
+                ></span>
+                <input
+                  type="text"
+                  id="search-rooms"
+                  placeholder="Search by room number or tenant name..."
+                />
+              </div>
+              <div class="filter-group">
+                <select id="filter-status">
+                  <option value="all">All Status</option>
+                  <option value="available">Available</option>
+                  <option value="occupied">Occupied</option>
+                  <option value="maintenance">Maintenance</option>
+                </select>
+                <select id="sort-rooms">
+                  <option value="room-number">Room Number</option>
+                  <option value="price-high">Price (High-Low)</option>
+                  <option value="price-low">Price (Low-High)</option>
+                  <option value="status">Status</option>
+                </select>
+              </div>
+            </div>
+
+            <!-- Rooms Grid -->
+            <div id="rooms-grid" class="rooms-grid">
+              <!-- Room cards will be dynamically loaded here -->
+            </div>
+
+            <!-- Empty State -->
+            <div id="rooms-empty-state" class="empty-state" style="display: none">
+              <span
+                data-icon="home"
+                data-icon-width="64"
+                data-icon-height="64"
+                data-icon-stroke-width="2"
+              ></span>
+              <h3>No Rooms Found</h3>
+              <p>
+                Start by adding your first room to this property. You can manage pricing,
+                availability, and tenant information.
+              </p>
+              <button type="button" class="btn-primary" id="empty-state-add-room">
+                <span
+                  data-icon="plus"
+                  data-icon-width="20"
+                  data-icon-height="20"
+                  data-icon-stroke-width="2"
+                ></span>
+                Add Your First Room
+              </button>
+            </div>
+
+            <!-- Loading State -->
+            <div id="rooms-loading-state" class="loading-state">
+              <div class="spinner"></div>
+              <p>Loading rooms...</p>
+            </div>
+          </div>
+        </div>
+      </main>
+    </div>
+
+    <!-- Floating Add Room Button -->
+    <button type="button" class="floating-add-btn" id="floating-add-room" title="Add New Room">
+      <span
+        data-icon="plus"
+        data-icon-width="24"
+        data-icon-height="24"
+        data-icon-stroke-width="3"
+      ></span>
+    </button>
+
+    <!-- Room Edit/Add Modal -->
+    <div id="room-modal" class="room-modal">
+      <div class="modal-overlay"></div>
+      <div class="modal-content">
+        <div class="modal-header">
+          <h2 id="modal-title">Add New Room</h2>
+          <button type="button" class="modal-close" id="modal-close">
+            <span
+              data-icon="close"
+              data-icon-width="24"
+              data-icon-height="24"
+              data-icon-stroke-width="2"
+            ></span>
+          </button>
+        </div>
+        <div class="modal-body">
+          <form id="room-form">
+            <div class="form-row">
+              <div class="form-group">
+                <label for="room-number">Room Number *</label>
+                <input type="text" id="room-number" name="room_number" required />
+              </div>
+              <div class="form-group">
+                <label for="room-price">Monthly Rent (₱) *</label>
+                <input type="number" id="room-price" name="price" min="0" step="100" required />
+              </div>
+            </div>
+            <div class="form-row">
+              <div class="form-group">
+                <label for="room-size">Room Size (sqm)</label>
+                <input type="number" id="room-size" name="size" min="0" step="0.1" />
+              </div>
+              <div class="form-group">
+                <label for="room-capacity">Max Occupancy</label>
+                <input
+                  type="number"
+                  id="room-capacity"
+                  name="capacity"
+                  min="1"
+                  max="10"
+                  value="1"
+                />
+              </div>
+            </div>
+            <div class="form-group">
+              <label for="room-status">Status</label>
+              <select id="room-status" name="status">
+                <option value="available">Available</option>
+                <option value="occupied">Occupied</option>
+                <option value="maintenance">Under Maintenance</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label for="room-description">Description</label>
+              <textarea
+                id="room-description"
+                name="description"
+                placeholder="Room features, amenities, etc."
+              ></textarea>
+            </div>
+            <div id="tenant-section" style="display: none">
+              <h3>Current Tenant Information</h3>
+              <div class="form-row">
+                <div class="form-group">
+                  <label for="tenant-name">Tenant Name</label>
+                  <input type="text" id="tenant-name" name="tenant_name" />
+                </div>
+                <div class="form-group">
+                  <label for="tenant-contact">Contact Number</label>
+                  <input type="tel" id="tenant-contact" name="tenant_contact" />
+                </div>
+              </div>
+              <div class="form-row">
+                <div class="form-group">
+                  <label for="lease-start">Lease Start Date</label>
+                  <input type="date" id="lease-start" name="lease_start" />
+                </div>
+                <div class="form-group">
+                  <label for="lease-end">Lease End Date</label>
+                  <input type="date" id="lease-end" name="lease_end" />
+                </div>
+              </div>
+            </div>
+          </form>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn-outline" id="modal-cancel">Cancel</button>
+          <button type="button" class="btn-primary" id="modal-save">
+            <span
+              data-icon="check"
+              data-icon-width="20"
+              data-icon-height="20"
+              data-icon-stroke-width="2"
+            ></span>
+            Save Room
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Delete Confirmation Modal -->
+    <div id="delete-room-modal" class="room-modal">
+      <div class="modal-overlay"></div>
+      <div class="modal-content" style="max-width: 400px">
+        <div class="modal-header">
+          <h2>Delete Room</h2>
+          <button type="button" class="modal-close" id="delete-modal-close">
+            <span
+              data-icon="close"
+              data-icon-width="24"
+              data-icon-height="24"
+              data-icon-stroke-width="2"
+            ></span>
+          </button>
+        </div>
+        <div class="modal-body">
+          <p>Are you sure you want to delete <strong id="delete-room-name">Room 101</strong>?</p>
+          <p style="color: var(--color-text-secondary); font-size: 0.875rem">
+            This action cannot be undone.
+          </p>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn-outline" id="delete-cancel">Cancel</button>
+          <button type="button" class="btn-danger" id="delete-confirm">Delete Room</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ES Module Entry Point -->
+    <script type="module" src="../../../js/main.js"></script>
+    <script type="module" src="../../../js/views/landlord/room-edit.js"></script>
+  </body>
+</html>
