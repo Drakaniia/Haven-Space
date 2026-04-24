@@ -12,11 +12,27 @@ use Appwrite\ID;
 use Appwrite\Query;
 
 return function ($context) {
+    // Helper functions
+    function parseJsonBody($body) {
+        if (empty($body)) return [];
+        $data = json_decode($body, true);
+        return $data ?: [];
+    }
+
     // Get request method and path
     $method = $context->req->method ?? 'GET';
     $path = $context->req->path ?? '/';
     $body = $context->req->body ?? '';
     $headers_in = $context->req->headers ?? [];
+    
+    // Parse request body to get path and method for function executions
+    $requestData = parseJsonBody($body);
+    if (!empty($requestData['path'])) {
+        $path = $requestData['path'];
+    }
+    if (!empty($requestData['method'])) {
+        $method = $requestData['method'];
+    }
     
     // Enhanced CORS headers
     $headers = [
@@ -57,13 +73,6 @@ return function ($context) {
         'notifications' => 'notifications',
         'documents' => 'documents'
     ];
-
-    // Helper functions
-    function parseJsonBody($body) {
-        if (empty($body)) return [];
-        $data = json_decode($body, true);
-        return $data ?: [];
-    }
 
     function getAuthHeaders($headers_in) {
         return [
@@ -508,12 +517,25 @@ return function ($context) {
                     return $context->res->json(generateResponse(null, 405, 'Method not allowed'), 405, $headers);
                 }
                 
+                // Debug: log the request data structure
+                error_log("AI Chat Debug - Raw body: " . $body);
+                error_log("AI Chat Debug - Parsed requestData: " . json_encode($requestData));
+                
                 $message = $requestData['message'] ?? '';
                 $sessionId = $requestData['session_id'] ?? uniqid();
                 $userId = $requestData['user_id'] ?? 'anonymous';
                 
                 if (empty($message)) {
-                    return $context->res->json(generateResponse(null, 400, 'Message is required'), 400, $headers);
+                    return $context->res->json(generateResponse([
+                        'error' => 'Message is required',
+                        'debug_info' => [
+                            'received_data' => $requestData,
+                            'body_length' => strlen($body),
+                            'method' => $method,
+                            'path' => $path,
+                            'raw_body' => $body
+                        ]
+                    ], 400, 'Message is required'), 400, $headers);
                 }
                 
                 // Simple AI response logic
