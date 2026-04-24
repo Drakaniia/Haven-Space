@@ -18,6 +18,11 @@ return function ($context) {
         $data = json_decode($body, true);
         return $data ?: [];
     }
+    
+    // Environment variable helper function
+    function env($key, $default = null) {
+        return $_ENV[$key] ?? $_SERVER[$key] ?? getenv($key) ?? $default;
+    }
 
     // Get request method and path
     $method = $context->req->method ?? 'GET';
@@ -36,11 +41,20 @@ return function ($context) {
     // Keep the original request data for processing
     $originalRequestData = $requestData;
     
-    // Enhanced CORS headers
+    // Enhanced CORS headers - use specific origin for credentials support
+    $origin = $context->req->headers['origin'] ?? $context->req->headers['Origin'] ?? '*';
+    
+    // Load allowed origins from environment
+    $allowedOrigins = explode(',', env('ALLOWED_ORIGINS', 'https://haven-space.appwrite.network,http://localhost:3000'));
+    
+    // Check if origin is allowed, otherwise use first allowed origin or wildcard
+    $corsOrigin = in_array($origin, $allowedOrigins) ? $origin : ($allowedOrigins[0] ?? '*');
+    
     $headers = [
-        'Access-Control-Allow-Origin' => '*',
+        'Access-Control-Allow-Origin' => $corsOrigin,
         'Access-Control-Allow-Methods' => 'GET, POST, PUT, DELETE, PATCH, OPTIONS',
         'Access-Control-Allow-Headers' => 'Content-Type, Authorization, X-Appwrite-Project, X-Appwrite-Key, X-User-Id, X-Session-Id',
+        'Access-Control-Allow-Credentials' => 'true',
         'Access-Control-Max-Age' => '86400'
     ];
 
