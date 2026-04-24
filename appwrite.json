@@ -1,34 +1,41 @@
 {
-  "projectId": "69eae504002697b6749c",
-  "functions": [
-    {
-      "$id": "69eb0fbe001f297c8dab",
-      "name": "Haven-Space",
-      "runtime": "php-8.3",
-      "path": "functions/havenspace-api",
-      "entrypoint": "main.php",
-      "ignore": [".git", "node_modules", ".env", "vendor"],
-      "execute": ["any"],
-      "events": [],
-      "schedule": "",
-      "timeout": 30,
-      "enabled": true,
-      "logging": true,
-      "scopes": [
-        "databases.read",
-        "databases.write",
-        "documents.read",
-        "documents.write",
-        "users.read",
-        "users.write",
-        "storage.read",
-        "storage.write",
-        "files.read",
-        "files.write"
-      ],
-      "variables": {
-        "APPWRITE_DATABASE_ID": "69eae54800160ea97765"
-      }
-    }
-  ]
+    "projectId": "69eae504002697b6749c",
+    "functions": [
+        {
+            "$id": "69eb0fbe001f297c8dab",
+            "name": "Haven-Space",
+            "runtime": "php-8.3",
+            "path": "functions/havenspace-api",
+            "entrypoint": "main.php",
+            "ignore": [
+                ".git",
+                "node_modules",
+                ".env",
+                "vendor"
+            ],
+            "execute": [
+                "any"
+            ],
+            "events": [],
+            "schedule": "",
+            "timeout": 30,
+            "enabled": true,
+            "logging": true,
+            "scopes": [
+                "databases.read",
+                "databases.write",
+                "documents.read",
+                "documents.write",
+                "users.read",
+                "users.write",
+                "storage.read",
+                "storage.write",
+                "files.read",
+                "files.write"
+            ],
+            "variables": {
+                "APPWRITE_DATABASE_ID": "69eae54800160ea97765"
+            }
+        }
+    ]
 }
