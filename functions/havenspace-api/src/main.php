@@ -32,11 +32,13 @@ return function ($context) {
 
     // Handle CORS preflight
     if ($req->method === 'OPTIONS') {
-        return $res->setHeaders([
-            'Access-Control-Allow-Origin'  => '*',
+        return $res->text('', 204, [
+            'Access-Control-Allow-Origin'  => 'https://haven-space.appwrite.network',
             'Access-Control-Allow-Methods' => 'GET, POST, PUT, PATCH, DELETE, OPTIONS',
-            'Access-Control-Allow-Headers' => 'Content-Type, Authorization',
-        ])->send('', 204);
+            'Access-Control-Allow-Headers' => 'Content-Type, Authorization, X-Requested-With',
+            'Access-Control-Allow-Credentials' => 'true',
+            'Access-Control-Max-Age' => '86400'
+        ]);
     }
 
     // Buffer output — routes.php echoes JSON directly
@@ -45,8 +47,11 @@ return function ($context) {
     require_once __DIR__ . '/../server/api/routes.php';
     $output = ob_get_clean();
 
-    return $res->setHeaders([
-        'Access-Control-Allow-Origin' => '*',
-        'Content-Type'                => 'application/json',
-    ])->send($output, 200);
+    return $res->text($output, 200, [
+        'Access-Control-Allow-Origin' => 'https://haven-space.appwrite.network',
+        'Access-Control-Allow-Methods' => 'GET, POST, PUT, PATCH, DELETE, OPTIONS',
+        'Access-Control-Allow-Headers' => 'Content-Type, Authorization, X-Requested-With',
+        'Access-Control-Allow-Credentials' => 'true',
+        'Content-Type' => 'application/json'
+    ]);
 };

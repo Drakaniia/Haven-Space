@@ -19,3 +19,5 @@ We are using the Appwrite platform for:
 **Documentation**: When prompting or working on Appwrite-related deployment tasks, always use the Appwrite MCP (Multi-Platform Client) for documentation and reference.
 
 **Note**: Do not push the `.playwrite-mcp` directory to the repository.
+
+**AGENTS**: Use Appwrite MCP for all agent-related tasks and interactions.
