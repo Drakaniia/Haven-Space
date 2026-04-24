@@ -24,23 +24,85 @@ class AIService {
   }
 
   /**
-   * Generate property description using AI
-   * @param {Object} propertyDetails - Property features and details
-   * @returns {Promise<Object>} AI-generated description
+   * Execute Appwrite function with proper format
+   * @param {string} path - API path to call
+   * @param {string} method - HTTP method
+   * @param {Object} data - Request data
+   * @returns {Promise<Object>} Function response
    */
-  static async generateDescription(propertyDetails) {
+  static async executeFunction(path, method = 'GET', data = null) {
     try {
-      const response = await fetch(`${CONFIG.API_BASE_URL}/api/ai/generate-description`, {
+      const headers = {
+        'Content-Type': 'application/json',
+        'X-Appwrite-Project': CONFIG.APPWRITE.PROJECT_ID,
+      };
+
+      // Add auth headers if available
+      const token = localStorage.getItem('token');
+      const sessionId = localStorage.getItem('session_id');
+      const userId = localStorage.getItem('user_id');
+
+      if (token) {
+        headers['Authorization'] = `Bearer ${token}`;
+      }
+      if (sessionId) {
+        headers['X-Session-Id'] = sessionId;
+      }
+      if (userId) {
+        headers['X-User-Id'] = userId;
+      }
+
+      const requestBody = {
+        path: path,
+        method: method,
+        headers: headers,
+      };
+
+      if (data && (method === 'POST' || method === 'PUT' || method === 'PATCH')) {
+        requestBody.body = JSON.stringify(data);
+      }
+
+      const response = await fetch(CONFIG.API_BASE_URL, {
         method: 'POST',
-        headers: AIService.getAuthHeaders(),
-        body: JSON.stringify({ property_details: propertyDetails }),
+        headers: {
+          'Content-Type': 'application/json',
+          'X-Appwrite-Project': CONFIG.APPWRITE.PROJECT_ID,
+        },
+        body: JSON.stringify(requestBody),
       });
 
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
 
-      return await AIService.parseJsonResponse(response);
+      const result = await AIService.parseJsonResponse(response);
+
+      // Handle Appwrite function response format
+      if (result.response && typeof result.response === 'string') {
+        try {
+          return JSON.parse(result.response);
+        } catch {
+          return { success: false, error: result.response };
+        }
+      }
+
+      return result;
+    } catch (error) {
+      console.error('Function execution failed:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Generate property description using AI
+   * @param {Object} propertyDetails - Property features and details
+   * @returns {Promise<Object>} AI-generated description
+   */
+  static async generateDescription(propertyDetails) {
+    try {
+      return await AIService.executeFunction('/api/ai/generate-description', 'POST', {
+        property_details: propertyDetails,
+      });
     } catch (error) {
       console.error('AI description generation failed:', error);
       return {
@@ -57,17 +119,7 @@ class AIService {
    */
   static async enhanceSearch(searchParams) {
     try {
-      const response = await fetch(`${CONFIG.API_BASE_URL}/api/ai/enhance-search`, {
-        method: 'POST',
-        headers: AIService.getAuthHeaders(),
-        body: JSON.stringify(searchParams),
-      });
-
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-
-      return await AIService.parseJsonResponse(response);
+      return await AIService.executeFunction('/api/ai/enhance-search', 'POST', searchParams);
     } catch (error) {
       console.error('AI search enhancement failed:', error);
       return {
@@ -84,20 +136,7 @@ class AIService {
    */
   static async analyzeIssue(issueData) {
     try {
-      const response = await fetch('/api/ai/analyze-issue', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Accept: 'application/json',
-        },
-        body: JSON.stringify(issueData),
-      });
-
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-
-      return await AIService.parseJsonResponse(response);
+      return await AIService.executeFunction('/api/ai/analyze-issue', 'POST', issueData);
     } catch (error) {
       console.error('AI issue analysis failed:', error);
       return {
@@ -114,20 +153,7 @@ class AIService {
    */
   static async draftMessage(messageContext) {
     try {
-      const response = await fetch('/api/ai/draft-message', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Accept: 'application/json',
-        },
-        body: JSON.stringify(messageContext),
-      });
-
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-
-      return await AIService.parseJsonResponse(response);
+      return await AIService.executeFunction('/api/ai/draft-message', 'POST', messageContext);
     } catch (error) {
       console.error('AI message drafting failed:', error);
       return {
@@ -144,20 +170,11 @@ class AIService {
    */
   static async analyzeApplication(applicationData) {
     try {
-      const response = await fetch('/api/ai/analyze-application', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Accept: 'application/json',
-        },
-        body: JSON.stringify(applicationData),
-      });
-
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-
-      return await AIService.parseJsonResponse(response);
+      return await AIService.executeFunction(
+        '/api/ai/analyze-application',
+        'POST',
+        applicationData
+      );
     } catch (error) {
       console.error('AI application analysis failed:', error);
       return {
@@ -189,38 +206,24 @@ class AIService {
   /**
    * Chat with Haven AI assistant
    * @param {string} message - User message
+   * @param {string} sessionId - Optional session ID
+   * @param {string} userId - Optional user ID
    * @returns {Promise<Object>} AI response
    */
-  static async chat(message) {
+  static async chat(message, sessionId = null, userId = null) {
     try {
-      // For Appwrite functions, we need to send the request in a specific format
-      const requestBody = {
-        method: 'POST',
-        path: '/api/chat',
-        body: JSON.stringify({ message: message }),
+      const chatData = {
+        message: message,
+        session_id: sessionId || localStorage.getItem('ai_session_id') || 'session_' + Date.now(),
+        user_id: userId || localStorage.getItem('user_id') || 'anonymous',
       };
 
-      const response = await fetch(CONFIG.API_BASE_URL, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Accept: 'application/json',
-        },
-        body: JSON.stringify(requestBody),
-      });
-
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
+      // Store session ID for continuity
+      if (!localStorage.getItem('ai_session_id')) {
+        localStorage.setItem('ai_session_id', chatData.session_id);
       }
 
-      const result = await AIService.parseJsonResponse(response);
-
-      // Extract the actual response from Appwrite function execution result
-      if (result.responseBody) {
-        return JSON.parse(result.responseBody);
-      }
-
-      return result;
+      return await AIService.executeFunction('/api/ai/chat', 'POST', chatData);
     } catch (error) {
       console.error('AI chat failed:', error);
       return {

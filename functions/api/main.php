@@ -1,15 +1,28 @@
 <?php
 
+use Appwrite\Client;
+use Appwrite\Services\Account;
+use Appwrite\Services\Databases;
+use Appwrite\Services\Users;
+use Appwrite\Services\Storage;
+use Appwrite\Services\Teams;
+use Appwrite\Permission;
+use Appwrite\Role;
+use Appwrite\ID;
+use Appwrite\Query;
+
 return function ($context) {
     // Get request method and path
     $method = $context->req->method ?? 'GET';
     $path = $context->req->path ?? '/';
+    $body = $context->req->body ?? '';
+    $headers_in = $context->req->headers ?? [];
     
-    // Set CORS headers
+    // Enhanced CORS headers
     $headers = [
         'Access-Control-Allow-Origin' => '*',
-        'Access-Control-Allow-Methods' => 'GET, POST, PUT, DELETE, OPTIONS',
-        'Access-Control-Allow-Headers' => 'Content-Type, Authorization, X-Appwrite-Project, X-Appwrite-Key, Accept',
+        'Access-Control-Allow-Methods' => 'GET, POST, PUT, DELETE, PATCH, OPTIONS',
+        'Access-Control-Allow-Headers' => 'Content-Type, Authorization, X-Appwrite-Project, X-Appwrite-Key, X-User-Id, X-Session-Id',
         'Access-Control-Max-Age' => '86400'
     ];
 
@@ -18,252 +31,558 @@ return function ($context) {
         return $context->res->text('', 200, $headers);
     }
 
+    // Initialize Appwrite client
+    $client = new Client();
+    $client
+        ->setEndpoint(getenv('APPWRITE_FUNCTION_ENDPOINT') ?: 'https://fra.cloud.appwrite.io/v1')
+        ->setProject(getenv('APPWRITE_FUNCTION_PROJECT_ID') ?: '69eae504002697b6749c')
+        ->setKey(getenv('APPWRITE_API_KEY') ?: $context->req->headers['x-appwrite-key'] ?? '');
+
+    // Initialize services
+    $account = new Account($client);
+    $databases = new Databases($client);
+    $users = new Users($client);
+    $storage = new Storage($client);
+    $teams = new Teams($client);
+
+    // Database and collection IDs
+    $databaseId = 'haven-space-db';
+    $collections = [
+        'users' => 'users',
+        'properties' => 'properties',
+        'rooms' => 'rooms',
+        'applications' => 'applications',
+        'messages' => 'messages',
+        'payments' => 'payments',
+        'notifications' => 'notifications',
+        'documents' => 'documents'
+    ];
+
+    // Helper functions
+    function parseJsonBody($body) {
+        if (empty($body)) return [];
+        $data = json_decode($body, true);
+        return $data ?: [];
+    }
+
+    function getAuthHeaders($headers_in) {
+        return [
+            'session' => $headers_in['x-session-id'] ?? $headers_in['authorization'] ?? '',
+            'user_id' => $headers_in['x-user-id'] ?? ''
+        ];
+    }
+
+    function authenticateUser($client, $headers_in) {
+        $auth = getAuthHeaders($headers_in);
+        if (!empty($auth['session'])) {
+            $client->setSession($auth['session']);
+        }
+        return $auth;
+    }
+
+    function generateResponse($data, $status = 200, $message = 'Success') {
+        return [
+            'success' => $status < 400,
+            'status' => $status,
+            'message' => $message,
+            'data' => $data,
+            'timestamp' => date('c')
+        ];
+    }
+
     try {
-        // Route handling
-        switch ($path) {
-            case '/':
-                return $context->res->json([
-                    'message' => 'Haven Space API',
-                    'version' => '1.0.0',
-                    'status' => 'active',
-                    'timestamp' => date('c'),
-                    'available_endpoints' => [
-                        'GET /',
-                        'GET /health',
-                        'GET /test',
-                        'GET /api/chat',
-                        'POST /api/chat',
-                        'GET /api/users',
-                        'GET /api/properties'
-                    ]
-                ], 200, $headers);
-            
-            case '/health':
-                return $context->res->json([
-                    'status' => 'healthy',
-                    'timestamp' => date('c'),
+        // Parse request body
+        $requestData = parseJsonBody($body);
+        
+        // Route handling with comprehensive API endpoints
+        switch (true) {
+            // Root endpoints
+            case $path === '/':
+                return $context->res->json(generateResponse([
                     'service' => 'Haven Space API',
-                    'version' => '1.0.0'
-                ], 200, $headers);
-            
-            case '/test':
-                return $context->res->json([
-                    'message' => 'Test endpoint working',
-                    'method' => $method,
-                    'path' => $path,
-                    'timestamp' => date('c'),
+                    'version' => '2.0.0',
+                    'status' => 'active',
+                    'endpoints' => [
+                        'auth' => '/auth/*',
+                        'api' => '/api/*',
+                        'health' => '/health',
+                        'test' => '/test'
+                    ]
+                ]), 200, $headers);
+
+            case $path === '/health':
+                return $context->res->json(generateResponse([
+                    'status' => 'healthy',
+                    'service' => 'Haven Space API',
+                    'version' => '2.0.0',
                     'environment' => [
                         'php_version' => phpversion(),
                         'endpoint' => getenv('APPWRITE_FUNCTION_ENDPOINT') ?: 'not set',
                         'project_id' => getenv('APPWRITE_FUNCTION_PROJECT_ID') ?: 'not set'
                     ]
-                ], 200, $headers);
-            
-            case '/api/chat':
-            case '/api/chat.php':
-                return handleAiChat($context, $method, $headers);
-            
-            case '/api/users':
-            case '/api/users.php':
-                return handleUsers($context, $method, $headers);
-            
-            case '/api/properties':
-            case '/api/properties.php':
-                return handleProperties($context, $method, $headers);
-            
-            default:
-                // Handle other API routes
-                if (strpos($path, '/api/') === 0) {
-                    return $context->res->json([
-                        'error' => 'API endpoint not found',
-                        'path' => $path,
-                        'available_endpoints' => [
-                            '/api/chat', '/api/users', '/api/properties'
-                        ]
-                    ], 404, $headers);
-                }
-                
-                return $context->res->json([
-                    'error' => 'Route not found',
-                    'path' => $path,
-                    'available_routes' => ['/', '/health', '/test', '/api/*']
-                ], 404, $headers);
-        }
-    } catch (Exception $e) {
-        return $context->res->json([
-            'error' => 'Internal server error',
-            'message' => $e->getMessage(),
-            'file' => $e->getFile(),
-            'line' => $e->getLine()
-        ], 500, $headers);
-    } catch (Throwable $e) {
-        return $context->res->json([
-            'error' => 'Fatal error',
-            'message' => $e->getMessage(),
-            'file' => $e->getFile(),
-            'line' => $e->getLine()
-        ], 500, $headers);
-    }
-};
+                ]), 200, $headers);
 
-function handleAiChat($context, $method, $headers) {
-    switch ($method) {
-        case 'GET':
-            return $context->res->json([
-                'message' => 'AI Chat API',
-                'status' => 'active',
-                'endpoints' => [
-                    'POST /api/chat - Send message to AI',
-                    'GET /api/chat - Get API info'
-                ],
-                'features' => [
-                    'Natural language processing',
-                    'Property search assistance',
-                    'Booking help',
-                    'General inquiries'
-                ],
-                'example_request' => [
-                    'method' => 'POST',
-                    'body' => [
-                        'message' => 'Hello, I need help finding a room',
-                        'user_id' => 'optional',
-                        'session_id' => 'optional'
-                    ]
-                ]
-            ], 200, $headers);
-        
-        case 'POST':
-            try {
-                $data = json_decode($context->req->body, true);
-                
-                if (!isset($data['message'])) {
-                    return $context->res->json([
-                        'error' => 'Message is required',
-                        'required_fields' => ['message'],
-                        'optional_fields' => ['user_id', 'session_id']
-                    ], 400, $headers);
+            case $path === '/test':
+                return $context->res->json(generateResponse([
+                    'message' => 'Test endpoint working',
+                    'method' => $method,
+                    'path' => $path,
+                    'body_received' => !empty($body),
+                    'headers_count' => count($headers_in)
+                ]), 200, $headers);
+
+            // Authentication endpoints
+            case preg_match('#^/auth/register\.php$#', $path):
+            case preg_match('#^/auth/register$#', $path):
+                if ($method !== 'POST') {
+                    return $context->res->json(generateResponse(null, 405, 'Method not allowed'), 405, $headers);
                 }
                 
-                $userMessage = $data['message'];
-                $userId = $data['user_id'] ?? 'anonymous';
-                $sessionId = $data['session_id'] ?? uniqid();
+                $email = $requestData['email'] ?? '';
+                $password = $requestData['password'] ?? '';
+                $name = $requestData['name'] ?? '';
+                $role = $requestData['role'] ?? 'boarder';
                 
-                // Generate AI response
-                $aiResponse = generateAiResponse($userMessage);
+                if (empty($email) || empty($password)) {
+                    return $context->res->json(generateResponse(null, 400, 'Email and password required'), 400, $headers);
+                }
                 
-                return $context->res->json([
-                    'success' => true,
-                    'response' => $aiResponse,
-                    'user_message' => $userMessage,
+                // Create account
+                $user = $account->create(ID::unique(), $email, $password, $name);
+                
+                // Create session
+                $session = $account->createEmailPasswordSession($email, $password);
+                
+                // Store additional user data in database
+                $userData = [
+                    'user_id' => $user['$id'],
+                    'email' => $email,
+                    'name' => $name,
+                    'role' => $role,
+                    'status' => 'active',
+                    'created_at' => date('c'),
+                    'updated_at' => date('c')
+                ];
+                
+                $databases->createDocument($databaseId, $collections['users'], ID::unique(), $userData);
+                
+                return $context->res->json(generateResponse([
+                    'user' => $user,
+                    'session' => $session
+                ], 201, 'User registered successfully'), 201, $headers);
+
+            case preg_match('#^/auth/login\.php$#', $path):
+            case preg_match('#^/auth/login$#', $path):
+                if ($method !== 'POST') {
+                    return $context->res->json(generateResponse(null, 405, 'Method not allowed'), 405, $headers);
+                }
+                
+                $email = $requestData['email'] ?? '';
+                $password = $requestData['password'] ?? '';
+                
+                if (empty($email) || empty($password)) {
+                    return $context->res->json(generateResponse(null, 400, 'Email and password required'), 400, $headers);
+                }
+                
+                $session = $account->createEmailPasswordSession($email, $password);
+                $client->setSession($session['secret']);
+                $user = $account->get();
+                
+                return $context->res->json(generateResponse([
+                    'user' => $user,
+                    'session' => $session
+                ], 200, 'Login successful'), 200, $headers);
+
+            case preg_match('#^/auth/logout\.php$#', $path):
+            case preg_match('#^/auth/logout$#', $path):
+                if ($method !== 'POST') {
+                    return $context->res->json(generateResponse(null, 405, 'Method not allowed'), 405, $headers);
+                }
+                
+                authenticateUser($client, $headers_in);
+                $account->deleteSession('current');
+                
+                return $context->res->json(generateResponse(null, 200, 'Logout successful'), 200, $headers);
+
+            case preg_match('#^/auth/me\.php$#', $path):
+            case preg_match('#^/auth/me$#', $path):
+                if ($method !== 'GET') {
+                    return $context->res->json(generateResponse(null, 405, 'Method not allowed'), 405, $headers);
+                }
+                
+                authenticateUser($client, $headers_in);
+                $user = $account->get();
+                
+                // Get additional user data from database
+                $userDocs = $databases->listDocuments($databaseId, $collections['users'], [
+                    Query::equal('user_id', $user['$id'])
+                ]);
+                
+                $userData = $userDocs['documents'][0] ?? null;
+                
+                return $context->res->json(generateResponse([
+                    'user' => $user,
+                    'profile' => $userData
+                ], 200, 'User data retrieved'), 200, $headers);
+
+            // User management endpoints
+            case preg_match('#^/api/users/profile$#', $path):
+                authenticateUser($client, $headers_in);
+                
+                if ($method === 'GET') {
+                    $user = $account->get();
+                    $userDocs = $databases->listDocuments($databaseId, $collections['users'], [
+                        Query::equal('user_id', $user['$id'])
+                    ]);
+                    
+                    return $context->res->json(generateResponse([
+                        'user' => $user,
+                        'profile' => $userDocs['documents'][0] ?? null
+                    ]), 200, $headers);
+                    
+                } elseif ($method === 'PUT') {
+                    $user = $account->get();
+                    
+                    // Update account info
+                    if (!empty($requestData['name'])) {
+                        $account->updateName($requestData['name']);
+                    }
+                    if (!empty($requestData['email'])) {
+                        $account->updateEmail($requestData['email'], $requestData['password'] ?? '');
+                    }
+                    
+                    // Update profile in database
+                    $userDocs = $databases->listDocuments($databaseId, $collections['users'], [
+                        Query::equal('user_id', $user['$id'])
+                    ]);
+                    
+                    if (!empty($userDocs['documents'])) {
+                        $profileData = array_merge($userDocs['documents'][0], $requestData);
+                        $profileData['updated_at'] = date('c');
+                        
+                        $databases->updateDocument($databaseId, $collections['users'], 
+                            $userDocs['documents'][0]['$id'], $profileData);
+                    }
+                    
+                    return $context->res->json(generateResponse(null, 200, 'Profile updated'), 200, $headers);
+                }
+                break;
+
+            case preg_match('#^/api/users/search$#', $path):
+                if ($method !== 'GET') {
+                    return $context->res->json(generateResponse(null, 405, 'Method not allowed'), 405, $headers);
+                }
+                
+                authenticateUser($client, $headers_in);
+                $query = $_GET['q'] ?? '';
+                $role = $_GET['role'] ?? '';
+                
+                $queries = [];
+                if (!empty($query)) {
+                    $queries[] = Query::search('name', $query);
+                }
+                if (!empty($role)) {
+                    $queries[] = Query::equal('role', $role);
+                }
+                
+                $results = $databases->listDocuments($databaseId, $collections['users'], $queries);
+                
+                return $context->res->json(generateResponse($results['documents']), 200, $headers);
+
+            // Property management endpoints
+            case preg_match('#^/api/properties/all\.php$#', $path):
+            case preg_match('#^/api/properties/all$#', $path):
+                if ($method !== 'GET') {
+                    return $context->res->json(generateResponse(null, 405, 'Method not allowed'), 405, $headers);
+                }
+                
+                $properties = $databases->listDocuments($databaseId, $collections['properties'], [
+                    Query::equal('status', 'active')
+                ]);
+                
+                return $context->res->json(generateResponse($properties['documents']), 200, $headers);
+
+            case preg_match('#^/api/landlord/properties\.php$#', $path):
+            case preg_match('#^/api/landlord/properties$#', $path):
+                authenticateUser($client, $headers_in);
+                $user = $account->get();
+                
+                if ($method === 'GET') {
+                    $properties = $databases->listDocuments($databaseId, $collections['properties'], [
+                        Query::equal('landlord_id', $user['$id'])
+                    ]);
+                    
+                    return $context->res->json(generateResponse($properties['documents']), 200, $headers);
+                    
+                } elseif ($method === 'POST') {
+                    $propertyData = array_merge($requestData, [
+                        'landlord_id' => $user['$id'],
+                        'status' => 'active',
+                        'created_at' => date('c'),
+                        'updated_at' => date('c')
+                    ]);
+                    
+                    $property = $databases->createDocument($databaseId, $collections['properties'], 
+                        ID::unique(), $propertyData);
+                    
+                    return $context->res->json(generateResponse($property, 201, 'Property created'), 201, $headers);
+                }
+                break;
+
+            // Room endpoints
+            case preg_match('#^/api/rooms/detail$#', $path):
+                if ($method !== 'GET') {
+                    return $context->res->json(generateResponse(null, 405, 'Method not allowed'), 405, $headers);
+                }
+                
+                $roomId = $_GET['id'] ?? '';
+                if (empty($roomId)) {
+                    return $context->res->json(generateResponse(null, 400, 'Room ID required'), 400, $headers);
+                }
+                
+                $room = $databases->getDocument($databaseId, $collections['rooms'], $roomId);
+                
+                return $context->res->json(generateResponse($room), 200, $headers);
+
+            case preg_match('#^/api/rooms/public$#', $path):
+                if ($method !== 'GET') {
+                    return $context->res->json(generateResponse(null, 405, 'Method not allowed'), 405, $headers);
+                }
+                
+                $queries = [Query::equal('status', 'available')];
+                
+                // Add filters based on query parameters
+                if (!empty($_GET['location'])) {
+                    $queries[] = Query::search('location', $_GET['location']);
+                }
+                if (!empty($_GET['min_price'])) {
+                    $queries[] = Query::greaterThanEqual('price', (float)$_GET['min_price']);
+                }
+                if (!empty($_GET['max_price'])) {
+                    $queries[] = Query::lessThanEqual('price', (float)$_GET['max_price']);
+                }
+                
+                $rooms = $databases->listDocuments($databaseId, $collections['rooms'], $queries);
+                
+                return $context->res->json(generateResponse($rooms['documents']), 200, $headers);
+
+            // Application endpoints
+            case preg_match('#^/api/boarder/applications$#', $path):
+                authenticateUser($client, $headers_in);
+                $user = $account->get();
+                
+                if ($method === 'GET') {
+                    $applications = $databases->listDocuments($databaseId, $collections['applications'], [
+                        Query::equal('boarder_id', $user['$id'])
+                    ]);
+                    
+                    return $context->res->json(generateResponse($applications['documents']), 200, $headers);
+                    
+                } elseif ($method === 'POST') {
+                    $applicationData = array_merge($requestData, [
+                        'boarder_id' => $user['$id'],
+                        'status' => 'pending',
+                        'created_at' => date('c'),
+                        'updated_at' => date('c')
+                    ]);
+                    
+                    $application = $databases->createDocument($databaseId, $collections['applications'], 
+                        ID::unique(), $applicationData);
+                    
+                    return $context->res->json(generateResponse($application, 201, 'Application submitted'), 201, $headers);
+                }
+                break;
+
+            case preg_match('#^/api/landlord/applications$#', $path):
+                authenticateUser($client, $headers_in);
+                $user = $account->get();
+                
+                if ($method === 'GET') {
+                    // Get applications for landlord's properties
+                    $properties = $databases->listDocuments($databaseId, $collections['properties'], [
+                        Query::equal('landlord_id', $user['$id'])
+                    ]);
+                    
+                    $propertyIds = array_map(fn($p) => $p['$id'], $properties['documents']);
+                    
+                    $applications = $databases->listDocuments($databaseId, $collections['applications'], [
+                        Query::equal('property_id', $propertyIds)
+                    ]);
+                    
+                    return $context->res->json(generateResponse($applications['documents']), 200, $headers);
+                }
+                break;
+
+            // Message endpoints
+            case preg_match('#^/api/messages/conversations$#', $path):
+                authenticateUser($client, $headers_in);
+                $user = $account->get();
+                
+                if ($method === 'GET') {
+                    $conversations = $databases->listDocuments($databaseId, $collections['messages'], [
+                        Query::or([
+                            Query::equal('sender_id', $user['$id']),
+                            Query::equal('recipient_id', $user['$id'])
+                        ])
+                    ]);
+                    
+                    return $context->res->json(generateResponse($conversations['documents']), 200, $headers);
+                }
+                break;
+
+            case preg_match('#^/api/messages$#', $path):
+                authenticateUser($client, $headers_in);
+                $user = $account->get();
+                
+                if ($method === 'POST') {
+                    $messageData = array_merge($requestData, [
+                        'sender_id' => $user['$id'],
+                        'status' => 'sent',
+                        'created_at' => date('c')
+                    ]);
+                    
+                    $message = $databases->createDocument($databaseId, $collections['messages'], 
+                        ID::unique(), $messageData);
+                    
+                    return $context->res->json(generateResponse($message, 201, 'Message sent'), 201, $headers);
+                }
+                break;
+
+            // Payment endpoints
+            case preg_match('#^/api/payments/overview$#', $path):
+            case preg_match('#^/api/landlord/payment-overview\.php$#', $path):
+                authenticateUser($client, $headers_in);
+                $user = $account->get();
+                
+                $payments = $databases->listDocuments($databaseId, $collections['payments'], [
+                    Query::equal('user_id', $user['$id'])
+                ]);
+                
+                return $context->res->json(generateResponse($payments['documents']), 200, $headers);
+
+            case preg_match('#^/api/payments/history$#', $path):
+            case preg_match('#^/api/landlord/payments\.php$#', $path):
+                authenticateUser($client, $headers_in);
+                $user = $account->get();
+                
+                if ($method === 'GET') {
+                    $payments = $databases->listDocuments($databaseId, $collections['payments'], [
+                        Query::equal('user_id', $user['$id']),
+                        Query::orderDesc('created_at')
+                    ]);
+                    
+                    return $context->res->json(generateResponse($payments['documents']), 200, $headers);
+                    
+                } elseif ($method === 'POST') {
+                    $paymentData = array_merge($requestData, [
+                        'user_id' => $user['$id'],
+                        'status' => 'pending',
+                        'created_at' => date('c')
+                    ]);
+                    
+                    $payment = $databases->createDocument($databaseId, $collections['payments'], 
+                        ID::unique(), $paymentData);
+                    
+                    return $context->res->json(generateResponse($payment, 201, 'Payment recorded'), 201, $headers);
+                }
+                break;
+
+            // Notification endpoints
+            case preg_match('#^/api/notifications/unread-count$#', $path):
+                authenticateUser($client, $headers_in);
+                $user = $account->get();
+                
+                $notifications = $databases->listDocuments($databaseId, $collections['notifications'], [
+                    Query::equal('user_id', $user['$id']),
+                    Query::equal('read', false)
+                ]);
+                
+                return $context->res->json(generateResponse([
+                    'count' => $notifications['total']
+                ]), 200, $headers);
+
+            // AI Chat endpoint
+            case preg_match('#^/api/(ai/)?chat(\.php)?$#', $path):
+                if ($method !== 'POST') {
+                    return $context->res->json(generateResponse(null, 405, 'Method not allowed'), 405, $headers);
+                }
+                
+                $message = $requestData['message'] ?? '';
+                $sessionId = $requestData['session_id'] ?? uniqid();
+                $userId = $requestData['user_id'] ?? 'anonymous';
+                
+                if (empty($message)) {
+                    return $context->res->json(generateResponse(null, 400, 'Message is required'), 400, $headers);
+                }
+                
+                // Simple AI response logic
+                $response = '';
+                $lowerMessage = strtolower($message);
+                
+                if (strpos($lowerMessage, 'hello') !== false || strpos($lowerMessage, 'hi') !== false) {
+                    $response = "Hello! Welcome to Haven Space. I'm here to help you find the perfect room or manage your property. How can I assist you today?";
+                } elseif (strpos($lowerMessage, 'room') !== false || strpos($lowerMessage, 'property') !== false) {
+                    $response = "I can help you find available rooms! We have various properties with different amenities. Would you like me to show you available rooms in a specific area or price range?";
+                } elseif (strpos($lowerMessage, 'book') !== false || strpos($lowerMessage, 'apply') !== false) {
+                    $response = "Great! To book a room, you can browse our available properties and submit an application. I can guide you through the application process. Would you like to see available rooms first?";
+                } elseif (strpos($lowerMessage, 'price') !== false || strpos($lowerMessage, 'cost') !== false || strpos($lowerMessage, 'budget') !== false) {
+                    $response = "Our rooms range from budget-friendly options to premium accommodations. What's your preferred budget range? I can help you find rooms that fit your financial needs.";
+                } elseif (strpos($lowerMessage, 'location') !== false || strpos($lowerMessage, 'area') !== false || strpos($lowerMessage, 'where') !== false) {
+                    $response = "We have properties in various locations! Popular areas include downtown, university districts, and suburban neighborhoods. Which area interests you most?";
+                } elseif (strpos($lowerMessage, 'amenities') !== false || strpos($lowerMessage, 'facilities') !== false) {
+                    $response = "Our properties offer various amenities including WiFi, laundry facilities, parking, gym access, and more. What specific amenities are important to you?";
+                } elseif (strpos($lowerMessage, 'help') !== false || strpos($lowerMessage, 'support') !== false) {
+                    $response = "I'm here to help! I can assist with finding rooms, explaining the application process, answering questions about properties, or connecting you with our support team. What do you need help with?";
+                } else {
+                    $response = "Thank you for your message! I'm here to help with room searches, property information, and booking assistance. Could you please be more specific about what you're looking for?";
+                }
+                
+                return $context->res->json(generateResponse([
+                    'response' => $response,
                     'session_id' => $sessionId,
                     'user_id' => $userId,
-                    'timestamp' => date('c'),
                     'metadata' => [
-                        'response_time' => '0.5s',
-                        'model' => 'haven-space-ai-v1',
-                        'confidence' => 0.95
+                        'message_length' => strlen($message),
+                        'response_type' => 'ai_generated'
                     ]
-                ], 200, $headers);
+                ], 200, 'AI response generated'), 200, $headers);
+
+            // Dashboard and stats endpoints
+            case preg_match('#^/api/landlord/dashboard-stats\.php$#', $path):
+                authenticateUser($client, $headers_in);
+                $user = $account->get();
                 
-            } catch (Exception $e) {
-                return $context->res->json([
-                    'error' => 'Failed to process chat message',
-                    'message' => $e->getMessage()
-                ], 500, $headers);
-            }
-        
-        default:
-            return $context->res->json([
-                'error' => 'Method not allowed',
-                'allowed_methods' => ['GET', 'POST']
-            ], 405, $headers);
-    }
-}
+                // Get landlord's properties
+                $properties = $databases->listDocuments($databaseId, $collections['properties'], [
+                    Query::equal('landlord_id', $user['$id'])
+                ]);
+                
+                // Get applications for landlord's properties
+                $propertyIds = array_map(fn($p) => $p['$id'], $properties['documents']);
+                $applications = $databases->listDocuments($databaseId, $collections['applications'], [
+                    Query::equal('property_id', $propertyIds)
+                ]);
+                
+                // Get payments
+                $payments = $databases->listDocuments($databaseId, $collections['payments'], [
+                    Query::equal('landlord_id', $user['$id'])
+                ]);
+                
+                return $context->res->json(generateResponse([
+                    'total_properties' => $properties['total'],
+                    'total_applications' => $applications['total'],
+                    'total_payments' => $payments['total'],
+                    'monthly_revenue' => array_sum(array_map(fn($p) => $p['amount'] ?? 0, $payments['documents']))
+                ]), 200, $headers);
 
-function generateAiResponse($message) {
-    $message = strtolower(trim($message));
-    
-    // Simple keyword-based responses
-    if (strpos($message, 'hello') !== false || strpos($message, 'hi') !== false) {
-        return "Hello! Welcome to Haven Space. I'm here to help you find the perfect accommodation. How can I assist you today?";
-    }
-    
-    if (strpos($message, 'property') !== false || strpos($message, 'room') !== false) {
-        return "I can help you find properties and rooms! What type of accommodation are you looking for? You can specify location, budget, or any specific requirements.";
-    }
-    
-    if (strpos($message, 'book') !== false || strpos($message, 'booking') !== false) {
-        return "I can assist you with bookings! To make a booking, you'll need to select a property, choose your dates, and complete the application process. Would you like me to guide you through this?";
-    }
-    
-    if (strpos($message, 'price') !== false || strpos($message, 'cost') !== false || strpos($message, 'budget') !== false) {
-        return "Our properties have various price ranges to suit different budgets. What's your preferred budget range? I can help you find suitable options.";
-    }
-    
-    if (strpos($message, 'location') !== false || strpos($message, 'area') !== false) {
-        return "We have properties in various locations. Which area or city are you interested in? I can show you available options in your preferred location.";
-    }
-    
-    if (strpos($message, 'help') !== false || strpos($message, 'support') !== false) {
-        return "I'm here to help! I can assist you with:\n• Finding properties and rooms\n• Booking assistance\n• Answering questions about amenities\n• Providing location information\n• General support\n\nWhat would you like help with?";
-    }
-    
-    if (strpos($message, 'amenities') !== false || strpos($message, 'facilities') !== false) {
-        return "Our properties offer various amenities including WiFi, parking, laundry facilities, common areas, and more. Are you looking for specific amenities?";
-    }
-    
-    // Default response
-    return "Thank you for your message! I'm Haven Space AI assistant. I can help you with property searches, bookings, and general inquiries. Could you please provide more details about what you're looking for?";
-}
-
-function handleUsers($context, $method, $headers) {
-    switch ($method) {
-        case 'GET':
-            return $context->res->json([
-                'message' => 'Users API endpoint',
-                'method' => $method,
-                'status' => 'active',
-                'note' => 'Database integration needed for full functionality'
-            ], 200, $headers);
+            // Default case - route not found
+            default:
+                return $context->res->json(generateResponse(null, 404, 'Route not found: ' . $path), 404, $headers);
+        }
         
-        case 'POST':
-            return $context->res->json([
-                'message' => 'Create user endpoint',
-                'method' => $method,
-                'status' => 'active',
-                'note' => 'Database integration needed for full functionality'
-            ], 200, $headers);
-        
-        default:
-            return $context->res->json([
-                'error' => 'Method not allowed',
-                'allowed_methods' => ['GET', 'POST']
-            ], 405, $headers);
+    } catch (Exception $e) {
+        return $context->res->json(generateResponse(null, 500, 'Server error: ' . $e->getMessage()), 500, $headers);
+    } catch (Throwable $e) {
+        return $context->res->json(generateResponse(null, 500, 'Fatal error: ' . $e->getMessage()), 500, $headers);
     }
-}
-
-function handleProperties($context, $method, $headers) {
-    switch ($method) {
-        case 'GET':
-            return $context->res->json([
-                'message' => 'Properties API endpoint',
-                'method' => $method,
-                'status' => 'active',
-                'note' => 'Database integration needed for full functionality'
-            ], 200, $headers);
-        
-        case 'POST':
-            return $context->res->json([
-                'message' => 'Create property endpoint',
-                'method' => $method,
-                'status' => 'active',
-                'note' => 'Database integration needed for full functionality'
-            ], 200, $headers);
-        
-        default:
-            return $context->res->json([
-                'error' => 'Method not allowed',
-                'allowed_methods' => ['GET', 'POST']
-            ], 405, $headers);
-    }
-}
+};

@@ -26,7 +26,6 @@ function detectEnvironment() {
   if (hostname === 'localhost' || hostname === '127.0.0.1') {
     // Check if running via PHP built-in server (:8000) or Apache
     const port = window.location.port;
-    const pathname = window.location.pathname;
 
     // PHP built-in server on port 8000
     if (port === '8000') {
@@ -49,7 +48,7 @@ function getApiBaseUrl() {
   const env = detectEnvironment();
 
   const apiUrls = {
-    production: 'https://fra.cloud.appwrite.io/v1/functions/api-function/executions', // Correct Appwrite function URL
+    production: 'https://fra.cloud.appwrite.io/v1/functions/api-function/executions', // Appwrite function execution URL
     'local-dev': 'http://localhost:8000', // PHP built-in server
     'local-apache': 'http://localhost:8000', // Apache/XAMPP - still use port 8000 for API
   };
@@ -74,6 +73,13 @@ const CONFIG = {
   // Environment detection helper
   isProduction: () => detectEnvironment() === 'production',
   isLocal: () => detectEnvironment().startsWith('local'),
+
+  // Appwrite configuration
+  APPWRITE: {
+    ENDPOINT: 'https://fra.cloud.appwrite.io/v1',
+    PROJECT_ID: '69eae504002697b6749c',
+    FUNCTION_ID: 'api-function',
+  },
 };
 
 // Environment info available via CONFIG.ENV
