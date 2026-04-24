@@ -2,11 +2,11 @@
   "projectId": "69eae504002697b6749c",
   "functions": [
     {
-      "$id": "havenspace-api",
-      "name": "Haven Space API",
+      "$id": "69eb0fbe001f297c8dab",
+      "name": "Haven-Space",
       "runtime": "php-8.3",
       "path": "functions/havenspace-api",
-      "entrypoint": "src/main.php",
+      "entrypoint": "main.php",
       "ignore": [".git", "node_modules", ".env", "vendor"],
       "execute": ["any"],
       "events": [],
