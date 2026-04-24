@@ -9,8 +9,13 @@
  * - action (optional): 'login' (default) or 'signup' or 'link'
  */
 
-require_once __DIR__ . '/../../cors.php';
-require_once __DIR__ . '/../../../src/Core/bootstrap.php';
+// Check if we're being included from main.php
+if (!defined('APPWRITE_FUNCTION_CONTEXT')) {
+    // Standalone execution - set up the context
+    define('APPWRITE_FUNCTION_CONTEXT', true);
+    require_once __DIR__ . '/../../cors.php';
+    require_once __DIR__ . '/../../../src/Core/bootstrap.php';
+}
 
 use App\Core\Auth\GoogleOAuth;
 
@@ -19,25 +24,35 @@ $action = $_GET['action'] ?? 'login';
 $validActions = ['login', 'signup', 'link'];
 
 if (!in_array($action, $validActions)) {
-    http_response_code(400);
-    exit('Invalid action parameter');
+    if (defined('APPWRITE_FUNCTION_CONTEXT')) {
+        // In Appwrite context, we'll let the caller handle the error
+        $authUrl = null;
+    } else {
+        http_response_code(400);
+        exit('Invalid action parameter');
+    }
+} else {
+    // Store action in session for callback to use
+    $_SESSION['oauth_action'] = $action;
+
+    // Store role preference if provided (for signup flow)
+    if (isset($_GET['role']) && in_array($_GET['role'], ['boarder', 'landlord'])) {
+        $_SESSION['oauth_role_preference'] = $_GET['role'];
+    }
+
+    // Generate state token for CSRF protection
+    $state = GoogleOAuth::generateState();
+    $_SESSION['oauth_state'] = $state;
+
+    // Generate authorization URL
+    $authUrl = GoogleOAuth::getAuthorizationUrl($state);
+    
+    if (defined('APPWRITE_FUNCTION_CONTEXT')) {
+        // In Appwrite context, just set the variable for the caller to use
+        // Don't redirect or exit
+    } else {
+        // Standalone execution - redirect user to Google's OAuth consent screen
+        header('Location: ' . $authUrl);
+        exit;
+    }
 }
-
-// Store action in session for callback to use
-$_SESSION['oauth_action'] = $action;
-
-// Store role preference if provided (for signup flow)
-if (isset($_GET['role']) && in_array($_GET['role'], ['boarder', 'landlord'])) {
-    $_SESSION['oauth_role_preference'] = $_GET['role'];
-}
-
-// Generate state token for CSRF protection
-$state = GoogleOAuth::generateState();
-$_SESSION['oauth_state'] = $state;
-
-// Generate authorization URL
-$authUrl = GoogleOAuth::getAuthorizationUrl($state);
-
-// Redirect user to Google's OAuth consent screen
-header('Location: ' . $authUrl);
-exit;

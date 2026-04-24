@@ -180,6 +180,42 @@ return function ($context) {
                     'session' => $session
                 ], 201, 'User registered successfully'), 201, $headers);
 
+            // Google OAuth endpoints
+            case preg_match('#^/auth/google/authorize\.php$#', $path):
+                // Handle Google OAuth authorization
+                define('APPWRITE_FUNCTION_CONTEXT', true);
+                require_once __DIR__ . '/auth/google/authorize.php';
+                
+                // Get the authorization URL that was generated
+                $authUrl = $authUrl ?? null;
+                
+                if ($authUrl) {
+                    // Return a redirect response
+                    return $context->res->json(generateResponse([
+                        'redirect_url' => $authUrl
+                    ], 302, 'Redirect to Google OAuth'), 302, [
+                        'Location' => $authUrl
+                    ]);
+                } else {
+                    return $context->res->json(generateResponse(null, 500, 'Failed to generate authorization URL'), 500, $headers);
+                }
+
+            case preg_match('#^/auth/google/callback\.php$#', $path):
+                // Handle Google OAuth callback
+                define('APPWRITE_FUNCTION_CONTEXT', true);
+                require_once __DIR__ . '/auth/google/callback.php';
+                
+                // The callback.php should set some result that we can return
+                $oauthResult = $oauthResult ?? null;
+                
+                if ($oauthResult && isset($oauthResult['success']) && $oauthResult['success']) {
+                    return $context->res->json(generateResponse($oauthResult, 200, 'Google OAuth callback processed'), 200, $headers);
+                } elseif ($oauthResult && isset($oauthResult['success']) && !$oauthResult['success']) {
+                    return $context->res->json(generateResponse(null, 400, $oauthResult['error'] ?? 'Google OAuth callback failed'), 400, $headers);
+                } else {
+                    return $context->res->json(generateResponse(null, 500, 'Failed to process OAuth callback'), 500, $headers);
+                }
+
             case preg_match('#^/auth/login\.php$#', $path):
             case preg_match('#^/auth/login$#', $path):
                 if ($method !== 'POST') {
