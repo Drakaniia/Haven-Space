@@ -49,7 +49,7 @@ function getApiBaseUrl() {
   const env = detectEnvironment();
 
   const apiUrls = {
-    production: 'https://69eb0fbe001f297c8dab.fra.appwrite.run', // Appwrite function domain
+    production: 'https://fra.cloud.appwrite.io/v1/functions/api-function/executions', // Correct Appwrite function URL
     'local-dev': 'http://localhost:8000', // PHP built-in server
     'local-apache': 'http://localhost:8000', // Apache/XAMPP - still use port 8000 for API
   };

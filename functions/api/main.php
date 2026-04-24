@@ -9,7 +9,8 @@ return function ($context) {
     $headers = [
         'Access-Control-Allow-Origin' => '*',
         'Access-Control-Allow-Methods' => 'GET, POST, PUT, DELETE, OPTIONS',
-        'Access-Control-Allow-Headers' => 'Content-Type, Authorization, X-Appwrite-Project, X-Appwrite-Key'
+        'Access-Control-Allow-Headers' => 'Content-Type, Authorization, X-Appwrite-Project, X-Appwrite-Key, Accept',
+        'Access-Control-Max-Age' => '86400'
     ];
 
     // Handle preflight OPTIONS request

@@ -193,17 +193,34 @@ class AIService {
    */
   static async chat(message) {
     try {
-      const response = await fetch(`${CONFIG.API_BASE_URL}/api/ai/chat`, {
+      // For Appwrite functions, we need to send the request in a specific format
+      const requestBody = {
         method: 'POST',
-        headers: AIService.getAuthHeaders(),
+        path: '/api/chat',
         body: JSON.stringify({ message: message }),
+      };
+
+      const response = await fetch(CONFIG.API_BASE_URL, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Accept: 'application/json',
+        },
+        body: JSON.stringify(requestBody),
       });
 
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
 
-      return await AIService.parseJsonResponse(response);
+      const result = await AIService.parseJsonResponse(response);
+
+      // Extract the actual response from Appwrite function execution result
+      if (result.responseBody) {
+        return JSON.parse(result.responseBody);
+      }
+
+      return result;
     } catch (error) {
       console.error('AI chat failed:', error);
       return {
