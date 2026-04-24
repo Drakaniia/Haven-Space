@@ -35,7 +35,9 @@ if (!function_exists('json_response')) {
     function json_response(int $statusCode, array $data): void
     {
         http_response_code($statusCode);
-        header('Content-Type: application/json');
+        if (!defined('APPWRITE_FUNCTION_CONTEXT')) {
+            header('Content-Type: application/json');
+        }
 
         $body = json_encode($data);
         echo $body;

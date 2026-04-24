@@ -11,6 +11,15 @@ return function ($context) {
         define('APPWRITE_FUNCTION_CONTEXT', true);
     }
 
+    // Suppress header() warnings — in Swoole, headers are managed by the runtime
+    set_error_handler(function (int $errno, string $errstr) {
+        // Suppress "Cannot modify header information" and "headers already sent" warnings
+        if (strpos($errstr, 'header') !== false || strpos($errstr, 'Header') !== false) {
+            return true; // suppress
+        }
+        return false; // let other errors through
+    }, E_WARNING | E_NOTICE);
+
     // Inject env vars from function environment
     $_ENV['APPWRITE_ENDPOINT']    = $context->env['APPWRITE_FUNCTION_ENDPOINT'] ?? '';
     $_ENV['APPWRITE_PROJECT_ID']  = $context->env['APPWRITE_FUNCTION_PROJECT_ID'] ?? '';
