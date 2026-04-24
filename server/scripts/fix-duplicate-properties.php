@@ -141,7 +141,7 @@ try {
     echo "🔄 The kept properties now have all photos and rooms consolidated.\n";
     
 } catch (Exception $e) {
-    if (isset($pdo)) {
+    if (isset($pdo) && $pdo->inTransaction()) {
         $pdo->rollBack();
     }
     echo "❌ Error: " . $e->getMessage() . "\n";

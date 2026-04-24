@@ -6,8 +6,9 @@
   "minimum-stability": "stable",
   "require": {
     "php": ">=8.0",
-    "guzzlehttp/guzzle": "^7.0",
-    "firebase/php-jwt": "^7.0"
+    "appwrite/appwrite": "13.0",
+    "firebase/php-jwt": "^7.0",
+    "guzzlehttp/guzzle": "^7.0"
   },
   "require-dev": {
     "phpstan/phpstan": "1.10",

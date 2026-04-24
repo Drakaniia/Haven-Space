@@ -80,7 +80,14 @@ try {
     $pdo = Connection::getInstance()->getPdo();
     $config = require __DIR__ . '/../../config/app.php';
 
-    $stmt = $pdo->prepare('SELECT id, first_name, last_name, email, password_hash, role, is_verified, account_status FROM users WHERE email = ?');
+    $stmt = $pdo->prepare('
+        SELECT u.id, u.first_name, u.last_name, u.email, u.password_hash, 
+               ur.role_name as role, u.is_verified, acs.status_name as account_status
+        FROM users u
+        JOIN user_roles ur ON u.role_id = ur.id
+        JOIN account_statuses acs ON u.account_status_id = acs.id
+        WHERE u.email = ? AND u.deleted_at IS NULL
+    ');
     $stmt->execute([$email]);
     $user = $stmt->fetch();
 

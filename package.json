@@ -1,6 +1,7 @@
 {
   "name": "haven-space",
   "version": "1.0.0",
+  "type": "module",
   "description": "Boarding house rental platform connecting boarders with verified landlords in the Philippines",
   "main": "index.js",
   "scripts": {
@@ -10,6 +11,12 @@
     "db:setup": "php scripts/setup-database.php",
     "db:reset": "php scripts/reset-database.php",
     "db:reset:force": "php scripts/reset-database.php --force",
+    "appwrite:setup": "node scripts/appwrite-setup.js",
+    "appwrite:setup:dry": "node scripts/appwrite-setup.js --dry-run",
+    "appwrite:reset": "node scripts/appwrite-setup.js --reset",
+    "appwrite:test": "node scripts/test-appwrite.js",
+    "appwrite:migrate": "node scripts/appwrite-migrate.js",
+    "appwrite:migrate:status": "node scripts/appwrite-migrate.js --status",
     "fix:rooms": "cd server && php ../scripts/fix-room-data.php",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
@@ -44,5 +51,9 @@
     "*.{html,css,scss,md,json,yaml,yml}": [
       "prettier --write"
     ]
+  },
+  "dependencies": {
+    "appwrite": "^24.2.0",
+    "node-appwrite": "^14.1.0"
   }
 }

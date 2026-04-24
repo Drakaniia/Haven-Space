@@ -111,82 +111,96 @@ $emailVerificationExpires = date('Y-m-d H:i:s', strtotime('+24 hours'));
 
 try {
     // Start transaction
-    $pdo->beginTransaction();
-    
-    // Determine initial account status based on role
-    $accountStatus = 'active';
-    $verificationStatus = null;
-    
-    if ($role === 'landlord') {
-        $accountStatus = 'pending_verification';
-        $verificationStatus = 'pending';
+    if (!$pdo->beginTransaction()) {
+        throw new \RuntimeException("Failed to start database transaction");
     }
     
+    // Determine initial account status based on role
+    $accountStatusName = ($role === 'landlord') ? 'pending_verification' : 'active';
+    $accountStatus = $accountStatusName; // keep for JWT payload
+    $verificationStatus = ($role === 'landlord') ? 'pending' : null;
+
+    // Resolve role_id from user_roles lookup table
+    $stmt = $pdo->prepare('SELECT id FROM user_roles WHERE role_name = ?');
+    $stmt->execute([$role]);
+    $roleRow = $stmt->fetch(\PDO::FETCH_ASSOC);
+    if (!$roleRow) {
+        throw new \RuntimeException("Unknown role: $role");
+    }
+    $roleId = $roleRow['id'];
+
+    // Resolve account_status_id from account_statuses lookup table
+    $stmt = $pdo->prepare('SELECT id FROM account_statuses WHERE status_name = ?');
+    $stmt->execute([$accountStatusName]);
+    $statusRow = $stmt->fetch(\PDO::FETCH_ASSOC);
+    if (!$statusRow) {
+        throw new \RuntimeException("Unknown account status: $accountStatusName");
+    }
+    $accountStatusId = $statusRow['id'];
+
     // Create user account
     $stmt = $pdo->prepare('
         INSERT INTO users 
-        (first_name, last_name, email, phone_number, password_hash, role, country, 
-         email_verification_token, email_verification_expires, account_status, verification_status) 
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        (first_name, last_name, email, phone, password_hash, role_id,
+         email_verification_token, email_verification_expires, account_status_id) 
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
     ');
     $stmt->execute([
-        $firstName, $lastName, $email, $phoneNumber, $passwordHash, $role, $country,
-        $emailVerificationToken, $emailVerificationExpires, $accountStatus, $verificationStatus
+        $firstName, $lastName, $email, $phoneNumber, $passwordHash, $roleId,
+        $emailVerificationToken, $emailVerificationExpires, $accountStatusId
     ]);
     
     $userId = $pdo->lastInsertId();
 
     // Create role-specific profiles
     if ($role === 'landlord') {
+        // Resolve property_type_id (default to first available type)
+        $stmt = $pdo->prepare('SELECT id FROM property_types LIMIT 1');
+        $stmt->execute();
+        $propTypeRow = $stmt->fetch(\PDO::FETCH_ASSOC);
+        $propertyTypeId = $propTypeRow ? $propTypeRow['id'] : 1;
+
         // Create landlord profile
         $stmt = $pdo->prepare('
             INSERT INTO landlord_profiles 
-            (user_id, boarding_house_name, boarding_house_description, total_rooms, available_rooms, verification_status, verification_submitted_at) 
-            VALUES (?, ?, ?, ?, ?, ?, NOW())
+            (user_id, boarding_house_name, boarding_house_description, property_type_id, total_rooms, available_rooms) 
+            VALUES (?, ?, ?, ?, ?, ?)
         ');
-        $stmt->execute([$userId, $businessName, $businessDescription, 1, 1, 'pending']);
-        
-        $profileId = $pdo->lastInsertId();
-        
-        // Create property location entry
+        $stmt->execute([$userId, $businessName, $businessDescription, $propertyTypeId, 1, 1]);
+
+        // Create a verification record for the landlord
+        $stmt = $pdo->prepare('SELECT id FROM verification_statuses WHERE status_name = ?');
+        $stmt->execute(['pending']);
+        $vsRow = $stmt->fetch(\PDO::FETCH_ASSOC);
+        if ($vsRow) {
+            $stmt = $pdo->prepare('
+                INSERT INTO verification_records 
+                (entity_type, entity_id, verification_status_id, submitted_at) 
+                VALUES (?, ?, ?, NOW())
+            ');
+            $stmt->execute(['user', $userId, $vsRow['id']]);
+        }
+
+        // Store additional verification data
+        $pdo->exec('
+            CREATE TABLE IF NOT EXISTS landlord_verification_data (
+                id INT AUTO_INCREMENT PRIMARY KEY,
+                user_id INT NOT NULL,
+                phone_number VARCHAR(20),
+                experience_level VARCHAR(50),
+                id_type VARCHAR(50),
+                id_number VARCHAR(100),
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+            )
+        ');
         $stmt = $pdo->prepare('
-            INSERT INTO property_locations 
-            (landlord_id, city, province, country, is_primary) 
+            INSERT INTO landlord_verification_data 
+            (user_id, phone_number, experience_level, id_type, id_number) 
             VALUES (?, ?, ?, ?, ?)
         ');
-        $stmt->execute([$profileId, $city, $province, 'Philippines', true]);
-        
-        // Store additional verification data
-        try {
-            $stmt = $pdo->prepare('
-                INSERT INTO landlord_verification_data 
-                (user_id, phone_number, experience_level, id_type, id_number) 
-                VALUES (?, ?, ?, ?, ?)
-            ');
-            $stmt->execute([$userId, $phoneNumber, $experienceLevel, $idType, $idNumber]);
-        } catch (PDOException $e) {
-            // Table might not exist yet, create it
-            $pdo->exec('
-                CREATE TABLE IF NOT EXISTS landlord_verification_data (
-                    id INT AUTO_INCREMENT PRIMARY KEY,
-                    user_id INT NOT NULL,
-                    phone_number VARCHAR(20),
-                    experience_level ENUM("new", "some", "experienced"),
-                    id_type VARCHAR(50),
-                    id_number VARCHAR(100),
-                    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-                    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
-                )
-            ');
-            
-            // Try insert again
-            $stmt = $pdo->prepare('
-                INSERT INTO landlord_verification_data 
-                (user_id, phone_number, experience_level, id_type, id_number) 
-                VALUES (?, ?, ?, ?, ?)
-            ');
-            $stmt->execute([$userId, $phoneNumber, $experienceLevel, $idType, $idNumber]);
-        }
+        $stmt->execute([$userId, $phoneNumber, $experienceLevel, $idType, $idNumber]);
+
     } elseif ($role === 'boarder') {
         // Create basic boarder profile
         $stmt = $pdo->prepare('
@@ -198,6 +212,21 @@ try {
     
     // Commit transaction
     $pdo->commit();
+
+    // Sync user to Appwrite and assign role label
+    try {
+        $appwrite = new \App\Services\AppwriteService();
+        $appwrite->createUserWithRole(
+            localUserId: $userId,
+            email: $email,
+            password: $password,
+            name: trim($firstName . ' ' . $lastName),
+            role: $role
+        );
+    } catch (\Throwable $e) {
+        // Non-fatal: local registration succeeded; log and continue
+        error_log('Appwrite sync failed for user ' . $userId . ': ' . $e->getMessage());
+    }
 
     // TODO: Send email verification email
     // For now, we'll just log it
@@ -261,9 +290,38 @@ try {
 
     echo json_encode($responseData);
 } catch (\PDOException $e) {
-    // Rollback transaction on error
-    $pdo->rollBack();
-    error_log('Registration error: ' . $e->getMessage());
+    // Rollback transaction on error if transaction is active
+    if ($pdo->inTransaction()) {
+        $pdo->rollBack();
+    }
+    error_log('Database error during registration: ' . $e->getMessage());
+    error_log('Error code: ' . $e->getCode());
+    error_log('Error info: ' . json_encode($e->errorInfo ?? []));
     http_response_code(500);
-    echo json_encode(['error' => 'Registration failed. Please try again.']);
+    echo json_encode([
+        'error' => 'Registration failed due to database error',
+        'details' => 'Please try again later or contact support'
+    ]);
+} catch (\RuntimeException $e) {
+    // Rollback transaction on error if transaction is active
+    if ($pdo->inTransaction()) {
+        $pdo->rollBack();
+    }
+    error_log('Runtime error during registration: ' . $e->getMessage());
+    http_response_code(500);
+    echo json_encode([
+        'error' => 'Registration failed',
+        'details' => $e->getMessage()
+    ]);
+} catch (\Exception $e) {
+    // Rollback transaction on error if transaction is active
+    if ($pdo->inTransaction()) {
+        $pdo->rollBack();
+    }
+    error_log('Unexpected error during registration: ' . $e->getMessage());
+    http_response_code(500);
+    echo json_encode([
+        'error' => 'Unexpected registration error',
+        'details' => 'Please try again or contact support'
+    ]);
 }

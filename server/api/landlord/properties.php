@@ -153,7 +153,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'DELETE') {
 
         } catch (Exception $e) {
             // Rollback on error
-            $pdo->rollBack();
+            if ($pdo->inTransaction()) {
+                $pdo->rollBack();
+            }
             throw $e;
         }
 

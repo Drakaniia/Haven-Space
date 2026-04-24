@@ -47,7 +47,9 @@ try {
     $checkStmt = $pdo->prepare("SELECT id FROM properties WHERE id = ? AND landlord_id = ?");
     $checkStmt->execute([$propertyId, $landlordId]);
     if (!$checkStmt->fetch()) {
-        $pdo->rollBack();
+        if ($pdo->inTransaction()) {
+            $pdo->rollBack();
+        }
         json_response(403, ['error' => 'Property not found or access denied']);
     }
 

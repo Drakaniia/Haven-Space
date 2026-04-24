@@ -277,7 +277,12 @@ class MessageRepository
      */
     public function getUserDetails(int $userId): ?array
     {
-        $stmt = $this->pdo->prepare('SELECT id, first_name, last_name, role FROM users WHERE id = ?');
+        $stmt = $this->pdo->prepare('
+            SELECT u.id, u.first_name, u.last_name, ur.role_name as role 
+            FROM users u
+            JOIN user_roles ur ON u.role_id = ur.id
+            WHERE u.id = ? AND u.deleted_at IS NULL
+        ');
         $stmt->execute([$userId]);
         $result = $stmt->fetch();
         return $result ?: null;
@@ -305,7 +310,9 @@ class MessageRepository
             $this->pdo->commit();
             return $conversationId;
         } catch (\Exception $e) {
-            $this->pdo->rollBack();
+            if ($this->pdo->inTransaction()) {
+                $this->pdo->rollBack();
+            }
             throw $e;
         }
     }

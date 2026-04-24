@@ -136,7 +136,9 @@ try {
     ]);
     
 } catch (Exception $e) {
-    $pdo->rollBack();
+    if ($pdo->inTransaction()) {
+        $pdo->rollBack();
+    }
     error_log('Room photos upload error: ' . $e->getMessage());
     json_response(500, ['error' => 'Failed to upload room photos']);
 }

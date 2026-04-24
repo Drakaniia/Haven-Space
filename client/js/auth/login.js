@@ -1,7 +1,7 @@
-import CONFIG from '../config.js';
 import { getIcon } from '../shared/icons.js';
 import { getBoarderRedirectPath, updateBoarderStatus } from '../shared/routing.js';
 import { showToast } from '../shared/toast.js';
+import { account } from '../appwrite.js';
 
 /**
  * Inject icons from centralized library into elements with data-icon attributes
@@ -61,62 +61,59 @@ document.addEventListener('DOMContentLoaded', function () {
     };
 
     try {
-      const response = await fetch(`${CONFIG.API_BASE_URL}/auth/login.php`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        credentials: 'include',
-        body: JSON.stringify(data),
-      });
+      // Create Appwrite session
+      await account.createEmailPasswordSession(data.email, data.password);
 
-      const result = await response.json();
+      // Fetch the authenticated user (includes labels for role)
+      const user = await account.get();
 
-      if (response.ok) {
-        // Store user info and token
-        localStorage.setItem('user', JSON.stringify(result.user));
-        if (result.access_token) {
-          localStorage.setItem('token', result.access_token);
-        }
+      // Role is stored as the first label on the Appwrite user
+      // e.g. labels: ['boarder'] | ['landlord'] | ['admin']
+      const role = user.labels?.[0] ?? 'boarder';
 
-        // Redirect based on role - detect Apache setup vs GitHub Pages
-        const pathname = window.location.pathname;
-        let basePath;
+      // Build a user object compatible with the rest of the app
+      const userRecord = {
+        id: user.$id,
+        name: user.name,
+        email: user.email,
+        role,
+        boarder_status: user.prefs?.boarder_status ?? 'new',
+      };
 
-        if (pathname.includes('github.io')) {
-          // GitHub Pages deployment
-          basePath = '/Haven-Space/client/views/';
-        } else {
-          // Apache setup: document root points to client folder
-          // OR local development with Apache
-          basePath = '/views/';
-        }
+      // Persist to localStorage so auth-check.js / routing.js keep working
+      localStorage.setItem('user', JSON.stringify(userRecord));
+      // Store the Appwrite session JWT so auth-headers.js can attach it
+      const session = await account.getSession('current');
+      localStorage.setItem('token', session.providerAccessToken || session.$id);
 
-        if (result.user.role === 'admin') {
-          window.location.href = `${basePath}admin/index.html`;
-        } else if (result.user.role === 'landlord') {
-          window.location.href = `${basePath}landlord/index.html`;
-        } else {
-          // Boarder: check status and redirect conditionally
-          const boarderStatus = result.user.boarder_status || 'new';
-          updateBoarderStatus(boarderStatus);
+      // Redirect based on role
+      const pathname = window.location.pathname;
+      const basePath = pathname.includes('github.io') ? '/Haven-Space/client/views/' : '/views/';
 
-          const redirectPath = getBoarderRedirectPath(result.user);
-          window.location.href = redirectPath;
-        }
+      if (role === 'admin') {
+        window.location.href = `${basePath}admin/index.html`;
+      } else if (role === 'landlord') {
+        window.location.href = `${basePath}landlord/index.html`;
       } else {
-        alert(result.error || 'Login failed');
+        // Boarder: check status and redirect conditionally
+        updateBoarderStatus(userRecord.boarder_status);
+        const redirectPath = getBoarderRedirectPath(userRecord);
+        window.location.href = redirectPath;
       }
     } catch (error) {
-      alert('An error occurred. Please try again.');
+      const msg = error?.message ?? 'An error occurred. Please try again.';
+      showToast(msg, 'error');
     }
   });
 
   // Google OAuth login
   document.querySelector('.social-btn-google')?.addEventListener('click', function () {
-    // Redirect to Google OAuth authorize endpoint
-    const authUrl = `${CONFIG.API_BASE_URL}/auth/google/authorize.php?action=login`;
-    window.location.href = authUrl;
+    // Appwrite OAuth2 — redirects back to this page on success
+    account.createOAuth2Session(
+      'google',
+      window.location.origin + '/views/boarder/index.html', // success redirect
+      window.location.href // failure redirect (back to login)
+    );
   });
 
   // Apple login button (placeholder for future implementation)

@@ -75,7 +75,14 @@ if (empty($token) && $simulatedId) {
     $userId = (int) $simulatedId;
     $pdo = Connection::getInstance()->getPdo();
     $stmt = $pdo->prepare(
-        'SELECT id, first_name, last_name, email, role, is_verified, account_status, avatar_url FROM users WHERE id = ?'
+        'SELECT u.id, u.first_name, u.last_name, u.email, 
+                ur.role_name as role, u.is_verified, acs.status_name as account_status, 
+                f.file_url as avatar_url
+         FROM users u
+         JOIN user_roles ur ON u.role_id = ur.id
+         JOIN account_statuses acs ON u.account_status_id = acs.id
+         LEFT JOIN files f ON u.avatar_file_id = f.id
+         WHERE u.id = ? AND u.deleted_at IS NULL'
     );
     $stmt->execute([$userId]);
     $userRow = $stmt->fetch();
@@ -116,7 +123,14 @@ $userRow = null;
 if ($userId > 0) {
     $pdo = Connection::getInstance()->getPdo();
     $stmt = $pdo->prepare(
-        'SELECT id, first_name, last_name, email, role, is_verified, account_status, avatar_url FROM users WHERE id = ?'
+        'SELECT u.id, u.first_name, u.last_name, u.email, 
+                ur.role_name as role, u.is_verified, acs.status_name as account_status, 
+                f.file_url as avatar_url
+         FROM users u
+         JOIN user_roles ur ON u.role_id = ur.id
+         JOIN account_statuses acs ON u.account_status_id = acs.id
+         LEFT JOIN files f ON u.avatar_file_id = f.id
+         WHERE u.id = ? AND u.deleted_at IS NULL'
     );
     $stmt->execute([$userId]);
     $userRow = $stmt->fetch();

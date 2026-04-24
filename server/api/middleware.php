@@ -18,8 +18,15 @@ class Middleware
             $userId = (int) $simulatedId;
             $pdo = Connection::getInstance()->getPdo();
             $stmt = $pdo->prepare('
-                SELECT id, role, is_verified, email_verified, account_status, verification_status 
-                FROM users WHERE id = ? AND deleted_at IS NULL
+                SELECT u.id, ur.role_name as role, u.is_verified, u.email_verified, 
+                       acs.status_name as account_status, vr.verification_status_id,
+                       vs.status_name as verification_status
+                FROM users u
+                JOIN user_roles ur ON u.role_id = ur.id
+                JOIN account_statuses acs ON u.account_status_id = acs.id
+                LEFT JOIN verification_records vr ON vr.entity_type = "user" AND vr.entity_id = u.id
+                LEFT JOIN verification_statuses vs ON vr.verification_status_id = vs.id
+                WHERE u.id = ? AND u.deleted_at IS NULL
             ');
             $stmt->execute([$userId]);
             $row = $stmt->fetch();
@@ -80,8 +87,13 @@ class Middleware
         if ($userId > 0) {
             $pdo = Connection::getInstance()->getPdo();
             $stmt = $pdo->prepare('
-                SELECT account_status, email_verified, verification_status 
-                FROM users WHERE id = ? AND deleted_at IS NULL
+                SELECT acs.status_name as account_status, u.email_verified, 
+                       vs.status_name as verification_status
+                FROM users u
+                JOIN account_statuses acs ON u.account_status_id = acs.id
+                LEFT JOIN verification_records vr ON vr.entity_type = "user" AND vr.entity_id = u.id
+                LEFT JOIN verification_statuses vs ON vr.verification_status_id = vs.id
+                WHERE u.id = ? AND u.deleted_at IS NULL
             ');
             $stmt->execute([$userId]);
             $row = $stmt->fetch();

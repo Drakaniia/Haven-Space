@@ -33,7 +33,12 @@ if ($userId < 1) {
 
 $pdo = Connection::getInstance()->getPdo();
 $stmt = $pdo->prepare(
-    'SELECT id, first_name, last_name, email, role, is_verified, account_status FROM users WHERE id = ?'
+    'SELECT u.id, u.first_name, u.last_name, u.email, 
+            ur.role_name as role, u.is_verified, acs.status_name as account_status
+     FROM users u
+     JOIN user_roles ur ON u.role_id = ur.id
+     JOIN account_statuses acs ON u.account_status_id = acs.id
+     WHERE u.id = ? AND u.deleted_at IS NULL'
 );
 $stmt->execute([$userId]);
 $row = $stmt->fetch();

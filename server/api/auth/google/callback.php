@@ -133,13 +133,27 @@ try {
     $config = require __DIR__ . '/../../../config/app.php';
 
     // Check if user exists by Google ID
-    $stmt = $pdo->prepare('SELECT id, first_name, last_name, email, role, is_verified, account_status FROM users WHERE google_id = ?');
+    $stmt = $pdo->prepare('
+        SELECT u.id, u.first_name, u.last_name, u.email, 
+               ur.role_name as role, u.is_verified, acs.status_name as account_status
+        FROM users u
+        JOIN user_roles ur ON u.role_id = ur.id
+        JOIN account_statuses acs ON u.account_status_id = acs.id
+        WHERE u.google_id = ? AND u.deleted_at IS NULL
+    ');
     $stmt->execute([$googleId]);
     $user = $stmt->fetch();
 
     // If no user found by Google ID, check by email
     if (!$user) {
-        $stmt = $pdo->prepare('SELECT id, first_name, last_name, email, role, password_hash, is_verified, account_status FROM users WHERE email = ?');
+        $stmt = $pdo->prepare('
+            SELECT u.id, u.first_name, u.last_name, u.email, 
+                   ur.role_name as role, u.password_hash, u.is_verified, acs.status_name as account_status
+            FROM users u
+            JOIN user_roles ur ON u.role_id = ur.id
+            JOIN account_statuses acs ON u.account_status_id = acs.id
+            WHERE u.email = ? AND u.deleted_at IS NULL
+        ');
         $stmt->execute([$email]);
         $user = $stmt->fetch();
 
@@ -147,8 +161,16 @@ try {
         if ($user) {
             if ($action === 'link') {
                 // This is a link action - link Google to existing account
-                $stmt = $pdo->prepare('UPDATE users SET google_id = ?, google_token = ?, google_refresh_token = ?, avatar_url = ?, is_verified = ? WHERE id = ?');
-                $stmt->execute([$googleId, $accessToken, $refreshToken, $avatarUrl, $emailVerified ? true : $user['is_verified'], $user['id']]);
+                // First, create a file record for the avatar if it exists
+                $avatarFileId = null;
+                if ($avatarUrl) {
+                    $stmt = $pdo->prepare('INSERT INTO files (file_url, file_name, file_size, mime_type, uploaded_by) VALUES (?, ?, ?, ?, ?)');
+                    $stmt->execute([$avatarUrl, 'google_avatar.jpg', 0, 'image/jpeg', $user['id']]);
+                    $avatarFileId = $pdo->lastInsertId();
+                }
+                
+                $stmt = $pdo->prepare('UPDATE users SET google_id = ?, google_token = ?, google_refresh_token = ?, avatar_file_id = ?, is_verified = ? WHERE id = ?');
+                $stmt->execute([$googleId, $accessToken, $refreshToken, $avatarFileId, $emailVerified ? true : $user['is_verified'], $user['id']]);
 
                 $userId = $user['id'];
                 $userRole = $user['role'];
@@ -183,8 +205,27 @@ try {
             }
 
             // Create new user account
+            // Resolve role_id and account_status_id
+            $stmt = $pdo->prepare('SELECT id FROM user_roles WHERE role_name = ?');
+            $stmt->execute([$rolePreference]);
+            $roleRow = $stmt->fetch(\PDO::FETCH_ASSOC);
+            $roleId = $roleRow ? $roleRow['id'] : 1; // Default to first role if not found
+
+            $stmt = $pdo->prepare('SELECT id FROM account_statuses WHERE status_name = ?');
+            $stmt->execute(['active']);
+            $statusRow = $stmt->fetch(\PDO::FETCH_ASSOC);
+            $accountStatusId = $statusRow ? $statusRow['id'] : 1;
+
+            // Create file record for avatar if it exists
+            $avatarFileId = null;
+            if ($avatarUrl) {
+                $stmt = $pdo->prepare('INSERT INTO files (file_url, file_name, file_size, mime_type, uploaded_by) VALUES (?, ?, ?, ?, ?)');
+                $stmt->execute([$avatarUrl, 'google_avatar.jpg', 0, 'image/jpeg', 1]); // Temporary user_id, will update after user creation
+                $avatarFileId = $pdo->lastInsertId();
+            }
+
             $stmt = $pdo->prepare('
-                INSERT INTO users (first_name, last_name, email, google_id, google_token, google_refresh_token, avatar_url, role, is_verified, country) 
+                INSERT INTO users (first_name, last_name, email, google_id, google_token, google_refresh_token, avatar_file_id, role_id, is_verified, account_status_id) 
                 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
             ');
 
@@ -195,26 +236,46 @@ try {
                 $googleId,
                 $accessToken,
                 $refreshToken,
-                $avatarUrl,
-                $rolePreference,
+                $avatarFileId,
+                $roleId,
                 $emailVerified ? 1 : 0,
-                null, // Country will be added later by user
+                $accountStatusId
             ]);
 
             $userId = $pdo->lastInsertId();
+            
+            // Update the file record with the correct user_id
+            if ($avatarFileId) {
+                $stmt = $pdo->prepare('UPDATE files SET uploaded_by = ? WHERE id = ?');
+                $stmt->execute([$userId, $avatarFileId]);
+            }
+            
             $userRole = $rolePreference;
         }
     } else {
         // Existing Google user - update tokens and info
-        $stmt = $pdo->prepare('UPDATE users SET google_token = ?, google_refresh_token = ?, avatar_url = ?, first_name = ?, last_name = ? WHERE id = ?');
-        $stmt->execute([$accessToken, $refreshToken, $avatarUrl, $firstName, $lastName, $user['id']]);
+        // Create file record for avatar if it exists and is different
+        $avatarFileId = null;
+        if ($avatarUrl) {
+            $stmt = $pdo->prepare('INSERT INTO files (file_url, file_name, file_size, mime_type, uploaded_by) VALUES (?, ?, ?, ?, ?)');
+            $stmt->execute([$avatarUrl, 'google_avatar.jpg', 0, 'image/jpeg', $user['id']]);
+            $avatarFileId = $pdo->lastInsertId();
+        }
+        
+        $stmt = $pdo->prepare('UPDATE users SET google_token = ?, google_refresh_token = ?, avatar_file_id = ?, first_name = ?, last_name = ? WHERE id = ?');
+        $stmt->execute([$accessToken, $refreshToken, $avatarFileId, $firstName, $lastName, $user['id']]);
 
         $userId = $user['id'];
         $userRole = $user['role'];
     }
 
     // Fetch verification and account status for the user
-    $stmtVerified = $pdo->prepare('SELECT is_verified, account_status FROM users WHERE id = ?');
+    $stmtVerified = $pdo->prepare('
+        SELECT u.is_verified, acs.status_name as account_status
+        FROM users u
+        JOIN account_statuses acs ON u.account_status_id = acs.id
+        WHERE u.id = ?
+    ');
     $stmtVerified->execute([$userId]);
     $verifiedRow = $stmtVerified->fetch();
     $isVerified = $verifiedRow ? (bool) $verifiedRow['is_verified'] : false;
