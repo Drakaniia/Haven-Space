@@ -1,6 +1,0 @@
-- generic [ref=e3]:
-  - generic [ref=e5]: Page not found
-  - heading "The page you're looking for doesn't exist." [level=1] [ref=e6]
-  - link "Go to homepage" [ref=e8] [cursor=pointer]:
-    - /url: /
-    - button "Go to homepage" [ref=e9]
