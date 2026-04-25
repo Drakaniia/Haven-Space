@@ -126,34 +126,8 @@ function initializeLogin() {
 
   // Google OAuth login
   document.querySelector('.social-btn-google')?.addEventListener('click', async function () {
-    // For Appwrite Functions in production, we need to call the function execution endpoint
-    // This ensures proper user registration in database and role handling
     try {
-      if (CONFIG.isProduction()) {
-        // In production with Appwrite Functions, call the function execution endpoint
-        const response = await fetch(`${CONFIG.API_BASE_URL}/functions/api-function/exec`, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
-            path: '/auth/google/authorize.php',
-            action: 'login',
-          }),
-        });
-
-        if (response.ok) {
-          const data = await response.json();
-          if (data.redirect_url) {
-            window.location.href = data.redirect_url;
-            return;
-          }
-        }
-        // Fallback to direct URL if function call fails
-        throw new Error('Function call failed');
-      }
-
-      // For local development, use direct URL
+      // Direct URL approach for both local and production
       const authUrl = `${CONFIG.API_BASE_URL}/auth/google/authorize.php?action=login`;
       window.location.href = authUrl;
     } catch (error) {
