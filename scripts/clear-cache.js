@@ -51,7 +51,8 @@ function addCacheBusting() {
 
     // Find all HTML files in client directory
     const htmlFiles = [];
-    function findHtmlFiles(dir) {
+
+    const findHtmlFiles = dir => {
       const files = fs.readdirSync(dir);
       files.forEach(file => {
         const filePath = path.join(dir, file);
@@ -62,7 +63,7 @@ function addCacheBusting() {
           htmlFiles.push(filePath);
         }
       });
-    }
+    };
 
     findHtmlFiles('./client');
 
