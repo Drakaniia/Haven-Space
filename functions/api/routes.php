@@ -481,6 +481,29 @@ Router::post('/api/ai/chat', function() {
 });
 
 // ============================================
+// TEST ROUTES
+// ============================================
+Router::get('/api/test', function() {
+    json_response(200, [
+        'status' => 'success',
+        'message' => 'Router is working',
+        'timestamp' => date('Y-m-d H:i:s'),
+        'method' => $_SERVER['REQUEST_METHOD'] ?? 'unknown',
+        'uri' => $_SERVER['REQUEST_URI'] ?? 'unknown'
+    ]);
+});
+
+Router::get('/test', function() {
+    json_response(200, [
+        'status' => 'success',
+        'message' => 'Router is working',
+        'timestamp' => date('Y-m-d H:i:s'),
+        'method' => $_SERVER['REQUEST_METHOD'] ?? 'unknown',
+        'uri' => $_SERVER['REQUEST_URI'] ?? 'unknown'
+    ]);
+});
+
+// ============================================
 // DISPATCH THE REQUEST
 // ============================================
 $method = $_SERVER['REQUEST_METHOD'];
