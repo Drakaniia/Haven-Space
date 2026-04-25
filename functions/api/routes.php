@@ -119,6 +119,24 @@ Router::post('/auth/login.php', function() {
     require_once __DIR__ . '/auth/login.php';
 });
 
+// Forgot password routes
+Router::post('/auth/forgot-password', function() {
+    require_once __DIR__ . '/auth/forgot-password.php';
+});
+
+Router::post('/auth/verify-reset-code', function() {
+    require_once __DIR__ . '/auth/verify-reset-code.php';
+});
+
+Router::post('/auth/resend-reset-code', function() {
+    require_once __DIR__ . '/auth/resend-reset-code.php';
+});
+
+Router::post('/auth/reset-password', function() {
+    require_once __DIR__ . '/auth/reset-password.php';
+});
+
+
 // ============================================
 // GOOGLE OAUTH ROUTES
 // ============================================
