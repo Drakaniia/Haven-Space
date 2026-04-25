@@ -6,6 +6,7 @@
 import { updateBoarderStatus } from '../../shared/routing.js';
 import { getImageUrl } from '../../shared/image-utils.js';
 import CONFIG from '../../config.js';
+import { initIconElements, getIcon } from '../../shared/icons.js';
 
 // State management
 const state = {
@@ -40,11 +41,16 @@ export function initRoomDetail() {
  */
 async function setupPage() {
   try {
+    console.log('setupPage called, fetching data for room ID:', state.roomId);
+
     // Show loading state
     showLoadingState();
 
     // Fetch room data from API
+    console.log('Fetching from:', `${CONFIG.API_BASE_URL}/api/rooms/detail?id=${state.roomId}`);
     const response = await fetch(`${CONFIG.API_BASE_URL}/api/rooms/detail?id=${state.roomId}`);
+
+    console.log('Response status:', response.status);
 
     if (!response.ok) {
       if (response.status === 404) {
@@ -55,12 +61,16 @@ async function setupPage() {
     }
 
     const result = await response.json();
+    console.log('API response:', result);
     state.roomData = result.data;
 
     // Populate page with fetched data
+    console.log('Populating room data');
     populateRoomData(state.roomData);
     setupGallery();
     setupEventListeners(state.roomData);
+
+    console.log('Room detail page setup complete');
   } catch (error) {
     console.error('Error loading room details:', error);
     showNotFound();
@@ -351,12 +361,18 @@ function populateRoomData(room) {
   if (ratingBreakdown && (!room.reviews || room.reviews === 0)) {
     ratingBreakdown.style.display = 'none';
   }
+
+  // Initialize icons
+  initIconElements();
+
+  // Load similar properties
+  loadSimilarProperties(room.id);
 }
 
 /**
  * Setup gallery functionality
  */
-function setupGallery() {
+async function setupGallery() {
   const room = state.roomData;
   if (!room || !room.images || room.images.length === 0) return;
 
@@ -407,6 +423,117 @@ function setupGallery() {
       }
     });
   }
+
+  // Toggle button for map view
+  const toggleBtn = document.getElementById('toggle-view-btn');
+  if (toggleBtn) {
+    toggleBtn.addEventListener('click', () => {
+      toggleView();
+    });
+  }
+
+  // Back to gallery button
+  const backBtn = document.getElementById('back-to-gallery-btn');
+  if (backBtn) {
+    backBtn.addEventListener('click', () => {
+      toggleView();
+    });
+  }
+}
+
+/**
+ * Initialize Leaflet map for the property location
+ */
+function initLeafletMap() {
+  const room = state.roomData;
+
+  // Check if Leaflet is loaded
+  if (typeof L === 'undefined') {
+    console.error('Leaflet library not loaded');
+    return;
+  }
+
+  // Check if map is already initialized
+  if (window.roomDetailMap) {
+    return;
+  }
+
+  const mapContainer = document.getElementById('leaflet-map');
+  if (!mapContainer) {
+    console.log('Leaflet map container not found');
+    return;
+  }
+
+  try {
+    // Use room coordinates if available, otherwise use default coordinates (Quezon City, Philippines)
+    const latitude = room && room.latitude ? room.latitude : 14.676;
+    const longitude = room && room.longitude ? room.longitude : 121.0437;
+
+    console.log('Initializing map with coordinates:', latitude, longitude);
+
+    // Initialize map centered on property location
+    window.roomDetailMap = L.map('leaflet-map').setView([latitude, longitude], 15);
+
+    // Add OpenStreetMap tiles
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      attribution: '© OpenStreetMap contributors',
+      maxZoom: 18,
+      minZoom: 10,
+    }).addTo(window.roomDetailMap);
+
+    // Add marker for the property
+    const markerTitle = room && room.title ? room.title : 'Property Location';
+    const markerAddress = room && room.address ? room.address : 'Quezon City, Philippines';
+
+    L.marker([latitude, longitude])
+      .addTo(window.roomDetailMap)
+      .bindPopup(`<b>${markerTitle}</b><br>${markerAddress}`)
+      .openPopup();
+
+    console.log('Leaflet map initialized successfully');
+  } catch (error) {
+    console.error('Error initializing Leaflet map:', error);
+  }
+}
+
+/**
+ * Toggle between gallery and map view
+ */
+function toggleView() {
+  const gallerySection = document.querySelector('.room-detail-gallery');
+  const mapSection = document.getElementById('room-map');
+  const toggleBtn = document.getElementById('toggle-view-btn');
+  const toggleText = toggleBtn.querySelector('.toggle-text');
+  const toggleIcon = toggleBtn.querySelector('span');
+
+  if (gallerySection && mapSection) {
+    const isMapVisible = mapSection.style.display === 'block';
+
+    if (isMapVisible) {
+      // Switch to gallery view
+      gallerySection.style.display = 'block';
+      mapSection.style.display = 'none';
+      toggleText.textContent = 'Show Map';
+
+      // Update icon to map
+      const mapIcon = getIcon('map', { width: 18, height: 18 });
+      toggleIcon.innerHTML = mapIcon;
+    } else {
+      // Switch to map view
+      gallerySection.style.display = 'none';
+      mapSection.style.display = 'block';
+      toggleText.textContent = 'Show Gallery';
+
+      // Update icon to photo
+      const photoIcon = getIcon('photo', { width: 18, height: 18 });
+      toggleIcon.innerHTML = photoIcon;
+
+      // Initialize Leaflet map when shown
+      setTimeout(() => {
+        initLeafletMap();
+      }, 100);
+    }
+  }
 }
 
 /**
@@ -455,16 +582,6 @@ function setupEventListeners(room) {
   if (contactLandlordBtn) {
     contactLandlordBtn.addEventListener('click', () => handleContactLandlord(room));
   }
-
-  // Similar property cards
-  document.querySelectorAll('.similar-property-card').forEach(card => {
-    card.addEventListener('click', () => {
-      const propertyId = card.dataset.propertyId;
-      if (propertyId) {
-        window.location.href = `detail.html?id=${propertyId}`;
-      }
-    });
-  });
 }
 
 /**
@@ -821,6 +938,90 @@ function handleContactLandlord(room) {
     : '/views/boarder/messages/index.html';
 
   window.location.href = basePath;
+}
+
+/**
+ * Load similar properties
+ */
+async function loadSimilarProperties(propertyId) {
+  try {
+    const response = await fetch(
+      `${CONFIG.API_BASE_URL}/api/rooms/similar?id=${propertyId}&limit=3`
+    );
+
+    if (!response.ok) {
+      throw new Error('Failed to fetch similar properties');
+    }
+
+    const result = await response.json();
+    const similarProperties = result.data || [];
+
+    // Get the similar properties container
+    const similarPropertiesContainer = document.getElementById('similar-properties');
+
+    if (similarPropertiesContainer && similarProperties.length > 0) {
+      similarPropertiesContainer.innerHTML = similarProperties
+        .map(
+          property => `
+          <div class="similar-property-card" data-property-id="${property.id}">
+            <div class="similar-property-image-wrapper">
+              <img
+                src="${property.coverImage || '/assets/images/placeholder-room.svg'}"
+                alt="${property.title}"
+                class="similar-property-image"
+              />
+              <div class="similar-property-badges">
+                ${
+                  property.rating >= 4.5
+                    ? `
+                  <span class="similar-property-badge similar-property-badge-verified">
+                    <span data-icon="badgeCheck" data-icon-width="14" data-icon-height="14"></span>
+                    Verified
+                  </span>
+                `
+                    : ''
+                }
+              </div>
+            </div>
+            <div class="similar-property-content">
+              <h3 class="similar-property-title">${property.title}</h3>
+              <div class="similar-property-location">
+                <span data-icon="location" data-icon-width="16" data-icon-height="16"></span>
+                <span>${property.city || property.address || 'N/A'}</span>
+              </div>
+              <div class="similar-property-meta">
+                <div class="similar-property-rating">
+                  <span data-icon="starSolid" data-icon-width="14" data-icon-height="14"></span>
+                  <span>${property.rating || 'New'}</span>
+                  <span class="similar-property-rating-count">(${property.reviewCount || 0})</span>
+                </div>
+                <div class="similar-property-price">
+                  <span class="similar-property-price-amount">₱${
+                    property.price ? property.price.toLocaleString() : 'N/A'
+                  }</span>
+                  <span class="similar-property-price-period">/mo</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        `
+        )
+        .join('');
+
+      // Add event listeners to the new cards
+      document.querySelectorAll('.similar-property-card').forEach(card => {
+        card.addEventListener('click', () => {
+          const propertyId = card.dataset.propertyId;
+          if (propertyId) {
+            window.location.href = `detail.html?id=${propertyId}`;
+          }
+        });
+      });
+    }
+  } catch (error) {
+    console.error('Error loading similar properties:', error);
+    // If there's an error, keep the hardcoded properties or show nothing
+  }
 }
 
 /**

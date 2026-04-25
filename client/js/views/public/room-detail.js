@@ -5,6 +5,7 @@
 
 import { getImageUrl } from '../../shared/image-utils.js';
 import CONFIG from '../../config.js';
+import { initIconElements, getIcon } from '../../shared/icons.js';
 
 // State management
 const state = {
@@ -365,6 +366,99 @@ function populateRoomData(room) {
   if (ratingBreakdown && (!room.reviews || room.reviews === 0)) {
     ratingBreakdown.style.display = 'none';
   }
+
+  // Initialize icons
+  initIconElements();
+}
+
+/**
+ * Initialize Leaflet map for the property location
+ */
+function initLeafletMap() {
+  const room = state.roomData;
+
+  // Check if Leaflet is loaded
+  if (typeof L === 'undefined') {
+    console.error('Leaflet library not loaded');
+    return;
+  }
+
+  // Check if map is already initialized
+  if (window.roomDetailMap) {
+    return;
+  }
+
+  const mapContainer = document.getElementById('leaflet-map');
+  if (!mapContainer) {
+    return;
+  }
+
+  try {
+    // Use room coordinates if available, otherwise use default coordinates (Quezon City, Philippines)
+    const latitude = room && room.latitude ? room.latitude : 14.676;
+    const longitude = room && room.longitude ? room.longitude : 121.0437;
+
+    // Initialize map centered on property location
+    window.roomDetailMap = L.map('leaflet-map').setView([latitude, longitude], 15);
+
+    // Add OpenStreetMap tiles
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      attribution: '© OpenStreetMap contributors',
+      maxZoom: 18,
+      minZoom: 10,
+    }).addTo(window.roomDetailMap);
+
+    // Add marker for the property
+    const markerTitle = room && room.title ? room.title : 'Property Location';
+    const markerAddress = room && room.address ? room.address : 'Quezon City, Philippines';
+
+    L.marker([latitude, longitude])
+      .addTo(window.roomDetailMap)
+      .bindPopup(`<b>${markerTitle}</b><br>${markerAddress}`)
+      .openPopup();
+  } catch (error) {
+    console.error('Error initializing Leaflet map:', error);
+  }
+}
+
+/**
+ * Toggle between gallery and map view
+ */
+function toggleView() {
+  const gallerySection = document.querySelector('.room-detail-gallery');
+  const mapSection = document.getElementById('room-map');
+  const toggleBtn = document.getElementById('toggle-view-btn');
+  const toggleText = toggleBtn.querySelector('.toggle-text');
+  const toggleIcon = toggleBtn.querySelector('span');
+
+  if (gallerySection && mapSection) {
+    const isMapVisible = mapSection.style.display === 'block';
+
+    if (isMapVisible) {
+      // Switch to gallery view
+      gallerySection.style.display = 'block';
+      mapSection.style.display = 'none';
+      toggleText.textContent = 'Show Map';
+
+      // Update icon to map
+      const mapIcon = getIcon('map', { width: 18, height: 18 });
+      toggleIcon.innerHTML = mapIcon;
+    } else {
+      // Switch to map view
+      gallerySection.style.display = 'none';
+      mapSection.style.display = 'block';
+      toggleText.textContent = 'Show Gallery';
+
+      // Update icon to photo
+      const photoIcon = getIcon('photo', { width: 18, height: 18 });
+      toggleIcon.innerHTML = photoIcon;
+
+      // Initialize Leaflet map when shown (with small delay to ensure DOM is ready)
+      setTimeout(() => {
+        initLeafletMap();
+      }, 100);
+    }
+  }
 }
 
 /**
@@ -419,6 +513,22 @@ function setupGallery() {
       } else {
         favoriteBtn.classList.remove('active');
       }
+    });
+  }
+
+  // Toggle button for map view
+  const toggleBtn = document.getElementById('toggle-view-btn');
+  if (toggleBtn) {
+    toggleBtn.addEventListener('click', () => {
+      toggleView();
+    });
+  }
+
+  // Back to gallery button
+  const backBtn = document.getElementById('back-to-gallery-btn');
+  if (backBtn) {
+    backBtn.addEventListener('click', () => {
+      toggleView();
     });
   }
 }

@@ -970,21 +970,6 @@ function renderProperties(propertiesList) {
         }">
           ${heartIcon(false)}
         </button>
-        <div class="find-room-card-amenities-preview">
-          ${
-            property.amenities && Array.isArray(property.amenities)
-              ? property.amenities
-                  .slice(0, 3)
-                  .map(amenity => getAmenityIcon(amenity))
-                  .join('')
-              : ''
-          }
-          ${
-            property.amenities && property.amenities.length > 3
-              ? `<span class="find-room-amenity-more">+${property.amenities.length - 3}</span>`
-              : ''
-          }
-        </div>
       </div>
       <div class="find-room-card-content">
         <div class="find-room-card-header">
@@ -1439,23 +1424,6 @@ function arrowIcon() {
 
 function closeIcon() {
   return getIcon('xMark', { strokeWidth: '2' });
-}
-
-function getAmenityIcon(amenity) {
-  const icons = {
-    wifi: getIcon('wifi', { strokeWidth: '2' }),
-    ac: getIcon('airConditioner', { strokeWidth: '2' }),
-    parking: getIcon('check', { strokeWidth: '2' }),
-    laundry: getIcon('laundryMachine', { strokeWidth: '2' }),
-    kitchen: getIcon('list', { strokeWidth: '2' }),
-    security: getIcon('shieldCheck', { strokeWidth: '2' }),
-    cctv: getIcon('cctvCamera', { strokeWidth: '2' }),
-    furnished: getIcon('square', { strokeWidth: '2' }),
-  };
-
-  return `<span class="find-room-amenity-icon" title="${capitalizeFirstLetter(amenity)}">${
-    icons[amenity] || ''
-  }</span>`;
 }
 
 // Initialize on module load for single-page apps

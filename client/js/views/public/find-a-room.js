@@ -221,7 +221,7 @@ function createPropertyCard(property) {
       }">
         <span data-icon="bookmark" data-icon-width="24" data-icon-height="24"></span>
       </button>
-      <div class="find-room-card-amenities-preview">
+      <div>
         ${amenitiesPreview}
         ${moreHtml}
       </div>
@@ -545,7 +545,6 @@ function setupFilterListeners() {
   if (distanceFilter) {
     distanceFilter.addEventListener('change', () => {
       // TODO: Implement distance filter in backend
-      console.log('Distance filter selected:', distanceFilter.value);
     });
   }
 
@@ -709,8 +708,6 @@ function handleGoogleOAuthRedirect() {
         document.title,
         window.location.pathname + window.location.search
       );
-
-      console.log('Google OAuth user data stored in localStorage:', userData);
 
       return true; // Indicates Google OAuth redirect was handled
     }
@@ -1900,7 +1897,6 @@ function handlePropertySelection(propertyId) {
   const user = JSON.parse(localStorage.getItem('user') || '{}');
   user.boarderStatus = 'pending_confirmation';
   localStorage.setItem('user', JSON.stringify(user));
-  console.log('Boarder status updated to:', user.boarderStatus);
 
   // Close modal
   const modal = document.getElementById('confirmation-modal');
