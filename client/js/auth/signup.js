@@ -1,7 +1,6 @@
 import CONFIG from '../config.js';
 import { getIcon } from '../shared/icons.js';
 import { getBoarderRedirectPath, updateBoarderStatus } from '../shared/routing.js';
-import AIService from '../services/AIService.js';
 
 /**
  * Show toast notification
@@ -140,7 +139,13 @@ document.addEventListener('DOMContentLoaded', function () {
 
   if (oauthPending || oauthNew) {
     // Fetch pending user data from session
-    AIService.executeFunction('/auth/google/get-pending-user.php', 'GET')
+    fetch(`${CONFIG.API_BASE_URL}/auth/google/get-pending-user.php`, {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    })
+      .then(response => response.json())
       .then(result => {
         if (!result.success || !result.data) {
           // No pending user data - user might already exist, redirect to login
@@ -257,11 +262,19 @@ document.addEventListener('DOMContentLoaded', function () {
     if (oauthPending) {
       // Complete Google OAuth signup for boarder
       try {
-        const result = await AIService.executeFunction('/auth/google/finalize-signup.php', 'POST', {
-          role: 'boarder',
+        const response = await fetch(`${CONFIG.API_BASE_URL}/auth/google/finalize-signup.php`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            role: 'boarder',
+          }),
         });
 
-        if (result.success) {
+        const result = await response.json();
+
+        if (response.ok && result.success) {
           // Store user info and token
           localStorage.setItem('user', JSON.stringify(result.user));
           if (result.access_token) {
@@ -300,8 +313,14 @@ document.addEventListener('DOMContentLoaded', function () {
     submitBtn.textContent = 'Creating Account...';
 
     try {
-      // Use AIService for proper Appwrite function execution handling
-      const response = await AIService.executeFunction('/auth/register.php', 'POST', data);
+      // Make direct HTTP request to registration endpoint
+      const response = await fetch(`${CONFIG.API_BASE_URL}/auth/register.php`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(data),
+      });
 
       const result = await response.json();
 

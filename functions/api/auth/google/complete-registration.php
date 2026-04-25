@@ -122,14 +122,29 @@ if (!$googleUser) {
     exit;
 }
 
+// Debug: Log the Google user data being processed
+error_log('Google OAuth complete-registration: Processing user data - ' . json_encode([
+    'google_id' => $googleUser['google_id'] ?? 'missing',
+    'email' => $googleUser['email'] ?? 'missing', 
+    'first_name' => $googleUser['first_name'] ?? 'missing',
+    'last_name' => $googleUser['last_name'] ?? 'null/missing',
+    'has_token' => !empty($pendingToken) ? 'yes' : 'no'
+]));
+
 // Validate required Google user data
-$requiredFields = ['google_id', 'email', 'first_name', 'last_name'];
+$requiredFields = ['google_id', 'email', 'first_name'];
 foreach ($requiredFields as $field) {
     if (empty($googleUser[$field])) {
+        error_log('Google OAuth complete-registration: Missing required field - ' . $field);
         http_response_code(400);
         echo json_encode(['success' => false, 'message' => 'Invalid Google user data. Please try logging in again.']);
         exit;
     }
+}
+
+// Handle optional last_name - set to empty string if null
+if (!isset($googleUser['last_name']) || $googleUser['last_name'] === null) {
+    $googleUser['last_name'] = '';
 }
 
 try {
