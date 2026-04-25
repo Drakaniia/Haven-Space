@@ -25,6 +25,7 @@
         ".vscode",
         "scripts",
         "bootstrap-test.html",
+        "vendor",
         "functions/vendor",
         "functions/api/vendor"
       ],

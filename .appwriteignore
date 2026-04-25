@@ -1,0 +1,12 @@
+node_modules/
+dist/
+.git/
+client/
+.husky/
+.github/
+.vscode/
+scripts/
+functions/vendor/
+functions/api/vendor/
+**/.env
+*.log
