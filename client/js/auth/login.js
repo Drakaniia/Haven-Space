@@ -24,7 +24,8 @@ function injectIcons() {
   });
 }
 
-document.addEventListener('DOMContentLoaded', function () {
+// Ensure DOM is ready and modules are loaded
+function initializeLogin() {
   // Show logout toast if redirected from logout
   const logoutToastMsg = sessionStorage.getItem('logoutToast');
   if (logoutToastMsg) {
@@ -36,20 +37,27 @@ document.addEventListener('DOMContentLoaded', function () {
 
   const passwordToggle = document.getElementById('passwordToggle');
   const passwordInput = document.getElementById('password');
-  const eyeOpen = passwordToggle.querySelector('.eye-open');
-  const eyeClosed = passwordToggle.querySelector('.eye-closed');
+  const eyeOpen = passwordToggle?.querySelector('.eye-open');
+  const eyeClosed = passwordToggle?.querySelector('.eye-closed');
   const loginForm = document.getElementById('loginForm');
+
+  if (!loginForm) {
+    console.error('Login form not found');
+    return;
+  }
 
   // Inject icons from centralized library
   injectIcons();
 
   // Password visibility toggle
-  passwordToggle.addEventListener('click', function () {
-    const isPassword = passwordInput.type === 'password';
-    passwordInput.type = isPassword ? 'text' : 'password';
-    eyeOpen.classList.toggle('hidden');
-    eyeClosed.classList.toggle('hidden');
-  });
+  if (passwordToggle && passwordInput && eyeOpen && eyeClosed) {
+    passwordToggle.addEventListener('click', function () {
+      const isPassword = passwordInput.type === 'password';
+      passwordInput.type = isPassword ? 'text' : 'password';
+      eyeOpen.classList.toggle('hidden');
+      eyeClosed.classList.toggle('hidden');
+    });
+  }
 
   // Form submission
   loginForm.addEventListener('submit', async function (e) {
@@ -69,11 +77,11 @@ document.addEventListener('DOMContentLoaded', function () {
       });
 
       if (!phpLoginRes.ok) {
-        const errData = await phpLoginRes.json().catch(() => ({}));
+        const errData = phpLoginRes;
         throw new Error(errData.error || 'Login failed. Please check your credentials.');
       }
 
-      const phpData = await phpLoginRes.json();
+      const phpData = phpLoginRes;
       const phpUser = phpData.user;
       const role = phpUser.role ?? 'boarder';
 
@@ -163,4 +171,12 @@ document.addEventListener('DOMContentLoaded', function () {
     // Clean up URL
     window.history.replaceState({}, document.title, window.location.pathname);
   }
-});
+}
+
+// Initialize when DOM is ready and modules are loaded
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', initializeLogin);
+} else {
+  // DOM is already ready
+  initializeLogin();
+}

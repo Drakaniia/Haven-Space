@@ -158,5 +158,67 @@
 
     <script src="https://cdn.jsdelivr.net/npm/appwrite@15.0.0"></script>
     <script type="module" src="../../../js/auth/login.js"></script>
+
+    <!-- Fallback login handler in case modules fail to load -->
+    <script>
+      // Wait for DOM to be ready
+      document.addEventListener('DOMContentLoaded', function () {
+        // Add a small delay to ensure modules have a chance to load
+        setTimeout(function () {
+          const form = document.getElementById('loginForm');
+          if (form && !form.hasAttribute('data-handler-attached')) {
+            console.log('Attaching fallback login handler');
+            form.setAttribute('data-handler-attached', 'true');
+
+            form.addEventListener('submit', async function (e) {
+              e.preventDefault();
+              console.log('Fallback login handler triggered');
+
+              const formData = new FormData(form);
+              const email = formData.get('email');
+              const password = formData.get('password');
+
+              if (!email || !password) {
+                alert('Please enter both email and password');
+                return;
+              }
+
+              try {
+                const response = await fetch('http://localhost:8000/auth/login.php', {
+                  method: 'POST',
+                  headers: {
+                    'Content-Type': 'application/json',
+                  },
+                  body: JSON.stringify({ email, password }),
+                });
+
+                const data = await response.json();
+                console.log('Login response:', data);
+
+                if (data.success) {
+                  localStorage.setItem('user', JSON.stringify(data.user));
+                  localStorage.setItem('token', data.access_token);
+
+                  // Redirect based on role
+                  const basePath = '/views/';
+                  if (data.user.role === 'admin') {
+                    window.location.href = basePath + 'admin/index.html';
+                  } else if (data.user.role === 'landlord') {
+                    window.location.href = basePath + 'landlord/index.html';
+                  } else {
+                    window.location.href = basePath + 'boarder/find-a-room/index.html';
+                  }
+                } else {
+                  alert('Login failed: ' + (data.error || 'Invalid credentials'));
+                }
+              } catch (error) {
+                console.error('Login error:', error);
+                alert('Login error: ' + error.message);
+              }
+            });
+          }
+        }, 1000); // 1 second delay
+      });
+    </script>
   </body>
 </html>

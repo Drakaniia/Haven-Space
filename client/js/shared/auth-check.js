@@ -85,23 +85,11 @@ function redirectToLogin() {
 function getLoginPath() {
   const pathname = window.location.pathname;
 
-  // Count how many directory levels deep we are to build a relative path
-  // e.g. /views/landlord/listings/create.html → 3 levels → ../../../auth/login.html
-  const segments = pathname.split('/').filter(Boolean);
-
-  // Find the role segment (landlord, boarder, admin) to determine depth
-  const roleSegments = ['landlord', 'boarder', 'admin'];
-  const roleIndex = segments.findIndex(s => roleSegments.includes(s));
-
-  let depth;
-  if (roleIndex !== -1) {
-    // Depth = number of segments after the role (including the file itself)
-    depth = segments.length - roleIndex;
-  } else {
-    // Fallback: go up one level per path segment beyond the root
-    depth = Math.max(segments.length - 1, 1);
+  // GitHub Pages
+  if (pathname.includes('github.io')) {
+    return '/Haven-Space/client/views/public/auth/login.html';
   }
 
-  const prefix = '../'.repeat(depth);
-  return `${prefix}auth/login.html`;
+  // Standard: always use absolute path
+  return '/views/public/auth/login.html';
 }

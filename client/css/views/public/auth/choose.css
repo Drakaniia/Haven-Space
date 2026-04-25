@@ -34,6 +34,7 @@
   padding: 16px;
   margin-bottom: 32px;
   text-align: center;
+  display: none; /* Hidden by default, shown only when valid Google OAuth */
 }
 
 .oauth-message-content {
