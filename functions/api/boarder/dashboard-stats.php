@@ -38,7 +38,7 @@ try {
     $pdo = Connection::getInstance()->getPdo();
 
     // 1. Get Application Statistics
-    $stmt = $pdo->prepare("
+    $stmt = $pdo->prepare(" 
         SELECT
             COUNT(*) as total_applications,
             COALESCE(SUM(CASE WHEN status = 'pending' THEN 1 ELSE 0 END), 0) as pending_applications,
@@ -51,7 +51,7 @@ try {
     $applicationStats = $stmt->fetch(PDO::FETCH_ASSOC);
 
     // 2. Get Saved Properties Count
-    $stmt = $pdo->prepare("
+    $stmt = $pdo->prepare(" 
         SELECT COUNT(*) as count 
         FROM saved_listings 
         WHERE boarder_id = ? AND deleted_at IS NULL
@@ -64,8 +64,8 @@ try {
     // Check user profile fields completion
     $stmt = $pdo->prepare("
         SELECT 
-            name, email, phone_number, address, date_of_birth, gender, occupation, 
-            emergency_contact_name, emergency_contact_phone, profile_picture_url
+            first_name, last_name, email, phone_number, current_address, date_of_birth, gender, employment_status,
+            emergency_contact_name, emergency_contact_phone, avatar_url
         FROM users 
         WHERE id = ?
     ");
@@ -74,16 +74,16 @@ try {
 
     // Calculate completion percentage based on filled fields
     $profileFields = [
-        'name' => !empty($userProfile['name']),
+        'name' => !empty($userProfile['first_name']) && !empty($userProfile['last_name']),
         'email' => !empty($userProfile['email']),
         'phone' => !empty($userProfile['phone_number']),
-        'address' => !empty($userProfile['address']),
+        'address' => !empty($userProfile['current_address']),
         'date_of_birth' => !empty($userProfile['date_of_birth']),
         'gender' => !empty($userProfile['gender']),
-        'occupation' => !empty($userProfile['occupation']),
+        'employment_status' => !empty($userProfile['employment_status']),
         'emergency_contact_name' => !empty($userProfile['emergency_contact_name']),
         'emergency_contact_phone' => !empty($userProfile['emergency_contact_phone']),
-        'profile_picture_url' => !empty($userProfile['profile_picture_url']),
+        'avatar_url' => !empty($userProfile['avatar_url']),
     ];
 
     $completedFields = array_sum($profileFields);
@@ -105,12 +105,12 @@ try {
         [
             'field' => 'profile_photo',
             'label' => 'Profile Photo',
-            'completed' => $profileFields['profile_picture_url']
+            'completed' => $profileFields['avatar_url']
         ],
         [
             'field' => 'employment_info',
             'label' => 'Employment Information',
-            'completed' => $profileFields['occupation']
+            'completed' => $profileFields['employment_status']
         ],
         [
             'field' => 'emergency_contact',

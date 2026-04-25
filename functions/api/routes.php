@@ -134,6 +134,10 @@ Router::post('/auth/google/complete-registration.php', function() {
     require_once __DIR__ . '/auth/google/complete-registration.php';
 });
 
+Router::get('/auth/google/check-pending-registration.php', function() {
+    require_once __DIR__ . '/auth/google/check-pending-registration.php';
+});
+
 Router::post('/auth/google/link.php', function() {
     require_once __DIR__ . '/auth/google/link.php';
 });

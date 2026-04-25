@@ -234,6 +234,24 @@ return function ($context) {
                     return $context->res->json(generateResponse(null, 500, 'Failed to process OAuth callback'), 500, $headers);
                 }
 
+            case preg_match('#^/auth/google/check-pending-registration\.php$#', $path):
+                if ($method !== 'GET') {
+                    return $context->res->json(generateResponse(null, 405, 'Method not allowed'), 405, $headers);
+                }
+                
+                // Handle check pending registration
+                define('APPWRITE_FUNCTION_CONTEXT', true);
+                require_once __DIR__ . '/auth/google/check-pending-registration.php';
+                
+                // The check-pending-registration.php should set some result that we can return
+                $checkResult = $checkResult ?? null;
+                
+                if ($checkResult && isset($checkResult['success'])) {
+                    return $context->res->json(generateResponse($checkResult, 200, 'Pending registration check completed'), 200, $headers);
+                } else {
+                    return $context->res->json(generateResponse(null, 500, 'Failed to check pending registration'), 500, $headers);
+                }
+
             case preg_match('#^/auth/login\.php$#', $path):
             case preg_match('#^/auth/login$#', $path):
                 if ($method !== 'POST') {
@@ -430,6 +448,69 @@ return function ($context) {
                 return $context->res->json(generateResponse($rooms['documents']), 200, $headers);
 
             // Application endpoints
+            case preg_match('#^/api/boarder/dashboard/stats$#', $path):
+                authenticateUser($client, $headers_in);
+                $user = $account->get();
+                
+                if ($method === 'GET') {
+                    // Get application statistics
+                    $applications = $databases->listDocuments($databaseId, $collections['applications'], [
+                        Query::equal('boarder_id', $user['$id'])
+                    ]);
+                    
+                    $totalApplications = count($applications['documents']);
+                    $pendingApplications = 0;
+                    $acceptedApplications = 0;
+                    $rejectedApplications = 0;
+                    
+                    foreach ($applications['documents'] as $app) {
+                        if ($app['status'] === 'pending') $pendingApplications++;
+                        if ($app['status'] === 'accepted') $acceptedApplications++;
+                        if ($app['status'] === 'rejected') $rejectedApplications++;
+                    }
+                    
+                    // Get saved properties count
+                    $savedProperties = $databases->listDocuments($databaseId, $collections['saved_listings'], [
+                        Query::equal('boarder_id', $user['$id'])
+                    ]);
+                    $savedPropertiesCount = count($savedProperties['documents']);
+                    
+                    // Calculate profile completion (simplified for Appwrite)
+                    $userProfile = $account->get();
+                    $profileFields = [
+                        'name' => !empty($userProfile['name']),
+                        'email' => !empty($userProfile['email']),
+                        'phone' => !empty($userProfile['phone']),
+                    ];
+                    $completedFields = array_sum($profileFields);
+                    $totalFields = count($profileFields);
+                    $profileCompletionPercentage = round(($completedFields / $totalFields) * 100);
+                    
+                    $stats = [
+                        'applications' => [
+                            'total' => $totalApplications,
+                            'pending' => $pendingApplications,
+                            'accepted' => $acceptedApplications,
+                            'rejected' => $rejectedApplications
+                        ],
+                        'saved_properties' => [
+                            'count' => $savedPropertiesCount
+                        ],
+                        'profile_completion' => [
+                            'percentage' => $profileCompletionPercentage,
+                            'completed_fields' => $completedFields,
+                            'total_fields' => $totalFields,
+                            'checklist' => [
+                                ['field' => 'basic_info', 'label' => 'Basic Information', 'completed' => $profileFields['name'] && $profileFields['email']],
+                                ['field' => 'contact_info', 'label' => 'Contact Information', 'completed' => $profileFields['phone']],
+                            ]
+                        ]
+                    ];
+                    
+                    return $context->res->json(generateResponse($stats), 200, $headers);
+                }
+                break;
+
             case preg_match('#^/api/boarder/applications$#', $path):
                 authenticateUser($client, $headers_in);
                 $user = $account->get();

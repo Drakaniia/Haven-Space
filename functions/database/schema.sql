@@ -147,8 +147,7 @@ CREATE TABLE IF NOT EXISTS files (
     uploaded_by INT NULL COMMENT 'Will be NOT NULL after users table is created',
     uploaded_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     deleted_at TIMESTAMP NULL DEFAULT NULL,
-    INDEX idx_hash (file_hash),
-    INDEX idx_uploaded_by (uploaded_by)
+    INDEX idx_hash (file_hash)
 );
 
 -- Contact information table (normalized contact details)
@@ -185,7 +184,6 @@ CREATE TABLE IF NOT EXISTS users (
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     deleted_at TIMESTAMP NULL DEFAULT NULL,
-    FOREIGN KEY (avatar_file_id) REFERENCES files(id) ON DELETE SET NULL,
     FOREIGN KEY (role_id) REFERENCES user_roles(id),
     FOREIGN KEY (account_status_id) REFERENCES account_statuses(id),
     INDEX idx_email (email),
@@ -599,12 +597,33 @@ INSERT IGNORE INTO users (first_name, last_name, email, password_hash, role_id, 
 -- FOREIGN KEY CONSTRAINTS (Added after data insertion)
 -- ============================================================================
 
--- Now that users table is populated, we can safely add the foreign key constraint for files
--- Handle any existing orphaned data first
+-- Now that both users and files tables exist, we can safely add the foreign key constraints
+
+-- Add index to files table (ignore if already exists)
+SET @sql = 'ALTER TABLE files ADD INDEX idx_uploaded_by (uploaded_by)';
+PREPARE stmt FROM @sql;
+EXECUTE stmt;
+DEALLOCATE PREPARE stmt;
+
+-- Handle any existing orphaned data in files table
 DELETE FROM files WHERE uploaded_by IS NOT NULL AND uploaded_by NOT IN (SELECT id FROM users);
 UPDATE files SET uploaded_by = 1 WHERE uploaded_by IS NULL;
-ALTER TABLE files MODIFY uploaded_by INT NOT NULL;
-ALTER TABLE files ADD CONSTRAINT fk_files_uploaded_by FOREIGN KEY (uploaded_by) REFERENCES users(id);
+
+-- Add foreign key constraint to files table (ignore if already exists)
+SET @sql = 'ALTER TABLE files ADD CONSTRAINT fk_files_uploaded_by FOREIGN KEY (uploaded_by) REFERENCES users(id) ON DELETE SET NULL';
+PREPARE stmt FROM @sql;
+EXECUTE stmt;
+DEALLOCATE PREPARE stmt;
+
+-- Handle any existing orphaned data in users table
+DELETE FROM users WHERE avatar_file_id IS NOT NULL AND avatar_file_id NOT IN (SELECT id FROM files);
+UPDATE users SET avatar_file_id = NULL WHERE avatar_file_id IS NOT NULL AND avatar_file_id NOT IN (SELECT id FROM files);
+
+-- Add foreign key constraint to users table (ignore if already exists)
+SET @sql = 'ALTER TABLE users ADD CONSTRAINT fk_users_avatar_file_id FOREIGN KEY (avatar_file_id) REFERENCES files(id) ON DELETE SET NULL';
+PREPARE stmt FROM @sql;
+EXECUTE stmt;
+DEALLOCATE PREPARE stmt;
 
 -- ============================================================================
 -- VIEWS FOR BACKWARD COMPATIBILITY (Optional)
