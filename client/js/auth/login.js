@@ -2,6 +2,7 @@ import { getIcon } from '../shared/icons.js';
 import { getBoarderRedirectPath, updateBoarderStatus } from '../shared/routing.js';
 import { showToast } from '../shared/toast.js';
 import CONFIG from '../config.js';
+import AIService from '../services/AIService.js';
 
 /**
  * Inject icons from centralized library into elements with data-icon attributes
@@ -62,11 +63,9 @@ document.addEventListener('DOMContentLoaded', function () {
 
     try {
       // Authenticate with PHP backend to get a JWT for API calls
-      const phpLoginRes = await fetch(`${CONFIG.API_BASE_URL}/auth/login.php`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        credentials: 'include',
-        body: JSON.stringify({ email: data.email, password: data.password }),
+      const phpLoginRes = await AIService.executeFunction('/auth/login.php', 'POST', {
+        email: data.email,
+        password: data.password,
       });
 
       if (!phpLoginRes.ok) {
@@ -113,11 +112,41 @@ document.addEventListener('DOMContentLoaded', function () {
   });
 
   // Google OAuth login
-  document.querySelector('.social-btn-google')?.addEventListener('click', function () {
-    // Redirect to server-side Google OAuth authorization endpoint
+  document.querySelector('.social-btn-google')?.addEventListener('click', async function () {
+    // For Appwrite Functions in production, we need to call the function execution endpoint
     // This ensures proper user registration in database and role handling
-    const authUrl = `${CONFIG.API_BASE_URL}/auth/google/authorize.php?action=login`;
-    window.location.href = authUrl;
+    try {
+      if (CONFIG.isProduction()) {
+        // In production with Appwrite Functions, call the function execution endpoint
+        const response = await fetch(`${CONFIG.API_BASE_URL}/functions/api-function/exec`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            path: '/auth/google/authorize.php',
+            action: 'login',
+          }),
+        });
+
+        if (response.ok) {
+          const data = await response.json();
+          if (data.redirect_url) {
+            window.location.href = data.redirect_url;
+            return;
+          }
+        }
+        // Fallback to direct URL if function call fails
+        throw new Error('Function call failed');
+      }
+
+      // For local development, use direct URL
+      const authUrl = `${CONFIG.API_BASE_URL}/auth/google/authorize.php?action=login`;
+      window.location.href = authUrl;
+    } catch (error) {
+      console.error('Google OAuth error:', error);
+      alert('Failed to initiate Google login. Please try again.');
+    }
   });
 
   // Apple login button (placeholder for future implementation)

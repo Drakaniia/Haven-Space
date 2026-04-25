@@ -1,5 +1,5 @@
-import CONFIG from '../config.js';
 import { getIcon } from '../shared/icons.js';
+import AIService from '../services/AIService.js';
 
 /**
  * Show toast notification
@@ -100,20 +100,12 @@ function showState(stateId) {
  */
 async function verifyEmail(token, email) {
   try {
-    const response = await fetch(`${CONFIG.API_BASE_URL}/auth/verify-email.php`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        token: token,
-        email: email,
-      }),
+    const result = await AIService.executeFunction('/auth/verify-email.php', 'POST', {
+      token: token,
+      email: email,
     });
 
-    const result = await response.json();
-
-    if (response.ok && result.success) {
+    if (result.success) {
       // Show success state
       document.getElementById('successMessage').textContent = result.message;
 
@@ -156,19 +148,11 @@ async function resendVerificationEmail(email) {
   submitBtn.textContent = 'Sending...';
 
   try {
-    const response = await fetch(`${CONFIG.API_BASE_URL}/auth/resend-verification.php`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        email: email,
-      }),
+    const result = await AIService.executeFunction('/auth/resend-verification.php', 'POST', {
+      email: email,
     });
 
-    const result = await response.json();
-
-    if (response.ok && result.success) {
+    if (result.success) {
       if (result.alreadyVerified) {
         showToast('Email is already verified. You can log in now.', 'success');
         setTimeout(() => {

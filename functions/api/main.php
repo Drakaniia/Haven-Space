@@ -1,5 +1,7 @@
 <?php
 
+require_once __DIR__ . '/vendor/autoload.php';
+
 use Appwrite\Client;
 use Appwrite\Services\Account;
 use Appwrite\Services\Databases;
@@ -18,6 +20,11 @@ return function ($context) {
         $data = json_decode($body, true);
         return $data ?: [];
     }
+    
+    // Environment variable helper function
+    function env($key, $default = null) {
+        return $_ENV[$key] ?? $_SERVER[$key] ?? getenv($key) ?? $default;
+    }
 
     // Get request method and path
     $method = $context->req->method ?? 'GET';
@@ -33,12 +40,25 @@ return function ($context) {
     if (!empty($requestData['method'])) {
         $method = $requestData['method'];
     }
+    // Keep the original request data for processing
+    $originalRequestData = $requestData;
+    // Make it available globally for included files
+    $GLOBALS['originalRequestData'] = $originalRequestData;
     
-    // Enhanced CORS headers
+    // Enhanced CORS headers - use specific origin for credentials support
+    $origin = $context->req->headers['origin'] ?? $context->req->headers['Origin'] ?? '*';
+    
+    // Load allowed origins from environment
+    $allowedOrigins = explode(',', env('ALLOWED_ORIGINS', 'https://haven-space.appwrite.network,http://localhost:3000'));
+    
+    // Check if origin is allowed, otherwise use first allowed origin or wildcard
+    $corsOrigin = in_array($origin, $allowedOrigins) ? $origin : ($allowedOrigins[0] ?? '*');
+    
     $headers = [
-        'Access-Control-Allow-Origin' => '*',
+        'Access-Control-Allow-Origin' => $corsOrigin,
         'Access-Control-Allow-Methods' => 'GET, POST, PUT, DELETE, PATCH, OPTIONS',
         'Access-Control-Allow-Headers' => 'Content-Type, Authorization, X-Appwrite-Project, X-Appwrite-Key, X-User-Id, X-Session-Id',
+        'Access-Control-Allow-Credentials' => 'true',
         'Access-Control-Max-Age' => '86400'
     ];
 
@@ -100,9 +120,6 @@ return function ($context) {
     }
 
     try {
-        // Parse request body
-        $requestData = parseJsonBody($body);
-        
         // Route handling with comprehensive API endpoints
         switch (true) {
             // Root endpoints
@@ -148,10 +165,10 @@ return function ($context) {
                     return $context->res->json(generateResponse(null, 405, 'Method not allowed'), 405, $headers);
                 }
                 
-                $email = $requestData['email'] ?? '';
-                $password = $requestData['password'] ?? '';
-                $name = $requestData['name'] ?? '';
-                $role = $requestData['role'] ?? 'boarder';
+                $email = $originalRequestData['email'] ?? '';
+                $password = $originalRequestData['password'] ?? '';
+                $name = $originalRequestData['name'] ?? '';
+                $role = $originalRequestData['role'] ?? 'boarder';
                 
                 if (empty($email) || empty($password)) {
                     return $context->res->json(generateResponse(null, 400, 'Email and password required'), 400, $headers);
@@ -181,14 +198,50 @@ return function ($context) {
                     'session' => $session
                 ], 201, 'User registered successfully'), 201, $headers);
 
+            // Google OAuth endpoints
+            case preg_match('#^/auth/google/authorize\.php$#', $path):
+                // Handle Google OAuth authorization
+                define('APPWRITE_FUNCTION_CONTEXT', true);
+                require_once __DIR__ . '/auth/google/authorize.php';
+                
+                // Get the authorization URL that was generated
+                $authUrl = $authUrl ?? null;
+                
+                if ($authUrl) {
+                    // Return a redirect response
+                    return $context->res->json(generateResponse([
+                        'redirect_url' => $authUrl
+                    ], 302, 'Redirect to Google OAuth'), 302, [
+                        'Location' => $authUrl
+                    ]);
+                } else {
+                    return $context->res->json(generateResponse(null, 500, 'Failed to generate authorization URL'), 500, $headers);
+                }
+
+            case preg_match('#^/auth/google/callback\.php$#', $path):
+                // Handle Google OAuth callback
+                define('APPWRITE_FUNCTION_CONTEXT', true);
+                require_once __DIR__ . '/auth/google/callback.php';
+                
+                // The callback.php should set some result that we can return
+                $oauthResult = $oauthResult ?? null;
+                
+                if ($oauthResult && isset($oauthResult['success']) && $oauthResult['success']) {
+                    return $context->res->json(generateResponse($oauthResult, 200, 'Google OAuth callback processed'), 200, $headers);
+                } elseif ($oauthResult && isset($oauthResult['success']) && !$oauthResult['success']) {
+                    return $context->res->json(generateResponse(null, 400, $oauthResult['error'] ?? 'Google OAuth callback failed'), 400, $headers);
+                } else {
+                    return $context->res->json(generateResponse(null, 500, 'Failed to process OAuth callback'), 500, $headers);
+                }
+
             case preg_match('#^/auth/login\.php$#', $path):
             case preg_match('#^/auth/login$#', $path):
                 if ($method !== 'POST') {
                     return $context->res->json(generateResponse(null, 405, 'Method not allowed'), 405, $headers);
                 }
                 
-                $email = $requestData['email'] ?? '';
-                $password = $requestData['password'] ?? '';
+                $email = $originalRequestData['email'] ?? '';
+                $password = $originalRequestData['password'] ?? '';
                 
                 if (empty($email) || empty($password)) {
                     return $context->res->json(generateResponse(null, 400, 'Email and password required'), 400, $headers);
@@ -254,11 +307,11 @@ return function ($context) {
                     $user = $account->get();
                     
                     // Update account info
-                    if (!empty($requestData['name'])) {
-                        $account->updateName($requestData['name']);
+                    if (!empty($originalRequestData['name'])) {
+                        $account->updateName($originalRequestData['name']);
                     }
-                    if (!empty($requestData['email'])) {
-                        $account->updateEmail($requestData['email'], $requestData['password'] ?? '');
+                    if (!empty($originalRequestData['email'])) {
+                        $account->updateEmail($originalRequestData['email'], $originalRequestData['password'] ?? '');
                     }
                     
                     // Update profile in database
@@ -267,7 +320,7 @@ return function ($context) {
                     ]);
                     
                     if (!empty($userDocs['documents'])) {
-                        $profileData = array_merge($userDocs['documents'][0], $requestData);
+                        $profileData = array_merge($userDocs['documents'][0], $originalRequestData);
                         $profileData['updated_at'] = date('c');
                         
                         $databases->updateDocument($databaseId, $collections['users'], 
@@ -325,7 +378,7 @@ return function ($context) {
                     return $context->res->json(generateResponse($properties['documents']), 200, $headers);
                     
                 } elseif ($method === 'POST') {
-                    $propertyData = array_merge($requestData, [
+                    $propertyData = array_merge($originalRequestData, [
                         'landlord_id' => $user['$id'],
                         'status' => 'active',
                         'created_at' => date('c'),
@@ -389,7 +442,7 @@ return function ($context) {
                     return $context->res->json(generateResponse($applications['documents']), 200, $headers);
                     
                 } elseif ($method === 'POST') {
-                    $applicationData = array_merge($requestData, [
+                    $applicationData = array_merge($originalRequestData, [
                         'boarder_id' => $user['$id'],
                         'status' => 'pending',
                         'created_at' => date('c'),
@@ -445,7 +498,7 @@ return function ($context) {
                 $user = $account->get();
                 
                 if ($method === 'POST') {
-                    $messageData = array_merge($requestData, [
+                    $messageData = array_merge($originalRequestData, [
                         'sender_id' => $user['$id'],
                         'status' => 'sent',
                         'created_at' => date('c')
@@ -484,7 +537,7 @@ return function ($context) {
                     return $context->res->json(generateResponse($payments['documents']), 200, $headers);
                     
                 } elseif ($method === 'POST') {
-                    $paymentData = array_merge($requestData, [
+                    $paymentData = array_merge($originalRequestData, [
                         'user_id' => $user['$id'],
                         'status' => 'pending',
                         'created_at' => date('c')
@@ -517,13 +570,9 @@ return function ($context) {
                     return $context->res->json(generateResponse(null, 405, 'Method not allowed'), 405, $headers);
                 }
                 
-                // Debug: log the request data structure
-                error_log("AI Chat Debug - Raw body: " . $body);
-                error_log("AI Chat Debug - Parsed requestData: " . json_encode($requestData));
-                
-                $message = $requestData['message'] ?? '';
-                $sessionId = $requestData['session_id'] ?? uniqid();
-                $userId = $requestData['user_id'] ?? 'anonymous';
+                $message = $originalRequestData['message'] ?? '';
+                $sessionId = $originalRequestData['session_id'] ?? uniqid();
+                $userId = $originalRequestData['user_id'] ?? 'anonymous';
                 
                 if (empty($message)) {
                     return $context->res->json(generateResponse([

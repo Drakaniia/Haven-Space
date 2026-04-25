@@ -1,6 +1,7 @@
 import CONFIG from '../config.js';
 import { getIcon } from '../shared/icons.js';
 import { getBoarderRedirectPath, updateBoarderStatus } from '../shared/routing.js';
+import AIService from '../services/AIService.js';
 
 /**
  * Show toast notification
@@ -139,10 +140,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
   if (oauthPending || oauthNew) {
     // Fetch pending user data from session
-    fetch(`${CONFIG.API_BASE_URL}/auth/google/get-pending-user.php`, {
-      credentials: 'include',
-    })
-      .then(res => res.json())
+    AIService.executeFunction('/auth/google/get-pending-user.php', 'GET')
       .then(result => {
         if (!result.success || !result.data) {
           // No pending user data - user might already exist, redirect to login
@@ -190,10 +188,41 @@ document.addEventListener('DOMContentLoaded', function () {
 
   // Google OAuth signup for boarders
   document.querySelectorAll('.social-btn-google').forEach(btn => {
-    btn.addEventListener('click', function () {
+    btn.addEventListener('click', async function () {
       // Redirect to Google OAuth authorize endpoint for boarder signup
-      const authUrl = `${CONFIG.API_BASE_URL}/auth/google/authorize.php?action=signup&role=boarder`;
-      window.location.href = authUrl;
+      try {
+        if (CONFIG.isProduction()) {
+          // In production with Appwrite Functions, call the function execution endpoint
+          const response = await fetch(`${CONFIG.API_BASE_URL}/functions/api-function/exec`, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+              path: '/auth/google/authorize.php',
+              action: 'signup',
+              role: 'boarder',
+            }),
+          });
+
+          if (response.ok) {
+            const data = await response.json();
+            if (data.redirect_url) {
+              window.location.href = data.redirect_url;
+              return;
+            }
+          }
+          // Fallback to direct URL if function call fails
+          throw new Error('Function call failed');
+        }
+
+        // For local development, use direct URL
+        const authUrl = `${CONFIG.API_BASE_URL}/auth/google/authorize.php?action=signup&role=boarder`;
+        window.location.href = authUrl;
+      } catch (error) {
+        console.error('Google OAuth error:', error);
+        alert('Failed to initiate Google signup. Please try again.');
+      }
     });
   });
 
@@ -228,20 +257,11 @@ document.addEventListener('DOMContentLoaded', function () {
     if (oauthPending) {
       // Complete Google OAuth signup for boarder
       try {
-        const response = await fetch(`${CONFIG.API_BASE_URL}/auth/google/finalize-signup.php`, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          credentials: 'include',
-          body: JSON.stringify({
-            role: 'boarder',
-          }),
+        const result = await AIService.executeFunction('/auth/google/finalize-signup.php', 'POST', {
+          role: 'boarder',
         });
 
-        const result = await response.json();
-
-        if (response.ok && result.success) {
+        if (result.success) {
           // Store user info and token
           localStorage.setItem('user', JSON.stringify(result.user));
           if (result.access_token) {
@@ -280,13 +300,8 @@ document.addEventListener('DOMContentLoaded', function () {
     submitBtn.textContent = 'Creating Account...';
 
     try {
-      const response = await fetch(`${CONFIG.API_BASE_URL}/auth/register.php`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(data),
-      });
+      // Use AIService for proper Appwrite function execution handling
+      const response = await AIService.executeFunction('/auth/register.php', 'POST', data);
 
       const result = await response.json();
 
