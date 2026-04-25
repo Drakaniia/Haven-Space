@@ -317,4 +317,12 @@ function initPublicComponents() {
       initLogoCloud();
     }
   }
+
+  // Initialize find-room-description animation
+  const findRoomDescription = document.getElementById('find-room-description');
+  if (findRoomDescription) {
+    import('./find-room-description.js').then(module => {
+      module.initFindRoomDescriptionAnimation();
+    });
+  }
 }

@@ -40,15 +40,19 @@
     <!-- Hero Section -->
     <main class="landlord-hero">
       <div class="landlord-hero-content">
-        <span class="landlord-badge">FOR LANDLORDS</span>
-        <h1 class="landlord-hero-title">List your property.<br />Reach verified boarders.</h1>
-        <p class="landlord-hero-description">
+        <span class="landlord-badge fade-in-element">FOR LANDLORDS</span>
+        <h1 class="landlord-hero-title fade-in-element">
+          List your property.<br />Reach verified boarders.
+        </h1>
+        <p class="landlord-hero-description fade-in-element">
           Haven Space connects property owners with quality tenants. Manage listings, track
           applications, and grow your rental business with our trusted platform.
         </p>
         <div class="landlord-hero-buttons">
-          <a href="auth/signup.html?role=landlord" class="btn-get-started">Get Started</a>
-          <a href="#pricing" class="btn-view-pricing">View Pricing</a>
+          <a href="auth/signup.html?role=landlord" class="btn-get-started fade-in-element"
+            >Get Started</a
+          >
+          <a href="#pricing" class="btn-view-pricing fade-in-element">View Pricing</a>
         </div>
       </div>
     </main>
@@ -57,9 +61,11 @@
     <section class="benefits-section">
       <div class="benefits-container">
         <div class="benefits-header">
-          <span class="benefits-badge">WHY CHOOSE US</span>
-          <h2 class="benefits-title">Everything you need to manage your properties</h2>
-          <p class="benefits-subtitle">
+          <span class="benefits-badge fade-in-element">WHY CHOOSE US</span>
+          <h2 class="benefits-title fade-in-element">
+            Everything you need to manage your properties
+          </h2>
+          <p class="benefits-subtitle fade-in-element">
             From listing to lease signing, Haven Space provides the tools landlords need to succeed
             in the modern rental market.
           </p>
@@ -165,8 +171,8 @@
         <div class="pricing-grid">
           <!-- Left Column - Title -->
           <div class="pricing-title-column">
-            <p class="pricing-badge">PRICING</p>
-            <h2 class="pricing-title">Pricing that doesn't suck</h2>
+            <p class="pricing-badge fade-in-element">PRICING</p>
+            <h2 class="pricing-title fade-in-element">Pricing that doesn't suck</h2>
           </div>
 
           <!-- Right Column - Pricing Cards -->
@@ -312,15 +318,15 @@
     <!-- CTA Section -->
     <section class="landlord-cta-section">
       <div class="landlord-cta-container">
-        <h2 class="landlord-cta-title">
+        <h2 class="landlord-cta-title fade-in-element">
           Ready to <span class="landlord-cta-highlight">grow</span> your rental business?
         </h2>
-        <p class="landlord-cta-description">
+        <p class="landlord-cta-description fade-in-element">
           Join hundreds of landlords who trust Haven Space to manage their properties and connect
           with quality tenants.
         </p>
         <div class="landlord-cta-buttons">
-          <a href="auth/signup.html?role=landlord" class="btn-cta-primary">
+          <a href="auth/signup.html?role=landlord" class="btn-cta-primary fade-in-element">
             Start Listing Today
             <span
               data-icon="arrowRight"
@@ -330,7 +336,7 @@
               class="cta-arrow-icon"
             ></span>
           </a>
-          <a href="index.html#contact" class="btn-cta-secondary">Contact Sales</a>
+          <a href="index.html#contact" class="btn-cta-secondary fade-in-element">Contact Sales</a>
         </div>
       </div>
     </section>
@@ -432,6 +438,15 @@
       </div>
     </footer>
 
+    <!-- Animation Script -->
+    <script>
+      document.addEventListener('DOMContentLoaded', function () {
+        const elements = document.querySelectorAll('.fade-in-element');
+        elements.forEach((element, index) => {
+          element.style.animationDelay = `${index * 0.3}s`;
+        });
+      });
+    </script>
     <!-- ES Module Entry Point -->
     <script type="module" src="../../js/main.js"></script>
   </body>

@@ -497,6 +497,35 @@
   font-weight: 600;
 }
 
+.word {
+  opacity: 0.4;
+  font-weight: normal;
+  transition: opacity 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+  display: inline-block;
+  position: relative;
+}
+
+.word::before {
+  content: attr(data-text);
+  position: absolute;
+  top: 0;
+  left: 0;
+  font-weight: 700;
+  color: var(--text-dark);
+  opacity: 0;
+  transition: opacity 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+  pointer-events: none;
+}
+
+.word.active {
+  opacity: 1;
+  color: var(--text-dark);
+}
+
+.word.active::before {
+  opacity: 1;
+}
+
 .find-room-image-wrapper {
   width: 80%;
   max-width: 800px;

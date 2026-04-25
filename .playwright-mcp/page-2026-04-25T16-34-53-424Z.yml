@@ -1,0 +1,250 @@
+- generic [active] [ref=e1]:
+  - navigation [ref=e2]:
+    - generic [ref=e3]:
+      - generic [ref=e5]: Haven Space
+      - list [ref=e6]:
+        - listitem [ref=e7]:
+          - link "Home" [ref=e8] [cursor=pointer]:
+            - /url: "#home"
+        - listitem [ref=e9]:
+          - link "Our Story" [ref=e10] [cursor=pointer]:
+            - /url: our-story.html
+        - listitem [ref=e11]:
+          - link "Our Team" [ref=e12] [cursor=pointer]:
+            - /url: teams.html
+        - listitem [ref=e13]:
+          - link "For Landlords" [ref=e14] [cursor=pointer]:
+            - /url: for-landlords.html
+      - button "User menu" [ref=e17] [cursor=pointer]:
+        - generic [ref=e18]: A
+        - generic [ref=e19]: Alistair
+        - img [ref=e20]
+  - main [ref=e22]:
+    - generic [ref=e23]:
+      - link "NEW Introducing Haven AI" [ref=e24] [cursor=pointer]:
+        - /url: haven-ai.html
+        - generic [ref=e25]: NEW
+        - generic [ref=e26]: Introducing Haven AI
+        - img [ref=e28]
+      - heading "Find your haven, right next door." [level=1] [ref=e30]:
+        - text: Find your haven,
+        - text: right next door.
+      - paragraph [ref=e31]: Haven Space connects you with verified boarding houses near your location, managed by trusted landlords. Use our mobile app to search, book, and settle in.
+      - generic [ref=e32]:
+        - link "View Map" [ref=e33] [cursor=pointer]:
+          - /url: public-maps.html
+        - link "Find a Room" [ref=e34] [cursor=pointer]:
+          - /url: find-a-room.html
+  - generic:
+    - generic:
+      - img "Haven Space App Dashboard Preview"
+  - generic [ref=e35]:
+    - heading "Trusted by experts. Used by the leaders." [level=2] [ref=e36]:
+      - text: Trusted by experts.
+      - text: Used by the leaders.
+    - generic [ref=e39]:
+      - generic [ref=e40]:
+        - img "Nvidia"
+        - img "Supabase"
+        - img "OpenAI"
+        - img "Turso"
+        - img "Vercel"
+        - img "GitHub"
+        - img "Claude AI"
+        - img "Clerk"
+      - generic [ref=e41]:
+        - img "Nvidia"
+        - img "Supabase"
+        - img "OpenAI"
+        - img "Turso"
+        - img "Vercel"
+        - img "GitHub"
+        - img "Claude AI"
+        - img "Clerk"
+  - generic [ref=e44]:
+    - generic [ref=e45]: WHAT IS HAVEN SPACE
+    - paragraph [ref=e46]:
+      - generic [ref=e47]: Haven Haven
+      - generic [ref=e48]: Space Space
+      - generic [ref=e49]: is is
+      - generic [ref=e50]: a a
+      - generic [ref=e51]: next-gen next-gen
+      - generic [ref=e52]: boarding boarding
+      - generic [ref=e53]: house house
+      - generic [ref=e54]: platform platform
+      - generic [ref=e55]: bridging bridging
+      - generic [ref=e56]: traditional traditional
+      - generic [ref=e57]: property property
+      - generic [ref=e58]: rentals rentals
+      - generic [ref=e59]: with with
+      - generic [ref=e60]: modern modern
+      - generic [ref=e61]: digital digital
+      - generic [ref=e62]: convenience. convenience.
+      - generic [ref=e63]: We We
+      - generic [ref=e64]: provide provide
+      - generic [ref=e65]: a a
+      - generic [ref=e66]: seamless, seamless,
+      - generic [ref=e67]: verified verified
+      - generic [ref=e68]: experience experience
+      - generic [ref=e69]: for for
+      - generic [ref=e70]: boarders boarders
+      - generic [ref=e71]: by by
+      - generic [ref=e72]: integrating integrating
+      - generic [ref=e73]: smart smart
+      - generic [ref=e74]: search, search,
+      - generic [ref=e75]: secure secure
+      - generic [ref=e76]: payments, payments,
+      - generic [ref=e77]: and and
+      - generic [ref=e78]: trusted trusted
+      - generic [ref=e79]: landlord landlord
+      - generic [ref=e80]: connections. connections.
+    - img "Students finding boarding houses in a neighborhood" [ref=e82]
+  - generic [ref=e85]:
+    - generic [ref=e86]:
+      - generic [ref=e87]: VISION
+      - heading "Our Vision" [level=2] [ref=e88]
+      - paragraph [ref=e89]: Redefining the boarding house experience with modern technology and community-focused solutions.
+    - generic [ref=e90]:
+      - generic [ref=e92]:
+        - heading "Seamless Discovery" [level=3] [ref=e93]
+        - paragraph [ref=e94]: Finding your perfect boarding house made effortless with our smart search and verified listings, where technology anticipates your every need.
+      - generic [ref=e96]:
+        - heading "Trusted Connections" [level=3] [ref=e97]
+        - paragraph [ref=e98]: Building confidence through verified landlords, secure payments, and transparent communication between boarders and property owners.
+      - generic [ref=e100]:
+        - heading "Community First" [level=3] [ref=e101]
+        - paragraph [ref=e102]: Bridging the gap between traditional property rentals and modern digital convenience, creating lasting community relationships.
+  - generic [ref=e104]:
+    - generic [ref=e105]:
+      - generic [ref=e106]: FAQ
+      - heading "Frequently Asked Questions" [level=2] [ref=e107]
+      - paragraph [ref=e108]: Everything you need to know about Haven Space, from finding rooms to secure payments and trusted landlords.
+    - generic [ref=e109]:
+      - generic [ref=e111]:
+        - img "Customer support representative" [ref=e112]
+        - generic [ref=e113]:
+          - paragraph [ref=e114]:
+            - strong [ref=e115]: Any other questions?
+            - text: We have the answers.
+          - link "Contact us" [ref=e116] [cursor=pointer]:
+            - /url: "#contact"
+      - generic [ref=e117]:
+        - generic [ref=e118]:
+          - button "All" [ref=e119] [cursor=pointer]
+          - button "Getting Started" [ref=e120] [cursor=pointer]
+          - button "Features" [ref=e121] [cursor=pointer]
+          - button "Billing" [ref=e122] [cursor=pointer]
+          - button "Support" [ref=e123] [cursor=pointer]
+        - generic [ref=e124]:
+          - generic [ref=e125]:
+            - button "How do I find boarding houses near me?" [ref=e126] [cursor=pointer]:
+              - generic [ref=e127]: How do I find boarding houses near me?
+              - img [ref=e129]
+            - paragraph [ref=e131]: Simply use our interactive map or search feature to browse verified boarding houses in your preferred location. Filter by price, amenities, and availability to find your perfect match.
+          - generic [ref=e132]:
+            - button "Are the landlords verified?" [ref=e133] [cursor=pointer]:
+              - generic [ref=e134]: Are the landlords verified?
+              - img [ref=e136]
+            - paragraph [ref=e138]: Yes! All landlords on Haven Space go through a verification process. We ensure they are legitimate property owners or authorized managers before they can list their properties on our platform.
+          - generic [ref=e139]:
+            - button "Is my payment information secure?" [ref=e140] [cursor=pointer]:
+              - generic [ref=e141]: Is my payment information secure?
+              - img [ref=e143]
+            - paragraph [ref=e145]: Absolutely. We use industry-standard encryption and secure payment processing to protect your financial information. Your payment data is never shared with third parties.
+          - generic [ref=e146]:
+            - button "Can I schedule a viewing before booking?" [ref=e147] [cursor=pointer]:
+              - generic [ref=e148]: Can I schedule a viewing before booking?
+              - img [ref=e150]
+            - paragraph [ref=e152]: Yes! You can request a viewing directly through the property listing. Many landlords offer virtual tours or in-person visits so you can see the space before committing.
+          - generic [ref=e153]:
+            - button "What if I have issues with my boarding house?" [ref=e154] [cursor=pointer]:
+              - generic [ref=e155]: What if I have issues with my boarding house?
+              - img [ref=e157]
+            - paragraph [ref=e159]: Our platform includes a built-in messaging system and maintenance request feature. You can communicate directly with your landlord, and our support team is available to help resolve any disputes.
+  - contentinfo [ref=e160]:
+    - generic [ref=e161]:
+      - generic [ref=e162]:
+        - generic [ref=e163]:
+          - generic [ref=e164]: Haven Space
+          - paragraph [ref=e165]: Your trusted boarding house platform.
+          - generic [ref=e166]:
+            - link "LinkedIn" [ref=e167] [cursor=pointer]:
+              - /url: "#linkedin"
+              - img [ref=e169]
+            - link "Twitter" [ref=e172] [cursor=pointer]:
+              - /url: "#twitter"
+              - img [ref=e174]
+            - link "Instagram" [ref=e176] [cursor=pointer]:
+              - /url: "#instagram"
+          - generic [ref=e179]: All Systems Normal
+        - generic [ref=e180]:
+          - heading "Company" [level=3] [ref=e181]
+          - list [ref=e182]:
+            - listitem [ref=e183]:
+              - link "Properties" [ref=e184] [cursor=pointer]:
+                - /url: "#properties"
+            - listitem [ref=e185]:
+              - link "What's New" [ref=e186] [cursor=pointer]:
+                - /url: "#new"
+            - listitem [ref=e187]:
+              - link "Our Story" [ref=e188] [cursor=pointer]:
+                - /url: our-story.html
+            - listitem [ref=e189]:
+              - link "Press" [ref=e190] [cursor=pointer]:
+                - /url: "#press"
+            - listitem [ref=e191]:
+              - link "Careers" [ref=e192] [cursor=pointer]:
+                - /url: "#careers"
+        - generic [ref=e193]:
+          - heading "Community" [level=3] [ref=e194]
+          - list [ref=e195]:
+            - listitem [ref=e196]:
+              - link "Landlord Guide" [ref=e197] [cursor=pointer]:
+                - /url: "#landlord-guide"
+            - listitem [ref=e198]:
+              - link "Boarder Guide" [ref=e199] [cursor=pointer]:
+                - /url: "#boarder-guide"
+            - listitem [ref=e200]:
+              - link "Success Stories" [ref=e201] [cursor=pointer]:
+                - /url: "#success-stories"
+            - listitem [ref=e202]:
+              - link "Trending" [ref=e203] [cursor=pointer]:
+                - /url: "#trending"
+            - listitem [ref=e204]:
+              - link "Explore Listings" [ref=e205] [cursor=pointer]:
+                - /url: "#explore"
+        - generic [ref=e206]:
+          - heading "Support" [level=3] [ref=e207]
+          - list [ref=e208]:
+            - listitem [ref=e209]:
+              - link "Help Topics" [ref=e210] [cursor=pointer]:
+                - /url: "#help"
+            - listitem [ref=e211]:
+              - link "Getting Started" [ref=e212] [cursor=pointer]:
+                - /url: "#getting-started"
+            - listitem [ref=e213]:
+              - link "Haven Pro" [ref=e214] [cursor=pointer]:
+                - /url: "#pro"
+            - listitem [ref=e215]:
+              - link "FAQs" [ref=e216] [cursor=pointer]:
+                - /url: "#faqs"
+            - listitem [ref=e217]:
+              - link "Report a Violation" [ref=e218] [cursor=pointer]:
+                - /url: "#report"
+      - generic [ref=e219]:
+        - paragraph [ref=e221]: © 2026 Haven Space. All rights reserved • Built with ♥ from the Philippines.
+        - generic [ref=e222]:
+          - link "T&C" [ref=e223] [cursor=pointer]:
+            - /url: terms-of-service.html
+          - generic [ref=e224]: •
+          - link "Privacy Notice" [ref=e225] [cursor=pointer]:
+            - /url: privacy-policy.html
+          - generic [ref=e226]: •
+          - link "Cookie Notice" [ref=e227] [cursor=pointer]:
+            - /url: "#cookies"
+          - generic [ref=e228]: •
+          - link "Trust Center" [ref=e229] [cursor=pointer]:
+            - /url: "#trust"
+          - generic [ref=e230]: •
+          - link "Cookie Preferences" [ref=e231] [cursor=pointer]:
+            - /url: "#cookie-preferences"
