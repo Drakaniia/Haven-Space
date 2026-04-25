@@ -1,38 +1,38 @@
 {
-    "projectId": "69eae504002697b6749c",
-    "projectName": "Haven Space",
-    "endpoint": "https://fra.cloud.appwrite.io/v1",
-    "functions": [
-        {
-            "$id": "api-function",
-            "name": "Haven Space API",
-            "runtime": "php-8.3",
-            "execute": [
-                "any"
-            ],
-            "events": [],
-            "schedule": "",
-            "timeout": 30,
-            "enabled": true,
-            "logging": true,
-            "entrypoint": "main.php",
-            "commands": "composer install --no-dev --optimize-autoloader --working-dir functions && composer install --no-dev --optimize-autoloader --working-dir functions/api",
-            "ignore": [
-                "node_modules",
-                ".git",
-                ".env",
-                "client",
-                ".husky",
-                ".github",
-                ".vscode",
-                "scripts",
-                "bootstrap-test.html"
-            ],
-            "path": ".",
-            "vars": {
-                "APPWRITE_FUNCTION_ENDPOINT": "https://fra.cloud.appwrite.io/v1",
-                "APPWRITE_FUNCTION_PROJECT_ID": "69eae504002697b6749c"
-            }
-        }
-    ]
+  "projectId": "69eae504002697b6749c",
+  "projectName": "Haven Space",
+  "endpoint": "https://fra.cloud.appwrite.io/v1",
+  "functions": [
+    {
+      "$id": "api-function",
+      "name": "Haven Space API",
+      "runtime": "php-8.3",
+      "execute": ["any"],
+      "events": [],
+      "schedule": "",
+      "timeout": 30,
+      "enabled": true,
+      "logging": true,
+      "entrypoint": "main.php",
+      "commands": "composer install --no-dev --optimize-autoloader --working-dir functions && composer install --no-dev --optimize-autoloader --working-dir functions/api",
+      "ignore": [
+        "node_modules",
+        ".git",
+        ".env",
+        "client",
+        ".husky",
+        ".github",
+        ".vscode",
+        "scripts",
+        "bootstrap-test.html",
+        "functions/vendor",
+        "functions/api/vendor"
+      ],
+      "path": ".",
+      "vars": {
+        "APPWRITE_FUNCTION_ENDPOINT": "https://fra.cloud.appwrite.io/v1",
+        "APPWRITE_FUNCTION_PROJECT_ID": "69eae504002697b6749c"
+      }
+    }
+  ]
 }
