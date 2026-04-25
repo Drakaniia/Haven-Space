@@ -270,8 +270,8 @@
   white-space: nowrap;
   opacity: 0;
   pointer-events: none;
-  transition: opacity var(--duration-medium) var(--ease-standard), 
-              transform var(--duration-medium) var(--ease-standard);
+  transition: opacity var(--duration-medium) var(--ease-standard),
+    transform var(--duration-medium) var(--ease-standard);
   z-index: 2;
   letter-spacing: 0.02em;
 }
