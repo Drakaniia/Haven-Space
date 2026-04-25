@@ -97,11 +97,13 @@ class Middleware
             $pdo = Connection::getInstance()->getPdo();
             $stmt = $pdo->prepare('
                 SELECT acs.status_name as account_status, u.email_verified, 
-                       vs.status_name as verification_status
+                       vs.status_name as verification_status,
+                       ur.role_name as role
                 FROM users u
                 JOIN account_statuses acs ON u.account_status_id = acs.id
                 LEFT JOIN verification_records vr ON vr.entity_type = "user" AND vr.entity_id = u.id
                 LEFT JOIN verification_statuses vs ON vr.verification_status_id = vs.id
+                JOIN user_roles ur ON u.role_id = ur.id
                 WHERE u.id = ? AND u.deleted_at IS NULL
             ');
             $stmt->execute([$userId]);
@@ -119,6 +121,11 @@ class Middleware
             $payload['email_verified'] = (bool)$row['email_verified'];
             $payload['account_status'] = $accountStatus;
             $payload['verification_status'] = $row['verification_status'];
+            
+            // Ensure role is always set, either from JWT or database
+            if (empty($payload['role']) && !empty($row['role'])) {
+                $payload['role'] = $row['role'];
+            }
         }
 
         return $payload;
@@ -127,6 +134,21 @@ class Middleware
     public static function authorize(array $allowedRoles)
     {
         $user = self::authenticate();
+
+        // Ensure role is set, fallback to database lookup if missing
+        if (empty($user['role']) && !empty($user['user_id'])) {
+            $pdo = Connection::getInstance()->getPdo();
+            $stmt = $pdo->prepare('SELECT ur.role_name as role FROM users u JOIN user_roles ur ON u.role_id = ur.id WHERE u.id = ?');
+            $stmt->execute([$user['user_id']]);
+            $roleRow = $stmt->fetch();
+            if ($roleRow) {
+                $user['role'] = $roleRow['role'];
+            }
+        }
+
+        if (empty($user['role'])) {
+            _respond(403, ['error' => 'Forbidden: User role not defined']);
+        }
 
         if (!in_array($user['role'], $allowedRoles)) {
             _respond(403, ['error' => 'Forbidden: You do not have permission to access this resource']);

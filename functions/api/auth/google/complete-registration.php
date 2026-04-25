@@ -285,6 +285,25 @@ try {
         $userData['boarderStatus'] = $boarderStatus; // Keep both for compatibility
     }
     
+    // Determine redirect path based on role/status
+    if ($userRole === 'admin') {
+        $redirectPath = '/views/admin/index.html';
+    } else if ($userRole === 'landlord') {
+        $redirectPath = '/views/landlord/index.html';
+    } else {
+        switch ($boarderStatus) {
+            case 'applied_pending':
+                $redirectPath = '/views/boarder/applications-dashboard/index.html';
+                break;
+            case 'accepted':
+                $redirectPath = '/views/boarder/index.html';
+                break;
+            default:
+                $redirectPath = '/views/boarder/find-a-room/index.html';
+                break;
+        }
+    }
+
     echo json_encode([
         'success' => true,
         'message' => 'Registration completed successfully',
