@@ -14,6 +14,9 @@ We are using the Appwrite platform for:
 - Functions
 - Storage
 
+GOOGLE_REDIRECT_URI=http://localhost:8000/api/auth/google/callback.php
+APP_BASE_URL=http://localhost
+
 **Important**: Always push changes to the repository so the Appwrite site will update automatically.
 
 **Documentation**: When prompting or working on Appwrite-related deployment tasks, always use the Appwrite MCP (Multi-Platform Client) for documentation and reference.
