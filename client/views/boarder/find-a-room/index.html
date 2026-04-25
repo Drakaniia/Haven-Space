@@ -73,6 +73,7 @@
               </div>
             </div>
 
+            in
             <!-- Profile Dropdown -->
             <div class="find-room-header-dropdown" id="profile-dropdown">
               <button class="find-room-header-profile-btn" id="profile-dropdown-btn">
@@ -202,6 +203,64 @@
             <button class="find-room-btn find-room-btn-danger" id="rejection-confirm-btn">
               Confirm Rejection
             </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Room Detail Modal -->
+    <div class="find-room-modal-overlay" id="room-detail-modal" style="display: none">
+      <div class="find-room-modal find-room-room-detail-modal">
+        <div class="find-room-modal-header">
+          <h3 id="room-detail-title">Room Details</h3>
+          <button class="find-room-modal-close" id="room-detail-modal-close">
+            <span data-icon="close" data-icon-width="20" data-icon-height="20"></span>
+          </button>
+        </div>
+        <div class="find-room-modal-body">
+          <!-- Room Image Gallery -->
+          <div class="find-room-room-gallery" id="room-gallery">
+            <div class="find-room-room-main-image">
+              <img id="room-main-image" src="" alt="Room Image" />
+            </div>
+            <div class="find-room-room-thumbnails" id="room-thumbnails">
+              <!-- Thumbnails will be populated here -->
+            </div>
+          </div>
+
+          <!-- Room Information -->
+          <div class="find-room-room-info">
+            <div class="find-room-room-header">
+              <h4 id="room-name">Room Name</h4>
+              <div class="find-room-room-status" id="room-status">Available</div>
+            </div>
+
+            <div class="find-room-room-details">
+              <div class="find-room-room-detail-item">
+                <span data-icon="userCircle" data-icon-width="20" data-icon-height="20"></span>
+                <span>Capacity: <strong id="room-capacity">1 person</strong></span>
+              </div>
+              <div class="find-room-room-detail-item">
+                <span data-icon="currencyDollar" data-icon-width="20" data-icon-height="20"></span>
+                <span>Price: <strong id="room-price">₱0/month</strong></span>
+              </div>
+            </div>
+
+            <div class="find-room-room-description">
+              <h5>Description</h5>
+              <p id="room-description">Room description will appear here.</p>
+            </div>
+
+            <div class="find-room-room-actions">
+              <button class="find-room-btn find-room-btn-primary" id="apply-room-btn">
+                Apply for This Room
+                <span
+                  data-icon="arrowRightSimple"
+                  data-icon-width="20"
+                  data-icon-height="20"
+                ></span>
+              </button>
+            </div>
           </div>
         </div>
       </div>
@@ -488,6 +547,30 @@
                     <span id="detail-location-code"></span>
                   </div>
                 </div>
+
+                <!-- Available Rooms Section -->
+                <div
+                  class="find-room-detail-rooms-section"
+                  id="detail-rooms-section"
+                  style="display: none"
+                >
+                  <h3 class="find-room-detail-section-title">Available Rooms</h3>
+                  <div class="find-room-detail-rooms-grid" id="detail-rooms-grid">
+                    <!-- Room cards will be populated here -->
+                  </div>
+                </div>
+
+                <!-- Amenities Section -->
+                <div
+                  class="find-room-detail-amenities-section"
+                  id="detail-amenities-section"
+                  style="display: none"
+                >
+                  <h3 class="find-room-detail-section-title">Amenities</h3>
+                  <div class="find-room-detail-amenities-grid" id="detail-amenities-grid">
+                    <!-- Amenities will be populated here -->
+                  </div>
+                </div>
               </div>
 
               <!-- Reviews Tab Content -->
@@ -624,7 +707,7 @@
             <ul class="footer-links">
               <li><a href="#properties">Properties</a></li>
               <li><a href="#new">What's New</a></li>
-              <li><a href="our-story.html">Our Story</a></li>
+              <li><a href="#about">About</a></li>
               <li><a href="#press">Press</a></li>
               <li><a href="#careers">Careers</a></li>
             </ul>

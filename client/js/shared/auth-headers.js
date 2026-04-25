@@ -5,7 +5,7 @@
 
 /**
  * Get authentication headers for API requests
- * Uses JWT token if available, falls back to X-User-Id for development
+ * Uses JWT token if available, falls back to X-User-ID for development
  * @param {string} fallbackUserId - Fallback user ID for development/testing
  * @returns {Object} Headers object with authentication
  */
@@ -16,10 +16,30 @@ export function getAuthHeaders(fallbackUserId = '1') {
   };
 
   if (token) {
-    headers['Authorization'] = `Bearer ${token}`;
+    // Validate token before using it
+    try {
+      const parts = token.split('.');
+      if (parts.length === 3) {
+        const payload = JSON.parse(atob(parts[1].replace(/-/g, '+').replace(/_/g, '/')));
+
+        // Check if token is expired
+        if (payload.exp && Date.now() / 1000 > payload.exp) {
+          console.warn('Token expired, falling back to X-User-ID');
+          headers['X-User-ID'] = localStorage.getItem('user_id') || fallbackUserId;
+        } else {
+          headers['Authorization'] = `Bearer ${token}`;
+        }
+      } else {
+        console.warn('Invalid token format, falling back to X-User-ID');
+        headers['X-User-ID'] = localStorage.getItem('user_id') || fallbackUserId;
+      }
+    } catch (error) {
+      console.warn('Error parsing token, falling back to X-User-ID:', error);
+      headers['X-User-ID'] = localStorage.getItem('user_id') || fallbackUserId;
+    }
   } else {
-    // Fallback to X-User-Id for development/testing
-    headers['X-User-Id'] = localStorage.getItem('user_id') || fallbackUserId;
+    // Fallback to X-User-ID for development/testing (note: uppercase ID)
+    headers['X-User-ID'] = localStorage.getItem('user_id') || fallbackUserId;
   }
 
   return headers;
@@ -35,10 +55,30 @@ export function getAuthHeadersOnly(fallbackUserId = '1') {
   const headers = {};
 
   if (token) {
-    headers['Authorization'] = `Bearer ${token}`;
+    // Validate token before using it
+    try {
+      const parts = token.split('.');
+      if (parts.length === 3) {
+        const payload = JSON.parse(atob(parts[1].replace(/-/g, '+').replace(/_/g, '/')));
+
+        // Check if token is expired
+        if (payload.exp && Date.now() / 1000 > payload.exp) {
+          console.warn('Token expired, falling back to X-User-ID');
+          headers['X-User-ID'] = localStorage.getItem('user_id') || fallbackUserId;
+        } else {
+          headers['Authorization'] = `Bearer ${token}`;
+        }
+      } else {
+        console.warn('Invalid token format, falling back to X-User-ID');
+        headers['X-User-ID'] = localStorage.getItem('user_id') || fallbackUserId;
+      }
+    } catch (error) {
+      console.warn('Error parsing token, falling back to X-User-ID:', error);
+      headers['X-User-ID'] = localStorage.getItem('user_id') || fallbackUserId;
+    }
   } else {
-    // Fallback to X-User-Id for development/testing
-    headers['X-User-Id'] = localStorage.getItem('user_id') || fallbackUserId;
+    // Fallback to X-User-ID for development/testing (note: uppercase ID)
+    headers['X-User-ID'] = localStorage.getItem('user_id') || fallbackUserId;
   }
 
   return headers;

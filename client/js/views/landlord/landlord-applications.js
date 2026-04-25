@@ -14,7 +14,7 @@ import { getAuthHeaders } from '../../shared/auth-headers.js';
 async function fetchApplications() {
   try {
     const res = await fetch(`${CONFIG.API_BASE_URL}/api/landlord/applications`, {
-      headers: getAuthHeaders('4'),
+      headers: getAuthHeaders('3'),
       credentials: 'include',
     });
 
@@ -47,6 +47,7 @@ function getStatusBadgeClass(status) {
     case 'under_review':
     case 'review':
       return 'landlord-status-review';
+    case 'accepted':
     case 'approved':
       return 'landlord-status-approved';
     case 'rejected':
@@ -67,6 +68,7 @@ function getStatusLabel(status) {
       return 'New';
     case 'under_review':
       return 'Under Review';
+    case 'accepted':
     case 'approved':
       return 'Approved';
     case 'rejected':
@@ -232,7 +234,7 @@ async function updateApplicationStatus(applicationId, status) {
       `${CONFIG.API_BASE_URL}/api/landlord/applications/${applicationId}/status`,
       {
         method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
+        headers: getAuthHeaders('3'),
         credentials: 'include',
         body: JSON.stringify({ status }),
       }
@@ -269,7 +271,7 @@ function initEventListeners() {
   document.addEventListener('click', e => {
     if (e.target.classList.contains('approve-btn')) {
       const id = parseInt(e.target.dataset.id);
-      updateApplicationStatus(id, 'approved');
+      updateApplicationStatus(id, 'accepted');
     }
   });
 
