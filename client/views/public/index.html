@@ -38,7 +38,7 @@
     <!-- Hero Section -->
     <main class="hero hero-background">
       <div class="hero-content">
-        <a href="haven-ai.html" class="hero-announcement-pill">
+        <a href="haven-ai.html" class="hero-announcement-pill fade-in-element">
           <span class="announcement-badge">NEW</span>
           <span class="announcement-text">Introducing Haven AI</span>
           <span
@@ -49,14 +49,14 @@
             class="announcement-icon"
           ></span>
         </a>
-        <h1 class="hero-title">Find your haven,<br />right next door.</h1>
-        <p class="hero-description">
+        <h1 class="hero-title fade-in-element">Find your haven,<br />right next door.</h1>
+        <p class="hero-description fade-in-element">
           Haven Space connects you with verified boarding houses near your location, managed by
           trusted landlords. Use our mobile app to search, book, and settle in.
         </p>
         <div class="hero-buttons">
-          <a href="public-maps.html" class="btn-landlords">View Map</a>
-          <a href="find-a-room.html" class="btn-download">Find a Room</a>
+          <a href="public-maps.html" class="btn-landlords fade-in-element">View Map</a>
+          <a href="find-a-room.html" class="btn-download fade-in-element">Find a Room</a>
         </div>
       </div>
     </main>
@@ -67,7 +67,7 @@
         <img
           src="../../assets/images/public/main.png"
           alt="Haven Space App Dashboard Preview"
-          class="app-preview-image"
+          class="app-preview-image fade-in-element"
         />
       </div>
     </section>
@@ -528,6 +528,15 @@
       </div>
     </footer>
 
+    <!-- Animation Script -->
+    <script>
+      document.addEventListener('DOMContentLoaded', function () {
+        const elements = document.querySelectorAll('.fade-in-element');
+        elements.forEach((element, index) => {
+          element.style.animationDelay = `${index * 0.3}s`;
+        });
+      });
+    </script>
     <!-- ES Module Entry Point -->
     <script type="module" src="../../js/main.js"></script>
   </body>

@@ -1,10 +1,12 @@
 # Client
 
 ## Package Identity
+
 - `client/` contains the browser app served from Apache/XAMPP: HTML views, CSS, static components, and ES module JavaScript.
 - There is no frontend framework. Routing is page-based and initialization flows through [main.js](/C:/Users/Qwenzy/Desktop/haven-space/client/js/main.js).
 
 ## Setup & Run
+
 - Frontend base URL: `http://localhost`
 - Production/debug URL: `https://haven-space.appwrite.network`
 - Lint JS: `bun run lint`
@@ -13,6 +15,7 @@
 - Read frontend design guidance before UI work: [DESIGN.md](/C:/Users/Qwenzy/Desktop/haven-space/DESIGN.md)
 
 ## Patterns & Conventions
+
 - Treat [client/js/main.js](/C:/Users/Qwenzy/Desktop/haven-space/client/js/main.js) as the entry router. New page logic should be wired through a `data-view` branch there or through an existing page module.
 - Keep reusable UI behavior in `client/js/components/` and shared browser helpers in `client/js/shared/`.
 - Put role/page logic under `client/js/views/<role>/`; mirror the HTML structure under `client/views/<role>/` and CSS under `client/css/views/<role>/`.
@@ -26,6 +29,7 @@
 - When touching UI/UX, preserve the existing product tone and check relative asset paths because the build script rewrites them for `dist/`.
 
 ## Key Files
+
 - Entry router: [client/js/main.js](/C:/Users/Qwenzy/Desktop/haven-space/client/js/main.js)
 - Environment config: [client/js/config.js](/C:/Users/Qwenzy/Desktop/haven-space/client/js/config.js)
 - Appwrite browser SDK setup: [client/js/appwrite.js](/C:/Users/Qwenzy/Desktop/haven-space/client/js/appwrite.js)
@@ -36,6 +40,7 @@
 - Build path-rewrite logic: [scripts/build.js](/C:/Users/Qwenzy/Desktop/haven-space/scripts/build.js)
 
 ## JIT Index Hints
+
 - Find page initializers: `rg -n "export function init|export async function init" client/js/views client/js/components`
 - Find API calls from the browser: `rg -n "fetch\\(" client/js`
 - Find shared localStorage usage: `rg -n "localStorage\\." client/js/shared client/js/components client/js/views`
@@ -43,9 +48,11 @@
 - Find inline scripts to extract: `rg -n "document.addEventListener\\('DOMContentLoaded'|<script type=\"module\">" client/views`
 
 ## Common Gotchas
+
 - `http://localhost` serves the frontend, while many JS modules talk to `http://localhost:8000`; keep both local and production URLs working.
 - `scripts/build.js` rewrites paths for `dist/`, so hardcoded relative paths can break production even if localhost works.
 - Authentication state is spread across `token`, `user`, `user_id`, and related flags in `localStorage`; changes usually need to stay consistent across all shared auth utilities.
 
 ## Pre-PR Checks
+
 `bun run lint && bun run format:check && bun run build`

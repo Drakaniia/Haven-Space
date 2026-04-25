@@ -316,6 +316,24 @@
   z-index: 1;
 }
 
+/* Fade-in Animation */
+.fade-in-element {
+  opacity: 0;
+  transform: translateY(20px);
+  animation: fadeInUp 1s forwards;
+}
+
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
 /* Hero Announcement Pill */
 .hero-announcement-pill {
   display: inline-flex;
