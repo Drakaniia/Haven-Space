@@ -1,6 +1,9 @@
 node_modules/
 dist/
 build/
+vendor/
+functions/vendor/
+functions/api/vendor/
 *.log
 *.tmp
 .DS_Store
