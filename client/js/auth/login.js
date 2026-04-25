@@ -2,7 +2,6 @@ import { getIcon } from '../shared/icons.js';
 import { getBoarderRedirectPath, updateBoarderStatus } from '../shared/routing.js';
 import { showToast } from '../shared/toast.js';
 import CONFIG from '../config.js';
-import AIService from '../services/AIService.js';
 
 /**
  * Inject icons from centralized library into elements with data-icon attributes
@@ -70,18 +69,24 @@ function initializeLogin() {
     };
 
     try {
-      // Authenticate with PHP backend to get a JWT for API calls
-      const phpLoginRes = await AIService.executeFunction('/auth/login.php', 'POST', {
-        email: data.email,
-        password: data.password,
+      // Make direct HTTP request to login endpoint
+      const response = await fetch(`${CONFIG.API_BASE_URL}/auth/login.php`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          email: data.email,
+          password: data.password,
+        }),
       });
 
-      if (!phpLoginRes.ok) {
-        const errData = phpLoginRes;
-        throw new Error(errData.error || 'Login failed. Please check your credentials.');
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Login failed. Please check your credentials.');
       }
 
-      const phpData = phpLoginRes;
+      const phpData = await response.json();
       const phpUser = phpData.user;
       const role = phpUser.role ?? 'boarder';
 
