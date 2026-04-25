@@ -557,6 +557,46 @@ return function ($context) {
                 }
                 break;
 
+            case preg_match('#^/api/landlord/applications/(\d+)/status$#', $path, $matches):
+                authenticateUser($client, $headers_in);
+                $user = $account->get();
+                
+                if ($method === 'PATCH') {
+                    $applicationId = $matches[1];
+                    $status = $originalRequestData['status'] ?? '';
+                    
+                    if (empty($status)) {
+                        return $context->res->json(generateResponse(null, 400, 'Status is required'), 400, $headers);
+                    }
+                    
+                    // Validate status
+                    $validStatuses = ['pending', 'under_review', 'approved', 'rejected'];
+                    if (!in_array($status, $validStatuses)) {
+                        return $context->res->json(generateResponse(null, 400, 'Invalid status'), 400, $headers);
+                    }
+                    
+                    // Get the application and verify ownership
+                    $application = $databases->getDocument($databaseId, $collections['applications'], $applicationId);
+                    
+                    // Verify the application belongs to landlord's property
+                    $property = $databases->getDocument($databaseId, $collections['properties'], $application['property_id']);
+                    
+                    if ($property['landlord_id'] !== $user['$id']) {
+                        return $context->res->json(generateResponse(null, 403, 'Access denied'), 403, $headers);
+                    }
+                    
+                    // Update application status
+                    $updatedApplication = $databases->updateDocument(
+                        $databaseId, 
+                        $collections['applications'], 
+                        $applicationId, 
+                        ['status' => $status, 'updated_at' => date('c')]
+                    );
+                    
+                    return $context->res->json(generateResponse($updatedApplication, 200, 'Application status updated'), 200, $headers);
+                }
+                break;
+
             // Message endpoints
             case preg_match('#^/api/messages/conversations$#', $path):
                 authenticateUser($client, $headers_in);
