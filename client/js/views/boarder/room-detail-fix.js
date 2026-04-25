@@ -29,7 +29,7 @@ async function loadRoomData() {
     
   } catch (error) {
     console.error('Error loading room data:', error);
-    showError('Failed to load room details. Please try again later.');
+    showToast('Failed to load room details. Please try again later.', 'error');
   }
 }
 
@@ -266,18 +266,7 @@ function loadThumbnailImages(_images) {
 }
 
 // Show error message
-function showError(message) {
-  const roomTitle = document.getElementById('room-title');
-  if (roomTitle) {
-    roomTitle.textContent = 'Error Loading Room';
-    roomTitle.style.color = '#ef4444';
-  }
-  
-  const roomDescription = document.getElementById('room-description');
-  if (roomDescription) {
-    roomDescription.innerHTML = `<p style="color: #ef4444;">${message}</p>`;
-  }
-}
+
 
 // Initialize when DOM is ready
 if (document.readyState === 'loading') {
