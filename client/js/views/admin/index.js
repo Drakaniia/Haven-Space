@@ -6,6 +6,7 @@ import CONFIG from '../../config.js';
 import { initSidebar } from '../../components/sidebar.js';
 import { initNavbar } from '../../components/navbar.js';
 import { initAdminDashboardPanels } from './admin-dashboard.js';
+import { getAuthHeaders } from '../../shared/auth-headers.js';
 
 function loginPath() {
   const pathname = window.location.pathname;
@@ -30,7 +31,10 @@ function initialsFrom(user) {
 export async function initAdminDashboard() {
   let user;
   try {
-    const res = await fetch(`${CONFIG.API_BASE_URL}/auth/me.php`, { credentials: 'include' });
+    const res = await fetch(`${CONFIG.API_BASE_URL}/auth/me.php`, {
+      headers: getAuthHeaders(),
+      credentials: 'include',
+    });
     if (!res.ok) {
       window.location.href = loginPath();
       return;

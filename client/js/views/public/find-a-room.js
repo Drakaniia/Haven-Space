@@ -989,10 +989,8 @@ function hideHeader() {
 async function loadApplicationsFromAPI() {
   try {
     const user = JSON.parse(localStorage.getItem('user') || '{}');
-    const response = await fetch(`${CONFIG.API_BASE_URL}/api/boarder/applications`, {
+    const response = await authenticatedFetch(`${CONFIG.API_BASE_URL}/api/boarder/applications`, {
       method: 'GET',
-      headers: { 'Content-Type': 'application/json' },
-      credentials: 'include',
     });
 
     if (!response.ok) throw new Error('Failed to fetch applications');

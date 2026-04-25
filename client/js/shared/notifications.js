@@ -4,7 +4,7 @@
  */
 
 import CONFIG from '../config.js';
-import { getAuthHeaders } from './state.js';
+import { getAuthHeaders, authenticatedFetch } from './state.js';
 
 /**
  * Fetch all notifications for the current user
@@ -79,9 +79,7 @@ export async function deleteNotification(notificationId) {
  * @returns {Promise<Array>}
  */
 export async function fetchAcceptedApplications() {
-  const res = await fetch(`${CONFIG.API_BASE_URL}/api/boarder/accepted-applications`, {
-    credentials: 'include',
-  });
+  const res = await authenticatedFetch(`${CONFIG.API_BASE_URL}/api/boarder/accepted-applications`);
   if (!res.ok) throw new Error('Failed to fetch accepted applications');
   const json = await res.json();
   return json.data;
@@ -92,9 +90,9 @@ export async function fetchAcceptedApplications() {
  * @returns {Promise<boolean>}
  */
 export async function hasAcceptedApplications() {
-  const res = await fetch(`${CONFIG.API_BASE_URL}/api/boarder/has-accepted-applications`, {
-    credentials: 'include',
-  });
+  const res = await authenticatedFetch(
+    `${CONFIG.API_BASE_URL}/api/boarder/has-accepted-applications`
+  );
   if (!res.ok) throw new Error('Failed to check accepted applications');
   const json = await res.json();
   return json.data.has_accepted;
