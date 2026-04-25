@@ -42,6 +42,8 @@ return function ($context) {
     }
     // Keep the original request data for processing
     $originalRequestData = $requestData;
+    // Make it available globally for included files
+    $GLOBALS['originalRequestData'] = $originalRequestData;
     
     // Enhanced CORS headers - use specific origin for credentials support
     $origin = $context->req->headers['origin'] ?? $context->req->headers['Origin'] ?? '*';

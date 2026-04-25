@@ -20,7 +20,15 @@ if (!defined('APPWRITE_FUNCTION_CONTEXT')) {
 use App\Core\Auth\GoogleOAuth;
 
 // Validate action parameter
-$action = $_GET['action'] ?? 'login';
+// In Appwrite function context, parameters come from original request data
+if (defined('APPWRITE_FUNCTION_CONTEXT') && isset($GLOBALS['originalRequestData'])) {
+    $action = $GLOBALS['originalRequestData']['action'] ?? $_GET['action'] ?? 'login';
+    $role = $GLOBALS['originalRequestData']['role'] ?? $_GET['role'] ?? null;
+} else {
+    $action = $_GET['action'] ?? 'login';
+    $role = $_GET['role'] ?? null;
+}
+
 $validActions = ['login', 'signup', 'link'];
 
 if (!in_array($action, $validActions)) {
@@ -36,8 +44,8 @@ if (!in_array($action, $validActions)) {
     $_SESSION['oauth_action'] = $action;
 
     // Store role preference if provided (for signup flow)
-    if (isset($_GET['role']) && in_array($_GET['role'], ['boarder', 'landlord'])) {
-        $_SESSION['oauth_role_preference'] = $_GET['role'];
+    if ($role && in_array($role, ['boarder', 'landlord'])) {
+        $_SESSION['oauth_role_preference'] = $role;
     }
 
     // Generate state token for CSRF protection
