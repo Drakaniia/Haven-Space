@@ -1,63 +1,61 @@
 {
-    "_readme": [
-        "This file locks the dependencies of your project to a known state",
-        "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
-        "This file is @generated automatically"
-    ],
-    "content-hash": "80b52601331c6197108fd2226636af15",
-    "packages": [
-        {
-            "name": "appwrite/appwrite",
-            "version": "15.1.0",
-            "source": {
-                "type": "git",
-                "url": "https://github.com/appwrite/sdk-for-php.git",
-                "reference": "c438b3885071ac7c0329199dce5e6f6a24dd215b"
-            },
-            "dist": {
-                "type": "zip",
-                "url": "https://api.github.com/repos/appwrite/sdk-for-php/zipball/c438b3885071ac7c0329199dce5e6f6a24dd215b",
-                "reference": "c438b3885071ac7c0329199dce5e6f6a24dd215b",
-                "shasum": ""
-            },
-            "require": {
-                "ext-curl": "*",
-                "ext-json": "*",
-                "php": ">=7.1.0"
-            },
-            "require-dev": {
-                "mockery/mockery": "^1.6.6",
-                "phpunit/phpunit": "^10"
-            },
-            "type": "library",
-            "autoload": {
-                "psr-4": {
-                    "Appwrite\\": "src/Appwrite"
-                }
-            },
-            "notification-url": "https://packagist.org/downloads/",
-            "license": [
-                "BSD-3-Clause"
-            ],
-            "description": "Appwrite is an open-source self-hosted backend server that abstract and simplify complex and repetitive development tasks behind a very simple REST API",
-            "support": {
-                "email": "team@appwrite.io",
-                "issues": "https://github.com/appwrite/sdk-for-php/issues",
-                "source": "https://github.com/appwrite/sdk-for-php/tree/15.1.0",
-                "url": "https://appwrite.io/support"
-            },
-            "time": "2025-08-01T04:50:51+00:00"
+  "_readme": [
+    "This file locks the dependencies of your project to a known state",
+    "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
+    "This file is @generated automatically"
+  ],
+  "content-hash": "80b52601331c6197108fd2226636af15",
+  "packages": [
+    {
+      "name": "appwrite/appwrite",
+      "version": "15.1.0",
+      "source": {
+        "type": "git",
+        "url": "https://github.com/appwrite/sdk-for-php.git",
+        "reference": "c438b3885071ac7c0329199dce5e6f6a24dd215b"
+      },
+      "dist": {
+        "type": "zip",
+        "url": "https://api.github.com/repos/appwrite/sdk-for-php/zipball/c438b3885071ac7c0329199dce5e6f6a24dd215b",
+        "reference": "c438b3885071ac7c0329199dce5e6f6a24dd215b",
+        "shasum": ""
+      },
+      "require": {
+        "ext-curl": "*",
+        "ext-json": "*",
+        "php": ">=7.1.0"
+      },
+      "require-dev": {
+        "mockery/mockery": "^1.6.6",
+        "phpunit/phpunit": "^10"
+      },
+      "type": "library",
+      "autoload": {
+        "psr-4": {
+          "Appwrite\\": "src/Appwrite"
         }
-    ],
-    "packages-dev": [],
-    "aliases": [],
-    "minimum-stability": "stable",
-    "stability-flags": {},
-    "prefer-stable": false,
-    "prefer-lowest": false,
-    "platform": {
-        "php": ">=8.0"
-    },
-    "platform-dev": {},
-    "plugin-api-version": "2.9.0"
+      },
+      "notification-url": "https://packagist.org/downloads/",
+      "license": ["BSD-3-Clause"],
+      "description": "Appwrite is an open-source self-hosted backend server that abstract and simplify complex and repetitive development tasks behind a very simple REST API",
+      "support": {
+        "email": "team@appwrite.io",
+        "issues": "https://github.com/appwrite/sdk-for-php/issues",
+        "source": "https://github.com/appwrite/sdk-for-php/tree/15.1.0",
+        "url": "https://appwrite.io/support"
+      },
+      "time": "2025-08-01T04:50:51+00:00"
+    }
+  ],
+  "packages-dev": [],
+  "aliases": [],
+  "minimum-stability": "stable",
+  "stability-flags": {},
+  "prefer-stable": false,
+  "prefer-lowest": false,
+  "platform": {
+    "php": ">=8.0"
+  },
+  "platform-dev": {},
+  "plugin-api-version": "2.9.0"
 }
