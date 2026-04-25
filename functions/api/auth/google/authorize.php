@@ -32,34 +32,34 @@ $validActions = ['login', 'signup', 'link'];
 
 if (!in_array($action, $validActions)) {
     if (defined('APPWRITE_FUNCTION_CONTEXT')) {
-        // In Appwrite context, we'll let the caller handle the error
-        $authUrl = null;
+        echo json_encode(['error' => 'Invalid action parameter']);
+        return;
     } else {
         http_response_code(400);
         exit('Invalid action parameter');
     }
+}
+
+// Store action in session for callback to use
+$_SESSION['oauth_action'] = $action;
+
+// Store role preference if provided (for signup flow)
+if ($role && in_array($role, ['boarder', 'landlord'])) {
+    $_SESSION['oauth_role_preference'] = $role;
+}
+
+// Generate state token for CSRF protection
+$state = GoogleOAuth::generateState();
+$_SESSION['oauth_state'] = $state;
+
+// Generate authorization URL
+$authUrl = GoogleOAuth::getAuthorizationUrl($state);
+
+if (defined('APPWRITE_FUNCTION_CONTEXT')) {
+    // In Appwrite context, return JSON response
+    echo json_encode(['redirect_url' => $authUrl]);
 } else {
-    // Store action in session for callback to use
-    $_SESSION['oauth_action'] = $action;
-
-    // Store role preference if provided (for signup flow)
-    if ($role && in_array($role, ['boarder', 'landlord'])) {
-        $_SESSION['oauth_role_preference'] = $role;
-    }
-
-    // Generate state token for CSRF protection
-    $state = GoogleOAuth::generateState();
-    $_SESSION['oauth_state'] = $state;
-
-    // Generate authorization URL
-    $authUrl = GoogleOAuth::getAuthorizationUrl($state);
-    
-    if (defined('APPWRITE_FUNCTION_CONTEXT')) {
-        // In Appwrite context, just set the variable for the caller to use
-        // Don't redirect or exit
-    } else {
-        // Standalone execution - redirect user to Google's OAuth consent screen
-        header('Location: ' . $authUrl);
-        exit;
-    }
+    // Standalone execution - redirect user to Google's OAuth consent screen
+    header('Location: ' . $authUrl);
+    exit;
 }
