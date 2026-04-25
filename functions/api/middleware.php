@@ -135,17 +135,14 @@ class Middleware
     {
         $user = self::authenticate();
 
-        // Always ensure role is set from database for critical authorization
-        if (empty($user['role']) || !in_array($user['role'], $allowedRoles)) {
-            // Fetch role from database as fallback
-            if (!empty($user['user_id'])) {
-                $pdo = Connection::getInstance()->getPdo();
-                $stmt = $pdo->prepare('SELECT ur.role_name as role FROM users u JOIN user_roles ur ON u.role_id = ur.id WHERE u.id = ? AND u.deleted_at IS NULL');
-                $stmt->execute([$user['user_id']]);
-                $roleRow = $stmt->fetch();
-                if ($roleRow) {
-                    $user['role'] = $roleRow['role'];
-                }
+        // Ensure role is set, fallback to database lookup if missing
+        if (empty($user['role']) && !empty($user['user_id'])) {
+            $pdo = Connection::getInstance()->getPdo();
+            $stmt = $pdo->prepare('SELECT ur.role_name as role FROM users u JOIN user_roles ur ON u.role_id = ur.id WHERE u.id = ?');
+            $stmt->execute([$user['user_id']]);
+            $roleRow = $stmt->fetch();
+            if ($roleRow) {
+                $user['role'] = $roleRow['role'];
             }
         }
 
@@ -154,11 +151,7 @@ class Middleware
         }
 
         if (!in_array($user['role'], $allowedRoles)) {
-            _respond(403, [
-                'error' => 'Forbidden: You do not have permission to access this resource',
-                'required_roles' => $allowedRoles,
-                'user_role' => $user['role']
-            ]);
+            _respond(403, ['error' => 'Forbidden: You do not have permission to access this resource']);
         }
 
         return $user;
