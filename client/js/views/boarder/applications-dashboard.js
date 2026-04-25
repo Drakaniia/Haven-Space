@@ -22,12 +22,36 @@ export async function initApplicationsDashboard() {
   // Show loading states initially
   showLoadingStates();
 
-  // Load dashboard data
-  await loadDashboardStats();
-  await loadRecentApplications();
-  loadSavedProperties();
-  await loadRecentActivity();
+  // Load dashboard data with better error handling
+  try {
+    await loadDashboardStats();
+  } catch (error) {
+    console.error('Failed to load dashboard stats:', error);
+    // Continue with other data loading even if stats fail
+  }
+
+  try {
+    await loadRecentApplications();
+  } catch (error) {
+    console.error('Failed to load recent applications:', error);
+  }
+
+  try {
+    loadSavedProperties();
+  } catch (error) {
+    console.error('Failed to load saved properties:', error);
+  }
+
+  try {
+    await loadRecentActivity();
+  } catch (error) {
+    console.error('Failed to load recent activity:', error);
+  }
+
   setupEventListeners();
+
+  // Show a helpful message if the user is new
+  checkForNewUser();
 }
 
 /**
@@ -127,7 +151,7 @@ async function loadDashboardStats() {
     const response = await authenticatedFetch(`${CONFIG.API_BASE_URL}/api/boarder/dashboard/stats`);
 
     if (!response.ok) {
-      throw new Error('Failed to fetch dashboard stats');
+      throw new Error(`Failed to fetch dashboard stats: ${response.status} ${response.statusText}`);
     }
 
     const data = await response.json();
@@ -154,6 +178,9 @@ async function loadDashboardStats() {
 
     // Clear loading states
     clearLoadingStates();
+
+    // Show user-friendly error message
+    showToast('Unable to load dashboard statistics. Using offline data.', 'warning');
 
     // Fall back to localStorage data on error
     const applications = JSON.parse(localStorage.getItem('applications') || '[]');
@@ -322,6 +349,9 @@ async function loadRecentApplications() {
     replaceIconsInContainer(container);
   } catch (error) {
     console.error('Error loading applications:', error);
+
+    // Show user-friendly error message
+    showToast('Unable to load recent applications from server. Showing offline data.', 'warning');
 
     // Fall back to localStorage data on error
     const applications = JSON.parse(localStorage.getItem('applications') || '[]');
@@ -565,12 +595,14 @@ async function loadSavedProperties() {
     replaceIconsInContainer(container);
   } catch (error) {
     console.error('Error loading saved properties:', error);
+    showToast('Unable to load saved properties from server.', 'warning');
     container.innerHTML = `
       <div class="empty-state-small">
         <span class="icon-placeholder" data-icon="exclamationTriangle"></span>
-        <p>Failed to load saved properties</p>
-        <button class="boarder-btn boarder-btn-outline boarder-btn-sm" onclick="loadSavedProperties()">
-          Try Again
+        <p>Unable to load saved properties</p>
+        <p class="text-sm text-gray-500">Check your internet connection and try refreshing the page.</p>
+        <button class="boarder-btn boarder-btn-outline boarder-btn-sm" onclick="location.reload()">
+          Refresh Page
         </button>
       </div>
     `;
@@ -1192,6 +1224,28 @@ function showToast(message, type = 'info') {
       document.body.removeChild(toast);
     }, 300);
   }, 3000);
+}
+
+/**
+ * Check if this is a new user and show helpful guidance
+ */
+function checkForNewUser() {
+  const applications = JSON.parse(localStorage.getItem('applications') || '[]');
+  const savedProperties = JSON.parse(localStorage.getItem('savedProperties') || '[]');
+  const user = JSON.parse(localStorage.getItem('user') || '{}');
+
+  // If user has no applications and no saved properties, show welcome message
+  if (applications.length === 0 && savedProperties.length === 0) {
+    setTimeout(() => {
+      showToast(
+        `Welcome ${
+          user.name || 'to Haven Space'
+        }! Start by browsing properties to find your perfect room.`,
+        'info',
+        8000
+      );
+    }, 2000);
+  }
 }
 
 // Initialize on module load for single-page apps

@@ -4,12 +4,40 @@
  */
 
 import { initIconElements } from '../shared/icons.js';
+import CONFIG from '../config.js';
 
 // Initialize page
 document.addEventListener('DOMContentLoaded', () => {
   initIconElements();
   initializeRoleSelection();
 });
+
+/**
+ * Check if a pending Google registration exists for the given token
+ * @param {string} token - The pending registration token
+ * @returns {Promise<boolean>} - True if pending registration exists, false otherwise
+ */
+async function checkPendingRegistration(token) {
+  try {
+    const response = await fetch(
+      `${
+        CONFIG.API_BASE_URL
+      }/api/auth/google/check-pending-registration.php?token=${encodeURIComponent(token)}`,
+      {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      }
+    );
+
+    const result = await response.json();
+    return result.success && result.exists;
+  } catch (error) {
+    console.error('Error checking pending registration:', error);
+    return false;
+  }
+}
 
 /**
  * Initialize role selection functionality
@@ -23,11 +51,22 @@ function initializeRoleSelection() {
 
   // Check if user came from Google OAuth
   const urlParams = new URLSearchParams(window.location.search);
-  const isGoogleOAuth = urlParams.get('oauth') === 'google';
+  const isGoogleOAuth = urlParams.get('oauth') === 'google' && urlParams.get('token');
 
-  // Show Google OAuth message if applicable
+  // Handle Google OAuth message visibility
   if (isGoogleOAuth && googleOAuthMessage) {
-    googleOAuthMessage.style.display = 'block';
+    checkPendingRegistration(urlParams.get('token')).then(isValid => {
+      if (isValid) {
+        googleOAuthMessage.style.display = 'block';
+      } else {
+        googleOAuthMessage.style.display = 'none';
+      }
+    });
+  } else {
+    // Ensure message is hidden when not from Google OAuth
+    if (googleOAuthMessage) {
+      googleOAuthMessage.style.display = 'none';
+    }
   }
 
   // Function to update button based on selection
@@ -99,16 +138,19 @@ function initializeRoleSelection() {
         continueBtn.disabled = true;
         continueBtn.textContent = 'Completing Registration...';
 
-        const response = await fetch('/api/auth/google/complete-registration.php', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
-            role: selectedRole,
-            token: urlParams.get('token') ?? undefined,
-          }),
-        });
+        const response = await fetch(
+          `${CONFIG.API_BASE_URL}/api/auth/google/complete-registration.php`,
+          {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+              role: selectedRole,
+              token: urlParams.get('token') ?? undefined,
+            }),
+          }
+        );
 
         const result = await response.json();
 

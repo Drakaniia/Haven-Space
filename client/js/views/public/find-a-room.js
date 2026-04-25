@@ -1203,8 +1203,27 @@ function initProfileDropdown() {
     profileLink.addEventListener('click', e => {
       e.preventDefault();
       dropdownMenu.classList.remove('show');
-      // Navigate to profile
-      window.location.href = profileLink.href;
+
+      // Check if user is a boarder and get their status
+      const user = JSON.parse(localStorage.getItem('user') || '{}');
+      if (user.role === 'boarder') {
+        const boarderStatus = user.boarder_status || user.boarderStatus || 'new';
+        const basePath = window.location.pathname.includes('github.io')
+          ? '/Haven-Space/client/views/'
+          : '/views/';
+
+        // Redirect based on boarder status
+        if (boarderStatus === 'accepted') {
+          // If accepted, go to main dashboard
+          window.location.href = `${basePath}boarder/index.html`;
+        } else {
+          // If not yet accepted, go to applications dashboard
+          window.location.href = `${basePath}boarder/applications-dashboard/index.html`;
+        }
+      } else {
+        // For non-boarders, navigate to profile as before
+        window.location.href = profileLink.href;
+      }
     });
   }
 

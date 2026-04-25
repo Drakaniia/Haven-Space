@@ -237,6 +237,54 @@ function ensureDropdownsWork() {
       console.log('Profile dropdown toggled:', profileDropdownMenu.classList.contains('show'));
     });
 
+    // Re-attach logout handler after cloning (cloning removes all event listeners)
+    const logoutBtn = profileDropdownMenu.querySelector('#profile-menu-logout');
+    if (logoutBtn) {
+      logoutBtn.addEventListener('click', async e => {
+        e.preventDefault();
+        profileDropdownMenu.classList.remove('show');
+        try {
+          const { logout } = await import('../../shared/auth-check.js');
+          await logout();
+        } catch (error) {
+          console.error('Logout failed:', error);
+          localStorage.removeItem('token');
+          localStorage.removeItem('user');
+          window.location.href = '/views/public/auth/login.html';
+        }
+      });
+    }
+
+    // Handle profile menu item click with status-based routing
+    const profileMenuProfile = document.getElementById('profile-menu-profile');
+    if (profileMenuProfile) {
+      profileMenuProfile.addEventListener('click', e => {
+        e.preventDefault();
+        profileDropdownMenu.classList.remove('show');
+
+        // Check boarder status and redirect accordingly
+        const user = JSON.parse(localStorage.getItem('user') || '{}');
+        if (user.role === 'boarder') {
+          const boarderStatus = user.boarder_status || user.boarderStatus || 'new';
+          const basePath = window.location.pathname.includes('github.io')
+            ? '/Haven-Space/client/views/'
+            : '/views/';
+
+          // Redirect based on boarder status
+          if (boarderStatus === 'accepted') {
+            // If accepted, go to main dashboard
+            window.location.href = `${basePath}boarder/index.html`;
+          } else {
+            // If not yet accepted, go to applications dashboard
+            window.location.href = `${basePath}boarder/applications-dashboard/index.html`;
+          }
+        } else {
+          // For non-boarders, navigate to settings as before
+          window.location.href = profileMenuProfile.href;
+        }
+      });
+    }
+
     // Close when clicking outside
     document.addEventListener('click', e => {
       if (!newProfileBtn.contains(e.target) && !profileDropdownMenu.contains(e.target)) {

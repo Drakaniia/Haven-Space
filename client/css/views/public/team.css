@@ -2,10 +2,23 @@
   max-width: 1400px;
   margin: 0 auto;
   padding: 100px 20px 40px;
+  position: relative;
+}
+
+.team-grid {
+  display: flex;
+  gap: 16px;
+  align-items: stretch;
+  width: 100%;
+  height: 380px;
+  position: relative;
+  z-index: 1;
 }
 
 .team-header {
   margin-bottom: 60px;
+  position: relative;
+  z-index: 1;
 }
 
 .team-header h1 {
@@ -380,6 +393,8 @@
   padding: 80px 20px;
   margin-top: 60px;
   border-radius: 24px;
+  position: relative;
+  z-index: 1;
 }
 
 .mission-container {
@@ -449,6 +464,8 @@
 .challenges-section {
   padding: 80px 20px;
   background: #fff;
+  position: relative;
+  z-index: 1;
 }
 
 .challenges-container {
@@ -508,6 +525,8 @@
 .roadmap-section {
   padding: 80px 20px;
   background: linear-gradient(180deg, #1a1a1a 0%, #2d2d2d 100%);
+  position: relative;
+  z-index: 1;
 }
 
 .roadmap-container {
@@ -617,6 +636,8 @@
 .university-section {
   padding: 80px 20px;
   background: #e8f5e9;
+  position: relative;
+  z-index: 1;
 }
 
 .university-container {
