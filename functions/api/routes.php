@@ -421,6 +421,11 @@ Router::get('/api/rooms/popular-locations', function() {
     require_once __DIR__ . '/rooms/popular-locations.php';
 });
 
+// Get similar properties based on location, price, and type (no authentication required)
+Router::get('/api/rooms/similar', function() {
+    require_once __DIR__ . '/rooms/similar.php';
+});
+
 // ============================================
 // ALL PROPERTIES ROUTES (FOR MAPS)
 // ============================================
