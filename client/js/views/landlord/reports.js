@@ -45,12 +45,19 @@ async function fetchReports(params = {}) {
     query.set('status_filter', params.status_filter);
   }
 
+  // Get authentication token
+  const token = localStorage.getItem('token');
+  const headers = { 'Content-Type': 'application/json' };
+  if (token) {
+    headers['Authorization'] = `Bearer ${token}`;
+  }
+
   try {
     const response = await fetch(
       `${CONFIG.API_BASE_URL}/api/landlord/reports?${query.toString()}`,
       {
         method: 'GET',
-        headers: { 'Content-Type': 'application/json' },
+        headers,
         credentials: 'include',
       }
     );

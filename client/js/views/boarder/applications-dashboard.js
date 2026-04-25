@@ -271,8 +271,8 @@ async function loadRecentApplications() {
       return;
     }
 
-    // Show recent applications (last 3)
-    const recentApplications = applications.slice(-3).reverse();
+    // Show recent applications (first 3, already sorted newest-first by API)
+    const recentApplications = applications.slice(0, 3);
 
     container.innerHTML = recentApplications
       .map(

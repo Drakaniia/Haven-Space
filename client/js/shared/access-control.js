@@ -4,6 +4,7 @@
  */
 
 import CONFIG from '../config.js';
+import { authenticatedFetch } from './state.js';
 
 // Access control state
 const accessState = {
@@ -26,14 +27,15 @@ export async function checkAcceptanceStatus() {
       return false;
     }
 
-    const response = await fetch(`${CONFIG.API_BASE_URL}/api/boarder/has-accepted-applications`, {
-      method: 'GET',
-      headers: {
-        'Content-Type': 'application/json',
-        'X-User-Id': userId,
-      },
-      credentials: 'include',
-    });
+    const response = await authenticatedFetch(
+      `${CONFIG.API_BASE_URL}/api/boarder/has-accepted-applications`,
+      {
+        method: 'GET',
+        headers: {
+          'X-User-Id': userId,
+        },
+      }
+    );
 
     if (response.ok) {
       const data = await response.json();

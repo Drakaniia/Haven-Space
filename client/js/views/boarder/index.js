@@ -22,6 +22,7 @@ import { openAcceptedApplicationsOverlay } from '../../components/accepted-appli
 import { hasAcceptedApplications } from '../../shared/notifications.js';
 import { updateNavbarNotifications } from '../../components/navbar.js';
 import { initDashboard } from '../../shared/dashboard-init.js';
+import { ensureAuth } from '../../shared/auth-sync.js';
 
 function loginPath() {
   const pathname = window.location.pathname;
@@ -64,27 +65,16 @@ function initialsFrom(user) {
  * Sets up sidebar, navbar, and loads dashboard data
  */
 export async function initBoarderDashboard() {
-  let user;
-  try {
-    const res = await fetch(`${CONFIG.API_BASE_URL}/auth/me.php`, {
-      method: 'GET',
-      headers: getAuthHeadersOnly('3'),
-      credentials: 'include',
-    });
+  // Ensure user is authenticated as a boarder and data is synced
+  const user = await ensureAuth('boarder');
 
-    if (!res.ok) {
-      console.error('Authentication failed:', res.status, res.statusText);
-      window.location.href = loginPath();
-      return;
-    }
-
-    const data = await res.json();
-    user = data.user;
-  } catch (error) {
-    console.error('Error during authentication:', error);
+  if (!user) {
+    console.error('Authentication failed or user is not a boarder');
     window.location.href = loginPath();
     return;
   }
+
+  console.log('Boarder authenticated:', user);
 
   // Initialize profile data first
   await initDashboard();

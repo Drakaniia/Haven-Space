@@ -5,7 +5,7 @@
 
 import { initSidebar } from '../../components/sidebar.js';
 import { initNavbar } from '../../components/navbar.js';
-import { getState } from '../../shared/state.js';
+import { getState, authenticatedFetch } from '../../shared/state.js';
 import { initIconElements } from '../../shared/icons.js';
 import CONFIG from '../../config.js';
 
@@ -275,12 +275,8 @@ function calculateDistance(lat1, lng1, lat2, lng2) {
 async function loadUserData() {
   try {
     const [savedRes, appliedRes] = await Promise.all([
-      fetch(`${CONFIG.API_BASE_URL}/api/boarder/saved-rooms`, {
-        credentials: 'include',
-      }).catch(() => null),
-      fetch(`${CONFIG.API_BASE_URL}/api/boarder/applications`, {
-        credentials: 'include',
-      }).catch(() => null),
+      authenticatedFetch(`${CONFIG.API_BASE_URL}/api/boarder/saved-rooms`).catch(() => null),
+      authenticatedFetch(`${CONFIG.API_BASE_URL}/api/boarder/applications`).catch(() => null),
     ]);
 
     if (savedRes && savedRes.ok) {

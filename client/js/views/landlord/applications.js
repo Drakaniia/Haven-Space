@@ -5,6 +5,7 @@
 
 import CONFIG from '../../config.js';
 import { getIcon } from '../../shared/icons.js';
+import { authenticatedFetch } from '../../shared/state.js';
 
 // Application state
 const state = {
@@ -95,7 +96,7 @@ function handleDynamicClicks(e) {
   // Approve button
   if (target.classList.contains('approve-btn')) {
     const id = parseInt(target.dataset.id);
-    updateApplicationStatus(id, 'approved');
+    updateApplicationStatus(id, 'accepted');
   }
 
   // Reject button
@@ -107,13 +108,13 @@ function handleDynamicClicks(e) {
   // Under review button
   if (target.classList.contains('review-btn')) {
     const id = parseInt(target.dataset.id);
-    updateApplicationStatus(id, 'under_review');
+    updateApplicationStatus(id, 'pending');
   }
 
   // Modal action buttons
   if (target.classList.contains('modal-approve-btn')) {
     const id = parseInt(target.dataset.id);
-    updateApplicationStatus(id, 'approved');
+    updateApplicationStatus(id, 'accepted');
     closeModal();
   }
 
@@ -131,9 +132,7 @@ async function loadApplications() {
   try {
     showLoadingState();
 
-    const response = await fetch(`${CONFIG.API_BASE_URL}/api/landlord/applications`, {
-      credentials: 'include',
-    });
+    const response = await authenticatedFetch(`${CONFIG.API_BASE_URL}/api/landlord/applications`);
 
     if (!response.ok) {
       if (response.status === 401) {
@@ -166,7 +165,6 @@ function filterAndRenderApplications() {
   if (state.currentFilter !== 'all') {
     filtered = filtered.filter(app => app.status === state.currentFilter);
   }
-
   // Apply search filter
   if (state.searchQuery) {
     filtered = filtered.filter(app => {
@@ -199,7 +197,7 @@ function filterAndRenderApplications() {
  */
 function updateStats() {
   const pending = state.applications.filter(app => app.status === 'pending').length;
-  const approved = state.applications.filter(app => app.status === 'approved').length;
+  const approved = state.applications.filter(app => app.status === 'accepted').length;
   const rejected = state.applications.filter(app => app.status === 'rejected').length;
   const total = state.applications.length;
 
@@ -353,9 +351,13 @@ function getStatusBadge(status) {
       class: 'application-status-badge status-review',
       label: 'Under Review',
     },
+    accepted: {
+      class: 'application-status-badge status-approved',
+      label: 'Accepted',
+    },
     approved: {
       class: 'application-status-badge status-approved',
-      label: 'Approved',
+      label: 'Accepted',
     },
     rejected: {
       class: 'application-status-badge status-rejected',
@@ -371,7 +373,7 @@ function getStatusBadge(status) {
  * Get action buttons based on status
  */
 function getActionButtons(status, id) {
-  if (status === 'approved' || status === 'rejected') {
+  if (status === 'accepted' || status === 'approved' || status === 'rejected') {
     return '';
   }
 
@@ -411,9 +413,10 @@ function getInitials(firstName, lastName) {
  */
 async function updateApplicationStatus(id, status) {
   const statusLabels = {
-    approved: 'approve',
+    accepted: 'accept',
     rejected: 'reject',
     under_review: 'mark as under review',
+    pending: 'mark as pending',
   };
 
   const action = statusLabels[status] || 'update';
@@ -423,20 +426,19 @@ async function updateApplicationStatus(id, status) {
   }
 
   try {
-    const response = await fetch(`${CONFIG.API_BASE_URL}/api/landlord/applications/${id}/status`, {
-      method: 'PATCH',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      credentials: 'include',
-      body: JSON.stringify({ status }),
-    });
+    const response = await authenticatedFetch(
+      `${CONFIG.API_BASE_URL}/api/landlord/applications/${id}/status`,
+      {
+        method: 'PATCH',
+        body: JSON.stringify({ status }),
+      }
+    );
 
     if (!response.ok) {
       throw new Error('Failed to update application status');
     }
 
-    showToast(`Application ${action}d successfully!`, 'success');
+    showToast(`Application ${action}ed successfully!`, 'success');
     await loadApplications();
   } catch (error) {
     console.error('Error updating application:', error);
@@ -527,7 +529,7 @@ function openApplicationModal(id) {
     </div>
 
     ${
-      app.status !== 'approved' && app.status !== 'rejected'
+      app.status !== 'accepted' && app.status !== 'approved' && app.status !== 'rejected'
         ? `
     <div class="modal-application-actions">
       <button class="landlord-btn landlord-btn-success modal-approve-btn" data-id="${app.id}">

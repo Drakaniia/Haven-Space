@@ -3,6 +3,7 @@
  */
 
 import CONFIG from '../../config.js';
+import { getAuthHeadersOnly } from '../../shared/auth-headers.js';
 
 const SECTIONS = [
   'overview',
@@ -22,6 +23,7 @@ function adminApi(path, options = {}) {
     ...options,
     headers: {
       'Content-Type': 'application/json',
+      ...getAuthHeadersOnly(),
       ...(options.headers || {}),
     },
   }).then(async res => {

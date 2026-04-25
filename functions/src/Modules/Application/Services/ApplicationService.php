@@ -173,6 +173,16 @@ class ApplicationService
     private function triggerOnboardingForAcceptedApplication(array $application): void
     {
         try {
+            // Automatically verify email for accepted boarders
+            // This ensures they can access the dashboard without email verification blocking
+            $pdo = Connection::getInstance()->getPdo();
+            $emailVerifyStmt = $pdo->prepare('UPDATE users SET email_verified = 1 WHERE id = ? AND email_verified = 0');
+            $emailVerifyStmt->execute([$application['boarder_id']]);
+            
+            if ($emailVerifyStmt->rowCount() > 0) {
+                error_log("Auto-verified email for accepted boarder {$application['boarder_id']}");
+            }
+
             // Get property details for house name
             $propertyDetails = $this->repository->getPropertyDetails($application['room_id']);
 

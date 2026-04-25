@@ -71,7 +71,7 @@ async function detectAndInitialize() {
       break;
     }
     case 'admin': {
-      const { initAdminDashboard } = await import('./views/admin/index.js');
+      const { initAdminDashboard } = await import('./views/admin/index.js?v=2');
       initAdminDashboard();
       break;
     }

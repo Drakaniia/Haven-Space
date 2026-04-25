@@ -164,7 +164,7 @@ class ApplicationRepository
      */
     public function getPropertyDetails(int $roomId): ?array
     {
-        $sql = 'SELECT p.name as house_name, p.id as property_id
+        $sql = 'SELECT p.title as house_name, p.id as property_id
                 FROM rooms r
                 JOIN properties p ON r.property_id = p.id
                 WHERE r.id = ?';

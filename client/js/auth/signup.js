@@ -1,6 +1,7 @@
 import CONFIG from '../config.js';
 import { getIcon } from '../shared/icons.js';
 import { getBoarderRedirectPath, updateBoarderStatus } from '../shared/routing.js';
+import AIService from '../services/AIService.js';
 
 /**
  * Show toast notification
@@ -272,9 +273,7 @@ document.addEventListener('DOMContentLoaded', function () {
           }),
         });
 
-        const result = await response.json();
-
-        if (response.ok && result.success) {
+        if (result.success) {
           // Store user info and token
           localStorage.setItem('user', JSON.stringify(result.user));
           if (result.access_token) {

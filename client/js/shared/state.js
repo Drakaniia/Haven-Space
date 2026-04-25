@@ -100,7 +100,7 @@ export function getAuthHeaders(additionalHeaders = {}) {
 }
 
 /**
- * Make an authenticated API request
+ * Make an authenticated API request with automatic token refresh
  * @param {string} url - API endpoint URL
  * @param {Object} options - Fetch options (method, body, etc.)
  * @returns {Promise<Response>} Fetch response
@@ -108,11 +108,35 @@ export function getAuthHeaders(additionalHeaders = {}) {
 export async function authenticatedFetch(url, options = {}) {
   const headers = getAuthHeaders(options.headers);
 
-  return fetch(url, {
+  const response = await fetch(url, {
     credentials: 'include',
     ...options,
     headers,
   });
+
+  // If we get a 401 (Unauthorized), try to refresh the token
+  if (response.status === 401) {
+    try {
+      const refreshResponse = await fetch(`${url.split('/api/')[0]}/auth/refresh-token.php`, {
+        method: 'POST',
+        credentials: 'include',
+      });
+
+      if (refreshResponse.ok) {
+        // Token refreshed successfully, retry the original request
+        const newHeaders = getAuthHeaders(options.headers);
+        return fetch(url, {
+          credentials: 'include',
+          ...options,
+          headers: newHeaders,
+        });
+      }
+    } catch (refreshError) {
+      console.warn('Token refresh failed:', refreshError);
+    }
+  }
+
+  return response;
 }
 
 /**
