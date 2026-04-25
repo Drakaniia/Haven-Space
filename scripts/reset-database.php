@@ -13,7 +13,7 @@
  */
 
 // Load environment variables
-require_once __DIR__ . '/../server/config/app.php';
+require_once __DIR__ . '/../functions/config/app.php';
 
 // Colors for terminal output
 class Colors

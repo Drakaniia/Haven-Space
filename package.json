@@ -6,6 +6,7 @@
   "main": "index.js",
   "scripts": {
     "server": "cd functions && php -S localhost:8000 router.php",
+    "apache:start": "php scripts/start-apache.php",
     "db:setup": "php scripts/setup-database.php",
     "db:reset": "php scripts/reset-database.php",
     "db:reset:force": "php scripts/reset-database.php --force",
