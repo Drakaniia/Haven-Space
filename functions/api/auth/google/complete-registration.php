@@ -77,6 +77,9 @@ if (!in_array($selectedRole, ['boarder', 'landlord'])) {
     exit;
 }
 
+// Debug: Log the selected role
+error_log('Google OAuth complete-registration: Selected role = ' . $selectedRole);
+
 // Check if we have pending Google user data — via DB token (cross-port safe) or legacy session
 $googleUser = null;
 $pdo = null;
@@ -157,6 +160,9 @@ try {
         // User already exists, just log them in
         $userId = $existingUser['id'];
         $userRole = $existingUser['role'];
+        
+        // Debug: Log existing user role
+        error_log('Google OAuth complete-registration: Existing user found with role = ' . $userRole);
     } else {
         // Create new user account
         // Resolve role_id and account_status_id
@@ -164,6 +170,9 @@ try {
         $stmt->execute([$selectedRole]);
         $roleRow = $stmt->fetch(\PDO::FETCH_ASSOC);
         $roleId = $roleRow ? $roleRow['id'] : 1; // Default to first role if not found
+        
+        // Debug: Log the role lookup result
+        error_log('Google OAuth complete-registration: Role lookup for "' . $selectedRole . '" returned id = ' . $roleId);
 
         // Determine initial account status based on role (same logic as regular registration)
         $accountStatusName = ($selectedRole === 'landlord') ? 'pending_verification' : 'active';
@@ -208,6 +217,9 @@ try {
         }
         
         $userRole = $selectedRole;
+        
+        // Debug: Log the final user role
+        error_log('Google OAuth complete-registration: Final user role = ' . $userRole);
     }
 
     // Fetch verification and account status for the user

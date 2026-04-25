@@ -35,6 +35,8 @@ APP_BASE_URL=http://localhost
 
 **Server**: The server is already running on port 8000.
 
+**UI/UX Changes**: When making UI/UX changes, always reference @DESIGN.md and @.agents/skills/frontend-design/SKILL.md for design guidelines and best practices.
+
 ## dufault supeadmin credentials
 
 admin@mail.com
