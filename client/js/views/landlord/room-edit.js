@@ -16,9 +16,9 @@ import { initLandlordPermissions } from '../../shared/permissions.js';
 /* ------------------------------------------------------------------ */
 /* State                                                               */
 /* ------------------------------------------------------------------ */
-let propertyId   = null;
+let propertyId = null;
 let propertyData = null;
-let allRooms     = [];
+let allRooms = [];
 let editingRoomId = null; // null = creating new room
 
 /* ------------------------------------------------------------------ */
@@ -30,7 +30,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
   if (!propertyId) {
     showToast('No property selected. Redirecting…', 'error');
-    setTimeout(() => { window.location.href = 'index.html'; }, 1500);
+    setTimeout(() => {
+      window.location.href = 'index.html';
+    }, 1500);
     return;
   }
 
@@ -74,7 +76,7 @@ async function loadPropertyAndRooms() {
     );
 
     propertyData = result.data.property;
-    allRooms     = result.data.rooms || [];
+    allRooms = result.data.rooms || [];
 
     renderPropertyInfo(propertyData);
     renderRooms(allRooms);
@@ -93,16 +95,16 @@ async function loadPropertyAndRooms() {
 function renderPropertyInfo(prop) {
   if (!prop) return;
 
-  setText('page-title',       `Manage Rooms – ${prop.name}`);
+  setText('page-title', `Manage Rooms – ${prop.name}`);
   setText('page-description', `Add, edit, and manage rooms for ${prop.name}.`);
-  setText('property-name',    prop.name);
-  setText('property-type',    prop.status ?? '—');
+  setText('property-name', prop.name);
+  setText('property-type', prop.status ?? '—');
 
-  const total    = prop.total_rooms    ?? 0;
+  const total = prop.total_rooms ?? 0;
   const occupied = prop.occupied_rooms ?? 0;
-  const rate     = total > 0 ? Math.round((occupied / total) * 100) : 0;
+  const rate = total > 0 ? Math.round((occupied / total) * 100) : 0;
 
-  setText('property-total-rooms',    total);
+  setText('property-total-rooms', total);
   setText('property-occupied-rooms', occupied);
   setText('property-occupancy-rate', `${rate}%`);
 
@@ -133,17 +135,19 @@ function buildRoomCard(room) {
   card.className = 'room-card';
   card.dataset.roomId = room.id;
 
-  const statusClass = {
-    available:   'available',
-    occupied:    'occupied',
-    maintenance: 'maintenance',
-  }[room.status] ?? 'available';
+  const statusClass =
+    {
+      available: 'available',
+      occupied: 'occupied',
+      maintenance: 'maintenance',
+    }[room.status] ?? 'available';
 
-  const statusLabel = {
-    available:   'Available',
-    occupied:    'Occupied',
-    maintenance: 'Maintenance',
-  }[room.status] ?? room.status;
+  const statusLabel =
+    {
+      available: 'Available',
+      occupied: 'Occupied',
+      maintenance: 'Maintenance',
+    }[room.status] ?? room.status;
 
   const tenantHtml = room.tenant
     ? `<div class="tenant-info">
@@ -166,16 +170,26 @@ function buildRoomCard(room) {
           ${getIcon('userGroup', { width: 16, height: 16, strokeWidth: '2' })}
           Capacity: ${room.capacity}
         </div>
-        ${room.size ? `<div class="room-detail">
+        ${
+          room.size
+            ? `<div class="room-detail">
           ${getIcon('home', { width: 16, height: 16, strokeWidth: '2' })}
           ${room.size} sqm
-        </div>` : ''}
+        </div>`
+            : ''
+        }
       </div>
       ${tenantHtml}
-      ${room.description ? `<p style="font-size:0.8rem;color:var(--text-gray);margin-top:0.5rem;">${escHtml(room.description)}</p>` : ''}
+      ${
+        room.description
+          ? `<p style="font-size:0.8rem;color:var(--text-gray);margin-top:0.5rem;">${escHtml(
+              room.description
+            )}</p>`
+          : ''
+      }
       <div class="room-actions">
         <button type="button" data-action="edit"   data-id="${room.id}">
-          ${getIcon('edit',  { width: 16, height: 16, strokeWidth: '2' })} Edit
+          ${getIcon('edit', { width: 16, height: 16, strokeWidth: '2' })} Edit
         </button>
         <button type="button" data-action="delete" data-id="${room.id}" class="btn-danger">
           ${getIcon('trash', { width: 16, height: 16, strokeWidth: '2' })} Delete
@@ -188,7 +202,7 @@ function buildRoomCard(room) {
     btn.addEventListener('click', e => {
       e.stopPropagation();
       const id = parseInt(btn.dataset.id);
-      if (btn.dataset.action === 'edit')   openEditModal(id);
+      if (btn.dataset.action === 'edit') openEditModal(id);
       if (btn.dataset.action === 'delete') openDeleteModal(id);
     });
   });
@@ -214,19 +228,19 @@ function openEditModal(roomId) {
   editingRoomId = roomId;
   setText('modal-title', `Edit Room ${room.room_number}`);
 
-  setVal('room-number',      room.room_number);
-  setVal('room-price',       room.price);
-  setVal('room-size',        room.size ?? '');
-  setVal('room-capacity',    room.capacity);
-  setVal('room-status',      room.status);
+  setVal('room-number', room.room_number);
+  setVal('room-price', room.price);
+  setVal('room-size', room.size ?? '');
+  setVal('room-capacity', room.capacity);
+  setVal('room-status', room.status);
   setVal('room-description', room.description ?? '');
 
   if (room.tenant) {
     showTenantSection();
-    setVal('tenant-name',    room.tenant.name    ?? '');
-    setVal('tenant-contact', room.tenant.phone   ?? '');
-    setVal('lease-start',    room.tenant.lease_start ?? '');
-    setVal('lease-end',      room.tenant.lease_end   ?? '');
+    setVal('tenant-name', room.tenant.name ?? '');
+    setVal('tenant-contact', room.tenant.phone ?? '');
+    setVal('lease-start', room.tenant.lease_start ?? '');
+    setVal('lease-end', room.tenant.lease_end ?? '');
   } else {
     hideTenantSection();
   }
@@ -236,7 +250,7 @@ function openEditModal(roomId) {
 
 async function saveRoom() {
   const saveBtn = document.getElementById('modal-save');
-  const form    = document.getElementById('room-form');
+  const form = document.getElementById('room-form');
 
   if (!form.checkValidity()) {
     form.reportValidity();
@@ -244,34 +258,34 @@ async function saveRoom() {
   }
 
   const payload = {
-    property_id:  propertyId,
-    room_number:  getVal('room-number'),
-    price:        parseFloat(getVal('room-price')),
-    size:         getVal('room-size')     ? parseFloat(getVal('room-size'))     : null,
-    capacity:     getVal('room-capacity') ? parseInt(getVal('room-capacity'))   : 1,
-    status:       getVal('room-status'),
-    description:  getVal('room-description'),
+    property_id: propertyId,
+    room_number: getVal('room-number'),
+    price: parseFloat(getVal('room-price')),
+    size: getVal('room-size') ? parseFloat(getVal('room-size')) : null,
+    capacity: getVal('room-capacity') ? parseInt(getVal('room-capacity')) : 1,
+    status: getVal('room-status'),
+    description: getVal('room-description'),
   };
 
-  saveBtn.disabled    = true;
+  saveBtn.disabled = true;
   saveBtn.textContent = editingRoomId ? 'Saving…' : 'Creating…';
 
   try {
     let result;
     if (editingRoomId) {
-      result = await apiFetch(
-        `${CONFIG.API_BASE_URL}/api/landlord/rooms?id=${editingRoomId}`,
-        { method: 'PUT', body: JSON.stringify({ ...payload, id: editingRoomId }) }
-      );
+      result = await apiFetch(`${CONFIG.API_BASE_URL}/api/landlord/rooms?id=${editingRoomId}`, {
+        method: 'PUT',
+        body: JSON.stringify({ ...payload, id: editingRoomId }),
+      });
       // Replace in local array
       const idx = allRooms.findIndex(r => r.id === editingRoomId);
       if (idx !== -1) allRooms[idx] = result.data;
       showToast('Room updated successfully', 'success');
     } else {
-      result = await apiFetch(
-        `${CONFIG.API_BASE_URL}/api/landlord/rooms`,
-        { method: 'POST', body: JSON.stringify(payload) }
-      );
+      result = await apiFetch(`${CONFIG.API_BASE_URL}/api/landlord/rooms`, {
+        method: 'POST',
+        body: JSON.stringify(payload),
+      });
       allRooms.push(result.data);
       showToast('Room created successfully', 'success');
     }
@@ -283,7 +297,7 @@ async function saveRoom() {
     console.error('Save room error:', err);
     showToast(`Failed to save room: ${err.message}`, 'error');
   } finally {
-    saveBtn.disabled    = false;
+    saveBtn.disabled = false;
     saveBtn.textContent = 'Save Room';
   }
 }
@@ -306,14 +320,13 @@ async function confirmDelete() {
   if (!pendingDeleteId) return;
 
   const confirmBtn = document.getElementById('delete-confirm');
-  confirmBtn.disabled    = true;
+  confirmBtn.disabled = true;
   confirmBtn.textContent = 'Deleting…';
 
   try {
-    await apiFetch(
-      `${CONFIG.API_BASE_URL}/api/landlord/rooms?id=${pendingDeleteId}`,
-      { method: 'DELETE' }
-    );
+    await apiFetch(`${CONFIG.API_BASE_URL}/api/landlord/rooms?id=${pendingDeleteId}`, {
+      method: 'DELETE',
+    });
 
     allRooms = allRooms.filter(r => r.id !== pendingDeleteId);
     showToast('Room deleted successfully', 'success');
@@ -324,7 +337,7 @@ async function confirmDelete() {
     console.error('Delete room error:', err);
     showToast(`Failed to delete room: ${err.message}`, 'error');
   } finally {
-    confirmBtn.disabled    = false;
+    confirmBtn.disabled = false;
     confirmBtn.textContent = 'Delete Room';
     pendingDeleteId = null;
   }
@@ -334,24 +347,29 @@ async function confirmDelete() {
 /* Search / filter / sort                                              */
 /* ------------------------------------------------------------------ */
 function applyFilters() {
-  const query  = (document.getElementById('search-rooms')?.value  ?? '').toLowerCase().trim();
-  const status = document.getElementById('filter-status')?.value  ?? 'all';
-  const sort   = document.getElementById('sort-rooms')?.value     ?? 'room-number';
+  const query = (document.getElementById('search-rooms')?.value ?? '').toLowerCase().trim();
+  const status = document.getElementById('filter-status')?.value ?? 'all';
+  const sort = document.getElementById('sort-rooms')?.value ?? 'room-number';
 
-  let filtered = allRooms.filter(room => {
-    const matchSearch = !query
-      || room.room_number.toLowerCase().includes(query)
-      || (room.tenant?.name ?? '').toLowerCase().includes(query);
+  const filtered = allRooms.filter(room => {
+    const matchSearch =
+      !query ||
+      room.room_number.toLowerCase().includes(query) ||
+      (room.tenant?.name ?? '').toLowerCase().includes(query);
     const matchStatus = status === 'all' || room.status === status;
     return matchSearch && matchStatus;
   });
 
   filtered.sort((a, b) => {
     switch (sort) {
-      case 'price-high':   return b.price - a.price;
-      case 'price-low':    return a.price - b.price;
-      case 'status':       return a.status.localeCompare(b.status);
-      default:             return a.room_number.localeCompare(b.room_number, undefined, { numeric: true });
+      case 'price-high':
+        return b.price - a.price;
+      case 'price-low':
+        return a.price - b.price;
+      case 'status':
+        return a.status.localeCompare(b.status);
+      default:
+        return a.room_number.localeCompare(b.room_number, undefined, { numeric: true });
     }
   });
 
@@ -374,14 +392,22 @@ function bindUI() {
   document.getElementById('delete-confirm')?.addEventListener('click', confirmDelete);
 
   // Close modals
-  document.getElementById('modal-close')?.addEventListener('click',        () => closeModal('room-modal'));
-  document.getElementById('modal-cancel')?.addEventListener('click',       () => closeModal('room-modal'));
-  document.getElementById('delete-modal-close')?.addEventListener('click', () => closeModal('delete-room-modal'));
-  document.getElementById('delete-cancel')?.addEventListener('click',      () => closeModal('delete-room-modal'));
+  document.getElementById('modal-close')?.addEventListener('click', () => closeModal('room-modal'));
+  document
+    .getElementById('modal-cancel')
+    ?.addEventListener('click', () => closeModal('room-modal'));
+  document
+    .getElementById('delete-modal-close')
+    ?.addEventListener('click', () => closeModal('delete-room-modal'));
+  document
+    .getElementById('delete-cancel')
+    ?.addEventListener('click', () => closeModal('delete-room-modal'));
 
   // Close on overlay click
   ['room-modal', 'delete-room-modal'].forEach(id => {
-    document.getElementById(id)?.querySelector('.modal-overlay')
+    document
+      .getElementById(id)
+      ?.querySelector('.modal-overlay')
       ?.addEventListener('click', () => closeModal(id));
   });
 
@@ -399,9 +425,9 @@ function bindUI() {
   });
 
   // Search / filter / sort
-  document.getElementById('search-rooms')?.addEventListener('input',  applyFilters);
+  document.getElementById('search-rooms')?.addEventListener('input', applyFilters);
   document.getElementById('filter-status')?.addEventListener('change', applyFilters);
-  document.getElementById('sort-rooms')?.addEventListener('change',    applyFilters);
+  document.getElementById('sort-rooms')?.addEventListener('change', applyFilters);
 }
 
 /* ------------------------------------------------------------------ */
@@ -444,11 +470,11 @@ function hideTenantSection() {
 }
 
 function refreshPropertyCounts() {
-  const total    = allRooms.length;
+  const total = allRooms.length;
   const occupied = allRooms.filter(r => r.status === 'occupied').length;
-  const rate     = total > 0 ? Math.round((occupied / total) * 100) : 0;
+  const rate = total > 0 ? Math.round((occupied / total) * 100) : 0;
 
-  setText('property-total-rooms',    total);
+  setText('property-total-rooms', total);
   setText('property-occupied-rooms', occupied);
   setText('property-occupancy-rate', `${rate}%`);
 }
