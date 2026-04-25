@@ -25,6 +25,7 @@
     "lint": "eslint client/js --ext .js",
     "lint:fix": "eslint --fix client/js --ext .js",
     "build": "node scripts/build.js",
+    "clear-cache": "node scripts/clear-cache.js",
     "prepare": "husky install"
   },
   "keywords": [
