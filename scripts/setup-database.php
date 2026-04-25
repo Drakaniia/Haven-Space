@@ -10,7 +10,7 @@
  */
 
 // Load environment variables
-require_once __DIR__ . '/../server/config/app.php';
+require_once __DIR__ . '/../functions/config/app.php';
 
 // Colors for terminal output
 class Colors
@@ -89,14 +89,19 @@ try {
     exit(1);
 }
 
-// Step 2: Create database if not exists
-section('Step 2: Creating Database');
+// Step 2: Drop and recreate database to ensure clean setup
+section('Step 2: Preparing Database');
 
 try {
-    $pdo->exec("CREATE DATABASE IF NOT EXISTS `{$dbName}` CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci");
-    success("Database '{$dbName}' created (or already exists)");
+    // Drop database if it exists to ensure clean setup
+    $pdo->exec("DROP DATABASE IF EXISTS `{$dbName}`");
+    success("Dropped existing database (if existed)");
+    
+    // Create fresh database
+    $pdo->exec("CREATE DATABASE `{$dbName}` CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci");
+    success("Database '{$dbName}' created");
 } catch (PDOException $e) {
-    error('Failed to create database');
+    error('Failed to prepare database');
     error($e->getMessage());
     exit(1);
 }
@@ -104,7 +109,7 @@ try {
 // Step 3: Import schema
 section('Step 3: Importing Schema');
 
-$schemaFile = __DIR__ . '/../server/database/schema.sql';
+$schemaFile = __DIR__ . '/../functions/database/schema.sql';
 
 if (!file_exists($schemaFile)) {
     error("Schema file not found: {$schemaFile}");
@@ -137,7 +142,7 @@ try {
 // Step 4: Run migrations (if any exist)
 section('Step 4: Running Migrations');
 
-$migrationsDir = __DIR__ . '/../server/database/migrations';
+$migrationsDir = __DIR__ . '/../functions/database/migrations';
 
 if (!is_dir($migrationsDir)) {
     warning('Migrations directory not found, skipping');
@@ -171,7 +176,7 @@ if (!is_dir($migrationsDir)) {
 if ($runSeeders) {
     section('Step 5: Running Seeders');
 
-    $seedersDir = __DIR__ . '/../server/database/seeds';
+    $seedersDir = __DIR__ . '/../functions/database/seeds';
 
     if (!is_dir($seedersDir)) {
         warning('Seeders directory not found, skipping');
