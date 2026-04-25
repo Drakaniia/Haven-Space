@@ -723,21 +723,6 @@
   fill: #c2185b;
 }
 
-.find-room-card-amenities-preview {
-  position: absolute;
-  bottom: 1rem;
-  left: 1rem;
-  right: 1rem;
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  background: rgba(0, 0, 0, 0.7);
-  backdrop-filter: blur(8px);
-  border-radius: 100px;
-  padding: 0.5rem 0.75rem;
-  z-index: 2;
-}
-
 .find-room-amenity-icon {
   display: flex;
   align-items: center;

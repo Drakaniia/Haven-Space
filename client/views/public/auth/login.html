@@ -184,7 +184,11 @@
               }
 
               try {
-                const response = await fetch('http://localhost:8000/auth/login.php', {
+                // Use the same API base URL as the module
+                const apiBaseUrl = window.location.hostname.includes('github.io')
+                  ? 'https://fra.cloud.appwrite.io/v1'
+                  : 'http://localhost:8000';
+                const response = await fetch(`${apiBaseUrl}/auth/login.php`, {
                   method: 'POST',
                   headers: {
                     'Content-Type': 'application/json',

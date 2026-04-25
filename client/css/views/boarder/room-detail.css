@@ -1,4 +1,84 @@
+Room Detail Page Styles
+   Haven Space - Boarder Dashboard
+   ========================================================================== */
+=======
 /* ==========================================================================
+   Room Detail Page Styles
+   Haven Space - Boarder Dashboard
+   ========================================================================== */
+
+/* Leaflet Map Styles for Room Detail */
+.room-detail-map .leaflet-control-attribution {
+  display: none;
+}
+
+.room-detail-map .leaflet-control-zoom {
+  display: none;
+}
+
+.room-detail-map .leaflet-popup-content-wrapper {
+  padding: 12px;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.room-detail-map .leaflet-popup-content {
+  margin: 0;
+  font-family: var(--font-family);
+  font-size: 14px;
+}
+
+.room-detail-map .leaflet-popup-tip {
+  background: var(--white);
+}
+
+/* Map Header with Back Button */
+.room-detail-map {
+  position: relative;
+  width: 100%;
+  height: 500px;
+}
+
+.map-header {
+  position: absolute;
+  top: 15px;
+  left: 15px;
+  z-index: 1000;
+  background: var(--white);
+  border-radius: 8px;
+  padding: 6px;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.15);
+  border: 1px solid var(--border-color);
+}
+
+.map-header .toggle-btn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  background: var(--white);
+  border: none;
+  border-radius: 6px;
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--text-primary);
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.map-header .toggle-btn:hover {
+  background: var(--bg-hover);
+}
+
+.map-header .toggle-btn:active {
+  transform: translateY(1px);
+}
+
+#leaflet-map {
+  width: 100%;
+  height: 100%;
+}
+==========================================================================
    Room Detail Page Styles
    Haven Space - Boarder Dashboard
    ========================================================================== */
@@ -78,6 +158,56 @@ body:has(.sidebar-collapsed) .room-detail-main {
   padding: 1.5rem 2rem;
 }
 
+.gallery-toggle {
+  position: absolute;
+  top: 1.5rem;
+  left: 2rem;
+  z-index: 10;
+}
+
+.toggle-btn {
+  background: rgba(255, 255, 255, 0.9);
+  border: 1px solid var(--gray-300);
+  border-radius: 8px;
+  padding: 0.5rem 1rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.toggle-btn:hover {
+  background: var(--white);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.toggle-text {
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: var(--gray-700);
+}
+
+.room-detail-map {
+  width: 100%;
+  margin-bottom: 2rem;
+}
+
+.room-detail-map iframe {
+  width: 100%;
+  height: 500px;
+  border-radius: 12px;
+  border: none;
+}
+
+.room-detail-map #leaflet-map {
+  width: 100%;
+  height: 500px;
+  border-radius: 12px;
+  border: none;
+}
+
 .gallery-main {
   position: relative;
   width: 100%;
@@ -148,6 +278,11 @@ body:has(.sidebar-collapsed) .room-detail-main {
 
 .gallery-favorite-btn.active {
   color: var(--primary-green);
+  background: rgba(34, 197, 94, 0.1);
+}
+
+.gallery-favorite-btn.active svg {
+  fill: var(--primary-green);
 }
 
 .gallery-thumbnails {
@@ -1025,6 +1160,24 @@ body:has(.sidebar-collapsed) .room-detail-main {
 
   .room-detail-gallery {
     padding: 1rem 1.25rem;
+  }
+
+  .gallery-toggle {
+    top: 1rem;
+    left: 1.25rem;
+  }
+
+  .toggle-btn {
+    padding: 0.4rem 0.8rem;
+    gap: 0.4rem;
+  }
+
+  .toggle-text {
+    font-size: 0.75rem;
+  }
+
+  .room-detail-map iframe {
+    height: 250px;
   }
 
   .gallery-main {

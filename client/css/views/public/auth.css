@@ -167,6 +167,7 @@
 .auth-container {
   width: 100%;
   max-width: 520px;
+  padding-top: 2rem;
 }
 
 .auth-container-narrow {
