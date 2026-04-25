@@ -705,4 +705,4 @@ function showToast(message, type = 'info') {
       }
     }, 300);
   }, 3000);
-}
+}};
