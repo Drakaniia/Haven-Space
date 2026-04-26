@@ -29,6 +29,9 @@ server/api/users/profile-unified.php
 # Qoder config
 qoder.json
 
+# Playwright test artifacts
+.playwright-mcp/
+
 # Storage uploads (user uploaded files)
 storage/uploads/
 server/storage/uploads/
