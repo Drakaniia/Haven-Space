@@ -146,7 +146,12 @@ if ($userId > 0) {
 }
 
 if ($userRow) {
-    if (in_array($userRow['account_status'] ?? 'active', ['suspended', 'banned'])) {
+    $accountStatus = $userRow['account_status'] ?? 'active';
+    
+    // Allow landlords with pending_verification status to access dashboard (read-only)
+    if ($userRow['role'] === 'landlord' && $accountStatus === 'pending_verification') {
+        // Landlords with pending verification can access dashboard in read-only mode
+    } elseif (in_array($accountStatus, ['suspended', 'banned'])) {
         http_response_code(403);
         echo json_encode(['error' => 'Account is suspended or banned']);
         exit;

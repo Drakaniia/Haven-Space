@@ -1,5 +1,11 @@
 /* Landlord Announcements Styles */
 
+/* Remove background from SVG icons */
+.icon-no-bg {
+  background: none !important;
+  fill: currentColor;
+}
+
 /* ===== Layout ===== */
 .landlord-dashboard {
   display: flex;

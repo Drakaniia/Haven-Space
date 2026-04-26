@@ -177,6 +177,7 @@
   margin-left: 0.5rem;
   cursor: pointer;
   position: relative;
+  z-index: 1001;
 }
 
 .navbar-avatar-img {
@@ -215,6 +216,7 @@
   opacity: 1;
   visibility: visible;
   transform: translateY(0);
+  z-index: 1000;
 }
 
 .navbar-user-menu-header {
@@ -280,7 +282,8 @@
   transition: all 0.15s ease;
 }
 
-.navbar-user-menu-item svg {
+.navbar-user-menu-item svg,
+.navbar-user-menu-item img {
   width: 20px;
   height: 20px;
   flex-shrink: 0;
@@ -326,6 +329,7 @@
   opacity: 1;
   visibility: visible;
   transform: translateY(0);
+  z-index: 1000;
 }
 
 .navbar-notification-menu-header {
