@@ -81,17 +81,30 @@ try {
         $application_id = intval($path_parts[4]);
         
         if (!$application_id) {
-            json_response(null, 400, 'Invalid application ID');
+            json_response(400, [
+                'success' => false,
+                'error' => 'Invalid application ID'
+            ]);
         }
         
         // Get request body
         $input = json_decode(file_get_contents('php://input'), true);
         $new_status = $input['status'] ?? '';
         
-        // Validate status
-        $valid_statuses = ['pending', 'under_review', 'approved', 'rejected'];
+        // Validate status - accept both 'approved' and 'accepted', 'rejected' and 'declined'
+        $valid_statuses = ['pending', 'under_review', 'approved', 'accepted', 'rejected', 'declined'];
         if (!in_array($new_status, $valid_statuses)) {
-            json_response(null, 400, 'Invalid status. Must be one of: ' . implode(', ', $valid_statuses));
+            json_response(400, [
+                'success' => false,
+                'error' => 'Invalid status. Must be one of: ' . implode(', ', $valid_statuses)
+            ]);
+        }
+        
+        // Normalize status names
+        if ($new_status === 'approved') {
+            $new_status = 'accepted';
+        } elseif ($new_status === 'declined') {
+            $new_status = 'rejected';
         }
         
         $pdo = getDB();
@@ -105,11 +118,14 @@ try {
             WHERE a.id = ? AND p.landlord_id = ? AND a.deleted_at IS NULL
         ");
         
-        $verify_stmt->execute([$application_id, $user['id']]);
+        $verify_stmt->execute([$application_id, $userId]);
         $application = $verify_stmt->fetch(PDO::FETCH_ASSOC);
         
         if (!$application) {
-            json_response(null, 404, 'Application not found or access denied');
+            json_response(404, [
+                'success' => false,
+                'error' => 'Application not found or access denied'
+            ]);
         }
         
         // Update the application status
@@ -122,12 +138,15 @@ try {
         $success = $update_stmt->execute([$new_status, $application_id]);
         
         if (!$success) {
-            json_response(null, 500, 'Failed to update application status');
+            json_response(500, [
+                'success' => false,
+                'error' => 'Failed to update application status'
+            ]);
         }
         
-        // If approved, we might want to mark the room as occupied
+        // If accepted, we might want to mark the room as occupied
         // and reject other pending applications for the same room
-        if ($new_status === 'approved') {
+        if ($new_status === 'accepted') {
             // Update room status to occupied
             $room_stmt = $pdo->prepare("
                 UPDATE rooms 
@@ -145,19 +164,19 @@ try {
             $reject_stmt->execute([$application['room_id'], $application_id]);
         }
         
-        // If rejected and this was the only approved application, mark room as available
-        if ($new_status === 'rejected' && $application['status'] === 'approved') {
-            // Check if there are other approved applications for this room
+        // If rejected and this was the only accepted application, mark room as available
+        if ($new_status === 'rejected' && in_array($application['status'], ['accepted', 'approved'])) {
+            // Check if there are other accepted applications for this room
             $check_stmt = $pdo->prepare("
                 SELECT COUNT(*) as count 
                 FROM applications 
-                WHERE room_id = ? AND status = 'approved' AND deleted_at IS NULL
+                WHERE room_id = ? AND status IN ('accepted', 'approved') AND deleted_at IS NULL
             ");
             $check_stmt->execute([$application['room_id']]);
             $approved_count = $check_stmt->fetch(PDO::FETCH_ASSOC)['count'];
             
             if ($approved_count == 0) {
-                // No other approved applications, mark room as available
+                // No other accepted applications, mark room as available
                 $room_stmt = $pdo->prepare("
                     UPDATE rooms 
                     SET status = 'available', updated_at = CURRENT_TIMESTAMP 
@@ -167,20 +186,33 @@ try {
             }
         }
         
-        json_response([
-            'application_id' => $application_id,
-            'new_status' => $new_status,
-            'updated_at' => date('c')
-        ], 200, 'Application status updated successfully');
+        json_response(200, [
+            'success' => true,
+            'data' => [
+                'application_id' => $application_id,
+                'new_status' => $new_status,
+                'updated_at' => date('c')
+            ],
+            'message' => 'Application status updated successfully'
+        ]);
         
     } else {
-        json_response(null, 405, 'Method not allowed');
+        json_response(405, [
+            'success' => false,
+            'error' => 'Method not allowed'
+        ]);
     }
     
 } catch (PDOException $e) {
     error_log("Database error in landlord applications: " . $e->getMessage());
-    json_response(null, 500, 'Database error occurred');
+    json_response(500, [
+        'success' => false,
+        'error' => 'Database error occurred'
+    ]);
 } catch (Exception $e) {
     error_log("Error in landlord applications: " . $e->getMessage());
-    json_response(null, 500, 'An error occurred: ' . $e->getMessage());
+    json_response(500, [
+        'success' => false,
+        'error' => 'An error occurred: ' . $e->getMessage()
+    ]);
 }
