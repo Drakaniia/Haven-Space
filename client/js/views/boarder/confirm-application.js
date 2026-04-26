@@ -421,28 +421,9 @@ async function handleSubmit(e) {
     }
   } catch (error) {
     console.error('Error submitting application:', error);
-
-    // For development, simulate success
-    if (CONFIG.API_BASE_URL.includes('localhost')) {
-      console.log('Development mode: Simulating successful submission');
-
-      // Store temporary application data for the success page
-      storeTemporaryApplicationData({
-        property_id: state.propertyId,
-        room_id: roomId,
-        landlord_id: landlordId,
-        message: applicationData.message,
-      });
-
-      updateBoarderStatus('applied_pending');
-
-      // Redirect to application submitted page
-      window.location.href = '../application-submitted/index.html';
-    } else {
-      alert('Failed to submit application. Please try again.');
-      submitBtn.disabled = false;
-      submitBtn.innerHTML = originalContent;
-    }
+    submitBtn.disabled = false;
+    submitBtn.innerHTML = originalContent;
+    alert('Failed to submit application. Please try again.');
   }
 }
 
