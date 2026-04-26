@@ -1,5 +1,11 @@
 /* Landlord Payments Page Styles */
 
+/* Remove background from SVG icons */
+.icon-no-bg {
+  background: none !important;
+  fill: currentColor;
+}
+
 /* ===== Payments Header ===== */
 .payments-header-section {
   display: flex;

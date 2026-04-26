@@ -3,7 +3,6 @@
  * Reusable top navigation bar with search, theme toggle, notifications, and user avatar
  */
 
-import { getIcon } from '../shared/icons.js';
 import {
   getDisplayName,
   getUserInitials,
@@ -36,9 +35,6 @@ export function initNavbar(options = {}) {
     .then(res => res.text())
     .then(html => {
       container.innerHTML = html;
-
-      // Inject icons
-      injectIcons();
 
       // Update user info with real profile data
       updateUserInfo(currentUser, basePath);
@@ -73,24 +69,6 @@ function resolveBasePath() {
     return '';
   }
   return '';
-}
-
-/**
- * Inject icons into placeholder elements
- */
-function injectIcons() {
-  const placeholders = document.querySelectorAll('.navbar-icon-placeholder');
-
-  placeholders.forEach(placeholder => {
-    const iconName = placeholder.dataset.icon;
-    if (iconName) {
-      placeholder.outerHTML = getIcon(iconName, {
-        className: 'navbar-icon',
-        width: 24,
-        height: 24,
-      });
-    }
-  });
 }
 
 /**

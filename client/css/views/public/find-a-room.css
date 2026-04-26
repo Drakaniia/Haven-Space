@@ -1453,7 +1453,8 @@
   background: var(--bg-green);
 }
 
-.find-room-profile-menu-item svg {
+.find-room-profile-menu-item svg,
+.find-room-profile-menu-item img {
   width: 18px;
   height: 18px;
   color: var(--text-gray);
@@ -2884,7 +2885,8 @@
   transform: translateY(-1px);
 }
 
-.find-room-header-login-btn svg {
+.find-room-header-login-btn svg,
+.find-room-header-login-btn img {
   width: 18px;
   height: 18px;
 }

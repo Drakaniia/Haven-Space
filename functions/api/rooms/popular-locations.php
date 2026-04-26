@@ -85,8 +85,8 @@ try {
     if (count($popularLocations) < 3) {
         $fallbackLocations = [
             [
-                'name' => 'Quezon City',
-                'search_value' => 'Quezon City',
+                'name' => 'UP Area',
+                'search_value' => 'University of the Philippines',
                 'property_count' => 0,
                 'avg_price' => 0,
                 'min_price' => 0,
@@ -94,8 +94,8 @@ try {
                 'price_range' => 'Various prices'
             ],
             [
-                'name' => 'Manila',
-                'search_value' => 'Manila',
+                'name' => 'Ateneo',
+                'search_value' => 'Ateneo de Manila',
                 'property_count' => 0,
                 'avg_price' => 0,
                 'min_price' => 0,
@@ -103,8 +103,8 @@ try {
                 'price_range' => 'Various prices'
             ],
             [
-                'name' => 'Makati',
-                'search_value' => 'Makati',
+                'name' => 'Miriam',
+                'search_value' => 'Miriam College',
                 'property_count' => 0,
                 'avg_price' => 0,
                 'min_price' => 0,
