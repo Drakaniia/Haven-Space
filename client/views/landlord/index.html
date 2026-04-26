@@ -15,6 +15,7 @@
     <link rel="stylesheet" href="../../css/components/sidebar.css?v=1777136032299" />
     <link rel="stylesheet" href="../../css/components/navbar.css?v=1777136032299" />
     <link rel="stylesheet" href="../../css/views/landlord/landlord.css?v=1777136032299" />
+    <link rel="stylesheet" href="../../css/views/landlord/applications.css?v=1777136032299" />
   </head>
   <body data-view="landlord" data-dashboard-type="landlord">
     <div class="landlord-dashboard">
@@ -309,11 +310,124 @@
       </main>
     </div>
 
+    <!-- Edit Property Modal -->
+    <div class="modal" id="edit-property-modal">
+      <div class="modal-overlay"></div>
+      <div class="modal-content">
+        <div class="modal-header">
+          <h3 class="modal-title">Edit Property</h3>
+          <button class="modal-close" id="edit-modal-close">
+            <span
+              data-icon="xMark"
+              data-icon-width="24"
+              data-icon-height="24"
+              data-icon-stroke-width="2"
+            ></span>
+          </button>
+        </div>
+        <form id="edit-property-form" class="modal-body">
+          <div class="form-group">
+            <label for="edit-property-name">Property Name</label>
+            <input type="text" id="edit-property-name" name="propertyName" required />
+          </div>
+
+          <div class="form-group">
+            <label for="edit-property-type">Property Type</label>
+            <select id="edit-property-type" name="propertyType" required>
+              <option value="boarding-house">Boarding House</option>
+              <option value="apartment">Apartment</option>
+              <option value="dormitory">Dormitory</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label for="edit-property-description">Description</label>
+            <textarea id="edit-property-description" name="propertyDescription" rows="3"></textarea>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label for="edit-property-price">Monthly Rent (₱)</label>
+              <input
+                type="number"
+                id="edit-property-price"
+                name="propertyPrice"
+                min="0"
+                step="100"
+              />
+            </div>
+            <div class="form-group">
+              <label for="edit-property-rooms">Total Rooms</label>
+              <input type="number" id="edit-property-rooms" name="propertyRooms" min="1" />
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label for="edit-property-status">Status</label>
+            <select id="edit-property-status" name="propertyStatus">
+              <option value="active">Active</option>
+              <option value="inactive">Inactive</option>
+              <option value="full">Full</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label for="edit-property-address">Address</label>
+            <input type="text" id="edit-property-address" name="propertyAddress" />
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label for="edit-property-city">City</label>
+              <input type="text" id="edit-property-city" name="propertyCity" />
+            </div>
+            <div class="form-group">
+              <label for="edit-property-province">Province</label>
+              <input type="text" id="edit-property-province" name="propertyProvince" />
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label>Amenities</label>
+            <div class="checkbox-group">
+              <label class="checkbox-label">
+                <input type="checkbox" name="editAmenities" value="wifi" />
+                <span>WiFi</span>
+              </label>
+              <label class="checkbox-label">
+                <input type="checkbox" name="editAmenities" value="parking" />
+                <span>Parking</span>
+              </label>
+              <label class="checkbox-label">
+                <input type="checkbox" name="editAmenities" value="laundry" />
+                <span>Laundry</span>
+              </label>
+              <label class="checkbox-label">
+                <input type="checkbox" name="editAmenities" value="kitchen" />
+                <span>Kitchen</span>
+              </label>
+              <label class="checkbox-label">
+                <input type="checkbox" name="editAmenities" value="aircon" />
+                <span>Air Conditioning</span>
+              </label>
+              <label class="checkbox-label">
+                <input type="checkbox" name="editAmenities" value="security" />
+                <span>Security</span>
+              </label>
+            </div>
+          </div>
+
+          <div class="modal-actions">
+            <button type="button" class="landlord-btn landlord-btn-outline" id="edit-cancel">
+              Cancel
+            </button>
+            <button type="submit" class="landlord-btn landlord-btn-primary">Save Changes</button>
+          </div>
+        </form>
+      </div>
+    </div>
+
     <!-- ES Module Entry Point -->
     <script type="module" src="../../js/main.js?v=1777136032299"></script>
-    <script
-      type="module"
-      src="../../js/views/landlord/landlord-applications.js?v=1777136032299"
-    ></script>
   </body>
 </html>

@@ -256,23 +256,19 @@
 }
 
 .landlord-stat-icon.green {
-  background-color: rgba(34, 197, 94, 0.1);
-  color: var(--dashboard-success);
+  color: #333;
 }
 
 .landlord-stat-icon.blue {
-  background-color: rgba(59, 130, 246, 0.1);
-  color: var(--dashboard-info);
+  color: #333;
 }
 
 .landlord-stat-icon.purple {
-  background-color: rgba(139, 92, 246, 0.1);
-  color: var(--dashboard-purple);
+  color: #333;
 }
 
 .landlord-stat-icon.yellow {
-  background-color: rgba(245, 158, 11, 0.1);
-  color: var(--dashboard-warning);
+  color: #333;
 }
 
 .landlord-stat-icon svg {
@@ -665,23 +661,19 @@
 }
 
 .landlord-action-icon.green {
-  background-color: rgba(34, 197, 94, 0.1);
-  color: var(--dashboard-success);
+  color: #333;
 }
 
 .landlord-action-icon.blue {
-  background-color: rgba(59, 130, 246, 0.1);
-  color: var(--dashboard-info);
+  color: #333;
 }
 
 .landlord-action-icon.purple {
-  background-color: rgba(139, 92, 246, 0.1);
-  color: var(--dashboard-purple);
+  color: #333;
 }
 
 .landlord-action-icon.orange {
-  background-color: rgba(249, 115, 22, 0.1);
-  color: var(--dashboard-orange);
+  color: #333;
 }
 
 .landlord-action-icon svg {
@@ -827,11 +819,19 @@
   align-items: center;
   justify-content: center;
   color: var(--dashboard-text-secondary);
+  overflow: hidden;
 }
 
 .landlord-property-image svg {
   width: 48px;
   height: 48px;
+}
+
+.landlord-property-image img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center;
 }
 
 .landlord-property-info {
@@ -919,6 +919,7 @@
 @media (max-width: 768px) {
   .landlord-main {
     margin-left: 0;
+    width: 100%;
   }
 
   .landlord-stats-grid {
@@ -1473,4 +1474,168 @@
 .toast-close svg {
   width: 16px;
   height: 16px;
+}
+
+/* ===== Edit Property Modal Styles ===== */
+.modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 9999;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  animation: modalFadeIn 0.2s ease-out;
+}
+
+.modal.active {
+  display: flex;
+}
+
+.modal-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.6);
+  backdrop-filter: blur(4px);
+}
+
+.modal-content {
+  position: relative;
+  background-color: var(--white);
+  border-radius: 12px;
+  max-width: 600px;
+  width: 100%;
+  max-height: 90vh;
+  overflow-y: auto;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+  animation: modalSlideIn 0.3s ease-out;
+}
+
+.modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 20px 24px;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.modal-title {
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--text-dark);
+  margin: 0;
+}
+
+.modal-close {
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  border: none;
+  background-color: transparent;
+  color: var(--text-gray);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+}
+
+.modal-close:hover {
+  background-color: var(--bg-green);
+  color: var(--primary-green);
+}
+
+.modal-body {
+  padding: 24px;
+}
+
+.form-group {
+  margin-bottom: 20px;
+}
+
+.form-group label {
+  display: block;
+  font-weight: 600;
+  color: var(--text-dark);
+  margin-bottom: 6px;
+  font-size: 14px;
+}
+
+.form-group input,
+.form-group select,
+.form-group textarea {
+  width: 100%;
+  padding: 12px 16px;
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  font-size: 14px;
+  transition: border-color 0.2s ease;
+  background-color: var(--white);
+}
+
+.form-group input:focus,
+.form-group select:focus,
+.form-group textarea:focus {
+  outline: none;
+  border-color: var(--primary-green);
+  box-shadow: 0 0 0 3px rgba(34, 197, 94, 0.1);
+}
+
+.form-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+
+.checkbox-group {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 12px;
+  margin-top: 8px;
+}
+
+.checkbox-label {
+  display: flex;
+  align-items: center;
+  font-size: 14px;
+  cursor: pointer;
+}
+
+.checkbox-label input[type='checkbox'] {
+  width: auto;
+  margin-right: 8px;
+}
+
+.modal-actions {
+  display: flex;
+  gap: 12px;
+  padding-top: 20px;
+  border-top: 1px solid var(--border-color);
+  margin-top: 20px;
+}
+
+.modal-actions .landlord-btn {
+  flex: 1;
+  justify-content: center;
+}
+
+@media (max-width: 768px) {
+  .modal-content {
+    max-width: 95%;
+    margin: 10px;
+  }
+
+  .form-row {
+    grid-template-columns: 1fr;
+  }
+
+  .checkbox-group {
+    grid-template-columns: 1fr;
+  }
 }

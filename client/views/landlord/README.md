@@ -58,7 +58,7 @@ View and manage current boarders occupying your properties.
 
 ### Applications
 
-**Files:** `applications/index.html`, `applications/detail.html`
+**Files:** `applications/index.html`
 
 Review and manage rental applications from prospective boarders.
 

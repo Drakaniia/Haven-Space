@@ -38,10 +38,17 @@ async function loadPropertyData() {
   const form = document.getElementById('edit-listing-form');
 
   try {
+    const token = localStorage.getItem('token');
+    const headers = { 'Content-Type': 'application/json' };
+    if (token) {
+      headers['Authorization'] = `Bearer ${token}`;
+    }
+
     const response = await fetch(
       `${CONFIG.API_BASE_URL}/api/landlord/properties.php?id=${propertyId}`,
       {
         credentials: 'include',
+        headers,
       }
     );
 

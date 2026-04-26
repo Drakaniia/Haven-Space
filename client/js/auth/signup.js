@@ -273,6 +273,8 @@ document.addEventListener('DOMContentLoaded', function () {
           }),
         });
 
+        const result = await response.json();
+
         if (result.success) {
           // Store user info and token
           localStorage.setItem('user', JSON.stringify(result.user));

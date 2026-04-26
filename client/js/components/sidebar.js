@@ -521,6 +521,12 @@ function setupNavbarSidebarToggle() {
       document.querySelector('.admin-dashboard');
     // Support properties page layout
     const propertiesMain = document.querySelector('.your-properties-main');
+    // Support listings page layout
+    const listingsPage = document.querySelector('.landlord-listings-page');
+    // Support boarders page layout
+    const boardersPage = document.querySelector('.landlord-boarders-page');
+    // Support edit listing page layout
+    const editListingPage = document.querySelector('.edit-listing-page');
 
     if (sidebar) {
       const isCollapsed = !sidebar.classList.contains('collapsed');
@@ -534,6 +540,21 @@ function setupNavbarSidebarToggle() {
       // Add/remove collapsed class on properties main for layout adjustments
       if (propertiesMain) {
         propertiesMain.classList.toggle('sidebar-collapsed', isCollapsed);
+      }
+
+      // Add/remove collapsed class on listings page container for layout adjustments
+      if (listingsPage) {
+        listingsPage.classList.toggle('sidebar-collapsed', isCollapsed);
+      }
+
+      // Add/remove collapsed class on boarders page container for layout adjustments
+      if (boardersPage) {
+        boardersPage.classList.toggle('sidebar-collapsed', isCollapsed);
+      }
+
+      // Add/remove collapsed class on edit listing page container for layout adjustments
+      if (editListingPage) {
+        editListingPage.classList.toggle('sidebar-collapsed', isCollapsed);
       }
 
       saveCollapsedState(isCollapsed);
@@ -568,6 +589,12 @@ function restoreCollapsedState() {
       document.querySelector('.admin-dashboard');
     // Support properties page layout
     const propertiesMain = document.querySelector('.your-properties-main');
+    // Support listings page layout
+    const listingsPage = document.querySelector('.landlord-listings-page');
+    // Support boarders page layout
+    const boardersPage = document.querySelector('.landlord-boarders-page');
+    // Support edit listing page layout
+    const editListingPage = document.querySelector('.edit-listing-page');
 
     if (sidebar && isCollapsed) {
       sidebar.classList.add('collapsed');
@@ -578,6 +605,18 @@ function restoreCollapsedState() {
       // Also add collapsed class to properties main for layout adjustments
       if (propertiesMain) {
         propertiesMain.classList.add('sidebar-collapsed');
+      }
+      // Also add collapsed class to listings page container for layout adjustments
+      if (listingsPage) {
+        listingsPage.classList.add('sidebar-collapsed');
+      }
+      // Also add collapsed class to boarders page container for layout adjustments
+      if (boardersPage) {
+        boardersPage.classList.add('sidebar-collapsed');
+      }
+      // Also add collapsed class to edit listing page container for layout adjustments
+      if (editListingPage) {
+        editListingPage.classList.add('sidebar-collapsed');
       }
     }
   } catch (e) {

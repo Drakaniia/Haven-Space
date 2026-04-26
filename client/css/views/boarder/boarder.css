@@ -240,28 +240,23 @@
 }
 
 .boarder-stat-icon.blue {
-  background-color: rgba(59, 130, 246, 0.1);
-  color: var(--dashboard-info);
+  color: #333;
 }
 
 .boarder-stat-icon.pink {
-  background-color: rgba(236, 72, 153, 0.1);
-  color: var(--dashboard-pink);
+  color: #333;
 }
 
 .boarder-stat-icon.green {
-  background-color: rgba(34, 197, 94, 0.1);
-  color: var(--dashboard-success);
+  color: #333;
 }
 
 .boarder-stat-icon.purple {
-  background-color: rgba(139, 92, 246, 0.1);
-  color: var(--dashboard-purple);
+  color: #333;
 }
 
 .boarder-stat-icon.orange {
-  background-color: rgba(245, 158, 11, 0.1);
-  color: var(--dashboard-warning);
+  color: #333;
 }
 
 .boarder-stat-icon svg {
@@ -1788,6 +1783,7 @@
 
   .boarder-main {
     margin-left: 0;
+    width: 100%;
     padding: 16px;
   }
 

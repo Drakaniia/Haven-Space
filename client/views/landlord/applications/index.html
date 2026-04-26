@@ -232,6 +232,43 @@
       </div>
     </div>
 
+    <!-- Confirmation Modal -->
+    <div class="confirmation-modal" id="confirmationModal">
+      <div class="confirmation-modal-overlay"></div>
+      <div class="confirmation-modal-content">
+        <div class="confirmation-modal-header">
+          <h3 class="confirmation-modal-title">Confirm Action</h3>
+          <button class="confirmation-modal-close" id="confirmationCloseBtn">
+            <span
+              data-icon="xMark"
+              data-icon-width="24"
+              data-icon-height="24"
+              data-icon-stroke-width="2"
+            ></span>
+          </button>
+        </div>
+        <div class="confirmation-modal-body">
+          <p class="confirmation-modal-message" id="confirmationMessage">
+            Are you sure you want to accept this application?
+          </p>
+        </div>
+        <div class="confirmation-modal-actions">
+          <button
+            class="landlord-btn landlord-btn-outline confirmation-cancel-btn"
+            id="confirmationCancelBtn"
+          >
+            Cancel
+          </button>
+          <button
+            class="landlord-btn landlord-btn-primary confirmation-confirm-btn"
+            id="confirmationConfirmBtn"
+          >
+            Confirm
+          </button>
+        </div>
+      </div>
+    </div>
+
     <!-- ES Module Entry Point -->
     <script type="module" src="../../../js/main.js?v=1777136032299"></script>
     <script type="module" src="../../../js/views/landlord/applications.js?v=1777136032299"></script>

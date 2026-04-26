@@ -42,6 +42,12 @@
   flex: 1;
   display: flex;
   flex-direction: column;
+  margin-left: 280px;
+  transition: margin-left 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.landlord-dashboard.sidebar-collapsed .create-listing-main {
+  margin-left: 80px;
 }
 
 .create-listing-content {
@@ -919,6 +925,7 @@
 @media (max-width: 768px) {
   .create-listing-main {
     margin-left: 0;
+    width: 100%;
   }
 
   .create-listing-content {

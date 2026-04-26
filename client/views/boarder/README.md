@@ -48,7 +48,7 @@ Browse available rooms and view detailed information about specific properties.
 
 ### Applications
 
-**Files:** `applications/index.html`, `applications/detail.html`
+**Files:** `applications/index.html`
 
 Submit new rental applications and track the status of existing applications.
 

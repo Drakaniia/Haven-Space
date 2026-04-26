@@ -15,8 +15,8 @@
   transition: margin-left 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-.landlord-boarders-main.sidebar-collapsed {
-  margin-left: 72px;
+.landlord-boarders-page.sidebar-collapsed .landlord-boarders-main {
+  margin-left: 80px;
 }
 
 .landlord-boarders-content {
@@ -120,58 +120,66 @@
 }
 
 .property-stats-bar .stat-item {
-  display: flex;
-  align-items: center;
-  gap: 1rem;
-  padding: 1.25rem;
-  background: var(--white);
+  background-color: var(--dashboard-surface);
+  border: 1px solid var(--dashboard-border);
   border-radius: 12px;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
-}
-
-.property-stats-bar .stat-icon {
-  width: 48px;
-  height: 48px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  border-radius: 10px;
-}
-
-.property-stats-bar .stat-icon.blue {
-  background-color: #dbeafe;
-  color: #2563eb;
-}
-
-.property-stats-bar .stat-icon.green {
-  background-color: var(--bg-green);
-  color: var(--primary-green);
-}
-
-.property-stats-bar .stat-icon.orange {
-  background-color: #fef3c7;
-  color: #d97706;
-}
-
-.property-stats-bar .stat-icon.purple {
-  background-color: #ede9fe;
-  color: #7c3aed;
-}
-
-.property-stats-bar .stat-info {
+  padding: 20px;
   display: flex;
   flex-direction: column;
+  gap: 12px;
 }
 
-.property-stats-bar .stat-value {
-  font-size: 1.5rem;
-  font-weight: 700;
-  color: var(--text-dark);
+.property-stats-bar .stat-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
 }
 
 .property-stats-bar .stat-label {
-  font-size: 0.85rem;
-  color: var(--text-gray);
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--dashboard-text-secondary);
+}
+
+.property-stats-bar .stat-icon {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.property-stats-bar .stat-icon.blue {
+  color: #333;
+}
+
+.property-stats-bar .stat-icon.green {
+  color: #333;
+}
+
+.property-stats-bar .stat-icon.orange {
+  color: #333;
+}
+
+.property-stats-bar .stat-icon.purple {
+  color: #333;
+}
+
+.property-stats-bar .stat-icon svg {
+  width: 20px;
+  height: 20px;
+}
+
+.property-stats-bar .stat-value {
+  font-size: 28px;
+  font-weight: 700;
+  color: var(--dashboard-text-primary);
+}
+
+.property-stats-bar .stat-description {
+  font-size: 12px;
+  color: var(--dashboard-text-secondary);
 }
 
 /* Filter Bar */
@@ -637,7 +645,7 @@
   background-color: var(--primary-green);
   color: var(--white);
   border: none;
-  border-radius: 25px;
+  border-radius: 8px;
   font-size: 0.95rem;
   font-weight: 600;
   font-family: var(--font-main);
@@ -658,7 +666,7 @@
   background-color: var(--white);
   color: var(--primary-green);
   border: 2px solid var(--primary-green);
-  border-radius: 25px;
+  border-radius: 8px;
   font-size: 0.95rem;
   font-weight: 600;
   font-family: var(--font-main);
@@ -678,7 +686,7 @@
   background-color: var(--white);
   color: var(--primary-green);
   border: 2px solid var(--primary-green);
-  border-radius: 25px;
+  border-radius: 8px;
   font-size: 0.95rem;
   font-weight: 600;
   font-family: var(--font-main);
@@ -698,7 +706,7 @@
   background-color: #ef4444;
   color: var(--white);
   border: none;
-  border-radius: 25px;
+  border-radius: 8px;
   font-size: 0.95rem;
   font-weight: 600;
   font-family: var(--font-main);

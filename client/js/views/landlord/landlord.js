@@ -1,6 +1,7 @@
 import CONFIG from '../../config.js';
 import { getIcon } from '../../shared/icons.js';
 import { getAuthHeaders } from '../../shared/state.js';
+import { getImageUrl } from '../../shared/image-utils.js';
 
 /**
  * Inject icons from centralized library into elements with data-icon attributes
@@ -766,18 +767,29 @@ function createPropertyCard(property) {
     maximumFractionDigits: 0,
   }).format(property.monthly_revenue || 0);
 
-  const icon = property.total_rooms > 0 ? 'building' : 'home';
+  // Use property image if available, otherwise use icon
+  const propertyImage = property.image || property.photos?.[0];
+  const imageUrl = propertyImage ? getImageUrl(propertyImage) : null;
 
   return `
     <div class="landlord-property-card">
       <div class="landlord-property-image">
-        <span
-          data-icon="${icon}"
-          data-icon-width="48"
-          data-icon-height="48"
-          data-icon-stroke-width="2"
-          style="display: flex; align-items: center; justify-content: center; height: 100%;"
-        ></span>
+        ${
+          imageUrl
+            ? `
+          <img src="${imageUrl}" alt="${escapeHtml(property.name)}" 
+               onerror="this.onerror=null;this.src='/assets/images/placeholder-property.svg'" />
+        `
+            : `
+          <span
+            data-icon="${property.total_rooms > 0 ? 'building' : 'home'}"
+            data-icon-width="48"
+            data-icon-height="48"
+            data-icon-stroke-width="2"
+            style="display: flex; align-items: center; justify-content: center; height: 100%;"
+          ></span>
+        `
+        }
       </div>
       <div class="landlord-property-info">
         <h3 class="landlord-property-name">${escapeHtml(property.name)}</h3>

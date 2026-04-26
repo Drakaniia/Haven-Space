@@ -283,6 +283,12 @@ export async function initLandlordDashboardEntry() {
     initReports();
   }
 
+  // Initialize boarders page
+  if (currentPath.includes('boarders')) {
+    const { initLandlordBoarders } = await import('./landlord-boarders.js');
+    initLandlordBoarders();
+  }
+
   // Setup navbar event listeners
   setupNavbarListeners();
 }

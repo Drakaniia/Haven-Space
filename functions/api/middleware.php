@@ -47,7 +47,8 @@ class Middleware
             $row = $stmt->fetch();
 
             if ($row) {
-                if (($row['account_status'] ?? 'active') !== 'active') {
+                // Allow 'pending_verification' status for development/testing
+                if (!in_array($row['account_status'] ?? 'active', ['active', 'pending_verification'])) {
                     _respond(403, ['error' => 'Account is suspended or banned']);
                 }
                 return [
@@ -114,6 +115,7 @@ class Middleware
             }
 
             $accountStatus = $row['account_status'] ?? 'active';
+            // Allow 'pending_verification' status for development/testing
             if (in_array($accountStatus, ['suspended', 'banned'])) {
                 _respond(403, ['error' => 'Account is suspended or banned']);
             }

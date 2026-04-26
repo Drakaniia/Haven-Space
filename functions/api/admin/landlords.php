@@ -143,24 +143,67 @@ function handlePost($pdo, $adminId = null) {
     $action = $input['action']; // 'approve' or 'reject'
     $comment = $input['comment'] ?? '';
 
-    if ($action === 'approve') {
-        $stmt = $pdo->prepare("UPDATE users u SET u.is_verified = 1 WHERE u.id = ? AND u.role_id = (SELECT id FROM user_roles WHERE role_name = 'landlord')");
-        $stmt->execute([$landlordId]);
-    } elseif ($action === 'reject') {
-        $stmt = $pdo->prepare("UPDATE users u SET u.is_verified = 0 WHERE u.id = ? AND u.role_id = (SELECT id FROM user_roles WHERE role_name = 'landlord')");
-        $stmt->execute([$landlordId]);
-    } else {
-        json_response(400, ['error' => 'Invalid action. Use approve or reject']);
-    }
+    try {
+        $pdo->beginTransaction();
 
-    // Log verification action
-    if ($adminId) {
-        $stmt = $pdo->prepare("
-            INSERT INTO landlord_verification_log (landlord_user_id, admin_user_id, action, comment, created_at)
-            VALUES (?, ?, ?, ?, NOW())
-        ");
-        $stmt->execute([$landlordId, $adminId, $action, $comment]);
-    }
+        if ($action === 'approve') {
+            // When approving a landlord, also verify their email automatically and set account to active
+            $stmt = $pdo->prepare("
+                UPDATE users u 
+                SET u.is_verified = 1, 
+                    u.email_verified = 1,
+                    u.account_status_id = (SELECT id FROM account_statuses WHERE status_name = 'active')
+                WHERE u.id = ? AND u.role_id = (SELECT id FROM user_roles WHERE role_name = 'landlord')
+            ");
+            $stmt->execute([$landlordId]);
 
-    json_response(200, ['message' => 'Landlord verification updated successfully']);
+            // Update or create verification record
+            $stmt = $pdo->prepare("
+                INSERT INTO verification_records (entity_type, entity_id, verification_status_id, reviewed_by, reviewed_at, notes)
+                VALUES ('user', ?, (SELECT id FROM verification_statuses WHERE status_name = 'approved'), ?, NOW(), ?)
+                ON DUPLICATE KEY UPDATE
+                verification_status_id = (SELECT id FROM verification_statuses WHERE status_name = 'approved'),
+                reviewed_by = ?, reviewed_at = NOW(), notes = ?
+            ");
+            $stmt->execute([$landlordId, $adminId, $comment, $adminId, $comment]);
+
+        } elseif ($action === 'reject') {
+            $stmt = $pdo->prepare("
+                UPDATE users u 
+                SET u.is_verified = 0
+                WHERE u.id = ? AND u.role_id = (SELECT id FROM user_roles WHERE role_name = 'landlord')
+            ");
+            $stmt->execute([$landlordId]);
+
+            // Update or create verification record
+            $stmt = $pdo->prepare("
+                INSERT INTO verification_records (entity_type, entity_id, verification_status_id, reviewed_by, reviewed_at, notes)
+                VALUES ('user', ?, (SELECT id FROM verification_statuses WHERE status_name = 'rejected'), ?, NOW(), ?)
+                ON DUPLICATE KEY UPDATE
+                verification_status_id = (SELECT id FROM verification_statuses WHERE status_name = 'rejected'),
+                reviewed_by = ?, reviewed_at = NOW(), notes = ?
+            ");
+            $stmt->execute([$landlordId, $adminId, $comment, $adminId, $comment]);
+
+        } else {
+            json_response(400, ['error' => 'Invalid action. Use approve or reject']);
+        }
+
+        // Log verification action
+        if ($adminId) {
+            $stmt = $pdo->prepare("
+                INSERT INTO landlord_verification_log (landlord_user_id, admin_user_id, action, comment, created_at)
+                VALUES (?, ?, ?, ?, NOW())
+            ");
+            $stmt->execute([$landlordId, $adminId, $action, $comment]);
+        }
+
+        $pdo->commit();
+        json_response(200, ['message' => 'Landlord verification updated successfully']);
+
+    } catch (Exception $e) {
+        $pdo->rollBack();
+        error_log('Landlord verification error: ' . $e->getMessage());
+        json_response(500, ['error' => 'Failed to update verification status']);
+    }
 }

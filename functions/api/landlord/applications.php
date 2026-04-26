@@ -9,83 +9,28 @@
  */
 
 require_once __DIR__ . '/../cors.php';
+require_once __DIR__ . '/../../src/Core/bootstrap.php';
+require_once __DIR__ . '/../../src/Shared/Helpers/ResponseHelper.php';
+require_once __DIR__ . '/../middleware.php';
 
-if (!function_exists('json_response')) {
-    function json_response($data, $status = 200, $message = 'Success') {
-        http_response_code($status);
-        header('Content-Type: application/json');
-        echo json_encode([
-            'success' => $status < 400,
-            'status' => $status,
-            'message' => $message,
-            'data' => $data,
-            'timestamp' => date('c')
-        ]);
-        exit;
-    }
-}
+use App\Api\Middleware;
 
 // Include database configuration
 require_once __DIR__ . '/../../config/database.php';
 
 try {
-    // Simple authentication using X-User-ID header for development
-    $simulatedId = $_SERVER['HTTP_X_USER_ID'] ?? $_GET['user_id'] ?? null;
-    
-    if (!$simulatedId) {
-        json_response(null, 401, 'Authentication required');
-    }
-    
-    $userId = (int) $simulatedId;
-    
-    // Get user info from database
-    require_once __DIR__ . '/../config/database.php';
-    $pdo = getDB();
-    
-    $userStmt = $pdo->prepare('
-        SELECT u.id, ur.role_name as role, u.is_verified, u.email_verified, 
-               acs.status_name as account_status, vr.verification_status_id,
-               vs.status_name as verification_status
-        FROM users u
-        JOIN user_roles ur ON u.role_id = ur.id
-        JOIN account_statuses acs ON u.account_status_id = acs.id
-        LEFT JOIN verification_records vr ON vr.entity_type = "user" AND vr.entity_id = u.id
-        LEFT JOIN verification_statuses vs ON vr.verification_status_id = vs.id
-        WHERE u.id = ? AND u.deleted_at IS NULL
-    ');
-    $userStmt->execute([$userId]);
-    $user = $userStmt->fetch(PDO::FETCH_ASSOC);
-    
-    if (!$user) {
-        json_response(null, 401, 'User not found');
-    }
-    
-    if ($user['role'] !== 'landlord') {
-        json_response(null, 403, 'Access denied. Landlord role required.');
-    }
-    
-    // Check if account is actually suspended or banned (not just pending verification)
-    if (in_array($user['account_status'], ['suspended', 'banned'])) {
-        json_response(null, 403, 'Account is suspended or banned');
-    }
-
     $method = $_SERVER['REQUEST_METHOD'];
     $request_uri = $_SERVER['REQUEST_URI'];
     
-    // For write operations, check verification status
+    // For GET requests, use basic authentication
+    // For PATCH requests (write operations), use verified landlord authorization
     if ($method === 'PATCH') {
-        if ($user['account_status'] === 'pending_verification' || $user['verification_status'] === 'pending') {
-            json_response(null, 403, 'Account verification pending. You have read-only access until verification is complete.');
-        }
-        
-        if ($user['verification_status'] === 'rejected') {
-            json_response(null, 403, 'Account verification rejected. Please review the feedback and resubmit required documents.');
-        }
-        
-        if (!$user['is_verified'] && $user['verification_status'] !== 'approved') {
-            json_response(null, 403, 'Account verification required. Write operations are not allowed until an admin approves your account.');
-        }
+        $user = Middleware::authorizeVerifiedLandlord();
+    } else {
+        $user = Middleware::authorize(['landlord']);
     }
+    
+    $userId = $user['user_id'];
     
     // Parse the request URI to extract application ID for status updates
     $path_parts = explode('/', trim(parse_url($request_uri, PHP_URL_PATH), '/'));
@@ -106,7 +51,7 @@ try {
                 u.first_name,
                 u.last_name,
                 u.email,
-                u.phone,
+                u.phone_number as phone,
                 r.title as room_title,
                 r.price as room_price,
                 r.id as room_id,
@@ -121,10 +66,14 @@ try {
             ORDER BY a.created_at DESC
         ");
         
-        $stmt->execute([$user['id']]);
+        $stmt->execute([$userId]);
         $applications = $stmt->fetchAll(PDO::FETCH_ASSOC);
         
-        json_response($applications, 200, 'Applications retrieved successfully');
+        json_response(200, [
+            'success' => true,
+            'data' => $applications,
+            'message' => 'Applications retrieved successfully'
+        ]);
         
     } elseif ($method === 'PATCH' && isset($path_parts[4]) && $path_parts[5] === 'status') {
         // PATCH /api/landlord/applications/{id}/status - Update application status

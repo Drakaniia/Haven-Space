@@ -78,6 +78,7 @@ async function fetchPropertiesFromApi() {
         photos: p.photos || [],
         description: p.description || '',
         amenities: p.amenities || [],
+        pending_applications: p.pending_applications || 0,
       }));
     }
 
@@ -181,6 +182,9 @@ function createPropertyCard(property) {
   const photos = property.photos || [];
   const photoCount = photos.length;
 
+  // Check if property has pending applications
+  const hasPendingApplications = property.pending_applications && property.pending_applications > 0;
+
   card.innerHTML = `
     <div class="property-card-image" title="Click to manage rooms">
       <img id="property-img-${property.id}" alt="${property.name}" />
@@ -189,6 +193,14 @@ function createPropertyCard(property) {
         ${getIcon('photo')}
         ${photoCount}
       </div>
+      ${
+        hasPendingApplications
+          ? `<div class="property-card-application-badge">
+        ${getIcon('documentText')}
+        <span>${property.pending_applications} New</span>
+      </div>`
+          : ''
+      }
       <span class="property-card-image-hint">Manage Rooms</span>
     </div>
     <div class="property-card-body">
@@ -221,6 +233,16 @@ function createPropertyCard(property) {
         ${getIcon('userGroup')}
         View Boarders
       </button>
+      ${
+        hasPendingApplications
+          ? `<button type="button" data-action="applications" data-id="${
+              property.id
+            }" class="landlord-btn landlord-btn-primary landlord-btn-sm">
+        ${getIcon('documentText')}
+        View Applications (${property.pending_applications})
+      </button>`
+          : ''
+      }
       <button type="button" data-action="edit" data-id="${property.id}">
         ${getIcon('edit')}
         Edit
@@ -278,6 +300,9 @@ function handlePropertyAction(action, id) {
       break;
     case 'boarders':
       window.location.href = `../boarders/index.html?propertyId=${id}`;
+      break;
+    case 'applications':
+      window.location.href = `../applications/index.html`;
       break;
     case 'edit':
       editProperty(property);

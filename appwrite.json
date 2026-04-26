@@ -13,7 +13,7 @@
       "timeout": 30,
       "enabled": true,
       "logging": true,
-      "entrypoint": "main.php",
+      "entrypoint": "functions/api/main-simple.php",
       "commands": "composer install --no-dev --optimize-autoloader --working-dir functions && composer install --no-dev --optimize-autoloader --working-dir functions/api",
       "ignore": [
         "node_modules",

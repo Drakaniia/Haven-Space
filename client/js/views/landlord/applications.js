@@ -88,9 +88,15 @@ function handleDynamicClicks(e) {
   if (!target) return;
 
   // View details button
-  if (target.classList.contains('view-details-btn')) {
-    const id = parseInt(target.dataset.id);
+  if (target.classList.contains('view-details-btn') || target.closest('.view-details-btn')) {
+    const button = target.classList.contains('view-details-btn')
+      ? target
+      : target.closest('.view-details-btn');
+    const id = parseInt(button.dataset.id);
+    e.preventDefault();
     openApplicationModal(id);
+    e.stopPropagation();
+    return false;
   }
 
   // Approve button
@@ -115,13 +121,11 @@ function handleDynamicClicks(e) {
   if (target.classList.contains('modal-approve-btn')) {
     const id = parseInt(target.dataset.id);
     updateApplicationStatus(id, 'accepted');
-    closeModal();
   }
 
   if (target.classList.contains('modal-reject-btn')) {
     const id = parseInt(target.dataset.id);
     updateApplicationStatus(id, 'rejected');
-    closeModal();
   }
 }
 
@@ -409,41 +413,95 @@ function getInitials(firstName, lastName) {
 }
 
 /**
+ * Show confirmation modal
+ */
+function showConfirmModal(title, message, onConfirm, onCancel) {
+  const modal = document.getElementById('confirmationModal');
+  const titleElement = document.querySelector('.confirmation-modal-title');
+  const messageElement = document.getElementById('confirmationMessage');
+  const confirmBtn = document.getElementById('confirmationConfirmBtn');
+  const cancelBtn = document.getElementById('confirmationCancelBtn');
+  const closeBtn = document.getElementById('confirmationCloseBtn');
+
+  // Set modal content
+  if (titleElement) titleElement.textContent = title;
+  if (messageElement) messageElement.textContent = message;
+
+  // Set up event handlers
+  const handleConfirm = () => {
+    modal.classList.remove('show');
+    document.body.style.overflow = '';
+    if (onConfirm) onConfirm();
+  };
+
+  const handleCancel = () => {
+    modal.classList.remove('show');
+    document.body.style.overflow = '';
+    if (onCancel) onCancel();
+  };
+
+  // Remove old event listeners
+  confirmBtn.replaceWith(confirmBtn.cloneNode(true));
+  cancelBtn.replaceWith(cancelBtn.cloneNode(true));
+  closeBtn.replaceWith(closeBtn.cloneNode(true));
+
+  // Get fresh references after cloning
+  const newConfirmBtn = document.getElementById('confirmationConfirmBtn');
+  const newCancelBtn = document.getElementById('confirmationCancelBtn');
+  const newCloseBtn = document.getElementById('confirmationCloseBtn');
+
+  // Add new event listeners
+  newConfirmBtn.addEventListener('click', handleConfirm);
+  newCancelBtn.addEventListener('click', handleCancel);
+  newCloseBtn.addEventListener('click', handleCancel);
+
+  // Show modal
+  modal.classList.add('show');
+  document.body.style.overflow = 'hidden';
+}
+
+/**
  * Update application status
  */
 async function updateApplicationStatus(id, status) {
   const statusLabels = {
     accepted: 'accept',
+    approved: 'accept',
     rejected: 'reject',
     under_review: 'mark as under review',
     pending: 'mark as pending',
   };
 
+  // Map frontend status to backend status
+  const backendStatus = status === 'accepted' ? 'accepted' : status;
   const action = statusLabels[status] || 'update';
 
-  if (!confirm(`Are you sure you want to ${action} this application?`)) {
-    return;
-  }
+  // Show confirmation modal
+  showConfirmModal(
+    'Confirm Action',
+    `Are you sure you want to ${action} this application?`,
+    async () => {
+      try {
+        const response = await authenticatedFetch(
+          `${CONFIG.API_BASE_URL}/api/landlord/applications/${id}/status`,
+          {
+            method: 'PATCH',
+            body: JSON.stringify({ status: backendStatus }),
+          }
+        );
 
-  try {
-    const response = await authenticatedFetch(
-      `${CONFIG.API_BASE_URL}/api/landlord/applications/${id}/status`,
-      {
-        method: 'PATCH',
-        body: JSON.stringify({ status }),
+        if (!response.ok) {
+          throw new Error('Failed to update application status');
+        }
+
+        showToast(`Application ${action}ed successfully!`, 'success');
+        await loadApplications();
+      } catch (error) {
+        console.error('Error updating application:', error);
+        showToast(`Failed to ${action} application. Please try again.`, 'error');
       }
-    );
-
-    if (!response.ok) {
-      throw new Error('Failed to update application status');
     }
-
-    showToast(`Application ${action}ed successfully!`, 'success');
-    await loadApplications();
-  } catch (error) {
-    console.error('Error updating application:', error);
-    showToast(`Failed to ${action} application. Please try again.`, 'error');
-  }
+  );
 }
 
 /**

@@ -13,11 +13,11 @@
   display: flex;
   flex-direction: column;
   min-height: 100vh;
-  transition: margin-left var(--duration-slow) var(--ease-standard);
+  transition: margin-left 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-.landlord-listings-main.sidebar-collapsed {
-  margin-left: 72px; /* var(--sidebar-collapsed) */
+.landlord-listings-page.sidebar-collapsed .landlord-listings-main {
+  margin-left: 80px; /* matches .sidebar.collapsed width */
 }
 
 .landlord-listings-content {
@@ -92,23 +92,19 @@
 }
 
 .listings-stat-card .stat-icon.green {
-  background-color: rgba(34, 197, 94, 0.1);
-  color: var(--dashboard-success);
+  color: #333;
 }
 
 .listings-stat-card .stat-icon.blue {
-  background-color: rgba(59, 130, 246, 0.1);
-  color: var(--dashboard-info);
+  color: #333;
 }
 
 .listings-stat-card .stat-icon.purple {
-  background-color: rgba(139, 92, 246, 0.1);
-  color: var(--dashboard-purple);
+  color: #333;
 }
 
 .listings-stat-card .stat-icon.orange {
-  background-color: rgba(249, 115, 22, 0.1);
-  color: var(--dashboard-orange);
+  color: #333;
 }
 
 .listings-stat-card .stat-label {
@@ -320,6 +316,27 @@
   color: var(--white);
   border-radius: var(--radius-sm);
   font-size: 0.75rem;
+}
+
+.property-card-application-badge {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 0.25rem 0.5rem;
+  background: var(--primary-green);
+  color: var(--white);
+  border-radius: var(--radius-sm);
+  font-size: 0.75rem;
+  font-weight: 600;
+  z-index: 2;
+}
+
+.property-card-application-badge svg {
+  width: 14px;
+  height: 14px;
 }
 
 .property-card-body {

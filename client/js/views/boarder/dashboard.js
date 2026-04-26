@@ -196,8 +196,8 @@ function initializeApplicationTracker() {
       const appCard = btn.closest('.boarder-application-card');
       const appName = appCard?.querySelector('.boarder-application-name')?.textContent || '';
 
-      // Navigate to application detail page
-      window.location.href = `../applications/detail.html?name=${encodeURIComponent(appName)}`;
+      // Show notification that this feature is not yet implemented
+      showNotification('Application details feature coming soon', 'info');
     });
   });
 
@@ -208,9 +208,8 @@ function initializeApplicationTracker() {
       const action = btn.textContent.trim();
 
       if (action === 'Sign Contract') {
-        window.location.href = `../applications/detail.html?name=${encodeURIComponent(
-          appName
-        )}&action=sign`;
+        // Show notification that this feature is not yet implemented
+        showNotification('Contract signing feature coming soon', 'info');
       } else if (action === 'Withdraw') {
         if (confirm(`Are you sure you want to withdraw your application for ${appName}?`)) {
           showNotification('Application withdrawal submitted', 'info');
@@ -645,7 +644,7 @@ function formatCurrency(value) {
 function updateDashboardUI() {
   // Update application count
   const activeApplications = dashboardState.applications.filter(
-    app => app.status === 'approved' || app.status === 'pending'
+    app => app.status === 'accepted' || app.status === 'pending'
   ).length;
 
   // Update stats if elements exist

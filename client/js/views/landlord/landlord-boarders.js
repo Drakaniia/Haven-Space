@@ -261,10 +261,17 @@ async function fetchFirstProperty() {
 
 async function fetchPropertyFromApi(propertyId) {
   try {
+    const token = localStorage.getItem('token');
+    const headers = { 'Content-Type': 'application/json' };
+    if (token) {
+      headers['Authorization'] = `Bearer ${token}`;
+    }
+
     const response = await fetch(
       `${CONFIG.API_BASE_URL}/api/landlord/properties.php?id=${propertyId}`,
       {
         credentials: 'include',
+        headers,
       }
     );
 
@@ -297,10 +304,17 @@ async function fetchPropertyFromApi(propertyId) {
 
 async function fetchBoardersFromApi(propertyId) {
   try {
+    const token = localStorage.getItem('token');
+    const headers = { 'Content-Type': 'application/json' };
+    if (token) {
+      headers['Authorization'] = `Bearer ${token}`;
+    }
+
     const response = await fetch(
       `${CONFIG.API_BASE_URL}/api/landlord/boarders.php?propertyId=${propertyId}`,
       {
         credentials: 'include',
+        headers,
       }
     );
 

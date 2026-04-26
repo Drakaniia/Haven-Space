@@ -59,3 +59,8 @@
 - Changes work for localhost and do not obviously break the Appwrite-hosted production path.
 - New work follows the closest AGENTS guide and uses existing repo patterns rather than parallel ones.
 - Any temporary debug or test scripts created during implementation are removed before handoff.
+
+## landlord credentials
+
+qwenzy23062@gmail.com
+Kenjigwapo_123

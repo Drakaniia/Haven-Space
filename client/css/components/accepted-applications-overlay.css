@@ -215,6 +215,28 @@
 }
 
 .confirmation-modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 3000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.3s ease, visibility 0.3s ease;
+}
+
+.confirmation-modal.show {
+  opacity: 1;
+  visibility: visible;
+}
+
+.confirmation-modal-content {
+  position: relative;
   background: #fff;
   border-radius: 1rem;
   max-width: 480px;
@@ -222,6 +244,11 @@
   box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
   transform: scale(0.95);
   transition: transform 0.3s ease;
+  z-index: 3001;
+}
+
+.confirmation-overlay.confirmation-overlay-visible .confirmation-modal-content {
+  transform: scale(1);
 }
 
 .confirmation-overlay.confirmation-overlay-visible .confirmation-modal {

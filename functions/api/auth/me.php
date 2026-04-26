@@ -76,7 +76,7 @@ if (empty($token) && $simulatedId) {
     $pdo = Connection::getInstance()->getPdo();
     $stmt = $pdo->prepare(
         'SELECT u.id, u.first_name, u.last_name, u.email, 
-                ur.role_name as role, u.is_verified, acs.status_name as account_status, 
+                ur.role_name as role, u.is_verified, u.email_verified, acs.status_name as account_status, 
                 f.file_url as avatar_url, vr.verification_status_id,
                 vs.status_name as verification_status
          FROM users u
@@ -103,6 +103,7 @@ if (empty($token) && $simulatedId) {
             'email' => $userRow['email'],
             'role' => $userRow['role'],
             'is_verified' => (bool) $userRow['is_verified'],
+            'email_verified' => (bool) $userRow['email_verified'],
             'account_status' => $userRow['account_status'] ?? 'active',
             'avatar_url' => $userRow['avatar_url'],
             'verification_status' => $simVerificationStatus,
@@ -132,7 +133,7 @@ if ($userId > 0) {
     $pdo = Connection::getInstance()->getPdo();
     $stmt = $pdo->prepare(
         'SELECT u.id, u.first_name, u.last_name, u.email, 
-                ur.role_name as role, u.is_verified, acs.status_name as account_status, 
+                ur.role_name as role, u.is_verified, u.email_verified, acs.status_name as account_status, 
                 f.file_url as avatar_url
          FROM users u
          JOIN user_roles ur ON u.role_id = ur.id
@@ -167,6 +168,7 @@ if ($userRow) {
         'email' => $userRow['email'],
         'role' => $userRow['role'],
         'is_verified' => (bool) $userRow['is_verified'],
+        'email_verified' => (bool) $userRow['email_verified'],
         'account_status' => $userRow['account_status'] ?? 'active',
         'avatar_url' => $userRow['avatar_url'],
         'verification_status' => $verificationStatus,
