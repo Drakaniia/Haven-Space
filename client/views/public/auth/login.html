@@ -166,9 +166,12 @@
         // Add a small delay to ensure modules have a chance to load
         setTimeout(function () {
           const form = document.getElementById('loginForm');
-          if (form && !form.hasAttribute('data-handler-attached')) {
+          // Check if module handler is already attached by looking for existing event listeners
+          const hasModuleHandler = form && form.hasAttribute('data-module-handler-attached');
+
+          if (form && !hasModuleHandler && !form.hasAttribute('data-fallback-handler-attached')) {
             console.log('Attaching fallback login handler');
-            form.setAttribute('data-handler-attached', 'true');
+            form.setAttribute('data-fallback-handler-attached', 'true');
 
             form.addEventListener('submit', async function (e) {
               e.preventDefault();

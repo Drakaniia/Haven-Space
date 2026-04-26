@@ -82,7 +82,28 @@ try {
         LEFT JOIN landlord_profiles lp ON u.id = lp.user_id
         LEFT JOIN property_types pt ON lp.property_type_id = pt.id
         LEFT JOIN files f ON u.avatar_file_id = f.id AND f.deleted_at IS NULL
-        LEFT JOIN verification_records vr ON vr.entity_type = 'user' AND vr.entity_id = u.id
+        LEFT JOIN (
+            SELECT vr1.* 
+            FROM verification_records vr1
+            INNER JOIN verification_statuses vs1 ON vr1.verification_status_id = vs1.id
+            WHERE vr1.entity_type = 'user'
+            AND vr1.id IN (
+                SELECT vr2.id
+                FROM verification_records vr2
+                LEFT JOIN verification_statuses vs2 ON vr2.verification_status_id = vs2.id
+                WHERE vr2.entity_type = 'user' AND vr2.entity_id = vr1.entity_id
+                ORDER BY 
+                    CASE vs2.status_name
+                        WHEN 'approved' THEN 1
+                        WHEN 'pending' THEN 2
+                        WHEN 'rejected' THEN 3
+                        ELSE 4
+                    END,
+                    vr2.reviewed_at DESC,
+                    vr2.submitted_at DESC
+                LIMIT 1
+            )
+        ) vr ON vr.entity_id = u.id
         LEFT JOIN verification_statuses vs ON vr.verification_status_id = vs.id
         WHERE ur.role_name = 'landlord' 
             AND u.deleted_at IS NULL

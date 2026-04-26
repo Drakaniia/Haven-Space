@@ -20,6 +20,9 @@ use App\Core\Database\Connection;
 $user = Middleware::authorize(['boarder']);
 $boarderId = $user['user_id'];
 
+// Log for debugging
+error_log("Lease API: Boarder ID $boarderId requesting lease information");
+
 $method = $_SERVER['REQUEST_METHOD'];
 
 // GET - Get current lease information
@@ -65,6 +68,7 @@ if ($method === 'GET') {
         $lease = $stmt->fetch(PDO::FETCH_ASSOC);
 
         if (!$lease) {
+            error_log("Lease API: No accepted application found for boarder ID $boarderId");
             json_response(200, [
                 'success' => true,
                 'data' => null,
@@ -72,6 +76,8 @@ if ($method === 'GET') {
             ]);
             return;
         }
+
+        error_log("Lease API: Found lease for boarder ID $boarderId - Application ID {$lease['application_id']}");
 
         // Transform data
         $leaseData = [

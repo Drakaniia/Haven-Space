@@ -87,6 +87,8 @@ export function clearState() {
  */
 export function getAuthHeaders(additionalHeaders = {}) {
   const token = localStorage.getItem('token');
+  const user = JSON.parse(localStorage.getItem('user') || '{}');
+
   const headers = {
     'Content-Type': 'application/json',
     ...additionalHeaders,
@@ -94,6 +96,11 @@ export function getAuthHeaders(additionalHeaders = {}) {
 
   if (token) {
     headers['Authorization'] = `Bearer ${token}`;
+  }
+
+  // For development/testing - include user ID header
+  if (user.id) {
+    headers['X-USER-ID'] = user.id.toString();
   }
 
   return headers;

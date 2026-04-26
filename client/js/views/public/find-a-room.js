@@ -745,6 +745,22 @@ async function setupEnhancedFeatures() {
   // Render UI based on auth state
   renderAuthState(authState);
 
+  // Ensure we have user data for testing
+  const user = JSON.parse(localStorage.getItem('user') || '{}');
+  if (!user.id && authState.isAuthenticated) {
+    console.warn('User is authenticated but no user ID found. Setting up test user...');
+    // Set up a test user for development
+    const testUser = {
+      id: 5,
+      name: 'Test Boarder',
+      email: 'testboarder@example.com',
+      role: 'boarder',
+      boarder_status: 'applied_pending',
+    };
+    localStorage.setItem('user', JSON.stringify(testUser));
+    localStorage.setItem('user_id', '5');
+  }
+
   // Load applications from API (real data)
   await loadApplicationsFromAPI();
 
@@ -773,7 +789,7 @@ async function setupEnhancedFeatures() {
   // Update status badge (only for authenticated users)
   if (authState.isAuthenticated) {
     updateStatusBadge();
-    renderApplications();
+    // renderApplications() is now called from loadApplicationsFromAPI()
   }
 
   // Initialize guest search (only for unauthenticated users)
@@ -989,14 +1005,26 @@ function hideHeader() {
 async function loadApplicationsFromAPI() {
   try {
     const user = JSON.parse(localStorage.getItem('user') || '{}');
+    console.log('Loading applications for user:', user);
+
     const response = await authenticatedFetch(`${CONFIG.API_BASE_URL}/api/boarder/applications`, {
       method: 'GET',
     });
 
-    if (!response.ok) throw new Error('Failed to fetch applications');
+    console.log('API response status:', response.status);
+    console.log('API response headers:', response.headers);
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      console.error('API error response:', errorText);
+      throw new Error(`Failed to fetch applications: ${response.status} - ${errorText}`);
+    }
 
     const result = await response.json();
+    console.log('API response data:', result);
+
     const raw = result.data?.applications || result.data || [];
+    console.log('Raw applications data:', raw);
 
     // Normalise API shape → internal shape
     enhancedState.applications = raw.map(app => ({
@@ -1011,12 +1039,16 @@ async function loadApplicationsFromAPI() {
       roomTitle: app.room_title || '',
       landlordName: app.landlord_name || '',
     }));
+
+    console.log('Normalized applications:', enhancedState.applications);
   } catch (err) {
-    console.warn('Could not load applications from API, using empty list:', err.message);
+    console.error('Could not load applications from API:', err);
+    console.warn('Using empty list due to error:', err.message);
     enhancedState.applications = [];
   }
 
   updateStatusBadge();
+  renderApplications(); // Render applications after loading
 }
 
 function initStatusDropdown() {
@@ -1024,12 +1056,24 @@ function initStatusDropdown() {
   const dropdownMenu = document.getElementById('status-dropdown-menu');
   const closeBtn = document.getElementById('find-room-status-close');
 
+  console.log('initStatusDropdown called, elements found:', {
+    dropdownBtn: !!dropdownBtn,
+    dropdownMenu: !!dropdownMenu,
+    closeBtn: !!closeBtn,
+  });
+
   if (!dropdownBtn || !dropdownMenu) return;
 
   // Toggle dropdown
   dropdownBtn.addEventListener('click', e => {
     e.stopPropagation();
     dropdownMenu.classList.toggle('show');
+
+    // Render applications when dropdown is opened
+    if (dropdownMenu.classList.contains('show')) {
+      console.log('Status dropdown opened, rendering applications');
+      renderApplications();
+    }
   });
 
   // Close button
@@ -1060,12 +1104,20 @@ function initStatusDropdown() {
 
 function renderApplications() {
   const list = document.getElementById('applications-list');
-  if (!list) return;
+  console.log('renderApplications called, list element:', list);
+  console.log('applications to render:', enhancedState.applications);
+
+  if (!list) {
+    console.error('applications-list element not found!');
+    return;
+  }
 
   const filtered = enhancedState.applications.filter(app => {
     if (enhancedState.currentStatusFilter === 'all') return true;
     return app.status === enhancedState.currentStatusFilter;
   });
+
+  console.log('filtered applications:', filtered);
 
   if (filtered.length === 0) {
     list.innerHTML = `
@@ -2096,6 +2148,7 @@ async function handleRoomApplication(room, property) {
       body: JSON.stringify({
         property_id: property.id,
         room_id: room.id,
+        landlord_id: property.landlord.id,
         message: `Application for ${room.room_name || room.type} in ${property.title}`,
       }),
     });

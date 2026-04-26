@@ -389,6 +389,16 @@ try {
         LEFT JOIN verification_records vr ON vr.entity_type = "user" AND vr.entity_id = u.id
         LEFT JOIN verification_statuses vs ON vr.verification_status_id = vs.id
         WHERE u.id = ?
+        ORDER BY 
+            CASE vs.status_name
+                WHEN "approved" THEN 1
+                WHEN "pending" THEN 2
+                WHEN "rejected" THEN 3
+                ELSE 4
+            END,
+            vr.reviewed_at DESC,
+            vr.submitted_at DESC
+        LIMIT 1
     ');
     $stmtVerified->execute([$userId]);
     $verifiedRow = $stmtVerified->fetch();

@@ -5,6 +5,13 @@
 
 /* Remove conflicting dashboard layout styles - using boarder layout instead */
 
+/* Spacing between status and profile dropdowns */
+.find-room-auth-controls {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
 /* Floating Header Hover Enhancements for Boarder */
 .find-room-floating-header-container {
   /* Add a small invisible hover area at the top to make it easier to trigger */

@@ -15,6 +15,7 @@ import { initReports } from './reports.js';
 import { initLandlordPermissions } from '../../shared/permissions.js';
 import { getAuthHeadersOnly } from '../../shared/auth-headers.js';
 import { initDashboard } from '../../shared/dashboard-init.js';
+import { initOAuthHandler } from '../../shared/oauth-handler.js';
 
 function loginPath() {
   const pathname = window.location.pathname;
@@ -80,6 +81,10 @@ function persistAuthenticatedUser(user) {
  */
 export async function initLandlordDashboardEntry() {
   console.log('=== LANDLORD DASHBOARD INIT ===');
+
+  // Handle OAuth redirect FIRST before any auth checks
+  await initOAuthHandler();
+
   console.log('Token in localStorage:', localStorage.getItem('token')?.substring(0, 20) + '...');
   console.log('User in localStorage:', localStorage.getItem('user'));
 

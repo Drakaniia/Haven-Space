@@ -214,11 +214,8 @@ function renderNotifications(notifications) {
   list.querySelectorAll('[data-notification-icon]').forEach(placeholder => {
     const iconName = placeholder.dataset.notificationIcon;
     if (iconName) {
-      placeholder.outerHTML = getIcon(iconName, {
-        className: 'navbar-notification-icon-svg',
-        width: 20,
-        height: 20,
-      });
+      // Replace with a simple text-based icon or remove entirely
+      placeholder.textContent = iconName;
     }
   });
 

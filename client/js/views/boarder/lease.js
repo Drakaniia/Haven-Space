@@ -47,7 +47,17 @@ export async function initLeasePage() {
 
   let user;
   try {
-    const res = await fetch(`${CONFIG.API_BASE_URL}/auth/me.php`, { credentials: 'include' });
+    const token = localStorage.getItem('token');
+    const headers = { 'Content-Type': 'application/json' };
+
+    if (token) {
+      headers['Authorization'] = `Bearer ${token}`;
+    }
+
+    const res = await fetch(`${CONFIG.API_BASE_URL}/auth/me.php`, {
+      credentials: 'include',
+      headers,
+    });
     if (!res.ok) {
       window.location.href = loginPath();
       return;
@@ -113,26 +123,49 @@ function setupLeasePage() {
 async function fetchLeaseData() {
   try {
     const userId = localStorage.getItem('user_id') || '3';
+    const token = localStorage.getItem('token');
+    console.log('[Lease] Fetching lease data for user ID:', userId);
+    console.log('[Lease] Token available:', !!token);
+
+    const headers = {
+      'Content-Type': 'application/json',
+    };
+
+    // Add authentication - prefer JWT token, fallback to X-User-Id for testing
+    if (token) {
+      headers['Authorization'] = `Bearer ${token}`;
+    } else {
+      headers['X-User-Id'] = userId;
+    }
+
     const response = await fetch(`${CONFIG.API_BASE_URL}/api/boarder/lease`, {
       method: 'GET',
-      headers: {
-        'Content-Type': 'application/json',
-        'X-User-Id': userId,
-      },
+      headers,
       credentials: 'include',
     });
 
-    if (!response.ok) throw new Error('Failed to fetch lease data');
+    console.log('[Lease] Response status:', response.status, response.statusText);
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      console.error('[Lease] API error response:', errorText);
+      throw new Error(`Failed to fetch lease data: ${response.status}`);
+    }
 
     const result = await response.json();
+    console.log('[Lease] API response:', result);
 
     if (result.success && result.data) {
+      console.log('[Lease] Rendering lease details');
       renderLeaseDetails(result.data);
     } else {
+      console.log('[Lease] No lease data returned. Message:', result.message);
+      console.log('[Lease] Full result object:', JSON.stringify(result, null, 2));
       showNoLeaseState();
     }
   } catch (error) {
-    console.error('Error fetching lease data:', error);
+    console.error('[Lease] Error fetching lease data:', error);
+    console.error('[Lease] Error stack:', error.stack);
     showNoLeaseState();
   }
 }
@@ -311,12 +344,22 @@ function formatCurrency(value) {
 async function fetchPaymentHistory() {
   try {
     const userId = localStorage.getItem('user_id') || '3';
+    const token = localStorage.getItem('token');
+
+    const headers = {
+      'Content-Type': 'application/json',
+    };
+
+    // Add authentication - prefer JWT token, fallback to X-User-Id for testing
+    if (token) {
+      headers['Authorization'] = `Bearer ${token}`;
+    } else {
+      headers['X-User-Id'] = userId;
+    }
+
     const response = await fetch(`${CONFIG.API_BASE_URL}/api/payments/history?limit=10`, {
       method: 'GET',
-      headers: {
-        'Content-Type': 'application/json',
-        'X-User-Id': userId,
-      },
+      headers,
       credentials: 'include',
     });
 
