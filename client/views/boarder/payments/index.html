@@ -1,0 +1,403 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="icon" type="image/svg+xml" href="../../../assets/favicon.svg" />
+    <title>Payments - Haven Space</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="../../../css/global.css?v=1777136032299" />
+    <link rel="stylesheet" href="../../../css/components/sidebar.css?v=1777136032299" />
+    <link rel="stylesheet" href="../../../css/components/navbar.css?v=1777136032299" />
+    <link rel="stylesheet" href="../../../css/views/boarder/boarder-payments.css?v=1777136032299" />
+  </head>
+  <body data-view="boarder" data-dashboard-type="boarder">
+    <div class="payments-dashboard">
+      <!-- Sidebar Container -->
+      <div id="sidebar-container"></div>
+
+      <!-- Main Content -->
+      <main class="payments-main">
+        <!-- Navbar Container -->
+        <div id="navbar-container"></div>
+
+        <!-- Content Wrapper -->
+        <div class="payments-content">
+          <!-- Payment Overview Header -->
+          <div class="payments-header-section">
+            <div class="payments-header-content">
+              <h1 class="payments-title">Payment Center</h1>
+              <p class="payments-subtitle">Manage your rent, utilities, and payment history</p>
+            </div>
+            <div class="payments-header-actions">
+              <button class="payments-btn payments-btn-outline" id="downloadStatementBtn">
+                <span class="icon-placeholder" data-icon="arrowDownTray"></span>
+                Download Statement
+              </button>
+              <a href="./pay.html" class="payments-btn payments-btn-primary" id="payNowBtn">
+                <span class="icon-placeholder" data-icon="creditCard"></span>
+                Pay Now
+              </a>
+            </div>
+          </div>
+
+          <!-- Financial Overview Cards -->
+          <div class="financial-overview-grid">
+            <!-- Total Paid Card -->
+            <div class="financial-card financial-card-gradient-1">
+              <div class="financial-card-content">
+                <div class="financial-card-icon">
+                  <span class="icon-placeholder" data-icon="checkCircle"></span>
+                </div>
+                <div class="financial-card-info">
+                  <span class="financial-card-label">Total Paid</span>
+                  <span class="financial-card-value">₱0.00</span>
+                  <span class="financial-card-trend">0 months</span>
+                </div>
+              </div>
+              <div class="financial-card-chart">
+                <div class="financial-card-chart-bar" style="height: 60%"></div>
+                <div class="financial-card-chart-bar" style="height: 80%"></div>
+                <div class="financial-card-chart-bar" style="height: 100%"></div>
+                <div class="financial-card-chart-bar" style="height: 75%"></div>
+              </div>
+            </div>
+
+            <!-- Upcoming Payment Card -->
+            <div class="financial-card financial-card-gradient-2">
+              <div class="financial-card-content">
+                <div class="financial-card-icon">
+                  <span class="icon-placeholder" data-icon="history"></span>
+                </div>
+                <div class="financial-card-info">
+                  <span class="financial-card-label">Next Payment</span>
+                  <span class="financial-card-value">₱0.00</span>
+                  <span class="financial-card-trend">Loading...</span>
+                </div>
+              </div>
+              <div class="financial-card-progress">
+                <div class="financial-card-progress-bar">
+                  <div class="financial-card-progress-fill" style="width: 0%"></div>
+                </div>
+                <span class="financial-card-progress-label">0% of month completed</span>
+              </div>
+            </div>
+
+            <!-- Utility Balance Card -->
+            <div class="financial-card financial-card-gradient-3">
+              <div class="financial-card-content">
+                <div class="financial-card-icon">
+                  <span class="icon-placeholder" data-icon="lightning"></span>
+                </div>
+                <div class="financial-card-info">
+                  <span class="financial-card-label">Utility Balance</span>
+                  <span class="financial-card-value">₱0.00</span>
+                  <span class="financial-card-trend">~0 days remaining</span>
+                </div>
+              </div>
+              <div class="financial-card-alert">
+                <span class="financial-card-alert-icon">
+                  <span class="icon-placeholder" data-icon="exclamationTriangle"></span>
+                </span>
+                <span class="financial-card-alert-text">Low balance</span>
+              </div>
+            </div>
+
+            <!-- Security Deposit Card -->
+            <div class="financial-card financial-card-solid">
+              <div class="financial-card-content">
+                <div class="financial-card-icon">
+                  <span class="icon-placeholder" data-icon="currencyDollar"></span>
+                </div>
+                <div class="financial-card-info">
+                  <span class="financial-card-label">Security Deposit</span>
+                  <span class="financial-card-value">₱0.00</span>
+                  <span class="financial-card-trend">Held in escrow</span>
+                </div>
+              </div>
+              <div class="financial-card-status">
+                <span class="financial-card-status-dot"></span>
+                <span class="financial-card-status-text">Securely held</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Main Payment Sections -->
+          <div class="payments-main-grid">
+            <!-- Payment Methods Column -->
+            <div class="payments-column">
+              <!-- Saved Payment Methods -->
+              <div class="payments-section payments-section-card">
+                <div class="payments-section-header">
+                  <h2 class="payments-section-title">
+                    <span class="icon-placeholder" data-icon="creditCard"></span>
+                    Payment Methods
+                  </h2>
+                  <button
+                    class="payments-btn payments-btn-sm payments-btn-outline"
+                    id="addMethodBtn"
+                  >
+                    <span class="icon-placeholder" data-icon="plusLarge"></span>
+                    Add New
+                  </button>
+                </div>
+
+                <div class="payment-methods-list">
+                  <p style="text-align: center; color: var(--text-gray); padding: 20px">
+                    Loading payment methods...
+                  </p>
+                </div>
+              </div>
+
+              <!-- Auto-Pay Settings -->
+              <div class="payments-section payments-section-card">
+                <div class="payments-section-header">
+                  <h2 class="payments-section-title">
+                    <span class="icon-placeholder" data-icon="history"></span>
+                    Auto-Pay Settings
+                  </h2>
+                </div>
+
+                <div class="auto-pay-config">
+                  <div class="auto-pay-toggle">
+                    <div class="auto-pay-toggle-info">
+                      <h4 class="auto-pay-toggle-title">Enable Auto-Pay</h4>
+                      <p class="auto-pay-toggle-desc">
+                        Automatically charge your default payment method on the 1st of each month
+                      </p>
+                    </div>
+                    <label class="auto-pay-switch">
+                      <input type="checkbox" id="autoPayToggle" />
+                      <span class="auto-pay-slider"></span>
+                    </label>
+                  </div>
+
+                  <div class="auto-pay-details" id="autoPayDetails" style="display: none">
+                    <div class="auto-pay-row">
+                      <span class="auto-pay-label">Payment Date</span>
+                      <span class="auto-pay-value">1st of every month</span>
+                    </div>
+                    <div class="auto-pay-row">
+                      <span class="auto-pay-label">Default Method</span>
+                      <span class="auto-pay-value" id="autoPayMethod">GCash •••• 4582</span>
+                    </div>
+                    <div class="auto-pay-row">
+                      <span class="auto-pay-label">Amount</span>
+                      <span class="auto-pay-value" id="autoPayAmount">₱0.00</span>
+                    </div>
+                    <button class="payments-btn payments-btn-outline payments-btn-full">
+                      Configure Auto-Pay
+                    </button>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Quick Pay Card -->
+              <div class="payments-section payments-quick-pay-card">
+                <div class="quick-pay-content">
+                  <div class="quick-pay-icon-wrapper">
+                    <span class="icon-placeholder" data-icon="lightning"></span>
+                  </div>
+                  <div class="quick-pay-info">
+                    <h3 class="quick-pay-title">Top Up Utility Credit</h3>
+                    <p class="quick-pay-desc">
+                      Current balance: <span class="quick-pay-balance">₱0.00</span><br />
+                      Recommended: ₱500 - ₱1,000
+                    </p>
+                  </div>
+                </div>
+                <div class="quick-pay-actions">
+                  <button class="payments-btn payments-btn-outline">₱500</button>
+                  <button class="payments-btn payments-btn-outline">₱1,000</button>
+                  <button class="payments-btn payments-btn-primary">Custom Amount</button>
+                </div>
+              </div>
+            </div>
+
+            <!-- Payment History & Current Bill Column -->
+            <div class="payments-column">
+              <!-- Current Month Bill -->
+              <div
+                class="payments-section payments-current-bill-card"
+                data-due-date=""
+                data-paid-date=""
+              >
+                <div class="current-bill-header">
+                  <div class="current-bill-title-wrapper">
+                    <h2 class="payments-section-title">
+                      <span class="icon-placeholder" data-icon="document"></span>
+                      Current Bill
+                    </h2>
+                    <span class="current-bill-period">Loading...</span>
+                  </div>
+                  <span class="current-bill-status unpaid">Loading...</span>
+                </div>
+
+                <div class="current-bill-breakdown">
+                  <div class="current-bill-row">
+                    <span class="current-bill-label">Base Rent</span>
+                    <span class="current-bill-value">₱0.00</span>
+                  </div>
+                  <div class="current-bill-row">
+                    <span class="current-bill-label">Utilities</span>
+                    <span class="current-bill-value">₱0.00</span>
+                  </div>
+                  <div class="current-bill-row">
+                    <span class="current-bill-label">WiFi</span>
+                    <span class="current-bill-value">₱0.00</span>
+                  </div>
+                  <div class="current-bill-divider"></div>
+                  <div class="current-bill-row current-bill-total">
+                    <span class="current-bill-label">Total Due</span>
+                    <span class="current-bill-value">₱0.00</span>
+                  </div>
+                </div>
+
+                <div class="current-bill-dates">
+                  <div class="current-bill-date-item">
+                    <span class="current-bill-date-label">Due Date</span>
+                    <span class="current-bill-date-value" data-due-date="">Loading...</span>
+                  </div>
+                  <div class="current-bill-date-item warning">
+                    <span class="current-bill-date-label">Time Remaining</span>
+                    <span class="current-bill-date-value">
+                      <span class="icon-placeholder" data-icon="history"></span>
+                      <span class="time-remaining-text">Loading...</span>
+                    </span>
+                  </div>
+                </div>
+
+                <button
+                  class="payments-btn payments-btn-primary payments-btn-lg payments-btn-full"
+                  onclick="window.location.href='./pay.html'"
+                >
+                  <span class="icon-placeholder" data-icon="creditCard"></span>
+                  Pay Now
+                </button>
+              </div>
+
+              <!-- Payment History Timeline -->
+              <div class="payments-section payments-history-card">
+                <div class="payments-section-header">
+                  <h2 class="payments-section-title">
+                    <span class="icon-placeholder" data-icon="history"></span>
+                    Payment History
+                  </h2>
+                  <div class="payments-history-filter">
+                    <select class="payments-filter-select">
+                      <option value="all">All Time</option>
+                      <option value="6months">Last 6 Months</option>
+                      <option value="year">2024</option>
+                      <option value="year">2023</option>
+                    </select>
+                  </div>
+                </div>
+
+                <div class="payment-timeline">
+                  <p style="text-align: center; color: var(--text-gray); padding: 20px">
+                    Loading payment history...
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </main>
+    </div>
+
+    <script type="module" src="../../../js/main.js?v=1777136032299"></script>
+    <script type="module">
+      import { initSidebar } from '../../../js/components/sidebar.js';
+      import { initNavbar } from '../../../js/components/navbar.js';
+      import { initPaymentStatus } from '../../../js/views/boarder/boarder-payments.js';
+      import { initPaymentsPage } from '../../../js/views/boarder/payments-page.js';
+      import { getState } from '../../../js/shared/state.js';
+
+      document.addEventListener('DOMContentLoaded', async () => {
+        // Get current user from state
+        const state = getState();
+        const user = state.user || JSON.parse(localStorage.getItem('user') || '{}');
+        const userName = user
+          ? `${user.first_name || ''} ${user.last_name || ''}`.trim() || 'User'
+          : 'User';
+        const userInitials = user
+          ? `${(user.first_name || '').charAt(0)}${(user.last_name || '').charAt(0)}`.toUpperCase()
+          : 'U';
+
+        // Initialize sidebar
+        if (document.getElementById('sidebar-container')) {
+          initSidebar({
+            role: 'boarder',
+            user: {
+              name: userName,
+              initials: userInitials,
+              role: 'Boarder',
+            },
+          });
+        }
+
+        // Initialize navbar
+        if (document.getElementById('navbar-container')) {
+          initNavbar({
+            user: {
+              name: userName,
+              initials: userInitials,
+              avatarUrl: user?.profile_picture || '',
+            },
+            notificationCount: 3,
+          });
+        }
+
+        // Initialize payments page with real data
+        await initPaymentsPage();
+
+        // Initialize payment status color coding
+        initPaymentStatus();
+
+        // Auto-pay toggle functionality
+        const autoPayToggle = document.getElementById('autoPayToggle');
+        const autoPayDetails = document.getElementById('autoPayDetails');
+
+        if (autoPayToggle && autoPayDetails) {
+          autoPayToggle.addEventListener('change', e => {
+            autoPayDetails.style.display = e.target.checked ? 'block' : 'none';
+          });
+        }
+
+        // Download statement button
+        const downloadBtn = document.getElementById('downloadStatementBtn');
+        if (downloadBtn) {
+          downloadBtn.addEventListener('click', () => {
+            alert('Statement download feature coming soon!');
+          });
+        }
+
+        // Add payment method button
+        const addMethodBtn = document.getElementById('addMethodBtn');
+        if (addMethodBtn) {
+          addMethodBtn.addEventListener('click', () => {
+            alert('Add payment method feature coming soon!');
+          });
+        }
+      });
+    </script>
+    <script type="module">
+      document.addEventListener('DOMContentLoaded', async () => {
+        const { getIcon } = await import('../../../js/shared/icons.js');
+
+        document.querySelectorAll('.icon-placeholder').forEach(el => {
+          const iconName = el.dataset.icon;
+          const iconHtml = getIcon(iconName, {
+            className: el.className.replace('icon-placeholder', '').trim(),
+          });
+          el.outerHTML = iconHtml;
+        });
+      });
+    </script>
+  </body>
+</html>
