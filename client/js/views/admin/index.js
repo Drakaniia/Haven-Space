@@ -7,6 +7,7 @@ import { initSidebar } from '../../components/sidebar.js';
 import { initNavbar } from '../../components/navbar.js';
 import { initAdminDashboardPanels } from './admin-dashboard.js';
 import { getAuthHeaders } from '../../shared/auth-headers.js';
+import { initOAuthHandler } from '../../shared/oauth-handler.js';
 
 function loginPath() {
   const pathname = window.location.pathname;
@@ -29,6 +30,9 @@ function initialsFrom(user) {
  * Initialize Super Admin dashboard (admin role only)
  */
 export async function initAdminDashboard() {
+  // Handle OAuth redirect FIRST before any auth checks
+  await initOAuthHandler();
+
   let user;
   try {
     const res = await fetch(`${CONFIG.API_BASE_URL}/auth/me.php`, {

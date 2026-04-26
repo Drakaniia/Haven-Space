@@ -405,12 +405,23 @@ async function loadDashboardData() {
       });
 
       if (paymentsResponse.ok) {
-        const paymentsData = await paymentsResponse.json();
-        dashboardState.payments = paymentsData.data || [];
-        renderDashboardPayments(dashboardState.payments);
+        const contentType = paymentsResponse.headers.get('content-type');
+        if (contentType && contentType.includes('application/json')) {
+          const paymentsData = await paymentsResponse.json();
+          dashboardState.payments = paymentsData.data || [];
+          renderDashboardPayments(dashboardState.payments);
+        } else {
+          console.error('Payments API returned non-JSON response');
+          const text = await paymentsResponse.text();
+          console.error('Response text:', text.substring(0, 500));
+        }
+      } else {
+        console.error('Payments API error:', paymentsResponse.status, paymentsResponse.statusText);
       }
     } catch (error) {
       console.error('Error loading payments:', error);
+      // Show empty state or error message in UI
+      renderDashboardPayments([]);
     }
 
     updateDashboardUI();

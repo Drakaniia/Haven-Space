@@ -156,16 +156,17 @@ function createApplicationCard(application) {
         }">
           View Details
         </button>
-        <button class="landlord-btn landlord-btn-success landlord-btn-sm approve-btn" data-id="${
-          application.id
-        }">
+        ${
+          application.status === 'pending'
+            ? `
+        <button class="landlord-btn landlord-btn-success landlord-btn-sm approve-btn" data-id="${application.id}">
           Approve
         </button>
-        <button class="landlord-btn landlord-btn-danger landlord-btn-sm reject-btn" data-id="${
-          application.id
-        }">
+        <button class="landlord-btn landlord-btn-danger landlord-btn-sm reject-btn" data-id="${application.id}">
           Reject
-        </button>
+        </button>`
+            : `<span class="landlord-application-processed">Application ${application.status}</span>`
+        }
       </div>
     </div>
   `;
@@ -327,6 +328,15 @@ async function updateApplicationStatus(applicationId, status) {
           return;
         } else if (errorData.code === 'EMAIL_NOT_VERIFIED') {
           showToast('Please verify your email address before managing applications.', 'warning');
+          return;
+        } else if (errorData.error && errorData.error.includes('already been processed')) {
+          showToast(
+            'This application has already been processed and cannot be changed.',
+            'warning'
+          );
+          // Refresh the list to show current status
+          const applications = await fetchApplications();
+          renderApplications(applications);
           return;
         }
       }

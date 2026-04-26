@@ -491,6 +491,19 @@ async function updateApplicationStatus(id, status) {
         );
 
         if (!response.ok) {
+          if (response.status === 403) {
+            // Handle specific 403 errors
+            const errorData = await response.json().catch(() => ({}));
+            if (errorData.error && errorData.error.includes('already been processed')) {
+              showToast(
+                'This application has already been processed and cannot be changed.',
+                'warning'
+              );
+              // Refresh the list to show current status
+              await loadApplications();
+              return;
+            }
+          }
           throw new Error('Failed to update application status');
         }
 

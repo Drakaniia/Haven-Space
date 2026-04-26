@@ -23,6 +23,7 @@ import { hasAcceptedApplications } from '../../shared/notifications.js';
 import { updateNavbarNotifications } from '../../components/navbar.js';
 import { initDashboard } from '../../shared/dashboard-init.js';
 import { ensureAuth } from '../../shared/auth-sync.js';
+import { initOAuthHandler } from '../../shared/oauth-handler.js';
 
 function loginPath() {
   const pathname = window.location.pathname;
@@ -65,6 +66,9 @@ function initialsFrom(user) {
  * Sets up sidebar, navbar, and loads dashboard data
  */
 export async function initBoarderDashboard() {
+  // Handle OAuth redirect FIRST before any auth checks
+  await initOAuthHandler();
+
   // Ensure user is authenticated as a boarder and data is synced
   const user = await ensureAuth('boarder');
 

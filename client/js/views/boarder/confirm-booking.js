@@ -10,6 +10,18 @@ import { updateBoarderStatus } from '../../shared/routing.js';
  * Initialize the confirm booking page
  */
 export function initConfirmBooking() {
+  // Check user role first - only boarders should access this page
+  const user = JSON.parse(localStorage.getItem('user') || '{}');
+  if (user.role === 'landlord') {
+    alert('This page is for boarders only. Redirecting to landlord dashboard...');
+    window.location.href = '../../landlord/index.html';
+    return;
+  } else if (!user.role || user.role !== 'boarder') {
+    alert('Please log in as a boarder to access this page.');
+    window.location.href = '../../public/auth/login.html';
+    return;
+  }
+
   // Get application data from URL params or localStorage
   const application = getApplicationData();
 
@@ -245,7 +257,7 @@ function setupMovingDateEventListeners(application) {
   // Back to search
   if (backBtn) {
     backBtn.addEventListener('click', () => {
-      window.location.href = '../../public/find-a-room/index.html';
+      window.location.href = '../../public/find-a-room.html';
     });
   }
 }
@@ -270,79 +282,121 @@ async function handleSubmitApplication(application) {
     submitBtn.innerHTML =
       '<span data-icon="loading" data-icon-width="20" data-icon-height="20"></span> Submitting...';
 
-    // Prepare application data
-    const applicationData = {
+    // Get user authentication
+    const token = localStorage.getItem('token');
+    const user = JSON.parse(localStorage.getItem('user') || '{}');
+    if (!token) {
+      throw new Error('Authentication required. Please log in.');
+    }
+
+    // Validate user role - must be a boarder to submit applications
+    if (user.role !== 'boarder') {
+      if (user.role === 'landlord') {
+        alert(
+          'You are logged in as a landlord. Please log in as a boarder to submit applications.'
+        );
+        window.location.href = '../../public/auth/login.html';
+        return;
+      } else {
+        throw new Error('Invalid user role. Please log in as a boarder.');
+      }
+    }
+
+    // First, fetch the property details to get landlord_id and room_id
+    const CONFIG = (await import('../../config.js')).default;
+    const propertyResponse = await fetch(
+      `${CONFIG.API_BASE_URL}/api/rooms/detail?id=${application.propertyId || application.id}`
+    );
+
+    if (!propertyResponse.ok) {
+      throw new Error('Failed to fetch property details');
+    }
+
+    const propertyData = await propertyResponse.json();
+    const property = propertyData.data;
+
+    // Find the matching room or use the first available room
+    let selectedRoom = null;
+    if (property.rooms && property.rooms.length > 0) {
+      // Try to match by room type or use first available room
+      selectedRoom = property.rooms.find(r => r.status === 'available') || property.rooms[0];
+    }
+
+    if (!selectedRoom) {
+      throw new Error('No available rooms found for this property');
+    }
+
+    // Prepare application data for API
+    const apiApplicationData = {
+      room_id: selectedRoom.id,
+      landlord_id: property.landlord.id,
+      property_id: property.id,
+      message: `Moving Date: ${movingDateInput.value}\n\n${
+        messageInput ? messageInput.value : 'No additional message provided.'
+      }`,
+    };
+
+    console.log('Submitting application:', apiApplicationData);
+
+    // Submit application to backend API
+    const response = await fetch(`${CONFIG.API_BASE_URL}/api/boarder/applications`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${token}`,
+      },
+      credentials: 'include',
+      body: JSON.stringify(apiApplicationData),
+    });
+
+    const result = await response.json();
+
+    if (!response.ok) {
+      throw new Error(result.error || 'Failed to submit application');
+    }
+
+    console.log('Application submitted successfully:', result);
+
+    // Update boarder status to applied_pending
+    updateBoarderStatus('applied_pending');
+
+    // Prepare display data for success message
+    const displayData = {
       ...application,
       movingDate: movingDateInput.value,
       message: messageInput ? messageInput.value : '',
       status: 'pending',
       submittedAt: new Date().toISOString(),
+      applicationId: result.data?.id,
     };
 
-    // Store application in localStorage (simulate API call)
-    const applications = JSON.parse(localStorage.getItem('applications') || '[]');
-    applications.push(applicationData);
-    localStorage.setItem('applications', JSON.stringify(applications));
-
-    // Add some sample saved properties if none exist (for demo purposes)
-    const savedProperties = JSON.parse(localStorage.getItem('savedProperties') || '[]');
-    if (savedProperties.length === 0) {
-      const sampleSavedProperties = [
-        {
-          id: 1,
-          title: 'Campus View Residences',
-          address: 'Loyola Heights, QC',
-          price: 6500,
-          image: 'https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?w=300&q=80',
-          savedAt: new Date().toISOString(),
-        },
-        {
-          id: 2,
-          title: 'Greenfield Boarding House',
-          address: 'Commonwealth Ave, QC',
-          price: 4200,
-          image: 'https://images.unsplash.com/photo-1502672260266-1c1ef2d93688?w=300&q=80',
-          savedAt: new Date(Date.now() - 86400000).toISOString(), // 1 day ago
-        },
-      ];
-      localStorage.setItem('savedProperties', JSON.stringify(sampleSavedProperties));
-    }
-
-    // Add some sample search alerts if none exist (for demo purposes)
-    const searchAlerts = JSON.parse(localStorage.getItem('searchAlerts') || '[]');
-    if (searchAlerts.length === 0) {
-      const sampleAlerts = [
-        {
-          id: 1,
-          name: 'Near UST - ₱3-5k',
-          criteria: 'Dorm/Boarding House • WiFi • Kitchen • Within 2km',
-          active: true,
-          newCount: 3,
-          totalCount: 12,
-        },
-        {
-          id: 2,
-          name: 'QC - Diliman Area',
-          criteria: 'Apartment • AC • Laundry • ₱5-8k',
-          active: true,
-          newCount: 1,
-          totalCount: 8,
-        },
-      ];
-      localStorage.setItem('searchAlerts', JSON.stringify(sampleAlerts));
-    }
-
-    // Update boarder status to applied_pending
-    updateBoarderStatus('applied_pending');
-
     // Show success and redirect to dashboard
-    showApplicationSubmittedSuccess(applicationData);
+    showApplicationSubmittedSuccess(displayData);
   } catch (error) {
     console.error('Failed to submit application:', error);
     submitBtn.disabled = false;
     submitBtn.innerHTML =
       '<span data-icon="paperAirplane" data-icon-width="20" data-icon-height="20"></span> Submit Application';
-    alert('Failed to submit application. Please try again.');
+
+    // Check for specific error types and provide better messages
+    if (error.message.includes('Forbidden') || error.message.includes('permission')) {
+      // Check if user is logged in as wrong role
+      const user = JSON.parse(localStorage.getItem('user') || '{}');
+      if (user.role === 'landlord') {
+        alert(
+          'You are logged in as a landlord. Please log in as a boarder to submit applications.'
+        );
+        // Redirect to login page
+        window.location.href = '../../public/auth/login.html';
+        return;
+      } else if (!user.role) {
+        alert('Please log in to submit an application.');
+        window.location.href = '../../public/auth/login.html';
+        return;
+      }
+    }
+
+    alert(error.message || 'Failed to submit application. Please try again.');
   }
 }
 
@@ -378,7 +432,7 @@ function showApplicationSubmittedSuccess(application) {
         <p>The landlord will review your application and respond within 1-3 business days. You'll receive a notification when they make a decision.</p>
       </div>
       <div class="application-success-actions">
-        <button class="confirm-btn confirm-btn-secondary" onclick="window.location.href='../../public/find-a-room/index.html'">
+        <button class="confirm-btn confirm-btn-secondary" onclick="window.location.href='../../public/find-a-room.html'">
           <span data-icon="search" data-icon-width="20" data-icon-height="20"></span>
           Browse More Properties
         </button>

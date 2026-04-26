@@ -36,10 +36,6 @@ const NAV_CONFIG = {
       items: [{ label: 'Payments', href: '../boarder/payments/index.html', icon: 'payment' }],
     },
     {
-      group: 'Discovery',
-      items: [{ label: 'Find a Room', href: '../boarder/find-a-room/index.html', icon: 'search' }],
-    },
-    {
       group: 'Info',
       items: [
         {
@@ -66,10 +62,6 @@ const NAV_CONFIG = {
           icon: 'home',
         },
       ],
-    },
-    {
-      group: 'Discovery',
-      items: [{ label: 'Find a Room', href: '../boarder/find-a-room/index.html', icon: 'search' }],
     },
     {
       group: 'Account',

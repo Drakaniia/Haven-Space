@@ -124,6 +124,9 @@ function initializeLogin() {
     }
   });
 
+  // Mark that the module handler has been attached
+  loginForm.setAttribute('data-module-handler-attached', 'true');
+
   // Google OAuth login
   document.querySelector('.social-btn-google')?.addEventListener('click', async function () {
     try {

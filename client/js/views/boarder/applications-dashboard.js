@@ -261,7 +261,7 @@ async function loadRecentApplications() {
           <span class="icon-placeholder" data-icon="clipboardList"></span>
           <h3>No Applications Yet</h3>
           <p>Start by browsing properties and submitting your first application</p>
-          <a href="../public/find-a-room/index.html" class="boarder-btn boarder-btn-primary">
+          <a href="../public/find-a-room.html" class="boarder-btn boarder-btn-primary">
             <span class="icon-placeholder" data-icon="search"></span>
             Find Properties
           </a>
@@ -362,7 +362,7 @@ async function loadRecentApplications() {
           <span class="icon-placeholder" data-icon="clipboardList"></span>
           <h3>No Applications Yet</h3>
           <p>Start by browsing properties and submitting your first application</p>
-          <a href="../public/find-a-room/index.html" class="boarder-btn boarder-btn-primary">
+          <a href="../public/find-a-room.html" class="boarder-btn boarder-btn-primary">
             <span class="icon-placeholder" data-icon="search"></span>
             Find Properties
           </a>
