@@ -68,7 +68,7 @@
         id="navbar-avatar-img"
         src=""
         alt="User Avatar"
-        onerror="this.src='assets/images/sample.png'; console.error('Avatar image failed to load:', this.src)"
+        onerror="if(!this.dataset.errorHandled){this.dataset.errorHandled='true';this.src='assets/images/sample.png';console.error('Avatar image failed to load, using fallback');}"
       />
     </div>
 
