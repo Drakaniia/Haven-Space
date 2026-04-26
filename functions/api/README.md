@@ -50,7 +50,7 @@ Copy `.env.example` to `.env` and update with your values:
 ```bash
 # Appwrite Configuration
 APPWRITE_FUNCTION_ENDPOINT=https://fra.cloud.appwrite.io/v1
-APPWRITE_FUNCTION_PROJECT_ID=your_project_id
+APPWRITE_FUNCTION_PROJECT_ID=69eae504002697b6749c
 
 # Database Configuration
 DATABASE_ID=your_database_id
