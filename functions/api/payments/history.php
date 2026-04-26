@@ -4,6 +4,10 @@
  * GET /api/payments/history - Get payment history for current user
  */
 
+// Suppress PHP errors from being displayed as HTML
+ini_set('display_errors', '0');
+error_reporting(E_ALL);
+
 require_once __DIR__ . '/../cors.php';
 
 if (!function_exists('json_response')) {
@@ -16,15 +20,16 @@ require_once __DIR__ . '/../middleware.php';
 use App\Api\Middleware;
 use App\Core\Database\Connection;
 
-// Authenticate user
-$user = Middleware::authenticate();
-$userId = $user['user_id'];
-$userRole = $user['role'];
+try {
+    // Authenticate user
+    $user = Middleware::authenticate();
+    $userId = $user['user_id'];
+    $userRole = $user['role'];
 
-$method = $_SERVER['REQUEST_METHOD'];
+    $method = $_SERVER['REQUEST_METHOD'];
 
-// GET - Get payment history
-if ($method === 'GET') {
+    // GET - Get payment history
+    if ($method === 'GET') {
     try {
         $pdo = Connection::getInstance()->getPdo();
         
@@ -196,9 +201,26 @@ if ($method === 'GET') {
 
     } catch (Exception $e) {
         error_log('Get payment history error: ' . $e->getMessage());
-        json_response(500, ['error' => 'Failed to load payment history']);
+        json_response(500, ['error' => 'Failed to load payment history', 'message' => $e->getMessage()]);
     }
+} else {
+    // Method not allowed
+    json_response(405, ['error' => 'Method not allowed']);
 }
 
-// Method not allowed
-json_response(405, ['error' => 'Method not allowed']);
+} catch (Exception $e) {
+    error_log('Payment history API error: ' . $e->getMessage());
+    error_log('Stack trace: ' . $e->getTraceAsString());
+    
+    // Ensure we send JSON even on fatal errors
+    if (!headers_sent()) {
+        header('Content-Type: application/json');
+        http_response_code(500);
+    }
+    echo json_encode([
+        'success' => false,
+        'error' => 'Internal server error',
+        'message' => $e->getMessage()
+    ]);
+    exit;
+}

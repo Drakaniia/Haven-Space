@@ -376,6 +376,17 @@
   flex-wrap: wrap;
 }
 
+.landlord-application-processed {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-gray);
+  padding: 8px 12px;
+  background-color: var(--bg-cream);
+  border-radius: 6px;
+  text-transform: capitalize;
+  border: 1px solid var(--border-color);
+}
+
 /* ===== Loading State ===== */
 .applications-loading {
   display: flex;
