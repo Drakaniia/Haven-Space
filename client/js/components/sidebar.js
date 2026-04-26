@@ -3,7 +3,70 @@
  * Reusable sidebar with role-based navigation
  */
 
-import { getIcon } from '../shared/icons.js';
+// Map icon names to SVG asset files
+const SIDEBAR_ICON_MAP = {
+  home: 'dashboard.svg',
+  chat: 'messages.svg',
+  announcement: 'announcement.svg',
+  payment: 'payment.svg',
+  search: 'search.svg',
+  settings: 'settings.svg',
+  cog: 'settings.svg',
+  calendar: 'calendar.svg',
+  map: 'maps.svg',
+  analytics: 'analytics.svg',
+  chartBar: 'analytics.svg',
+  list: 'property.svg',
+  application: 'applications.svg',
+  clipboardList: 'applications.svg',
+  document: 'document.svg',
+  book: 'handbook.svg',
+  users: 'users.svg',
+  shieldCheck: 'verified.svg',
+  buildingOffice: 'property.svg',
+  flag: 'report.svg',
+  chevronDown: 'chevron-down.svg',
+};
+
+/**
+ * Resolve the base path to the assets/svg directory from the current page location.
+ * Sidebar is used from views at varying depths, so we walk up to the client root.
+ */
+function resolveSvgBasePath() {
+  const path = window.location.pathname;
+
+  // Handle /views/ structure (e.g., /views/landlord/index.html)
+  if (path.includes('/views/')) {
+    const viewsIndex = path.indexOf('/views/');
+    const afterViews = path.slice(viewsIndex + '/views/'.length);
+    const depth = afterViews.split('/').length; // Count segments after /views/
+    return '../'.repeat(depth + 1) + 'assets/svg/';
+  }
+
+  // Handle /client/ structure (e.g., /client/views/landlord/index.html)
+  const clientIndex = path.indexOf('/client/');
+  if (clientIndex !== -1) {
+    const afterClient = path.slice(clientIndex + '/client/'.length);
+    const depth = afterClient.split('/').length - 1; // -1 because last segment is the file
+    return '../'.repeat(depth) + 'assets/svg/';
+  }
+
+  // Default fallback
+  return '../assets/svg/';
+}
+
+/**
+ * Get an <img> tag for a sidebar icon.
+ * Falls back to an empty span if the icon is not mapped.
+ */
+function getSidebarIcon(iconName, options = {}) {
+  const { className = '', width = 20, height = 20 } = options;
+  const file = SIDEBAR_ICON_MAP[iconName];
+  if (!file) return `<span class="sidebar-icon-placeholder"></span>`;
+  const basePath = resolveSvgBasePath();
+  const classAttr = className ? ` class="${className}"` : ' class="sidebar-icon"';
+  return `<img src="${basePath}${file}" alt="" width="${width}" height="${height}"${classAttr} aria-hidden="true">`;
+}
 
 // Navigation configurations per role
 const NAV_CONFIG = {
@@ -36,6 +99,10 @@ const NAV_CONFIG = {
       items: [{ label: 'Payments', href: '../boarder/payments/index.html', icon: 'payment' }],
     },
     {
+      group: 'Discovery',
+      items: [{ label: 'Find a Room', href: '../boarder/find-a-room/index.html', icon: 'search' }],
+    },
+    {
       group: 'Info',
       items: [
         {
@@ -62,6 +129,10 @@ const NAV_CONFIG = {
           icon: 'home',
         },
       ],
+    },
+    {
+      group: 'Discovery',
+      items: [{ label: 'Find a Room', href: '../boarder/find-a-room/index.html', icon: 'search' }],
     },
     {
       group: 'Account',
@@ -281,7 +352,7 @@ function renderNavigation(role, boarderStatus, basePath) {
  * @param {string} basePath - Base path for resolving hrefs
  */
 function renderNavItem(item, basePath) {
-  const icon = getIcon(item.icon);
+  const icon = getSidebarIcon(item.icon);
   // Resolve href with base path
   const resolvedHref = resolveNavHref(item.href, basePath);
 
@@ -296,7 +367,7 @@ function renderNavItem(item, basePath) {
     .replace(/\s+/g, '-')}">
     ${icon}
     <span class="sidebar-nav-item-text">${item.label}</span>
-    ${getIcon('chevronDown', { className: 'sidebar-dropdown-icon' })}
+    ${getSidebarIcon('chevronDown', { className: 'sidebar-dropdown-icon' })}
   </div>
   <div class="sidebar-nav-dropdown-content" id="dropdown-${item.label
     .toLowerCase()
@@ -322,7 +393,7 @@ function renderNavItem(item, basePath) {
  * @param {string} basePath - Base path for resolving hrefs
  */
 function renderNavChildItem(child, basePath) {
-  const icon = getIcon(child.icon);
+  const icon = getSidebarIcon(child.icon);
   // Resolve href with base path
   const resolvedHref = resolveNavHref(child.href, basePath);
 

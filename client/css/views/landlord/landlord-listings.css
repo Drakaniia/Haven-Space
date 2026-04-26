@@ -428,16 +428,18 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: center;
-  padding: 4rem 2rem;
+  justify-content: flex-start;
+  padding: 0 2rem 4rem;
   text-align: center;
+  min-height: 400px;
 }
 
-.empty-state svg {
-  width: 64px;
-  height: 64px;
-  color: #d1d5db;
-  margin-bottom: 1.5rem;
+.empty-state-image {
+  width: 700px;
+  height: 350px;
+  object-fit: contain;
+  margin-top: 0;
+  margin-bottom: 0.5rem;
 }
 
 .empty-state h2 {

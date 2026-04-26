@@ -21,6 +21,12 @@
   box-sizing: border-box;
 }
 
+/* Remove background from SVG icons */
+.icon-no-bg {
+  background: none !important;
+  fill: currentColor;
+}
+
 :root {
   /* Colors - Primary */
   --primary-green: #4a7c23;

@@ -322,6 +322,44 @@ try {
                 $stmt->execute([$userId, $avatarFileId]);
             }
             
+            // For landlords, create the landlord profile and verification data
+            if ($rolePreference === 'landlord') {
+                // Resolve property_type_id (default to first available type)
+                $stmt = $pdo->prepare('SELECT id FROM property_types LIMIT 1');
+                $stmt->execute();
+                $propTypeRow = $stmt->fetch(\PDO::FETCH_ASSOC);
+                $propertyTypeId = $propTypeRow ? $propTypeRow['id'] : 1;
+
+                // Create basic landlord profile
+                $stmt = $pdo->prepare('
+                    INSERT INTO landlord_profiles 
+                    (user_id, boarding_house_name, boarding_house_description, property_type_id, total_rooms, available_rooms) 
+                    VALUES (?, ?, ?, ?, ?, ?)
+                ');
+                $stmt->execute([$userId, 'My Boarding House', 'Boarding house managed via Haven Space', $propertyTypeId, 1, 1]);
+
+                // Create a verification record for the landlord
+                $stmt = $pdo->prepare('SELECT id FROM verification_statuses WHERE status_name = ?');
+                $stmt->execute(['pending']);
+                $vsRow = $stmt->fetch(\PDO::FETCH_ASSOC);
+                if ($vsRow) {
+                    $stmt = $pdo->prepare('
+                        INSERT INTO verification_records 
+                        (entity_type, entity_id, verification_status_id, submitted_at) 
+                        VALUES (?, ?, ?, NOW())
+                    ');
+                    $stmt->execute(['user', $userId, $vsRow['id']]);
+                }
+
+                // Store basic verification data (will need to be completed by landlord later)
+                $stmt = $pdo->prepare('
+                    INSERT INTO landlord_verification_data 
+                    (user_id, phone_number, experience_level, id_type, id_number) 
+                    VALUES (?, ?, ?, ?, ?)
+                ');
+                $stmt->execute([$userId, $phoneNumber ?? '', 'beginner', 'passport', '']);
+            }
+            
             $userRole = $rolePreference;
         }
     } else {

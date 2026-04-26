@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="128" height="128" viewBox="0 0 24 24" fill="none" class="injected-svg" data-src="https://cdn.hugeicons.com/icons/dashboard-browsing-duotone-rounded.svg?v=1.0.0" xmlns:xlink="http://www.w3.org/1999/xlink" role="img" color="#464646">
+<path opacity="0.4" d="M12 12C9.23858 12 7 14.2386 7 17H17C17 14.2386 14.7614 12 12 12Z" fill="#464646"></path>
+<path opacity="0.4" d="M19.6812 4.31803C18.3632 3.00002 16.2419 3.00002 11.9993 3.00002C7.75662 3.00002 5.6353 3.00002 4.31728 4.31803C3.50167 5.13364 3.19078 6.25686 3.07227 8.00002H20.9263C20.8078 6.25686 20.4969 5.13364 19.6812 4.31803Z" fill="#464646"></path>
+<path d="M3 12C3 7.75737 3 5.63605 4.31802 4.31803C5.63604 3.00002 7.75736 3.00002 12 3.00002C16.2426 3.00002 18.364 3.00002 19.682 4.31803C21 5.63605 21 7.75737 21 12C21 16.2427 21 18.364 19.682 19.682C18.364 21 16.2426 21 12 21C7.75736 21 5.63604 21 4.31802 19.682C3 18.364 3 16.2427 3 12Z" stroke="#464646" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"></path>
+<path d="M3.5 8.00002H20.5" stroke="#464646" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"></path>
+<path d="M17 17C17 14.2386 14.7614 12 12 12C9.23858 12 7 14.2386 7 17" stroke="#464646" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"></path>
+<path d="M12.707 15.293L11.2928 16.7072" stroke="#464646" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"></path>
+</svg>

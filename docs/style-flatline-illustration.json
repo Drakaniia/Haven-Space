@@ -1,0 +1,81 @@
+{
+  "style": {
+    "name": "Flat Line Illustration",
+    "description": "Clean minimal line-art illustration with flat color fills, suitable for UI hero images and onboarding screens"
+  },
+  "visual": {
+    "background": "#FFFFFF",
+    "stroke": {
+      "color": "#1A1A1A",
+      "weight": "2px",
+      "style": "solid",
+      "lineCap": "round",
+      "lineJoin": "round"
+    },
+    "fills": {
+      "primary_accent": "#4a7c23",
+      "secondary_fill": "#D6D6D6",
+      "shadow_fill": "#EBEBEB",
+      "sky_fill": "#FFFFFF"
+    }
+  },
+  "color_palette": {
+    "background": "#FFFFFF",
+    "outline": "#1A1A1A",
+    "green_foliage": "#4a7c23",
+    "green_dark": "#388E3C",
+    "neutral_gray": "#D6D6D6",
+    "light_gray": "#EBEBEB",
+    "white": "#FFFFFF"
+  },
+  "characters": {
+    "style": "simplified_human",
+    "features": "no facial detail, minimal anatomy",
+    "proportions": "slightly elongated, natural stance",
+    "clothing": "flat fill, no texture",
+    "accessories": ["backpack", "book", "phone", "cap"]
+  },
+  "objects": {
+    "buildings": {
+      "style": "outline only with gray window fills",
+      "roof": "simple triangular or flat",
+      "windows": "rectangular, gray fill",
+      "doors": "rectangular, gray fill"
+    },
+    "trees": {
+      "style": "circular canopy, single trunk",
+      "fill": "#4a7c23",
+      "outline": "#1A1A1A"
+    },
+    "props": ["bicycle", "mailbox", "for-rent sign", "clouds", "bushes"],
+    "ground": {
+      "style": "two parallel horizontal lines",
+      "color": "#1A1A1A"
+    }
+  },
+  "composition": {
+    "layout": "horizontal panoramic",
+    "depth": "flat, no perspective distortion",
+    "focal_point": "center foreground characters",
+    "background_elements": "buildings and trees at mid-ground",
+    "aspect_ratio": "16:9"
+  },
+  "rendering": {
+    "shadows": false,
+    "gradients": false,
+    "textures": false,
+    "anti_aliasing": true,
+    "detail_level": "minimal"
+  },
+  "prompt_keywords": [
+    "flat line illustration",
+    "outline art",
+    "minimal stroke",
+    "green accent",
+    "white background",
+    "no shading",
+    "clean vector style",
+    "real estate illustration",
+    "neighborhood scene"
+  ]
+}
