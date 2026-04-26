@@ -37,7 +37,7 @@ class ApplicationRepository
 
         $stmt = $this->pdo->prepare($sql);
         $stmt->execute([$boarderId]);
-        return $stmt->fetchAll();
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
 
     /**
@@ -59,7 +59,7 @@ class ApplicationRepository
 
         $stmt = $this->pdo->prepare($sql);
         $stmt->execute([$landlordId]);
-        return $stmt->fetchAll();
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
 
     /**
@@ -85,7 +85,7 @@ class ApplicationRepository
 
         $stmt = $this->pdo->prepare($sql);
         $stmt->execute([$id]);
-        $result = $stmt->fetch();
+        $result = $stmt->fetch(PDO::FETCH_ASSOC);
         return $result ?: null;
     }
 

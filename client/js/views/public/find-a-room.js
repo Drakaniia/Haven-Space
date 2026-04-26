@@ -697,8 +697,11 @@ function handleGoogleOAuthRedirect() {
       // Store user data in localStorage
       localStorage.setItem('user', JSON.stringify(userData));
 
-      // Also store a token if not already present (for compatibility)
-      if (!localStorage.getItem('token')) {
+      // Always store the real JWT token so authenticatedFetch works correctly.
+      // This also clears any stale token from a previously logged-in user.
+      if (userData.access_token) {
+        localStorage.setItem('token', userData.access_token);
+      } else if (!localStorage.getItem('token')) {
         localStorage.setItem('token', 'google-oauth-token');
       }
 
