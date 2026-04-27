@@ -560,6 +560,24 @@
   text-decoration: underline;
 }
 
+/* Auth Link Text */
+.auth-link-text {
+  text-align: center;
+  font-size: 0.9rem;
+  color: var(--text-gray);
+  margin-top: 1rem;
+}
+
+.auth-link-text a {
+  color: var(--primary-green);
+  text-decoration: none;
+  font-weight: 600;
+}
+
+.auth-link-text a:hover {
+  text-decoration: underline;
+}
+
 /* Split Layout (Login Page) */
 .auth-split-container {
   display: grid;

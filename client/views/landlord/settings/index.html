@@ -36,12 +36,12 @@
           <div class="page-header">
             <div class="page-header-left">
               <div class="page-icon-box">
-                <span
-                  data-icon="settings"
-                  data-icon-width="24"
-                  data-icon-height="24"
-                  data-icon-stroke-width="2"
-                ></span>
+                <img
+                  src="../../../assets/svg/settings.svg"
+                  alt="Settings Icon"
+                  width="24"
+                  height="24"
+                />
               </div>
               <div class="page-text-content">
                 <h1 class="page-title">Settings</h1>
@@ -53,48 +53,38 @@
           <!-- Settings Tabs -->
           <div class="settings-tabs">
             <button class="settings-tab active" data-tab="profile">
-              <span
-                data-icon="user"
-                data-icon-width="24"
-                data-icon-height="24"
-                data-icon-stroke-width="2"
-              ></span>
+              <img src="../../../assets/svg/user.svg" alt="User Icon" width="24" height="24" />
               Profile
             </button>
             <button class="settings-tab" data-tab="documents">
-              <span
-                data-icon="document"
-                data-icon-width="24"
-                data-icon-height="24"
-                data-icon-stroke-width="2"
-              ></span>
+              <img
+                src="../../../assets/svg/document.svg"
+                alt="Document Icon"
+                width="24"
+                height="24"
+              />
               Documents
             </button>
             <button class="settings-tab" data-tab="welcome">
-              <span
-                data-icon="envelope"
-                data-icon-width="24"
-                data-icon-height="24"
-                data-icon-stroke-width="2"
-              ></span>
+              <img
+                src="../../../assets/svg/envelope.svg"
+                alt="Envelope Icon"
+                width="24"
+                height="24"
+              />
               Welcome Message
             </button>
             <button class="settings-tab" data-tab="notifications">
-              <span
-                data-icon="bell"
-                data-icon-width="24"
-                data-icon-height="24"
-                data-icon-stroke-width="2"
-              ></span>
+              <img
+                src="../../../assets/svg/notification.svg"
+                alt="Notification Icon"
+                width="24"
+                height="24"
+              />
               Notifications
             </button>
             <button class="settings-tab" data-tab="privacy">
-              <span
-                data-icon="shieldCheck"
-                data-icon-width="24"
-                data-icon-height="24"
-                data-icon-stroke-width="2"
-              ></span>
+              <img src="../../../assets/svg/shield.svg" alt="Shield Icon" width="24" height="24" />
               Privacy & Security
             </button>
           </div>
@@ -112,7 +102,7 @@
                 <form class="settings-form" id="profile-form">
                   <div class="profile-avatar-section">
                     <img
-                      src="../../../assets/images/sample.png"
+                      src="../../../assets/svg/user.svg"
                       alt="Profile Avatar"
                       class="profile-avatar"
                       id="profile-avatar-preview"
@@ -192,12 +182,12 @@
                     </p>
                   </div>
                   <button class="btn btn-primary" id="upload-document-btn">
-                    <span
-                      data-icon="plus"
-                      data-icon-width="24"
-                      data-icon-height="24"
-                      data-icon-stroke-width="2"
-                    ></span>
+                    <img
+                      src="../../../assets/svg/add_listing.svg"
+                      alt="Plus Icon"
+                      width="24"
+                      height="24"
+                    />
                     <span>Upload Document</span>
                   </button>
                 </div>
@@ -276,34 +266,34 @@
                         style="display: none"
                       />
                       <button type="button" class="btn btn-outline" id="select-file-btn">
-                        <span
-                          data-icon="document"
-                          data-icon-width="24"
-                          data-icon-height="24"
-                          data-icon-stroke-width="2"
-                        ></span>
+                        <img
+                          src="../../../assets/svg/document.svg"
+                          alt="Document Icon"
+                          width="24"
+                          height="24"
+                        />
                         <span>Select File</span>
                       </button>
                       <div id="file-preview" class="file-preview" style="display: none">
                         <div class="file-preview-info">
-                          <span
-                            data-icon="document"
-                            data-icon-width="24"
-                            data-icon-height="24"
-                            data-icon-stroke-width="2"
-                          ></span>
+                          <img
+                            src="../../../assets/svg/document.svg"
+                            alt="Document Icon"
+                            width="24"
+                            height="24"
+                          />
                           <div class="file-details">
                             <p class="file-name" id="file-name-display"></p>
                             <p class="file-size" id="file-size-display"></p>
                           </div>
                         </div>
                         <button type="button" class="btn-icon" id="remove-file-btn">
-                          <span
-                            data-icon="xMark"
-                            data-icon-width="20"
-                            data-icon-height="20"
-                            data-icon-stroke-width="2"
-                          ></span>
+                          <img
+                            src="../../../assets/svg/close.svg"
+                            alt="Close Icon"
+                            width="20"
+                            height="20"
+                          />
                         </button>
                       </div>
                     </div>
@@ -444,12 +434,12 @@
 
                 <div class="two-factor-section">
                   <div class="two-factor-status">
-                    <span
-                      data-icon="checkCircle"
-                      data-icon-width="24"
-                      data-icon-height="24"
-                      data-icon-stroke-width="2"
-                    ></span>
+                    <img
+                      src="../../../assets/svg/verified.svg"
+                      alt="Check Circle Icon"
+                      width="24"
+                      height="24"
+                    />
                     <span>Two-factor authentication is currently disabled</span>
                   </div>
                   <button type="button" class="btn btn-outline" id="enable-2fa">Enable 2FA</button>
@@ -467,12 +457,7 @@
         <div class="modal-header">
           <h2 class="modal-title">Upload Document</h2>
           <button class="modal-close" id="modal-close-btn">
-            <span
-              data-icon="xMark"
-              data-icon-width="24"
-              data-icon-height="24"
-              data-icon-stroke-width="2"
-            ></span>
+            <img src="../../../assets/svg/close.svg" alt="Close Icon" width="24" height="24" />
           </button>
         </div>
         <form id="upload-form" class="modal-body">
