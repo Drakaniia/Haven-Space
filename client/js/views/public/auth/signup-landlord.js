@@ -430,6 +430,122 @@ function setupPasswordToggle(toggleId, inputId) {
 }
 
 /**
+ * Get current location using browser geolocation API
+ * Uses reverse geocoding to get city and province information
+ */
+async function getCurrentLocation() {
+  const locationBtn = document.getElementById('useCurrentLocation');
+  const cityInput = document.getElementById('city');
+  const provinceInput = document.getElementById('province');
+
+  if (!locationBtn || !cityInput || !provinceInput) {
+    console.error('Location elements not found');
+    return;
+  }
+
+  // Save original button text
+  const originalText = locationBtn.innerHTML;
+
+  try {
+    // Show loading state
+    locationBtn.disabled = true;
+    locationBtn.innerHTML = `
+      <span data-icon="loader" data-icon-width="20" data-icon-height="20" class="spin"></span>
+      Getting location...
+    `;
+
+    // Check if geolocation is available
+    if (!navigator.geolocation) {
+      throw new Error('Geolocation is not supported by your browser');
+    }
+
+    // Get current position
+    const position = await new Promise((resolve, reject) => {
+      navigator.geolocation.getCurrentPosition(resolve, reject, {
+        enableHighAccuracy: true,
+        timeout: 10000,
+        maximumAge: 0,
+      });
+    });
+
+    const { latitude, longitude } = position.coords;
+
+    // Use Nominatim (OpenStreetMap) for reverse geocoding
+    const response = await fetch(
+      `https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}&zoom=10&addressdetails=1`
+    );
+
+    if (!response.ok) {
+      throw new Error('Failed to get location information');
+    }
+
+    const data = await response.json();
+
+    // Extract city and province information
+    let city = '';
+    let province = '';
+
+    if (data.address) {
+      // Try to get city from various possible fields
+      city =
+        data.address.city || data.address.town || data.address.village || data.address.hamlet || '';
+
+      // Try to get province/state information
+      province = data.address.state || data.address.province || data.address.region || '';
+
+      // For Philippines, try to get more specific administrative levels
+      if (data.address.country_code === 'ph') {
+        // In Philippines, city/municipality is often in 'city' or 'municipality'
+        city = data.address.city || data.address.municipality || data.address.town || '';
+
+        // Province information
+        province = data.address.state || data.address.province || '';
+
+        // For Metro Manila areas
+        if (province === 'Metro Manila' || province === 'National Capital Region') {
+          province = 'Metro Manila';
+        }
+      }
+    }
+
+    // Auto-fill the inputs if we got valid data
+    if (city) {
+      cityInput.value = city;
+    }
+
+    if (province) {
+      provinceInput.value = province;
+    }
+
+    if (city || province) {
+      showToast('Location detected successfully!', 'success');
+    } else {
+      showToast('Location detected but could not determine city/province', 'warning');
+    }
+  } catch (error) {
+    console.error('Geolocation error:', error);
+
+    let errorMessage = 'Failed to get your location';
+
+    if (error.code === error.PERMISSION_DENIED) {
+      errorMessage = 'Location access was denied. Please enable location services and try again.';
+    } else if (error.code === error.POSITION_UNAVAILABLE) {
+      errorMessage = 'Location information is unavailable. Please try again later.';
+    } else if (error.code === error.TIMEOUT) {
+      errorMessage = 'Location request timed out. Please try again.';
+    } else if (error.message) {
+      errorMessage = error.message;
+    }
+
+    showToast(errorMessage, 'error');
+  } finally {
+    // Restore button state
+    locationBtn.disabled = false;
+    locationBtn.innerHTML = originalText;
+  }
+}
+
+/**
  * Setup event listeners for all steps
  */
 function setupEventListeners() {
@@ -657,6 +773,12 @@ function setupEventListeners() {
       clearInlineError(input);
     });
   });
+
+  // Setup location button event listener
+  const useCurrentLocationBtn = document.getElementById('useCurrentLocation');
+  if (useCurrentLocationBtn) {
+    useCurrentLocationBtn.addEventListener('click', getCurrentLocation);
+  }
 
   // Real-time password match validation
   const confirmPasswordInput = step1Form.confirmPassword;
