@@ -17,6 +17,7 @@
 <!-- Provide more details about specific changes -->
 
 ### Frontend
+
 - New pricing page (`client/views/landlord/pricing.html`)
 - New CSS files for pricing and updated public pages
 - New JavaScript for pricing functionality
@@ -24,6 +25,7 @@
 - Added 8 new SVG icons
 
 ### Backend
+
 - New NotificationController and NotificationService
 - Updated skill structure and references
 

@@ -59,6 +59,37 @@
 
 Whenever a recurring bug appears across prompts, and a fix has been identified and implemented, the fix should be documented in AGENTS.md. This ensures that when a similar issue arises in the future, the solution is already recorded, helping to avoid repeating the same mistake.
 
+### Fixed: Missing Authorization Headers in API Requests (2026-04-27)
+
+**Problem**: Several frontend JavaScript files were making API requests without including the required Authorization header with JWT token, resulting in 401 Unauthorized errors.
+
+**Root Cause**: The authentication system uses JWT tokens stored in `localStorage` with key `token` that must be sent as `Authorization: Bearer {token}` header in all API requests to protected endpoints.
+
+**Files Affected**:
+
+- `client/js/views/landlord/announcements.js` - All fetch requests missing auth headers
+- `client/js/views/landlord/landlord-calendar.js` - Calendar API requests
+- `client/js/views/landlord/activity.js` - Activity feed requests
+
+**Solution Pattern**: Add authentication headers to all fetch requests:
+
+```javascript
+const token = localStorage.getItem('token');
+const headers = { 'Content-Type': 'application/json' };
+if (token) {
+  headers['Authorization'] = `Bearer ${token}`;
+}
+
+const response = await fetch(url, {
+  method: 'GET/POST/PUT/DELETE',
+  headers,
+  credentials: 'include',
+  // ... other options
+});
+```
+
+**Prevention**: When adding new API calls, always check existing files like `landlord-boarders.js` or `my-properties.js` for the correct authentication pattern.
+
 ## landlord credentials
 
 qwenzy23062@gmail.com
