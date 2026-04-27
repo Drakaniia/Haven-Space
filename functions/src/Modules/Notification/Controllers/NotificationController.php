@@ -26,11 +26,12 @@ class NotificationController
     {
         $user = Middleware::authenticate();
         $userId = $user['user_id'];
+        $userRole = $user['role'] ?? null;
 
         $limit = (int) ($_GET['limit'] ?? 50);
         $offset = (int) ($_GET['offset'] ?? 0);
 
-        $notifications = $this->service->getUserNotifications($userId, $limit, $offset);
+        $notifications = $this->service->getUserNotifications($userId, $limit, $offset, $userRole);
         $unreadCount = $this->service->getUnreadCount($userId);
 
         json_response(200, [
