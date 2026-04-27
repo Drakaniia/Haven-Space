@@ -217,98 +217,87 @@
   margin: 0 auto;
 }
 
-.pricing-grid {
-  display: grid;
-  grid-template-columns: 1fr 2fr;
-  gap: 0;
-  background: var(--white);
-  border: 1px solid var(--border-color);
-  border-radius: 0;
-  overflow: hidden;
-}
-
-/* Left Column - Title */
-.pricing-title-column {
-  background: var(--white);
-  padding: 2rem;
-  border-right: 1px solid var(--border-color);
-  display: flex;
-  flex-direction: column;
-  justify-content: flex-start;
+.pricing-header {
+  text-align: center;
+  margin-bottom: 3rem;
 }
 
 .pricing-badge {
   display: inline-block;
-  background: transparent;
-  color: var(--text-gray);
+  background: var(--bg-green);
+  color: var(--primary-green);
   font-size: 0.75rem;
   font-weight: 600;
   letter-spacing: 0.05em;
-  padding: 0;
-  border-radius: 0;
+  padding: 0.5rem 1rem;
+  border-radius: 9999px;
   text-transform: uppercase;
-  margin-bottom: 1.5rem;
+  margin-bottom: 1rem;
 }
 
 .pricing-title {
   font-size: 3rem;
   font-weight: 800;
   color: var(--text-dark);
+  margin: 0 0 1rem;
+  line-height: 1.2;
+}
+
+.pricing-subtitle {
+  font-size: 1.1rem;
+  color: var(--text-gray);
   margin: 0;
-  line-height: 1.1;
+  max-width: 48rem;
+  margin-left: auto;
+  margin-right: auto;
+  line-height: 1.6;
 }
 
-/* Right Column - Pricing Cards */
-.pricing-cards-column {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 0;
-}
-
-.pricing-card {
+/* Single Tier Hero Pricing Card */
+.pricing-hero-card {
   background: var(--white);
-  border: none;
-  border-radius: 0;
-  overflow: hidden;
-  position: relative;
-  transition: none;
+  border: 1px solid var(--border-color);
+  border-radius: 16px;
+  padding: 2.5rem;
+  max-width: 600px;
+  margin: 0 auto;
+  transition: all 0.3s ease;
+}
+
+.pricing-hero-card:hover {
+  transform: translateY(-4px);
+}
+
+.pricing-hero-content {
   display: flex;
   flex-direction: column;
+  align-items: center;
+  text-align: center;
 }
 
-.pricing-card:hover {
-  transform: none;
-  box-shadow: none;
-}
-
-.pricing-card:not(:last-child) {
-  border-right: 1px solid var(--border-color);
-}
-
-.pricing-card-header {
-  padding: 2rem;
-  border-bottom: 1px solid var(--border-color);
-  flex-shrink: 0;
+.pricing-hero-header {
+  margin-bottom: 2rem;
 }
 
 .pricing-plan-name {
   font-size: 0.75rem;
   font-weight: 600;
   letter-spacing: 0.05em;
-  color: var(--text-gray);
+  color: var(--primary-green);
   text-transform: uppercase;
-  margin: 0 0 1.5rem;
+  margin: 0 0 1rem;
 }
 
 .pricing-amount-wrapper {
   display: flex;
   align-items: baseline;
   gap: 0.5rem;
+  justify-content: center;
   margin-bottom: 0.5rem;
 }
 
 .pricing-amount {
-  font-size: 3rem;
+  font-size: 3.5rem;
   font-weight: 800;
   color: var(--text-dark);
   margin: 0;
@@ -316,55 +305,20 @@
 }
 
 .pricing-period {
-  font-size: 0.75rem;
+  font-size: 1rem;
   color: var(--text-gray);
 }
 
 .pricing-plan-description {
-  font-size: 0.95rem;
+  font-size: 1rem;
   color: var(--text-gray);
-  margin: 0 0 2rem;
+  margin: 0;
   line-height: 1.4;
 }
 
-.btn-pricing {
-  display: block;
+.pricing-hero-features {
   width: 100%;
-  text-align: center;
-  text-decoration: none;
-  font-weight: 600;
-  font-size: 0.95rem;
-  padding: 0.75rem 1.5rem;
-  border-radius: 8px;
-  transition: all 0.2s;
-}
-
-.btn-pricing-outline {
-  background: var(--white);
-  color: var(--text-dark);
-  border: 2px solid var(--border-color);
-}
-
-.btn-pricing-outline:hover {
-  border-color: var(--text-dark);
-  background: var(--text-dark);
-  color: var(--white);
-}
-
-.btn-pricing-primary {
-  background: var(--text-dark);
-  color: var(--white);
-  border: 2px solid var(--text-dark);
-}
-
-.btn-pricing-primary:hover {
-  background: var(--primary-green);
-  border-color: var(--primary-green);
-}
-
-.pricing-card-features {
-  padding: 2rem;
-  flex-grow: 1;
+  margin-bottom: 2.5rem;
 }
 
 .pricing-features-title {
@@ -398,6 +352,38 @@
   flex-shrink: 0;
   display: flex;
   align-items: center;
+}
+
+.pricing-hero-cta {
+  width: 100%;
+}
+
+.btn-pricing-hero {
+  display: block;
+  width: 100%;
+  text-align: center;
+  text-decoration: none;
+  font-weight: 600;
+  font-size: 1rem;
+  padding: 1rem 2rem;
+  border-radius: 9999px;
+  background: var(--primary-green);
+  color: var(--white);
+  transition: all 0.2s;
+  margin-bottom: 1rem;
+}
+
+.btn-pricing-hero:hover {
+  background: var(--dark-green);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px rgba(74, 124, 35, 0.3);
+}
+
+.pricing-cta-note {
+  font-size: 0.875rem;
+  color: var(--text-gray);
+  margin: 0;
+  line-height: 1.4;
 }
 
 /* Landlord CTA Section */
@@ -559,40 +545,20 @@
     padding: 3rem 1rem;
   }
 
-  .pricing-grid {
-    grid-template-columns: 1fr;
-    border-radius: 12px;
-  }
-
-  .pricing-title-column {
-    border-right: none;
-    border-bottom: 1px solid var(--border-color);
-    padding: 1.5rem;
-  }
-
   .pricing-title {
     font-size: 2rem;
   }
 
-  .pricing-cards-column {
-    grid-template-columns: 1fr;
+  .pricing-subtitle {
+    font-size: 1rem;
   }
 
-  .pricing-card:not(:last-child) {
-    border-right: none;
-    border-bottom: 1px solid var(--border-color);
-  }
-
-  .pricing-card-header {
+  .pricing-hero-card {
     padding: 1.5rem;
   }
 
   .pricing-amount {
     font-size: 2.5rem;
-  }
-
-  .pricing-card-features {
-    padding: 1.5rem;
   }
 
   .landlord-cta-section {

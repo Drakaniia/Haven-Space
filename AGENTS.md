@@ -29,14 +29,8 @@
 - After feature work, add a small `.php` verification script only if needed for backend validation, then remove it once confirmed.
 - Do not commit secrets, `.env` values, Appwrite API keys, or production-only identifiers.
 - Push repo changes after finishing, because Appwrite deployment tracks the repository.
-
-## Security & Secrets
-
-- Treat `.env`, OAuth credentials, Appwrite keys, and JWT-related values as sensitive.
-- Keep auth/session behavior consistent across localhost and production fixes.
-- Avoid hardcoding fallback credentials outside documented local-only references.
-- Sanitize uploaded-file handling and route authorization changes in the same patch when relevant.
-
+- **Icon System**: New icons should be added as SVG files in `client/assets/svg/` directory. The system now prioritizes SVG files over path data for better maintainability. icons.js is depricated remove whats referencing it.
+- **Direct SVG Usage**: For simple icons, you can directly include SVG files in HTML using `<img src="../../../assets/svg/icon-name.svg">` or inline SVG, similar to the pattern used in sidebar components, icons.js is depricated remove whats referencing it. dont create new svgs, instead notify users if he needs to download that svg before proceeding
 ## JIT Index
 
 ### Package Structure
@@ -59,6 +53,10 @@
 - Changes work for localhost and do not obviously break the Appwrite-hosted production path.
 - New work follows the closest AGENTS guide and uses existing repo patterns rather than parallel ones.
 - Any temporary debug or test scripts created during implementation are removed before handoff.
+
+## Bug Fix Documentation
+
+Whenever a recurring bug appears across prompts, and a fix has been identified and implemented, the fix should be documented in AGENTS.md. This ensures that when a similar issue arises in the future, the solution is already recorded, helping to avoid repeating the same mistake.
 
 ## landlord credentials
 
