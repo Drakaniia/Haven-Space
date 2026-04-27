@@ -21,6 +21,8 @@
 - Put role/page logic under `client/js/views/<role>/`; mirror the HTML structure under `client/views/<role>/` and CSS under `client/css/views/<role>/`.
 - Use the shared auth/network helpers before inventing new request wrappers. Start with [client/js/shared/state.js](/C:/Users/Qwenzy/Desktop/haven-space/client/js/shared/state.js), [auth-check.js](/C:/Users/Qwenzy/Desktop/haven-space/client/js/shared/auth-check.js), and [auth-sync.js](/C:/Users/Qwenzy/Desktop/haven-space/client/js/shared/auth-sync.js).
 - Reuse centralized icons from [client/js/shared/icons.js](/C:/Users/Qwenzy/Desktop/haven-space/client/js/shared/icons.js) instead of scattering inline SVG strings.
+- **New Icons**: Add new icons as SVG files in `client/assets/svg/` directory. The icon system now prioritizes SVG files over path data for better maintainability and easier updates.
+- **Direct SVG Usage**: For simple cases, you can directly include SVG files in HTML using `<img src="../../../assets/svg/icon-name.svg">` or inline the SVG content, following the pattern used in sidebar components.
 - DO: follow the component injection and path-resolution pattern from [client/js/components/sidebar.js](/C:/Users/Qwenzy/Desktop/haven-space/client/js/components/sidebar.js).
 - DO: follow the view bootstrap style from [client/js/views/public/index.js](/C:/Users/Qwenzy/Desktop/haven-space/client/js/views/public/index.js) or the role initializers imported by `main.js`.
 - DO: keep page styles in the matching CSS tree, for example [client/css/views/public/public.css](/C:/Users/Qwenzy/Desktop/haven-space/client/css/views/public/public.css).

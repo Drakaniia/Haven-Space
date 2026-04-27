@@ -80,7 +80,12 @@
     <main class="auth-main signup-step" id="step1">
       <div class="auth-container">
         <button class="back-btn hidden" id="step1Back">
-          <span data-icon="chevronLeft" data-icon-width="20" data-icon-height="20"></span>
+          <img
+            src="../../../assets/svg/chevron-left.svg"
+            alt="Chevron Left"
+            width="20"
+            height="20"
+          />
           Back to role selection
         </button>
 
@@ -121,20 +126,20 @@
                 id="passwordToggle"
                 aria-label="Toggle password visibility"
               >
-                <span
+                <img
+                  src="../../../assets/svg/viewicon.svg"
+                  alt="View Icon"
                   class="eye-open"
-                  data-icon="eye"
-                  data-icon-width="20"
-                  data-icon-height="20"
-                  data-icon-stroke-width="2"
-                ></span>
-                <span
+                  width="20"
+                  height="20"
+                />
+                <img
+                  src="../../../assets/svg/ViewOffSlashIcon.svg"
+                  alt="View Off Slash Icon"
                   class="eye-closed hidden"
-                  data-icon="eyeSlash"
-                  data-icon-width="20"
-                  data-icon-height="20"
-                  data-icon-stroke-width="2"
-                ></span>
+                  width="20"
+                  height="20"
+                />
               </button>
             </div>
           </div>
@@ -157,26 +162,29 @@
                 id="confirmPasswordToggle"
                 aria-label="Toggle password visibility"
               >
-                <span
+                <img
+                  src="../../../assets/svg/viewicon.svg"
+                  alt="View Icon"
                   class="eye-open"
-                  data-icon="eye"
-                  data-icon-width="20"
-                  data-icon-height="20"
-                  data-icon-stroke-width="2"
-                ></span>
-                <span
+                  width="20"
+                  height="20"
+                />
+                <img
+                  src="../../../assets/svg/ViewOffSlashIcon.svg"
+                  alt="View Off Slash Icon"
                   class="eye-closed hidden"
-                  data-icon="eyeSlash"
-                  data-icon-width="20"
-                  data-icon-height="20"
-                  data-icon-stroke-width="2"
-                ></span>
+                  width="20"
+                  height="20"
+                />
               </button>
             </div>
           </div>
 
           <button type="submit" class="auth-btn-primary auth-btn-full">Continue to Profile</button>
         </form>
+        <p class="auth-link-text">
+          Already have an account? <a href="login.html" class="auth-link">Log In</a>
+        </p>
       </div>
     </main>
 
@@ -184,7 +192,12 @@
     <main class="auth-main signup-step hidden" id="step2">
       <div class="auth-container">
         <button class="back-btn" id="step2Back">
-          <span data-icon="chevronLeft" data-icon-width="20" data-icon-height="20"></span>
+          <img
+            src="../../../assets/svg/chevron-left.svg"
+            alt="Chevron Left"
+            width="20"
+            height="20"
+          />
           Back to account info
         </button>
 
@@ -259,6 +272,13 @@
           </div>
 
           <div class="form-group">
+            <button type="button" id="useCurrentLocation" class="auth-btn-secondary auth-btn-full">
+              <span data-icon="maps" data-icon-width="20" data-icon-height="20"></span>
+              Use Current Location
+            </button>
+          </div>
+
+          <div class="form-group">
             <label for="experienceLevel" class="form-label">Experience as landlord</label>
             <select id="experienceLevel" name="experienceLevel" class="form-input form-select">
               <option value="">Select your experience level</option>
@@ -316,6 +336,9 @@
 
           <button type="submit" class="auth-btn-primary auth-btn-full">Continue to Review</button>
         </form>
+        <p class="auth-link-text">
+          Already have an account? <a href="login.html" class="auth-link">Log In</a>
+        </p>
       </div>
     </main>
 
@@ -323,7 +346,12 @@
     <main class="auth-main signup-step hidden" id="step3">
       <div class="auth-container">
         <button class="back-btn" id="step3Back">
-          <span data-icon="chevronLeft" data-icon-width="20" data-icon-height="20"></span>
+          <img
+            src="../../../assets/svg/chevron-left.svg"
+            alt="Chevron Left"
+            width="20"
+            height="20"
+          />
           Back to profile
         </button>
 
@@ -402,6 +430,9 @@
           <button type="submit" class="auth-btn-primary auth-btn-full">
             Create Landlord Account
           </button>
+          <p class="auth-link-text">
+            Already have an account? <a href="login.html" class="auth-link">Log In</a>
+          </p>
         </form>
       </div>
     </main>
@@ -421,7 +452,7 @@
       <div class="terms-overlay-content">
         <button class="terms-overlay-close" aria-label="Close notification">
           <span
-            data-icon="xMark"
+            data-icon="close"
             data-icon-width="24"
             data-icon-height="24"
             data-icon-stroke-width="2"
@@ -429,7 +460,7 @@
         </button>
         <div class="terms-overlay-icon">
           <span
-            data-icon="exclamationCircle"
+            data-icon="informationCircle"
             data-icon-width="56"
             data-icon-height="56"
             data-icon-stroke-width="2"

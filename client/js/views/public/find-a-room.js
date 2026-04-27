@@ -1005,7 +1005,18 @@ function hideHeader() {
 async function loadApplicationsFromAPI() {
   try {
     const user = JSON.parse(localStorage.getItem('user') || '{}');
+    const token = localStorage.getItem('token');
+
     console.log('Loading applications for user:', user);
+    console.log('Authentication token present:', !!token);
+
+    // Check if user is authenticated
+    if (!token || !user || !user.id) {
+      console.warn('User not authenticated, using empty applications list');
+      enhancedState.applications = [];
+      updateStatusBadge();
+      return;
+    }
 
     const response = await authenticatedFetch(`${CONFIG.API_BASE_URL}/api/boarder/applications`, {
       method: 'GET',

@@ -21,9 +21,43 @@ class NotificationService
     /**
      * Get all notifications for current user
      */
-    public function getUserNotifications(int $userId, int $limit = 50, int $offset = 0): array
+    public function getUserNotifications(int $userId, int $limit = 50, int $offset = 0, string $userRole = null): array
     {
         $notifications = $this->repository->findByUser($userId, $limit, $offset);
+
+        // Filter notifications based on user role
+        if ($userRole) {
+            $notifications = array_filter($notifications, function ($notification) use ($userRole) {
+                $notificationType = $notification['type'];
+                
+                // Admin: only show landlord-related notifications (currently none defined, so show nothing)
+                if ($userRole === 'admin') {
+                    // Currently no specific admin notifications are defined
+                    // This would be for landlord verification submissions in the future
+                    return false;
+                }
+                
+                // Landlord: only show boarder application notifications
+                if ($userRole === 'landlord') {
+                    return $notificationType === 'new_application' || 
+                           $notificationType === 'application_accepted' ||
+                           $notificationType === 'application_rejected' ||
+                           $notificationType === 'maintenance_request' ||
+                           $notificationType === 'maintenance_status_change';
+                }
+                
+                // Boarder: only show accepted listing notifications
+                if ($userRole === 'boarder') {
+                    return $notificationType === 'application_accepted' ||
+                           $notificationType === 'maintenance_status_change';
+                }
+                
+                return true; // Default: show all if role not specified
+            });
+            
+            // Re-index array after filtering
+            $notifications = array_values($notifications);
+        }
 
         return array_map(function ($n) {
             $n['metadata'] = $n['metadata'] ? json_decode($n['metadata'], true) : null;
