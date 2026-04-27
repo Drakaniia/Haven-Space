@@ -31,6 +31,7 @@ document.addEventListener('DOMContentLoaded', () => {
   initializeDocumentVault();
   initializeApplicationTracker();
   initializeDynamicCards();
+  initializeKeyboardNavigation();
 });
 
 /**
@@ -39,6 +40,16 @@ document.addEventListener('DOMContentLoaded', () => {
 function initializeSearch() {
   const searchInput = document.querySelector('.boarder-search-input');
   const searchButton = document.querySelector('.boarder-search-filters .boarder-btn');
+
+  // Add accessible label for search input if not present
+  if (searchInput && !document.querySelector('[for="boarder-search"]')) {
+    const label = document.createElement('label');
+    label.htmlFor = 'boarder-search';
+    label.className = 'visually-hidden';
+    label.textContent = 'Search properties';
+    searchInput.parentNode.insertBefore(label, searchInput);
+    searchInput.id = 'boarder-search';
+  }
 
   if (searchButton) {
     searchButton.addEventListener('click', handleSearch);
@@ -152,6 +163,18 @@ function initializeSavedSearches() {
   const searchToggles = document.querySelectorAll('.boarder-toggle input[type="checkbox"]');
 
   searchToggles.forEach(toggle => {
+    // Ensure toggle has accessible label
+    const toggleLabel = toggle.closest('.boarder-toggle');
+    if (toggleLabel && !toggleLabel.querySelector('.visually-hidden')) {
+      const hiddenLabel = document.createElement('span');
+      hiddenLabel.className = 'visually-hidden';
+      const alertName =
+        toggle.closest('.boarder-search-alert')?.querySelector('.boarder-search-alert-name')
+          ?.textContent || 'search alert';
+      hiddenLabel.textContent = `Toggle ${alertName} alerts`;
+      toggleLabel.appendChild(hiddenLabel);
+    }
+
     toggle.addEventListener('change', e => {
       const isEnabled = e.target.checked;
 
@@ -171,8 +194,19 @@ function initializeDocumentVault() {
   const documentActions = document.querySelectorAll('.boarder-document-action');
 
   documentActions.forEach(action => {
+    // Ensure document action buttons have proper ARIA attributes
+    if (!action.getAttribute('aria-label')) {
+      const docName =
+        action.closest('.boarder-document-card')?.querySelector('.boarder-document-name')
+          ?.textContent || 'document';
+      action.setAttribute('aria-label', `Download ${docName}`);
+    }
+
     action.addEventListener('click', () => {
-      showNotification('Document download started', 'success');
+      const docName =
+        action.closest('.boarder-document-card')?.querySelector('.boarder-document-name')
+          ?.textContent || 'document';
+      showNotification(`Download started for ${docName}`, 'success');
 
       // In production, this would trigger a file download
       // window.location.href = `/api/documents/download/${docId}`;
@@ -220,6 +254,46 @@ function initializeApplicationTracker() {
 }
 
 /**
+ * Initialize keyboard navigation for interactive elements
+ */
+function initializeKeyboardNavigation() {
+  // Add keyboard support for all buttons and links
+  const interactiveElements = document.querySelectorAll(
+    'button, [role="button"], a, [tabindex="0"]'
+  );
+
+  interactiveElements.forEach(element => {
+    // Ensure all interactive elements are keyboard accessible
+    if (!element.hasAttribute('tabindex')) {
+      element.setAttribute('tabindex', '0');
+    }
+
+    // Add keyboard event listeners for elements that don't have native button behavior
+    if (element.tagName !== 'BUTTON' && element.tagName !== 'A') {
+      element.addEventListener('keydown', e => {
+        if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault();
+          element.click();
+        }
+      });
+    }
+  });
+
+  // Add keyboard support for toggle switches
+  const toggleSwitches = document.querySelectorAll('.boarder-toggle input[type="checkbox"]');
+  toggleSwitches.forEach(toggle => {
+    toggle.addEventListener('keydown', e => {
+      if (e.key === 'Enter' || e.key === ' ') {
+        e.preventDefault();
+        toggle.checked = !toggle.checked;
+        const event = new Event('change');
+        toggle.dispatchEvent(event);
+      }
+    });
+  });
+}
+
+/**
  * Show notification toast
  * @param {string} message - Notification message
  * @param {string} type - Notification type (success, error, warning, info)
@@ -231,12 +305,14 @@ function showNotification(message, type = 'info') {
     existingNotification.remove();
   }
 
-  // Create notification element
+  // Create notification element with proper ARIA role
   const notification = document.createElement('div');
   notification.className = `boarder-notification boarder-notification-${type}`;
+  notification.role = type === 'error' ? 'alert' : 'status';
+  notification.setAttribute('aria-live', type === 'error' ? 'assertive' : 'polite');
   notification.innerHTML = `
     <div class="boarder-notification-content">
-      ${getIcon('infoCircle', { width: 20, height: 20 })}
+      ${getIcon('infoCircle', { width: 20, height: 20, 'aria-hidden': 'true' })}
       <span>${message}</span>
     </div>
   `;
@@ -560,6 +636,7 @@ function renderDashboardPayments(payments) {
         <p style="margin: 8px 0 0 0; font-size: 13px;">Payments will appear here once you have an active lease</p>
       </div>
     `;
+    announceToScreenReader('No payment history available.');
     return;
   }
 
@@ -636,6 +713,8 @@ function renderDashboardPayments(payments) {
       }
     })
     .join('');
+
+  announceToScreenReader(`${payments.length} payments loaded.`);
 }
 
 /**
@@ -647,6 +726,45 @@ function formatCurrency(value) {
     minimumFractionDigits: 2,
     maximumFractionDigits: 2,
   });
+}
+
+/**
+ * Announce content updates to screen readers
+ * @param {string} message - Message to announce
+ * @param {string} priority - 'polite' or 'assertive'
+ */
+function announceToScreenReader(message, priority = 'polite') {
+  const liveRegion = document.getElementById('a11y-live-region') || createLiveRegion();
+  liveRegion.setAttribute('aria-live', priority);
+  liveRegion.textContent = message;
+
+  // Clear the message after a delay to prevent it from being announced again
+  setTimeout(() => {
+    liveRegion.textContent = '';
+  }, 5000);
+}
+
+/**
+ * Create a live region for screen reader announcements
+ */
+function createLiveRegion() {
+  const liveRegion = document.createElement('div');
+  liveRegion.id = 'a11y-live-region';
+  liveRegion.setAttribute('aria-live', 'polite');
+  liveRegion.setAttribute('aria-atomic', 'true');
+  liveRegion.style.cssText = `
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
+  `;
+  document.body.appendChild(liveRegion);
+  return liveRegion;
 }
 
 /**
@@ -662,6 +780,7 @@ function updateDashboardUI() {
   const statValue = document.querySelector('.boarder-stat-card:first-child .boarder-stat-value');
   if (statValue && activeApplications > 0) {
     statValue.textContent = `${activeApplications} Active`;
+    announceToScreenReader(`Dashboard updated. ${activeApplications} active applications.`);
   }
 }
 
@@ -675,13 +794,14 @@ function renderDashboardAnnouncements(announcements) {
   if (!announcements || announcements.length === 0) {
     announcementsList.innerHTML = `
       <div class="boarder-empty-state" style="text-align: center; padding: 40px 20px; color: #6b7280;">
-        <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin: 0 auto 16px; opacity: 0.5;">
+        <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin: 0 auto 16px; opacity: 0.5;" aria-hidden="true" focusable="false">
           <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
         </svg>
         <p style="margin: 0; font-size: 14px; font-weight: 500;">No announcements at this time</p>
         <p style="margin: 8px 0 0 0; font-size: 13px;">Check back later for updates from your landlord</p>
       </div>
     `;
+    announceToScreenReader('No announcements available.');
     return;
   }
 
@@ -716,7 +836,7 @@ function renderDashboardAnnouncements(announcements) {
       return `
       <div class="boarder-announcement-item">
         <div class="boarder-announcement-icon ${iconColor}">
-          ${getIcon(iconName, { strokeWidth: '2' })}
+          ${getIcon(iconName, { strokeWidth: '2', 'aria-hidden': 'true' })}
         </div>
         <div class="boarder-announcement-content">
           <h4 class="boarder-announcement-title">${escapeHtml(announcement.title)}</h4>
@@ -727,6 +847,8 @@ function renderDashboardAnnouncements(announcements) {
     `;
     })
     .join('');
+
+  announceToScreenReader(`${announcements.length} announcements loaded.`);
 }
 
 /**
@@ -1158,4 +1280,5 @@ export {
   setContractStatus,
   renderDocumentVault,
   renderImportantInformation,
+  initializeKeyboardNavigation,
 };

@@ -25,14 +25,16 @@
     />
   </head>
   <body data-view="boarder" data-dashboard-type="boarder">
+    <!-- Skip link for keyboard navigation -->
+    <a href="#main-content" class="skip-link">Skip to main content</a>
     <div class="boarder-dashboard">
       <!-- Sidebar Container -->
       <div id="sidebar-container"></div>
 
       <!-- Main Content -->
-      <main class="boarder-main">
+      <main class="boarder-main" id="main-content" role="main">
         <!-- Navbar Container -->
-        <div id="navbar-container"></div>
+        <div id="navbar-container" role="navigation"></div>
 
         <!-- Content Wrapper -->
         <div class="boarder-content">
@@ -52,12 +54,18 @@
               <p>Manage your lease, utilities, and maintenance requests</p>
             </div>
             <div class="boarder-topbar-actions">
-              <a href="./payments/pay.html" class="boarder-btn boarder-btn-primary">
+              <a
+                href="./payments/pay.html"
+                class="boarder-btn boarder-btn-primary"
+                aria-label="Pay rent"
+              >
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
                   fill="none"
                   viewBox="0 0 24 24"
                   stroke="currentColor"
+                  aria-hidden="true"
+                  focusable="false"
                 >
                   <path
                     stroke-linecap="round"
@@ -83,6 +91,8 @@
                     fill="none"
                     viewBox="0 0 24 24"
                     stroke="currentColor"
+                    aria-hidden="true"
+                    focusable="false"
                   >
                     <path
                       stroke-linecap="round"
@@ -107,6 +117,8 @@
                     fill="none"
                     viewBox="0 0 24 24"
                     stroke="currentColor"
+                    aria-hidden="true"
+                    focusable="false"
                   >
                     <path
                       stroke-linecap="round"
@@ -131,6 +143,8 @@
                     fill="none"
                     viewBox="0 0 24 24"
                     stroke="currentColor"
+                    aria-hidden="true"
+                    focusable="false"
                   >
                     <path
                       stroke-linecap="round"
@@ -155,6 +169,8 @@
                     fill="none"
                     viewBox="0 0 24 24"
                     stroke="currentColor"
+                    aria-hidden="true"
+                    focusable="false"
                   >
                     <path
                       stroke-linecap="round"
@@ -173,7 +189,7 @@
           <!-- Main Dashboard Grid - First Row -->
           <div class="boarder-dashboard-grid">
             <!-- Room Announcements & Quick Actions -->
-            <div class="boarder-section">
+            <div class="boarder-section" role="region" aria-label="Room announcements">
               <div class="boarder-section-header">
                 <h2 class="boarder-section-title">
                   <svg
@@ -181,6 +197,8 @@
                     fill="none"
                     viewBox="0 0 24 24"
                     stroke="currentColor"
+                    aria-hidden="true"
+                    focusable="false"
                   >
                     <path
                       stroke-linecap="round"
@@ -210,9 +228,9 @@
               </div>
 
               <!-- Announcements List -->
-              <div class="boarder-announcements-list">
+              <div class="boarder-announcements-list" aria-live="polite">
                 <!-- Announcements will be loaded dynamically from API -->
-                <div class="boarder-loading-state">
+                <div class="boarder-loading-state" aria-live="polite">
                   <p>Loading announcements...</p>
                 </div>
               </div>
@@ -222,13 +240,18 @@
                 <h3 class="boarder-quick-actions-title">Quick Actions</h3>
                 <div class="boarder-quick-actions-grid">
                   <!-- TODO: Integrate with backend API for maintenance requests -->
-                  <a href="../maintenance/create.html" class="boarder-action-btn">
+                  <a
+                    href="../maintenance/create.html"
+                    class="boarder-action-btn"
+                    aria-label="Report maintenance issue"
+                  >
                     <div class="boarder-action-icon blue">
                       <svg
                         xmlns="http://www.w3.org/2000/svg"
                         fill="none"
                         viewBox="0 0 24 24"
                         stroke="currentColor"
+                        aria-hidden="true"
                       >
                         <path
                           stroke-linecap="round"
@@ -248,13 +271,14 @@
                   </a>
 
                   <!-- TODO: Integrate with backend API for guest pass requests -->
-                  <a href="#" class="boarder-action-btn">
+                  <a href="#" class="boarder-action-btn" aria-label="Request guest pass">
                     <div class="boarder-action-icon green">
                       <svg
                         xmlns="http://www.w3.org/2000/svg"
                         fill="none"
                         viewBox="0 0 24 24"
                         stroke="currentColor"
+                        aria-hidden="true"
                       >
                         <path
                           stroke-linecap="round"
@@ -268,13 +292,18 @@
                   </a>
 
                   <!-- TODO: Integrate with backend API for contract viewing -->
-                  <a href="../applications/index.html" class="boarder-action-btn">
+                  <a
+                    href="../applications/index.html"
+                    class="boarder-action-btn"
+                    aria-label="View contract"
+                  >
                     <div class="boarder-action-icon purple">
                       <svg
                         xmlns="http://www.w3.org/2000/svg"
                         fill="none"
                         viewBox="0 0 24 24"
                         stroke="currentColor"
+                        aria-hidden="true"
                       >
                         <path
                           stroke-linecap="round"
@@ -288,13 +317,18 @@
                   </a>
 
                   <!-- TODO: Integrate with backend API for landlord communication -->
-                  <a href="./messages/index.html" class="boarder-action-btn">
+                  <a
+                    href="./messages/index.html"
+                    class="boarder-action-btn"
+                    aria-label="Contact landlord"
+                  >
                     <div class="boarder-action-icon pink">
                       <svg
                         xmlns="http://www.w3.org/2000/svg"
                         fill="none"
                         viewBox="0 0 24 24"
                         stroke="currentColor"
+                        aria-hidden="true"
                       >
                         <path
                           stroke-linecap="round"
@@ -311,7 +345,7 @@
             </div>
 
             <!-- Payment Center - Single Residence Focus -->
-            <div class="boarder-section">
+            <div class="boarder-section" role="region" aria-label="Payment center">
               <div class="boarder-section-header">
                 <h2 class="boarder-section-title">
                   <svg
@@ -319,6 +353,8 @@
                     fill="none"
                     viewBox="0 0 24 24"
                     stroke="currentColor"
+                    aria-hidden="true"
+                    focusable="false"
                   >
                     <path
                       stroke-linecap="round"
@@ -346,9 +382,9 @@
                   </svg>
                 </a>
               </div>
-              <div class="boarder-payment-simple-list">
+              <div class="boarder-payment-simple-list" aria-live="polite">
                 <!-- Payment cards will be loaded dynamically from API -->
-                <div class="boarder-loading-state">
+                <div class="boarder-loading-state" aria-live="polite">
                   <p>Loading payment information...</p>
                 </div>
               </div>
@@ -358,7 +394,7 @@
           <!-- Second Row: Map View & Saved Searches -->
           <div class="boarder-dashboard-grid">
             <!-- Interactive Map Preview -->
-            <div class="boarder-section">
+            <div class="boarder-section" role="region" aria-label="Property map">
               <div class="boarder-section-header">
                 <h2 class="boarder-section-title">
                   <svg
@@ -366,6 +402,8 @@
                     fill="none"
                     viewBox="0 0 24 24"
                     stroke="currentColor"
+                    aria-hidden="true"
+                    focusable="false"
                   >
                     <path
                       stroke-linecap="round"
@@ -409,12 +447,17 @@
                   </div>
                 </div>
                 <div class="boarder-map-actions">
-                  <button class="boarder-btn boarder-btn-outline">
+                  <button
+                    class="boarder-btn boarder-btn-outline"
+                    aria-label="Use my current location"
+                  >
                     <svg
                       xmlns="http://www.w3.org/2000/svg"
                       fill="none"
                       viewBox="0 0 24 24"
                       stroke="currentColor"
+                      aria-hidden="true"
+                      focusable="false"
                     >
                       <path
                         stroke-linecap="round"
@@ -425,12 +468,17 @@
                     </svg>
                     Use My Location
                   </button>
-                  <button class="boarder-btn boarder-btn-outline">
+                  <button
+                    class="boarder-btn boarder-btn-outline"
+                    aria-label="Draw search area on map"
+                  >
                     <svg
                       xmlns="http://www.w3.org/2000/svg"
                       fill="none"
                       viewBox="0 0 24 24"
                       stroke="currentColor"
+                      aria-hidden="true"
+                      focusable="false"
                     >
                       <path
                         stroke-linecap="round"
@@ -446,7 +494,7 @@
             </div>
 
             <!-- Saved Searches & Alerts -->
-            <div class="boarder-section">
+            <div class="boarder-section" role="region" aria-label="Saved searches">
               <div class="boarder-section-header">
                 <h2 class="boarder-section-title">
                   <svg
@@ -454,6 +502,8 @@
                     fill="none"
                     viewBox="0 0 24 24"
                     stroke="currentColor"
+                    aria-hidden="true"
+                    focusable="false"
                   >
                     <path
                       stroke-linecap="round"
@@ -534,7 +584,7 @@
           <!-- Third Row: Document Vault & Transparent Info -->
           <div class="boarder-dashboard-grid">
             <!-- Document Vault -->
-            <div class="boarder-section">
+            <div class="boarder-section" role="region" aria-label="Document vault">
               <div class="boarder-section-header">
                 <h2 class="boarder-section-title">
                   <svg
@@ -542,6 +592,8 @@
                     fill="none"
                     viewBox="0 0 24 24"
                     stroke="currentColor"
+                    aria-hidden="true"
+                    focusable="false"
                   >
                     <path
                       stroke-linecap="round"
@@ -575,7 +627,7 @@
             </div>
 
             <!-- Property Information Transparency -->
-            <div class="boarder-section">
+            <div class="boarder-section" role="region" aria-label="Important information">
               <div class="boarder-section-header">
                 <h2 class="boarder-section-title">
                   <svg
@@ -583,6 +635,8 @@
                     fill="none"
                     viewBox="0 0 24 24"
                     stroke="currentColor"
+                    aria-hidden="true"
+                    focusable="false"
                   >
                     <path
                       stroke-linecap="round"
@@ -714,16 +768,22 @@
           </div>
 
           <!-- Quick Actions -->
-          <div class="boarder-section">
+          <div class="boarder-section" role="region" aria-label="Quick actions">
             <h2 class="boarder-section-title" style="margin-bottom: 20px">Quick Actions</h2>
             <div class="boarder-quick-actions">
-              <a href="../rooms/index.html" class="boarder-action-btn">
+              <a
+                href="../rooms/index.html"
+                class="boarder-action-btn"
+                aria-label="Search properties"
+              >
                 <div class="boarder-action-icon">
                   <svg
                     xmlns="http://www.w3.org/2000/svg"
                     fill="none"
                     viewBox="0 0 24 24"
                     stroke="currentColor"
+                    aria-hidden="true"
+                    focusable="false"
                   >
                     <path
                       stroke-linecap="round"
@@ -736,13 +796,15 @@
                 <span class="boarder-action-label">Search Properties</span>
               </a>
 
-              <a href="maps/index.html" class="boarder-action-btn">
+              <a href="maps/index.html" class="boarder-action-btn" aria-label="View map">
                 <div class="boarder-action-icon">
                   <svg
                     xmlns="http://www.w3.org/2000/svg"
                     fill="none"
                     viewBox="0 0 24 24"
                     stroke="currentColor"
+                    aria-hidden="true"
+                    focusable="false"
                   >
                     <path
                       stroke-linecap="round"
@@ -755,13 +817,19 @@
                 <span class="boarder-action-label">Map View</span>
               </a>
 
-              <a href="../applications/index.html" class="boarder-action-btn">
+              <a
+                href="../applications/index.html"
+                class="boarder-action-btn"
+                aria-label="Create new application"
+              >
                 <div class="boarder-action-icon">
                   <svg
                     xmlns="http://www.w3.org/2000/svg"
                     fill="none"
                     viewBox="0 0 24 24"
                     stroke="currentColor"
+                    aria-hidden="true"
+                    focusable="false"
                   >
                     <path
                       stroke-linecap="round"
@@ -774,13 +842,15 @@
                 <span class="boarder-action-label">New Application</span>
               </a>
 
-              <a href="./payments/index.html" class="boarder-action-btn">
+              <a href="./payments/index.html" class="boarder-action-btn" aria-label="Make payment">
                 <div class="boarder-action-icon">
                   <svg
                     xmlns="http://www.w3.org/2000/svg"
                     fill="none"
                     viewBox="0 0 24 24"
                     stroke="currentColor"
+                    aria-hidden="true"
+                    focusable="false"
                   >
                     <path
                       stroke-linecap="round"

@@ -21,6 +21,56 @@
   --dashboard-red-light: #fee2e2;
 }
 
+/* ===== Accessibility ===== */
+/* Visually hidden class for screen reader only content */
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* Skip link for keyboard navigation */
+.skip-link {
+  position: absolute;
+  top: -40px;
+  left: 0;
+  background: var(--dashboard-accent);
+  color: white;
+  padding: 8px 16px;
+  z-index: 100;
+  transition: top 0.3s;
+}
+
+.skip-link:focus {
+  top: 0;
+}
+
+/* Focus indicators for keyboard navigation */
+:focus-visible {
+  outline: 2px solid var(--dashboard-accent);
+  outline-offset: 2px;
+}
+
+.boarder-btn:focus-visible,
+.boarder-action-btn:focus-visible,
+.boarder-view-all:focus-visible,
+.boarder-toggle input:focus-visible + .boarder-toggle-slider,
+[role='button']:focus-visible {
+  outline: 2px solid var(--dashboard-accent);
+  outline-offset: 2px;
+}
+
+/* Ensure sufficient color contrast for focus states */
+:focus-visible {
+  box-shadow: 0 0 0 2px var(--dashboard-surface), 0 0 0 4px var(--dashboard-accent);
+}
+
 /* ===== Layout ===== */
 .boarder-dashboard {
   display: flex;
