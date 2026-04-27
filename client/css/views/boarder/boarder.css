@@ -41,7 +41,7 @@
   top: -40px;
   left: 0;
   background: var(--dashboard-accent);
-  color: white;
+  color: var(--white);
   padding: 8px 16px;
   z-index: 100;
   transition: top 0.3s;
@@ -290,23 +290,32 @@
 }
 
 .boarder-stat-icon.blue {
-  color: #333;
+  color: var(--theme-text-secondary);
 }
 
 .boarder-stat-icon.pink {
-  color: #333;
+  color: var(--theme-text-secondary);
 }
 
 .boarder-stat-icon.green {
-  color: #333;
+  color: var(--theme-text-secondary);
 }
 
 .boarder-stat-icon.purple {
-  color: #333;
+  color: var(--theme-text-secondary);
 }
 
 .boarder-stat-icon.orange {
-  color: #333;
+  color: var(--theme-text-secondary);
+}
+
+/* Dark mode - make icons white */
+[data-theme='dark'] .boarder-stat-icon.blue,
+[data-theme='dark'] .boarder-stat-icon.pink,
+[data-theme='dark'] .boarder-stat-icon.green,
+[data-theme='dark'] .boarder-stat-icon.purple,
+[data-theme='dark'] .boarder-stat-icon.orange {
+  color: var(--theme-text-primary);
 }
 
 .boarder-stat-icon svg {

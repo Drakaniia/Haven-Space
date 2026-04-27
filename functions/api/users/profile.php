@@ -43,13 +43,8 @@ function getUserProfile($db, $userId) {
     try {
         $stmt = $db->prepare("
             SELECT 
-                u.id, u.first_name, u.last_name, u.email, u.phone_number, u.alt_phone,
-                u.date_of_birth, u.gender, u.bio, u.current_address, u.avatar_url,
-                u.employment_status, u.company_name, u.job_title, u.monthly_income,
-                u.work_schedule, u.company_address,
-                u.emergency_contact_name, u.emergency_contact_relationship,
-                u.emergency_contact_phone, u.emergency_contact_alt_phone,
-                u.emergency_contact_address,
+                u.id, u.first_name, u.last_name, u.email, u.phone_number,
+                u.date_of_birth, u.current_address, u.avatar_url,
                 u.created_at, u.updated_at,
                 f.file_url as avatar_file_url
             FROM users u
@@ -95,13 +90,8 @@ function updateUserProfile($db, $userId) {
         
         // Define allowed fields for update
         $allowedFields = [
-            'first_name', 'last_name', 'phone_number', 'alt_phone',
-            'date_of_birth', 'gender', 'bio', 'current_address',
-            'employment_status', 'company_name', 'job_title', 
-            'monthly_income', 'work_schedule', 'company_address',
-            'emergency_contact_name', 'emergency_contact_relationship',
-            'emergency_contact_phone', 'emergency_contact_alt_phone',
-            'emergency_contact_address'
+            'first_name', 'last_name', 'phone_number',
+            'date_of_birth', 'current_address'
         ];
         
         // Build dynamic update query
@@ -137,13 +127,8 @@ function updateUserProfile($db, $userId) {
         // Fetch updated user data with avatar
         $stmt = $db->prepare("
             SELECT 
-                u.id, u.first_name, u.last_name, u.email, u.phone_number, u.alt_phone,
-                u.date_of_birth, u.gender, u.bio, u.current_address, u.avatar_url,
-                u.employment_status, u.company_name, u.job_title, u.monthly_income,
-                u.work_schedule, u.company_address,
-                u.emergency_contact_name, u.emergency_contact_relationship,
-                u.emergency_contact_phone, u.emergency_contact_alt_phone,
-                u.emergency_contact_address,
+                u.id, u.first_name, u.last_name, u.email, u.phone_number,
+                u.date_of_birth, u.current_address, u.avatar_url,
                 u.created_at, u.updated_at,
                 f.file_url as avatar_file_url
             FROM users u

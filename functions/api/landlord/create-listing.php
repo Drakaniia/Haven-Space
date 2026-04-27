@@ -72,7 +72,7 @@ try {
             address_line_1,
             city,
             province,
-            country_id,
+            country,
             latitude,
             longitude,
             created_at,

@@ -194,10 +194,12 @@
 
 .payment-summary-label {
   opacity: 0.9;
+  color: white;
 }
 
 .payment-summary-value {
   font-weight: 600;
+  color: white;
 }
 
 .payment-summary-divider {

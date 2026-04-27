@@ -44,11 +44,17 @@ async function fetchEvents() {
   const endDate = new Date(year, month + 2, 0).toISOString().slice(0, 10);
 
   try {
+    const token = localStorage.getItem('token');
+    const headers = { 'Content-Type': 'application/json' };
+    if (token) {
+      headers['Authorization'] = `Bearer ${token}`;
+    }
+
     const response = await fetch(
       `${CONFIG.API_BASE_URL}/api/landlord/calendar?start_date=${startDate}&end_date=${endDate}`,
       {
         method: 'GET',
-        headers: { 'Content-Type': 'application/json' },
+        headers,
         credentials: 'include',
       }
     );

@@ -92,14 +92,14 @@ try {
     foreach ($properties as $property) {
         // First insert address
         $addressStmt = $pdo->prepare("
-            INSERT IGNORE INTO addresses (address_line_1, city, province, country_id, latitude, longitude) 
+            INSERT IGNORE INTO addresses (address_line_1, city, province, country, latitude, longitude) 
             VALUES (?, ?, ?, ?, ?, ?)
         ");
         $addressStmt->execute([
             $property['address'],
             $property['city'],
             $property['province'],
-            1, // Default to Philippines
+            'Philippines', // Default to Philippines
             $property['latitude'],
             $property['longitude']
         ]);

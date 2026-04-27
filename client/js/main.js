@@ -8,6 +8,10 @@
 
 console.log('main.js loaded');
 
+// Initialize theme system early
+import { initTheme } from './shared/theme-manager.js';
+initTheme();
+
 /**
  * Detect current view and initialize appropriate components
  * Uses data attribute on body to detect view type

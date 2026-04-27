@@ -16,6 +16,8 @@
     <link rel="stylesheet" href="../../css/components/navbar.css?v=1777136032299" />
     <link rel="stylesheet" href="../../css/views/landlord/landlord.css?v=1777136032299" />
     <link rel="stylesheet" href="../../css/views/landlord/applications.css?v=1777136032299" />
+    <!-- Theme initialization script - load early to prevent flash -->
+    <script src="../../js/theme-init.js?v=1777136032299"></script>
   </head>
   <body data-view="landlord" data-dashboard-type="landlord">
     <div class="landlord-dashboard">
@@ -37,11 +39,17 @@
             </div>
             <div class="landlord-topbar-actions">
               <a href="maps/index.html" class="landlord-btn landlord-btn-outline">
-                <img src="../../assets/svg/dashboard.svg" alt="Map" width="20" height="20" />
+                <img src="../../assets/svg/maps.svg" alt="Map" width="20" height="20" />
                 Map View
               </a>
               <a href="listings/index.html" class="landlord-btn landlord-btn-primary">
-                <img src="../../assets/svg/add_listing.svg" alt="Plus" width="20" height="20" />
+                <img
+                  src="../../assets/svg/add_listing.svg"
+                  alt="Plus"
+                  width="20"
+                  height="20"
+                  class="create-listing-icon"
+                />
                 Create Listing
               </a>
             </div>

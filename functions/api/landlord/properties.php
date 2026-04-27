@@ -43,7 +43,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         // First insert address
         $addressStmt = $pdo->prepare("
             INSERT INTO addresses 
-            (address_line_1, city, province, country_id, latitude, longitude, created_at, updated_at)
+            (address_line_1, city, province, country, latitude, longitude, created_at, updated_at)
             VALUES (?, ?, ?, ?, ?, ?, NOW(), NOW())
         ");
 
@@ -52,13 +52,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $longitude = isset($input['propertyLongitude']) && $input['propertyLongitude'] !== '' ? floatval($input['propertyLongitude']) : null;
         $city = isset($input['propertyCity']) ? $input['propertyCity'] : 'Unknown';
         $province = isset($input['propertyProvince']) ? $input['propertyProvince'] : 'Unknown';
-        $countryId = isset($input['propertyCountryId']) && $input['propertyCountryId'] !== '' ? intval($input['propertyCountryId']) : 1; // Default to Philippines
+        $country = isset($input['propertyCountry']) && $input['propertyCountry'] !== '' ? $input['propertyCountry'] : 'Philippines'; // Default to Philippines
 
         $addressStmt->execute([
             $input['propertyAddress'],
             $city,
             $province,
-            $countryId,
+            $country,
             $latitude,
             $longitude
         ]);

@@ -25,12 +25,16 @@ class ApplicationRepository
     {
         $sql = 'SELECT a.*, 
                        r.title as room_title, r.price as room_price,
-                       p.title as property_title, p.address as property_address,
-                       p.id as property_id,
+                       prop.title as property_title, 
+                       CONCAT(a.address_line_1, 
+                              CASE WHEN a.address_line_2 IS NOT NULL THEN CONCAT(", ", a.address_line_2) ELSE "" END,
+                              ", ", a.city, ", ", a.province) as property_address,
+                       prop.id as property_id,
                        u.first_name, u.last_name, u.email as landlord_email
                 FROM applications a
                 JOIN rooms r ON a.room_id = r.id
-                JOIN v_properties_with_address p ON r.property_id = p.id
+                JOIN properties prop ON r.property_id = prop.id
+                JOIN addresses a ON prop.address_id = a.id
                 JOIN users u ON a.landlord_id = u.id
                 WHERE a.boarder_id = ? AND a.deleted_at IS NULL
                 ORDER BY a.created_at DESC';
@@ -47,12 +51,16 @@ class ApplicationRepository
     {
         $sql = 'SELECT a.*, 
                        r.title as room_title, r.price as room_price,
-                       p.title as property_title, p.address as property_address,
-                       p.id as property_id,
+                       prop.title as property_title, 
+                       CONCAT(addr.address_line_1, 
+                              CASE WHEN addr.address_line_2 IS NOT NULL THEN CONCAT(", ", addr.address_line_2) ELSE "" END,
+                              ", ", addr.city, ", ", addr.province) as property_address,
+                       prop.id as property_id,
                        u.first_name, u.last_name, u.email as boarder_email
                 FROM applications a
                 JOIN rooms r ON a.room_id = r.id
-                JOIN v_properties_with_address p ON r.property_id = p.id
+                JOIN properties prop ON r.property_id = prop.id
+                JOIN addresses addr ON prop.address_id = addr.id
                 JOIN users u ON a.boarder_id = u.id
                 WHERE a.landlord_id = ? AND a.deleted_at IS NULL
                 ORDER BY a.created_at DESC';
@@ -69,8 +77,11 @@ class ApplicationRepository
     {
         $sql = 'SELECT a.*, 
                        r.title as room_title, r.price as room_price,
-                       p.title as property_title, p.address as property_address,
-                       p.description as property_description, p.latitude, p.longitude,
+                       prop.title as property_title, 
+                       CONCAT(addr.address_line_1, 
+                              CASE WHEN addr.address_line_2 IS NOT NULL THEN CONCAT(", ", addr.address_line_2) ELSE "" END,
+                              ", ", addr.city, ", ", addr.province) as property_address,
+                       prop.description as property_description, addr.latitude, addr.longitude,
                        r.property_id,
                        ub.first_name as boarder_first_name, ub.last_name as boarder_last_name,
                        ub.email as boarder_email, ub.avatar_url as boarder_avatar,
@@ -78,7 +89,8 @@ class ApplicationRepository
                        ul.email as landlord_email, ul.avatar_url as landlord_avatar
                 FROM applications a
                 JOIN rooms r ON a.room_id = r.id
-                JOIN v_properties_with_address p ON r.property_id = p.id
+                JOIN properties prop ON r.property_id = prop.id
+                JOIN addresses addr ON prop.address_id = addr.id
                 JOIN users ub ON a.boarder_id = ub.id
                 JOIN users ul ON a.landlord_id = ul.id
                 WHERE a.id = ? AND a.deleted_at IS NULL';

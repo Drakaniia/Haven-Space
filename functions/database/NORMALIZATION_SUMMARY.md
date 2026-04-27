@@ -27,7 +27,6 @@ This document outlines the normalization changes made to the Haven Space databas
 
 #### New Reference Tables:
 
-- **`countries`** - Normalized country information
 - **`user_roles`** - User role definitions (boarder, landlord, admin)
 - **`account_statuses`** - Account status definitions
 - **`verification_statuses`** - Verification status definitions
@@ -62,8 +61,6 @@ This document outlines the normalization changes made to the Haven Space databas
 
 #### New Junction Tables:
 
-- **`user_addresses`** - Links users to addresses with type (home, work, etc.)
-
 #### Tables Updated:
 
 - `properties.address`, `properties.latitude`, `properties.longitude` → `properties.address_id` → `addresses.id`
@@ -89,9 +86,6 @@ This document outlines the normalization changes made to the Haven Space databas
 ### 5. Normalized Contact Information
 
 #### New Tables:
-
-- **`contacts`** - Centralized contact information
-- **`user_contacts`** - Junction table linking users to contacts
 
 #### Benefits:
 
@@ -171,7 +165,6 @@ This document outlines the normalization changes made to the Haven Space databas
 ### Views Created:
 
 - **`v_users_legacy`** - Maintains compatibility with existing user queries
-- **`v_properties_with_address`** - Provides property data with full address information
 
 ### Migration Script:
 

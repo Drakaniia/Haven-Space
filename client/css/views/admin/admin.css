@@ -8,15 +8,15 @@
    ============================================ */
 
 :root {
-  /* Background colors - Light theme */
-  --admin-bg: #fef9f0;
-  --admin-bg-secondary: #e8f5e9;
-  --admin-surface: #ffffff;
-  --admin-surface-hover: #e8f5e9;
-  --admin-border: #e5e5e5;
-  --admin-text-primary: #1a1a1a;
-  --admin-text-secondary: #555555;
-  --admin-text-muted: #9ca3af;
+  /* Admin variables now use theme system */
+  --admin-bg: var(--theme-bg-secondary);
+  --admin-bg-secondary: var(--theme-bg-tertiary);
+  --admin-surface: var(--theme-bg-primary);
+  --admin-surface-hover: var(--theme-bg-secondary);
+  --admin-border: var(--theme-border);
+  --admin-text-primary: var(--theme-text-primary);
+  --admin-text-secondary: var(--theme-text-secondary);
+  --admin-text-muted: var(--theme-text-muted);
 
   /* Accent colors - Green palette per DESIGN.md */
   --admin-primary: #4a7c23;
@@ -41,6 +41,14 @@
   --admin-accent-light-green: rgba(124, 179, 66, 0.12);
   --admin-accent-warning: rgba(217, 119, 6, 0.08);
   --admin-accent-info: rgba(37, 99, 235, 0.08);
+}
+
+/* Dark mode overrides for admin */
+[data-theme='dark'] {
+  --admin-accent-green: rgba(74, 124, 35, 0.2);
+  --admin-accent-light-green: rgba(124, 179, 66, 0.2);
+  --admin-accent-warning: rgba(217, 119, 6, 0.2);
+  --admin-accent-info: rgba(37, 99, 235, 0.2);
 }
 
 /* ============================================
@@ -217,7 +225,7 @@ body:has(.sidebar-collapsed) .admin-main {
 
 .admin-btn-success {
   background-color: var(--admin-success);
-  color: white;
+  color: var(--white);
 }
 
 .admin-btn-success:hover:not(:disabled) {
@@ -226,7 +234,7 @@ body:has(.sidebar-collapsed) .admin-main {
 
 .admin-btn-danger {
   background-color: var(--admin-danger);
-  color: white;
+  color: var(--white);
 }
 
 .admin-btn-danger:hover:not(:disabled) {
@@ -347,7 +355,7 @@ body:has(.sidebar-collapsed) .admin-main {
   padding: 10px 14px;
   border-radius: 8px;
   border: 1px solid var(--admin-border);
-  background-color: #f9fafb;
+  background-color: var(--theme-bg-secondary);
   color: var(--admin-text-primary);
   font-size: 0.9rem;
   font-family: var(--font-main);
@@ -368,7 +376,7 @@ body:has(.sidebar-collapsed) .admin-main {
   padding: 8px 12px;
   border-radius: 8px;
   border: 1px solid var(--admin-border);
-  background-color: #f9fafb;
+  background-color: var(--theme-bg-secondary);
   color: var(--admin-text-primary);
   font-size: 0.85rem;
   font-family: var(--font-main);

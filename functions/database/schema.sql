@@ -32,21 +32,7 @@ INSERT IGNORE INTO account_statuses (status_name, description, is_active) VALUES
 ('banned', 'Account permanently banned', FALSE),
 ('pending_verification', 'Account awaiting verification', FALSE);
 
--- Countries lookup table
-CREATE TABLE IF NOT EXISTS countries (
-    id INT AUTO_INCREMENT PRIMARY KEY,
-    code VARCHAR(3) NOT NULL UNIQUE,
-    name VARCHAR(100) NOT NULL UNIQUE,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-);
 
-INSERT IGNORE INTO countries (code, name) VALUES
-('PH', 'Philippines'),
-('US', 'United States'),
-('CA', 'Canada'),
-('AU', 'Australia'),
-('UK', 'United Kingdom'),
-('XX', 'Unknown');
 
 -- Verification status lookup table
 CREATE TABLE IF NOT EXISTS verification_statuses (
@@ -125,15 +111,14 @@ CREATE TABLE IF NOT EXISTS addresses (
     city VARCHAR(100) NOT NULL,
     province VARCHAR(100) NOT NULL,
     postal_code VARCHAR(20) NULL,
-    country_id INT NOT NULL DEFAULT 1,
+    country VARCHAR(100) NOT NULL DEFAULT 'Philippines',
     latitude DECIMAL(10, 8) NULL,
     longitude DECIMAL(11, 8) NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-    FOREIGN KEY (country_id) REFERENCES countries(id),
     INDEX idx_location (latitude, longitude),
     INDEX idx_city_province (city, province),
-    INDEX idx_country (country_id)
+    INDEX idx_country (country)
 );
 
 -- Files table (normalized file information) - created without FK constraint initially
@@ -150,18 +135,7 @@ CREATE TABLE IF NOT EXISTS files (
     INDEX idx_hash (file_hash)
 );
 
--- Contact information table (normalized contact details)
-CREATE TABLE IF NOT EXISTS contacts (
-    id INT AUTO_INCREMENT PRIMARY KEY,
-    contact_type ENUM('phone', 'email', 'emergency') NOT NULL,
-    contact_value VARCHAR(255) NOT NULL,
-    contact_label VARCHAR(100) NULL COMMENT 'e.g., "Primary Phone", "Work Email"',
-    is_primary BOOLEAN DEFAULT FALSE,
-    is_verified BOOLEAN DEFAULT FALSE,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-    INDEX idx_type_value (contact_type, contact_value)
-);
+
 
 -- Users Table (normalized)
 CREATE TABLE IF NOT EXISTS users (
@@ -194,30 +168,9 @@ CREATE TABLE IF NOT EXISTS users (
 -- Add FK from files to users (deferred to avoid circular dependency)
 -- This will be handled after all tables are created and populated
 
--- User contacts junction table
-CREATE TABLE IF NOT EXISTS user_contacts (
-    id INT AUTO_INCREMENT PRIMARY KEY,
-    user_id INT NOT NULL,
-    contact_id INT NOT NULL,
-    relationship VARCHAR(100) NULL COMMENT 'For emergency contacts',
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
-    FOREIGN KEY (contact_id) REFERENCES contacts(id) ON DELETE CASCADE,
-    UNIQUE KEY unique_user_contact (user_id, contact_id)
-);
 
--- User addresses junction table
-CREATE TABLE IF NOT EXISTS user_addresses (
-    id INT AUTO_INCREMENT PRIMARY KEY,
-    user_id INT NOT NULL,
-    address_id INT NOT NULL,
-    address_type ENUM('home', 'work', 'property', 'billing') NOT NULL,
-    is_primary BOOLEAN DEFAULT FALSE,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
-    FOREIGN KEY (address_id) REFERENCES addresses(id) ON DELETE CASCADE,
-    UNIQUE KEY unique_user_address_type (user_id, address_id, address_type)
-);
+
+
 
 -- Verification records table (normalized verification tracking)
 CREATE TABLE IF NOT EXISTS verification_records (
@@ -629,59 +582,9 @@ DEALLOCATE PREPARE stmt;
 -- VIEWS FOR BACKWARD COMPATIBILITY (Optional)
 -- ============================================================================
 
--- View to maintain compatibility with existing queries
-CREATE OR REPLACE VIEW v_users_legacy AS
-SELECT 
-    u.id,
-    u.first_name,
-    u.last_name,
-    u.email,
-    u.phone_number,
-    u.google_id,
-    u.google_token,
-    u.google_refresh_token,
-    f.file_url as avatar_url,
-    u.password_hash,
-    ur.role_name as role,
-    u.is_verified,
-    u.email_verified,
-    u.email_verification_token,
-    u.email_verification_expires,
-    acs.status_name as account_status,
-    vr.verification_status_id,
-    vs.status_name as verification_status,
-    vr.notes as verification_notes,
-    u.created_at,
-    u.updated_at,
-    u.deleted_at
-FROM users u
-LEFT JOIN user_roles ur ON u.role_id = ur.id
-LEFT JOIN account_statuses acs ON u.account_status_id = acs.id
-LEFT JOIN files f ON u.avatar_file_id = f.id
-LEFT JOIN verification_records vr ON vr.entity_type = 'user' AND vr.entity_id = u.id
-LEFT JOIN verification_statuses vs ON vr.verification_status_id = vs.id;
 
--- View for properties with address information
-CREATE OR REPLACE VIEW v_properties_with_address AS
-SELECT 
-    p.id,
-    p.landlord_id,
-    p.title,
-    p.description,
-    CONCAT(a.address_line_1, 
-           CASE WHEN a.address_line_2 IS NOT NULL THEN CONCAT(', ', a.address_line_2) ELSE '' END,
-           ', ', a.city, ', ', a.province) as address,
-    a.latitude,
-    a.longitude,
-    p.price,
-    p.status,
-    p.listing_moderation_status,
-    p.moderation_status,
-    p.created_at,
-    p.updated_at,
-    p.deleted_at
-FROM properties p
-JOIN addresses a ON p.address_id = a.id;
+
+
 
 -- Landlord Documents Table
 CREATE TABLE IF NOT EXISTS landlord_documents (

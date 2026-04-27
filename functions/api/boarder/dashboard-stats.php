@@ -64,8 +64,7 @@ try {
     // Check user profile fields completion
     $stmt = $pdo->prepare("
         SELECT 
-            first_name, last_name, email, phone_number, current_address, date_of_birth, gender, employment_status,
-            emergency_contact_name, emergency_contact_phone, avatar_url
+            first_name, last_name, email, phone_number, current_address, date_of_birth, avatar_url
         FROM users 
         WHERE id = ?
     ");
@@ -79,10 +78,6 @@ try {
         'phone' => !empty($userProfile['phone_number']),
         'address' => !empty($userProfile['current_address']),
         'date_of_birth' => !empty($userProfile['date_of_birth']),
-        'gender' => !empty($userProfile['gender']),
-        'employment_status' => !empty($userProfile['employment_status']),
-        'emergency_contact_name' => !empty($userProfile['emergency_contact_name']),
-        'emergency_contact_phone' => !empty($userProfile['emergency_contact_phone']),
         'avatar_url' => !empty($userProfile['avatar_url']),
     ];
 
@@ -100,22 +95,12 @@ try {
         [
             'field' => 'personal_details',
             'label' => 'Personal Details',
-            'completed' => $profileFields['date_of_birth'] && $profileFields['gender'] && $profileFields['address']
+            'completed' => $profileFields['date_of_birth'] && $profileFields['address']
         ],
         [
             'field' => 'profile_photo',
             'label' => 'Profile Photo',
             'completed' => $profileFields['avatar_url']
-        ],
-        [
-            'field' => 'employment_info',
-            'label' => 'Employment Information',
-            'completed' => $profileFields['employment_status']
-        ],
-        [
-            'field' => 'emergency_contact',
-            'label' => 'Emergency Contact',
-            'completed' => $profileFields['emergency_contact_name'] && $profileFields['emergency_contact_phone']
         ]
     ];
 

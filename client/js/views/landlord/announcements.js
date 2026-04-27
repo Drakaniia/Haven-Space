@@ -24,11 +24,17 @@ export function initAnnouncements() {
  */
 async function loadLandlordProperties() {
   try {
+    const token = localStorage.getItem('token');
+    const headers = {
+      'Content-Type': 'application/json',
+    };
+    if (token) {
+      headers['Authorization'] = `Bearer ${token}`;
+    }
+
     const response = await fetch(`${CONFIG.API_BASE_URL}/api/landlord/properties`, {
       method: 'GET',
-      headers: {
-        'Content-Type': 'application/json',
-      },
+      headers,
       credentials: 'include',
     });
 
@@ -102,11 +108,17 @@ function handleAllPropertiesToggle(e) {
  */
 async function loadAnnouncements() {
   try {
+    const token = localStorage.getItem('token');
+    const headers = {
+      'Content-Type': 'application/json',
+    };
+    if (token) {
+      headers['Authorization'] = `Bearer ${token}`;
+    }
+
     const response = await fetch(`${CONFIG.API_BASE_URL}/api/landlord/announcements`, {
       method: 'GET',
-      headers: {
-        'Content-Type': 'application/json',
-      },
+      headers,
       credentials: 'include',
     });
 
@@ -338,6 +350,14 @@ async function handleFormSubmit(e) {
   };
 
   try {
+    const token = localStorage.getItem('token');
+    const headers = {
+      'Content-Type': 'application/json',
+    };
+    if (token) {
+      headers['Authorization'] = `Bearer ${token}`;
+    }
+
     let response;
     if (currentEditingId) {
       // Update existing announcement
@@ -345,9 +365,7 @@ async function handleFormSubmit(e) {
         `${CONFIG.API_BASE_URL}/api/landlord/announcements/${currentEditingId}`,
         {
           method: 'PUT',
-          headers: {
-            'Content-Type': 'application/json',
-          },
+          headers,
           credentials: 'include',
           body: JSON.stringify(formData),
         }
@@ -359,9 +377,7 @@ async function handleFormSubmit(e) {
       // Create new announcement
       response = await fetch(`${CONFIG.API_BASE_URL}/api/landlord/announcements`, {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
+        headers,
         credentials: 'include',
         body: JSON.stringify(formData),
       });
@@ -428,12 +444,18 @@ function initAnnouncementActions() {
  */
 async function handleEditAnnouncement(announcementId) {
   try {
+    const token = localStorage.getItem('token');
+    const headers = {
+      'Content-Type': 'application/json',
+    };
+    if (token) {
+      headers['Authorization'] = `Bearer ${token}`;
+    }
+
     // Get announcement data
     const response = await fetch(`${CONFIG.API_BASE_URL}/api/landlord/announcements`, {
       method: 'GET',
-      headers: {
-        'Content-Type': 'application/json',
-      },
+      headers,
       credentials: 'include',
     });
 
@@ -502,13 +524,19 @@ async function handleDeleteAnnouncement(announcementId) {
   }
 
   try {
+    const token = localStorage.getItem('token');
+    const headers = {
+      'Content-Type': 'application/json',
+    };
+    if (token) {
+      headers['Authorization'] = `Bearer ${token}`;
+    }
+
     const response = await fetch(
       `${CONFIG.API_BASE_URL}/api/landlord/announcements/${announcementId}`,
       {
         method: 'DELETE',
-        headers: {
-          'Content-Type': 'application/json',
-        },
+        headers,
         credentials: 'include',
       }
     );

@@ -6,6 +6,7 @@
  */
 
 import CONFIG from '../../config.js';
+import { getIcon } from '../../shared/icons.js';
 
 // Payment data - loaded dynamically from API
 let pendingPaymentsData = [];
@@ -18,6 +19,31 @@ const uploadedFiles = {
   bank: [],
   card: [],
 };
+
+/**
+ * Initialize icons using the icons.js system
+ */
+function initIcons() {
+  const iconElements = document.querySelectorAll('[data-icon]');
+
+  iconElements.forEach(element => {
+    const iconName = element.dataset.icon;
+    const width = element.dataset.iconWidth || element.getAttribute('width') || '24';
+    const height = element.dataset.iconHeight || element.getAttribute('height') || '24';
+    const strokeWidth = element.dataset.iconStrokeWidth || '1.5';
+
+    const iconSvg = getIcon(iconName, {
+      width,
+      height,
+      strokeWidth,
+      className: element.dataset.iconClass || '',
+    });
+
+    if (iconSvg) {
+      element.innerHTML = iconSvg;
+    }
+  });
+}
 
 /**
  * Format currency amount
@@ -56,13 +82,19 @@ function _formatDateForInput(dateString) {
  */
 async function loadPendingPayments() {
   try {
+    const token = localStorage.getItem('token');
+    const headers = {
+      'Content-Type': 'application/json',
+    };
+    if (token) {
+      headers['Authorization'] = `Bearer ${token}`;
+    }
+
     const response = await fetch(
       `${CONFIG.API_BASE_URL}/api/landlord/payments.php?status=pending`,
       {
         method: 'GET',
-        headers: {
-          'Content-Type': 'application/json',
-        },
+        headers,
         credentials: 'include',
       }
     );
@@ -601,11 +633,17 @@ async function submitPayment() {
 
   try {
     // Submit to backend API
+    const token = localStorage.getItem('token');
+    const headers = {
+      'Content-Type': 'application/json',
+    };
+    if (token) {
+      headers['Authorization'] = `Bearer ${token}`;
+    }
+
     const response = await fetch(`${CONFIG.API_BASE_URL}/api/landlord/payments.php`, {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
+      headers,
       credentials: 'include',
       body: JSON.stringify({
         payment_id: paymentData.paymentId,
@@ -787,6 +825,8 @@ function initPaymentRecordPage() {
       selectPaymentMethod('gcash');
       // Check for paymentId in URL
       handleURLParameters();
+      // Initialize icons
+      initIcons();
     });
   } else {
     loadPendingPayments().then(() => {
@@ -794,6 +834,7 @@ function initPaymentRecordPage() {
       setDefaultPaymentDate();
       selectPaymentMethod('gcash');
       handleURLParameters();
+      initIcons();
     });
   }
 }

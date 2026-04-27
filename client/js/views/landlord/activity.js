@@ -33,6 +33,12 @@ async function loadActivities() {
   if (!container) return;
 
   try {
+    const token = localStorage.getItem('token');
+    const headers = { 'Content-Type': 'application/json' };
+    if (token) {
+      headers['Authorization'] = `Bearer ${token}`;
+    }
+
     const params = new URLSearchParams({
       page: currentPage,
       limit: itemsPerPage,
@@ -42,7 +48,7 @@ async function loadActivities() {
 
     const response = await fetch(`${CONFIG.API_BASE_URL}/api/landlord/activity.php?${params}`, {
       method: 'GET',
-      headers: { 'Content-Type': 'application/json' },
+      headers,
       credentials: 'include',
     });
 

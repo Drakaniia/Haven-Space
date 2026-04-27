@@ -62,29 +62,9 @@ CREATE TABLE IF NOT EXISTS payment_methods (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- ============================================
--- 4. Signup Sessions Table (for draft/resume functionality)
--- ============================================
-CREATE TABLE IF NOT EXISTS signup_sessions (
-    id INT PRIMARY KEY AUTO_INCREMENT,
-    session_token VARCHAR(255) UNIQUE NOT NULL,
-    email VARCHAR(255),
-    password_hash VARCHAR(255),
-    full_name VARCHAR(255),
-    role ENUM('landlord', 'boarder'),
-    step_data JSON, -- Stores progressive step data
-    completed BOOLEAN DEFAULT FALSE,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    expires_at TIMESTAMP NULL,
-    INDEX idx_session_token (session_token),
-    INDEX idx_email (email),
-    INDEX idx_completed (completed)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-
--- ============================================
 -- Notes:
 -- ============================================
 -- 1. All payment account numbers should be encrypted at application level before storage
 -- 2. The spatial index on property_locations enables efficient geo-queries for map features
--- 3. Signup sessions can be used to implement "save draft" and "resume later" functionality
--- 4. Consider adding encryption for sensitive payment data using AES-256 or similar
--- 5. Add appropriate indexes based on query patterns as the application grows
+-- 3. Consider adding encryption for sensitive payment data using AES-256 or similar
+-- 4. Add appropriate indexes based on query patterns as the application grows

@@ -63,25 +63,25 @@
             <div class="payment-summary-card">
               <div class="payment-summary-header">
                 <h3 class="payment-summary-title">Payment Summary</h3>
-                <span class="payment-summary-period" id="paymentPeriod">January 2025</span>
+                <span class="payment-summary-period" id="paymentPeriod">-</span>
               </div>
               <div class="payment-summary-breakdown">
                 <div class="payment-summary-row">
                   <span class="payment-summary-label">Base Rent</span>
-                  <span class="payment-summary-value" id="baseRent">₱5,000</span>
+                  <span class="payment-summary-value" id="baseRent">-</span>
                 </div>
                 <div class="payment-summary-row">
                   <span class="payment-summary-label">Utilities</span>
-                  <span class="payment-summary-value" id="utilities">₱350</span>
+                  <span class="payment-summary-value" id="utilities">-</span>
                 </div>
                 <div class="payment-summary-row">
                   <span class="payment-summary-label">WiFi</span>
-                  <span class="payment-summary-value" id="wifi">₱150</span>
+                  <span class="payment-summary-value" id="wifi">-</span>
                 </div>
                 <div class="payment-summary-divider"></div>
                 <div class="payment-summary-row payment-summary-total">
                   <span class="payment-summary-label">Total Amount</span>
-                  <span class="payment-summary-value" id="totalAmount">₱5,500</span>
+                  <span class="payment-summary-value" id="totalAmount">-</span>
                 </div>
               </div>
             </div>
@@ -145,7 +145,14 @@
                   data-method="gcash"
                   id="gcashMethodOption"
                 >
-                  <div class="payment-method-option-icon gcash" data-icon="server"></div>
+                  <div class="payment-method-option-icon gcash">
+                    <img
+                      src="../../../assets/images/gcash-icon.png"
+                      alt="GCash"
+                      width="32"
+                      height="32"
+                    />
+                  </div>
                   <div class="payment-method-option-info">
                     <h4 class="payment-method-option-name">GCash</h4>
                     <p class="payment-method-option-desc">Received via GCash QR or transfer</p>
@@ -155,7 +162,14 @@
 
                 <!-- Bank Transfer Option -->
                 <div class="payment-method-option" data-method="bank" id="bankMethodOption">
-                  <div class="payment-method-option-icon bank" data-icon="building"></div>
+                  <div class="payment-method-option-icon bank">
+                    <img
+                      src="../../../assets/images/bank_icon.png"
+                      alt="Bank Transfer"
+                      width="32"
+                      height="32"
+                    />
+                  </div>
                   <div class="payment-method-option-info">
                     <h4 class="payment-method-option-name">Bank Transfer</h4>
                     <p class="payment-method-option-desc">BDO, BPI, Metrobank</p>
@@ -165,7 +179,14 @@
 
                 <!-- Credit Card Option -->
                 <div class="payment-method-option" data-method="card" id="cardMethodOption">
-                  <div class="payment-method-option-icon card" data-icon="creditCard"></div>
+                  <div class="payment-method-option-icon card">
+                    <img
+                      src="../../../assets/images/credit_card.png"
+                      alt="Credit Card"
+                      width="32"
+                      height="32"
+                    />
+                  </div>
                   <div class="payment-method-option-info">
                     <h4 class="payment-method-option-name">Credit/Debit Card</h4>
                     <p class="payment-method-option-desc">Visa, Mastercard</p>
@@ -175,7 +196,14 @@
 
                 <!-- Cash Option -->
                 <div class="payment-method-option" data-method="cash" id="cashMethodOption">
-                  <div class="payment-method-option-icon cash" data-icon="currencyDollar"></div>
+                  <div class="payment-method-option-icon cash">
+                    <img
+                      src="../../../assets/images/cash-payment-icon-5.png"
+                      alt="Cash"
+                      width="32"
+                      height="32"
+                    />
+                  </div>
                   <div class="payment-method-option-info">
                     <h4 class="payment-method-option-name">Cash</h4>
                     <p class="payment-method-option-desc">Cash payment received in person</p>
@@ -189,7 +217,14 @@
             <div class="payment-details-card" id="gcashPaymentDetails">
               <div class="payment-form-card-header">
                 <div class="payment-form-card-title">
-                  <div class="payment-method-icon-small gcash" data-icon="server"></div>
+                  <div class="payment-method-icon-small gcash">
+                    <img
+                      src="../../../assets/images/gcash-icon.png"
+                      alt="GCash"
+                      width="24"
+                      height="24"
+                    />
+                  </div>
                   <h3 class="payment-form-card-name">GCash Payment Details</h3>
                 </div>
                 <span class="payment-form-card-badge">Most Common</span>
@@ -294,7 +329,14 @@
             <div class="payment-details-card" id="bankPaymentDetails" style="display: none">
               <div class="payment-form-card-header">
                 <div class="payment-form-card-title">
-                  <div class="payment-method-icon-small bank" data-icon="building"></div>
+                  <div class="payment-method-icon-small bank">
+                    <img
+                      src="../../../assets/images/bank_icon.png"
+                      alt="Bank Transfer"
+                      width="24"
+                      height="24"
+                    />
+                  </div>
                   <h3 class="payment-form-card-name">Bank Transfer Details</h3>
                 </div>
               </div>
@@ -370,7 +412,14 @@
             <div class="payment-details-card" id="cardPaymentDetails" style="display: none">
               <div class="payment-form-card-header">
                 <div class="payment-form-card-title">
-                  <div class="payment-method-icon-small card" data-icon="creditCard"></div>
+                  <div class="payment-method-icon-small card">
+                    <img
+                      src="../../../assets/images/credit_card.png"
+                      alt="Credit Card"
+                      width="24"
+                      height="24"
+                    />
+                  </div>
                   <h3 class="payment-form-card-name">Card Payment Details</h3>
                 </div>
               </div>
@@ -441,7 +490,14 @@
             <div class="payment-details-card" id="cashPaymentDetails" style="display: none">
               <div class="payment-form-card-header">
                 <div class="payment-form-card-title">
-                  <div class="payment-method-icon-small cash" data-icon="currencyDollar"></div>
+                  <div class="payment-method-icon-small cash">
+                    <img
+                      src="../../../assets/images/cash-payment-icon-5.png"
+                      alt="Cash"
+                      width="24"
+                      height="24"
+                    />
+                  </div>
                   <h3 class="payment-form-card-name">Cash Payment Details</h3>
                 </div>
               </div>

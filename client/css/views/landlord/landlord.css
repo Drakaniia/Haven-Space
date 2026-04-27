@@ -1,28 +1,5 @@
 /* Landlord Dashboard Styles */
 
-/* ===== CSS Variables for Dashboard ===== */
-:root {
-  --dashboard-bg: var(--bg-cream);
-  --dashboard-surface: var(--white);
-  --dashboard-border: var(--border-color);
-  --dashboard-text-primary: var(--text-dark);
-  --dashboard-text-secondary: var(--text-gray);
-  --dashboard-accent: var(--primary-green);
-  --dashboard-accent-hover: var(--dark-green);
-  --dashboard-success: #22c55e;
-  --dashboard-warning: #f59e0b;
-  --dashboard-info: #3b82f6;
-  --dashboard-purple: #8b5cf6;
-  --dashboard-pink: #ec4899;
-  --dashboard-cyan: #06b6d4;
-  --dashboard-red: #ef4444;
-  --dashboard-orange: #f97316;
-  --dashboard-yellow-light: #fef3c7;
-  --dashboard-green-light: #d1fae5;
-  --dashboard-red-light: #fee2e2;
-  --dashboard-blue-light: #dbeafe;
-}
-
 /* Landlord Hero Section */
 .landlord-hero {
   display: flex;
@@ -1638,4 +1615,9 @@
   .checkbox-group {
     grid-template-columns: 1fr;
   }
+}
+
+/* Create Listing button icon - make it white for better contrast */
+.create-listing-icon {
+  filter: brightness(0) invert(1);
 }
