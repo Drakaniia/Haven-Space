@@ -9,6 +9,7 @@ import {
   getAvatarUrl,
   updateProfileElements,
 } from '../shared/profile-utils.js';
+import { getCurrentTheme, toggleTheme, isDarkTheme } from '../shared/theme-manager.js';
 
 /**
  * Initialize navbar component
@@ -107,13 +108,44 @@ function setupThemeToggle() {
   const iconLight = document.getElementById('navbar-theme-icon-light');
   const iconDark = document.getElementById('navbar-theme-icon-dark');
 
-  themeToggle.addEventListener('click', () => {
-    window.dispatchEvent(new CustomEvent('navbar:theme:toggle'));
+  // Update icons based on current theme
+  function updateThemeIcons() {
+    const isDark = isDarkTheme();
     if (iconLight && iconDark) {
-      const isDark = iconLight.style.display === 'none';
-      iconLight.style.display = isDark ? '' : 'none';
-      iconDark.style.display = isDark ? 'none' : '';
+      iconLight.style.display = isDark ? 'none' : '';
+      iconDark.style.display = isDark ? '' : 'none';
+
+      // Update aria-label
+      themeToggle.setAttribute(
+        'aria-label',
+        isDark ? 'Switch to light mode' : 'Switch to dark mode'
+      );
+
+      // Update alt text
+      iconLight.alt = 'Switch to dark mode';
+      iconDark.alt = 'Switch to light mode';
     }
+  }
+
+  // Set initial state
+  updateThemeIcons();
+
+  // Handle theme toggle click
+  themeToggle.addEventListener('click', () => {
+    const newTheme = toggleTheme();
+    updateThemeIcons();
+
+    // Dispatch navbar-specific theme toggle event
+    window.dispatchEvent(
+      new CustomEvent('navbar:theme:toggle', {
+        detail: { theme: newTheme },
+      })
+    );
+  });
+
+  // Listen for external theme changes
+  window.addEventListener('theme:changed', () => {
+    updateThemeIcons();
   });
 }
 
