@@ -40,6 +40,18 @@
   --text-gray: #555555;
   --white: #ffffff;
 
+  /* Theme Colors - Light Mode (Default) */
+  --theme-bg-primary: #ffffff;
+  --theme-bg-secondary: #fef9f0;
+  --theme-bg-tertiary: #e8f5e9;
+  --theme-text-primary: #1a1a1a;
+  --theme-text-secondary: #555555;
+  --theme-text-muted: #9ca3af;
+  --theme-border: #e5e7eb;
+  --theme-border-light: #f3f4f6;
+  --theme-shadow: rgba(0, 0, 0, 0.1);
+  --theme-shadow-light: rgba(0, 0, 0, 0.05);
+
   /* Colors - Semantic */
   --color-error: #d32f2f;
   --color-warning: #ff9800;
@@ -122,10 +134,108 @@
   --ease-in-out: cubic-bezier(0.4, 0, 0.2, 1);
   --ease-out: cubic-bezier(0, 0, 0.2, 1);
   --ease-in: cubic-bezier(0.4, 0, 1, 1);
+
+  /* Dashboard Variables - Light Mode */
+  --dashboard-bg: var(--theme-bg-secondary);
+  --dashboard-surface: var(--theme-bg-primary);
+  --dashboard-border: var(--theme-border);
+  --dashboard-text-primary: var(--theme-text-primary);
+  --dashboard-text-secondary: var(--theme-text-secondary);
+  --dashboard-accent: var(--primary-green);
+  --dashboard-accent-hover: var(--dark-green);
+  --dashboard-success: #22c55e;
+  --dashboard-warning: #f59e0b;
+  --dashboard-info: #3b82f6;
+  --dashboard-purple: #8b5cf6;
+  --dashboard-pink: #ec4899;
+  --dashboard-cyan: #06b6d4;
+  --dashboard-red: #ef4444;
+  --dashboard-orange: #f97316;
+  --dashboard-yellow-light: #fef3c7;
+  --dashboard-green-light: #d1fae5;
+  --dashboard-red-light: #fee2e2;
+  --dashboard-blue-light: #dbeafe;
 }
 
 body {
   font-family: var(--font-main);
   min-height: 100vh;
   overflow-x: hidden;
+  background-color: var(--theme-bg-primary);
+  color: var(--theme-text-primary);
+  transition: background-color var(--transition-medium) var(--ease-in-out),
+    color var(--transition-medium) var(--ease-in-out);
+}
+
+/* Dark Mode Theme Variables */
+[data-theme='dark'] {
+  /* Theme Colors - Dark Mode */
+  --theme-bg-primary: #0f172a;
+  --theme-bg-secondary: #1e293b;
+  --theme-bg-tertiary: #334155;
+  --theme-text-primary: #f8fafc;
+  --theme-text-secondary: #cbd5e1;
+  --theme-text-muted: #64748b;
+  --theme-border: #334155;
+  --theme-border-light: #475569;
+  --theme-shadow: rgba(0, 0, 0, 0.3);
+  --theme-shadow-light: rgba(0, 0, 0, 0.2);
+
+  /* Override specific colors for dark mode */
+  --bg-cream: #1e293b;
+  --bg-green: #334155;
+  --white: #0f172a;
+
+  /* Dashboard Variables - Dark Mode */
+  --dashboard-bg: var(--theme-bg-secondary);
+  --dashboard-surface: var(--theme-bg-primary);
+  --dashboard-border: var(--theme-border);
+  --dashboard-text-primary: var(--theme-text-primary);
+  --dashboard-text-secondary: var(--theme-text-secondary);
+  --dashboard-yellow-light: #451a03;
+  --dashboard-green-light: #14532d;
+  --dashboard-red-light: #450a0a;
+  --dashboard-blue-light: #1e3a8a;
+}
+
+/* Form Elements Dark Mode Support */
+[data-theme='dark'] input,
+[data-theme='dark'] textarea,
+[data-theme='dark'] select {
+  background-color: var(--theme-bg-secondary);
+  color: var(--theme-text-primary);
+  border-color: var(--theme-border);
+}
+
+[data-theme='dark'] input::placeholder,
+[data-theme='dark'] textarea::placeholder {
+  color: var(--theme-text-muted);
+}
+
+/* Button Dark Mode Support */
+[data-theme='dark'] button:not(.demo-button):not(.navbar-icon-btn) {
+  background-color: var(--theme-bg-secondary);
+  color: var(--theme-text-primary);
+  border-color: var(--theme-border);
+}
+
+/* Card/Panel Dark Mode Support */
+[data-theme='dark'] .card,
+[data-theme='dark'] .panel,
+[data-theme='dark'] .modal {
+  background-color: var(--theme-bg-primary);
+  border-color: var(--theme-border);
+}
+
+/* Scrollbar Dark Mode Support */
+[data-theme='dark'] ::-webkit-scrollbar {
+  background-color: var(--theme-bg-secondary);
+}
+
+[data-theme='dark'] ::-webkit-scrollbar-thumb {
+  background-color: var(--theme-border);
+}
+
+[data-theme='dark'] ::-webkit-scrollbar-thumb:hover {
+  background-color: var(--theme-border-light);
 }

@@ -6,12 +6,14 @@
   top: 0;
   bottom: 0;
   width: 280px;
-  background: var(--white);
-  border-right: 1px solid #e5e7eb;
+  background: var(--theme-bg-primary);
+  border-right: 1px solid var(--theme-border);
   display: flex;
   flex-direction: column;
   z-index: 100;
-  transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1),
+    background-color var(--transition-medium) var(--ease-in-out),
+    border-color var(--transition-medium) var(--ease-in-out);
 }
 
 .sidebar.collapsed {
@@ -24,8 +26,9 @@
   align-items: center;
   height: 64px;
   padding: 0 1.25rem;
-  border-bottom: 1px solid #e5e7eb;
+  border-bottom: 1px solid var(--theme-border);
   position: relative;
+  transition: border-color var(--transition-medium) var(--ease-in-out);
 }
 
 .sidebar-logo {
@@ -59,7 +62,7 @@
 .sidebar-nav-title {
   font-size: 0.75rem;
   font-weight: 600;
-  color: var(--text-gray);
+  color: var(--theme-text-secondary);
   text-transform: uppercase;
   letter-spacing: 0.05em;
   padding: 0 0.75rem;
@@ -80,7 +83,7 @@
   gap: 0.75rem;
   padding: 0.625rem 0.75rem;
   border-radius: 8px;
-  color: var(--text-gray);
+  color: var(--theme-text-secondary);
   text-decoration: none;
   font-size: 0.875rem;
   font-weight: 500;
@@ -185,7 +188,7 @@
   top: -0.5rem;
   bottom: 0.5rem;
   width: 1px;
-  background: #e5e7eb;
+  background: var(--theme-border);
 }
 
 .sidebar.collapsed .sidebar-nav-dropdown-content::before {
@@ -198,7 +201,7 @@
   gap: 0.75rem;
   padding: 0.5rem 0.75rem;
   border-radius: 8px;
-  color: var(--text-gray);
+  color: var(--theme-text-secondary);
   text-decoration: none;
   font-size: 0.8125rem;
   font-weight: 500;
@@ -221,7 +224,7 @@
   left: -1.5rem;
   width: 1.5rem;
   height: 1px;
-  background: #e5e7eb;
+  background: var(--theme-border);
 }
 
 .sidebar.collapsed .sidebar-nav-child-item::before {
@@ -340,7 +343,7 @@
 .sidebar-profile-name {
   font-size: 0.875rem;
   font-weight: 600;
-  color: var(--text-dark);
+  color: var(--theme-text-primary);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -348,7 +351,7 @@
 
 .sidebar-profile-role {
   font-size: 0.75rem;
-  color: var(--text-gray);
+  color: var(--theme-text-secondary);
   margin-top: 0.125rem;
 }
 
