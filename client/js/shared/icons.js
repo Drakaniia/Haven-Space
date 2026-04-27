@@ -10,7 +10,7 @@
 export const ICON_PATHS = {
   // Navigation & UI
   home: '<svg xmlns="http://www.w3.org/2000/svg" width="128" height="128" viewBox="0 0 24 24" fill="none" class="injected-svg" data-src="https://cdn.hugeicons.com/icons/home-08-duotone-standard.svg?v=1.0.0" xmlns:xlink="http://www.w3.org/1999/xlink" role="img" color="#464646"><path opacity="0.4" d="M3 9.98834V19.5C3 20.6046 3.89543 21.5 5 21.5H19C20.1046 21.5 21 20.6046 21 19.5V9.98834C21 9.3654 20.7097 8.77803 20.2149 8.39963L12.8972 2.80373C12.6396 2.60673 12.3243 2.5 12 2.5C11.6757 2.5 11.3604 2.60673 11.1028 2.80373L3.7851 8.39963C3.29026 8.77804 3 9.3654 3 9.98834Z" fill="#464646"></path><path d="M3 9.98834V19.5C3 20.6046 3.89543 21.5 5 21.5H19C20.1046 21.5 21 20.6046 21 19.5V9.98834C21 9.3654 20.7097 8.77803 20.2149 8.39963L12.8972 2.80373C12.6396 2.60673 12.3243 2.5 12 2.5C11.6757 2.5 11.3604 2.60673 11.1028 2.80373L3.7851 8.39963C3.29026 8.77804 3 9.3654 3 9.98834Z" stroke="#464646" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"></path><path d="M17 15.5H15V17.5H17V15.5Z" stroke="#464646" stroke-width="1.5" stroke-linejoin="round"></path></svg>',
-  search: 'm21 21-5.197-5.197m0 0A7.5 7.5 0 1 0 5.196 5.196a7.5 7.5 0 0 0 10.607 10.607Z',
+  search: 'M21 21l-5.197-5.197m0 0A7.5 7.5 0 1 0 5.196 5.196a7.5 7.5 0 0 0 10.607 10.607Z',
   bookmark:
     'M17.593 3.322c1.1.128 1.907 1.077 1.907 2.185V21L12 17.25 4.5 21V5.507c0-1.108.806-2.057 1.907-2.185a48.507 48.507 0 0 1 11.186 0Z',
   calendar:
@@ -230,7 +230,7 @@ export const RAW_ICONS = {
 };
 
 /**
- * Get Heroicon SVG by name
+ * Get SVG icon by name - now loads from /assets/svg directory
  * @param {string} iconName - Name of the icon
  * @param {Object} options - SVG options
  * @param {number} options.width - Icon width (default: 24)
@@ -243,6 +243,7 @@ export function getIcon(iconName, options = {}) {
   const { width = 24, height = 24, strokeWidth = '1.5', className = '' } = options;
   const classAttr = className ? ` class="${className}"` : '';
 
+  // First try RAW_ICONS (for special icons like social media)
   if (RAW_ICONS[iconName]) {
     return RAW_ICONS[iconName].replace(
       '<svg ',
@@ -250,8 +251,70 @@ export function getIcon(iconName, options = {}) {
     );
   }
 
-  const pathData = ICON_PATHS[iconName] || ICON_PATHS.home;
+  // Try to load from /assets/svg directory first
+  // Map icon names to actual SVG filenames
+  const iconNameMap = {
+    'chevronDown': 'chevron-down',
+    'chevronRight': 'chevron-right',
+    'chevronLeft': 'chevron-left',
+    'homeModern': 'home',
+    'location': 'LocationPin',
+    'map': 'maps',
+    'exclamationCircle': 'informationCircle',
+    'chatBubble': 'messages',
+    'arrowRightSimple': 'arrow-right',
+    'currencyDollar': 'payment',
+    'target': 'search',
+    'grid2x2': 'dashboard',
+    'list': 'viewicon',
+    'clipboard': 'document',
+    'wrench': 'settings',
+    'check': 'check',
+    'phone': 'phone',
+    'exclamation': 'informationCircle',
+    'home': 'home',
+  };
+  
+  const mappedIconName = iconNameMap[iconName] || iconName;
+  const svgFileName = `${mappedIconName}.svg`;
+  
+  // Check if we're in a browser environment and can access the SVG files
+  if (typeof window !== 'undefined') {
+    try {
+      // Create a URL for the SVG file - use absolute path from root
+      const svgUrl = `/assets/svg/${svgFileName}`;
+      
+      // Return an SVG that uses the external SVG file
+      // This approach works with SVG sprite sheets or individual SVG files
+      return `<svg width="${width}" height="${height}"${classAttr}>
+        <use href="${svgUrl}" />
+      </svg>`;
+    } catch (error) {
+      console.warn(`Icon ${iconName} not found in /assets/svg, falling back to path data`);
+    }
+  }
 
+  // Fallback to ICON_PATHS for backward compatibility
+  const pathData = ICON_PATHS[iconName];
+  
+  if (!pathData) {
+    console.warn(`Icon ${iconName} not found, using fallback`);
+    // Use a simple fallback icon instead of the complex home SVG
+    return `<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="${strokeWidth}" stroke="currentColor"${classAttr} width="${width}" height="${height}">
+      <path stroke-linecap="round" stroke-linejoin="round" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" />
+    </svg>`;
+  }
+
+  // Check if pathData is a full SVG (starts with <svg) or just path data
+  if (pathData.startsWith('<svg')) {
+    // It's a full SVG, return it as-is with width/height adjustments
+    return pathData.replace(
+      '<svg ',
+      `<svg width="${width}" height="${height}"${classAttr} `
+    );
+  }
+
+  // It's path data, wrap it in SVG
   return `<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="${strokeWidth}" stroke="currentColor"${classAttr} width="${width}" height="${height}">
     <path stroke-linecap="round" stroke-linejoin="round" d="${pathData}" />
   </svg>`;
@@ -268,9 +331,14 @@ export function getIcon(iconName, options = {}) {
  */
 export function getSolidIcon(iconName, options = {}) {
   const { width = 24, height = 24, className = '' } = options;
-
-  const pathData = ICON_PATHS[iconName] || ICON_PATHS.home;
   const classAttr = className ? ` class="${className}"` : '';
+
+  const pathData = ICON_PATHS[iconName];
+  
+  if (!pathData) {
+    console.warn(`Solid icon ${iconName} not found, using regular icon`);
+    return getIcon(iconName, options);
+  }
 
   return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"${classAttr} width="${width}" height="${height}">
     <path d="${pathData}" />

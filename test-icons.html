@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Icon Test</title>
+</head>
+<body>
+    <h1>Icon Test</h1>
+    
+    <h2>Direct SVG Usage</h2>
+    <div style="display: flex; gap: 20px; align-items: center;">
+        <div>
+            <strong>informationCircle:</strong>
+            <img src="client/assets/svg/informationCircle.svg" width="24" height="24" alt="Info Circle">
+        </div>
+        <div>
+            <strong>lightbulb:</strong>
+            <img src="client/assets/svg/lightbulb.svg" width="24" height="24" alt="Lightbulb">
+        </div>
+    </div>
+    
+    <h2>JavaScript Icon Loading Test</h2>
+    <div id="js-icons"></div>
+    
+    <script type="module">
+        import { getIcon } from './client/js/shared/icons.js';
+        
+        async function testIcons() {
+            const container = document.getElementById('js-icons');
+            
+            try {
+                // Test informationCircle icon
+                const infoIcon = getIcon('informationCircle', { width: 24, height: 24 });
+                container.innerHTML += `<div><strong>informationCircle (JS):</strong> ${infoIcon}</div>`;
+                
+                // Test lightbulb icon
+                const lightbulbIcon = getIcon('lightbulb', { width: 24, height: 24 });
+                container.innerHTML += `<div><strong>lightbulb (JS):</strong> ${lightbulbIcon}</div>`;
+                
+                // Test existing icon (chevronLeft)
+                const chevronIcon = getIcon('chevronLeft', { width: 24, height: 24 });
+                container.innerHTML += `<div><strong>chevronLeft (JS):</strong> ${chevronIcon}</div>`;
+                
+                console.log('All icons loaded successfully!');
+            } catch (error) {
+                console.error('Error loading icons:', error);
+                container.innerHTML += `<div style="color: red;">Error: ${error.message}</div>`;
+            }
+        }
+        
+        testIcons();
+    </script>
+</body>
+</html>

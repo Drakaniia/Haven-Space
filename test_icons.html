@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Icon Test</title>
+</head>
+<body>
+    <h1>Icon Test</h1>
+    
+    <!-- Test the icons that were causing 404 errors -->
+    <div style="display: flex; flex-wrap: wrap; gap: 20px; margin: 20px;">
+        <div><span data-icon="clipboard"></span><br>clipboard</div>
+        <div><span data-icon="chevronDown"></span><br>chevronDown</div>
+        <div><span data-icon="arrowRightSimple"></span><br>arrowRightSimple</div>
+        <div><span data-icon="map"></span><br>map</div>
+        <div><span data-icon="currencyDollar"></span><br>currencyDollar</div>
+        <div><span data-icon="homeModern"></span><br>homeModern</div>
+        <div><span data-icon="wrench"></span><br>wrench</div>
+        <div><span data-icon="target"></span><br>target</div>
+        <div><span data-icon="grid2x2"></span><br>grid2x2</div>
+        <div><span data-icon="list"></span><br>list</div>
+        <div><span data-icon="exclamationCircle"></span><br>exclamationCircle</div>
+        <div><span data-icon="location"></span><br>location</div>
+        <div><span data-icon="chatBubble"></span><br>chatBubble</div>
+        <div><span data-icon="phone"></span><br>phone</div>
+        <div><span data-icon="check"></span><br>check</div>
+    </div>
+
+    <script type="module">
+        import { initIconElements } from './client/js/shared/icons.js';
+        
+        // Initialize icons
+        document.addEventListener('DOMContentLoaded', function() {
+            initIconElements();
+            console.log('Icons initialized');
+        });
+    </script>
+</body>
+</html>
