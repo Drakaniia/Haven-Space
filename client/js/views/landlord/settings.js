@@ -2,12 +2,7 @@
  * Landlord Settings Page Logic
  */
 
-import {
-  getDisplayName,
-  getUserInitials,
-  getAvatarUrl,
-  fetchAndUpdateProfile,
-} from '../../shared/profile-utils.js';
+import { getDisplayName, getAvatarUrl, fetchAndUpdateProfile } from '../../shared/profile-utils.js';
 import CONFIG from '../../config.js';
 
 /**
@@ -21,21 +16,27 @@ export function initLandlordSettings() {
   initAvatarUpload();
   initWelcomeMessageEditor();
   initDocumentUpload();
-
-  // Load and display current profile data
   loadAndDisplayProfile();
 }
 
 document.addEventListener('DOMContentLoaded', () => {
-  // Only run if we're on the settings page
   if (window.location.pathname.includes('settings')) {
     initLandlordSettings();
   }
 });
 
-/**
- * Initialize settings tabs
- */
+// ─── Helpers ────────────────────────────────────────────────────────────────
+
+function getAuthHeaders(json = true) {
+  const token = localStorage.getItem('token');
+  const headers = {};
+  if (json) headers['Content-Type'] = 'application/json';
+  if (token) headers['Authorization'] = `Bearer ${token}`;
+  return headers;
+}
+
+// ─── Tabs ────────────────────────────────────────────────────────────────────
+
 function initSettingsTabs() {
   const tabs = document.querySelectorAll('.settings-tab');
   const panels = document.querySelectorAll('.settings-panel');
@@ -43,96 +44,227 @@ function initSettingsTabs() {
   tabs.forEach(tab => {
     tab.addEventListener('click', () => {
       const tabName = tab.dataset.tab;
-
-      // Remove active class from all tabs and panels
       tabs.forEach(t => t.classList.remove('active'));
       panels.forEach(p => p.classList.remove('active'));
-
-      // Add active class to clicked tab
       tab.classList.add('active');
-
-      // Show corresponding panel
       const panel = document.getElementById(`${tabName}-panel`);
-      if (panel) {
-        panel.classList.add('active');
-      }
+      if (panel) panel.classList.add('active');
     });
   });
 }
 
-/**
- * Initialize profile form
- */
+// ─── Profile ─────────────────────────────────────────────────────────────────
+
+async function loadAndDisplayProfile() {
+  try {
+    const currentUser = JSON.parse(localStorage.getItem('user') || '{}');
+    populateProfileForm(currentUser);
+    updateAvatarPreview(currentUser);
+
+    const updatedUser = await fetchAndUpdateProfile(CONFIG.API_BASE_URL);
+    if (updatedUser) {
+      populateProfileForm(updatedUser);
+      updateAvatarPreview(updatedUser);
+    }
+  } catch (error) {
+    console.error('Error loading profile data:', error);
+  }
+}
+
+function populateProfileForm(user) {
+  if (!user) return;
+  const set = (id, val) => {
+    const el = document.getElementById(id);
+    if (el && val != null) el.value = val;
+  };
+  set('first-name', user.first_name);
+  set('last-name', user.last_name);
+  set('email', user.email);
+  set('phone', user.phone_number);
+}
+
+function updateAvatarPreview(user) {
+  const avatarPreview = document.getElementById('profile-avatar-preview');
+  if (avatarPreview && user) {
+    avatarPreview.src = getAvatarUrl(user);
+    avatarPreview.alt = `${getDisplayName(user)} Avatar`;
+  }
+}
+
 function initProfileForm() {
   const profileForm = document.getElementById('profile-form');
+  if (!profileForm) return;
 
-  if (profileForm) {
-    profileForm.addEventListener('submit', async e => {
-      e.preventDefault();
+  profileForm.addEventListener('submit', async e => {
+    e.preventDefault();
+    const submitBtn = profileForm.querySelector('[type="submit"]');
+    if (submitBtn) submitBtn.disabled = true;
 
-      const formData = {
-        firstName: document.getElementById('first-name').value,
-        lastName: document.getElementById('last-name').value,
-        email: document.getElementById('email').value,
-        phone: document.getElementById('phone').value,
-        company: document.getElementById('company').value,
-      };
+    const body = {
+      first_name: document.getElementById('first-name')?.value?.trim(),
+      last_name: document.getElementById('last-name')?.value?.trim(),
+      phone_number: document.getElementById('phone')?.value?.trim(),
+    };
 
-      // TODO: Integrate with backend API
-      showToast('Profile updated successfully', 'success');
-    });
-  }
-}
-
-/**
- * Initialize notification settings
- */
-function initNotificationSettings() {
-  const saveButton = document.getElementById('save-notifications');
-
-  if (saveButton) {
-    saveButton.addEventListener('click', async () => {
-      const toggles = document.querySelectorAll('.toggle-switch input');
-      const preferences = {};
-
-      toggles.forEach(toggle => {
-        preferences[toggle.dataset.setting] = toggle.checked;
+    try {
+      const res = await fetch(`${CONFIG.API_BASE_URL}/api/users/profile`, {
+        method: 'PUT',
+        headers: getAuthHeaders(),
+        credentials: 'include',
+        body: JSON.stringify(body),
       });
 
-      // TODO: Integrate with backend API
-      showToast('Notification preferences saved', 'success');
-    });
-  }
+      const data = await res.json();
+      if (res.ok) {
+        // Update localStorage with fresh data
+        const existing = JSON.parse(localStorage.getItem('user') || '{}');
+        localStorage.setItem('user', JSON.stringify({ ...existing, ...data.user }));
+        showToast('Profile updated successfully', 'success');
+      } else {
+        showToast(data.error || 'Failed to update profile', 'error');
+      }
+    } catch (err) {
+      console.error('Profile update error:', err);
+      showToast('Failed to update profile', 'error');
+    } finally {
+      if (submitBtn) submitBtn.disabled = false;
+    }
+  });
 }
 
-/**
- * Initialize password form
- */
+// ─── Avatar ───────────────────────────────────────────────────────────────────
+
+function initAvatarUpload() {
+  const changeAvatarBtn = document.getElementById('change-avatar-btn');
+  const avatarInput = document.getElementById('avatar-input');
+  const avatarPreview = document.getElementById('profile-avatar-preview');
+
+  if (!changeAvatarBtn || !avatarInput || !avatarPreview) return;
+
+  changeAvatarBtn.addEventListener('click', () => avatarInput.click());
+
+  avatarInput.addEventListener('change', async e => {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    if (file.size > 2 * 1024 * 1024) {
+      showToast('Image must be less than 2MB', 'error');
+      return;
+    }
+    if (!file.type.startsWith('image/')) {
+      showToast('Please select a valid image file', 'error');
+      return;
+    }
+
+    // Preview immediately
+    const reader = new FileReader();
+    reader.onload = ev => {
+      avatarPreview.src = ev.target.result;
+    };
+    reader.readAsDataURL(file);
+
+    // Upload to server
+    try {
+      const formData = new FormData();
+      formData.append('avatar', file);
+
+      const token = localStorage.getItem('token');
+      const headers = {};
+      if (token) headers['Authorization'] = `Bearer ${token}`;
+
+      const res = await fetch(`${CONFIG.API_BASE_URL}/api/users/avatar`, {
+        method: 'POST',
+        headers,
+        credentials: 'include',
+        body: formData,
+      });
+
+      const data = await res.json();
+      if (res.ok) {
+        // Update localStorage
+        const existing = JSON.parse(localStorage.getItem('user') || '{}');
+        existing.avatar_url = data.avatar_url;
+        localStorage.setItem('user', JSON.stringify(existing));
+        showToast('Profile photo updated', 'success');
+      } else {
+        showToast(data.error || 'Failed to upload photo', 'error');
+      }
+    } catch (err) {
+      console.error('Avatar upload error:', err);
+      showToast('Failed to upload photo', 'error');
+    }
+  });
+}
+
+// ─── Notifications ────────────────────────────────────────────────────────────
+
+function initNotificationSettings() {
+  // Load saved preferences from localStorage
+  const saved = JSON.parse(localStorage.getItem('notification_preferences') || '{}');
+  const toggles = document.querySelectorAll('.toggle-switch input[data-setting]');
+  toggles.forEach(toggle => {
+    const key = toggle.dataset.setting;
+    if (key in saved) toggle.checked = saved[key];
+  });
+
+  const saveButton = document.getElementById('save-notifications');
+  if (!saveButton) return;
+
+  saveButton.addEventListener('click', () => {
+    const preferences = {};
+    toggles.forEach(toggle => {
+      preferences[toggle.dataset.setting] = toggle.checked;
+    });
+    localStorage.setItem('notification_preferences', JSON.stringify(preferences));
+    showToast('Notification preferences saved', 'success');
+  });
+}
+
+// ─── Password ─────────────────────────────────────────────────────────────────
+
 function initPasswordForm() {
   const passwordForm = document.getElementById('password-form');
-
   if (passwordForm) {
     passwordForm.addEventListener('submit', async e => {
       e.preventDefault();
+      const submitBtn = passwordForm.querySelector('[type="submit"]');
 
-      const _currentPassword = document.getElementById('current-password').value;
+      const currentPassword = document.getElementById('current-password').value;
       const newPassword = document.getElementById('new-password').value;
       const confirmPassword = document.getElementById('confirm-password').value;
 
-      // Validate passwords
       if (newPassword !== confirmPassword) {
         showToast('New passwords do not match', 'error');
         return;
       }
-
       if (newPassword.length < 8) {
         showToast('Password must be at least 8 characters', 'error');
         return;
       }
 
-      // TODO: Integrate with backend API
-      showToast('Password updated successfully', 'success');
-      passwordForm.reset();
+      if (submitBtn) submitBtn.disabled = true;
+
+      try {
+        const res = await fetch(`${CONFIG.API_BASE_URL}/auth/change-password`, {
+          method: 'POST',
+          headers: getAuthHeaders(),
+          credentials: 'include',
+          body: JSON.stringify({ current_password: currentPassword, new_password: newPassword }),
+        });
+
+        const data = await res.json();
+        if (res.ok) {
+          showToast('Password updated successfully', 'success');
+          passwordForm.reset();
+        } else {
+          showToast(data.error || 'Failed to update password', 'error');
+        }
+      } catch (err) {
+        console.error('Password change error:', err);
+        showToast('Failed to update password', 'error');
+      } finally {
+        if (submitBtn) submitBtn.disabled = false;
+      }
     });
   }
 
@@ -144,82 +276,8 @@ function initPasswordForm() {
   }
 }
 
-/**
- * Load and display current profile data
- */
-async function loadAndDisplayProfile() {
-  try {
-    // Get current user from localStorage
-    const currentUser = JSON.parse(localStorage.getItem('user') || '{}');
+// ─── Welcome Message ──────────────────────────────────────────────────────────
 
-    // Update avatar preview with current data
-    updateAvatarPreview(currentUser);
-
-    // Fetch fresh profile data from API
-    const updatedUser = await fetchAndUpdateProfile(CONFIG.API_BASE_URL);
-
-    if (updatedUser) {
-      // Update avatar preview with fresh data
-      updateAvatarPreview(updatedUser);
-    }
-  } catch (error) {
-    console.error('Error loading profile data:', error);
-  }
-}
-
-/**
- * Update avatar preview with user data
- */
-function updateAvatarPreview(user) {
-  const avatarPreview = document.getElementById('profile-avatar-preview');
-  if (avatarPreview && user) {
-    avatarPreview.src = getAvatarUrl(user);
-    avatarPreview.alt = `${getDisplayName(user)} Avatar`;
-  }
-}
-
-/**
- * Initialize avatar upload
- */
-function initAvatarUpload() {
-  const changeAvatarBtn = document.getElementById('change-avatar-btn');
-  const avatarInput = document.getElementById('avatar-input');
-  const avatarPreview = document.getElementById('profile-avatar-preview');
-
-  if (changeAvatarBtn && avatarInput && avatarPreview) {
-    changeAvatarBtn.addEventListener('click', () => {
-      avatarInput.click();
-    });
-
-    avatarInput.addEventListener('change', e => {
-      const file = e.target.files[0];
-      if (file) {
-        // Validate file size (max 2MB)
-        if (file.size > 2 * 1024 * 1024) {
-          showToast('Image must be less than 2MB', 'error');
-          return;
-        }
-
-        // Validate file type
-        if (!file.type.startsWith('image/')) {
-          showToast('Please select a valid image file', 'error');
-          return;
-        }
-
-        // Preview the image
-        const reader = new FileReader();
-        reader.onload = e => {
-          avatarPreview.src = e.target.result;
-        };
-        reader.readAsDataURL(file);
-      }
-    });
-  }
-}
-
-/**
- * Initialize welcome message editor
- */
 function initWelcomeMessageEditor() {
   const textarea = document.getElementById('welcome-message-textarea');
   const charCount = document.getElementById('char-count');
@@ -234,7 +292,6 @@ function initWelcomeMessageEditor() {
 
   let selectedFile = null;
 
-  // Load existing welcome message and file
   loadWelcomeSettings();
 
   if (textarea && charCount) {
@@ -243,46 +300,40 @@ function initWelcomeMessageEditor() {
     });
   }
 
-  // File selection
   if (selectFileBtn && fileInput) {
-    selectFileBtn.addEventListener('click', () => {
-      fileInput.click();
-    });
+    selectFileBtn.addEventListener('click', () => fileInput.click());
 
     fileInput.addEventListener('change', e => {
       const file = e.target.files[0];
-      if (file) {
-        // Validate file size (max 10MB)
-        if (file.size > 10 * 1024 * 1024) {
-          showToast('File must be less than 10MB', 'error');
-          fileInput.value = '';
-          return;
-        }
+      if (!file) return;
 
-        // Validate file type
-        const allowedTypes = [
-          'application/pdf',
-          'application/msword',
-          'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
-        ];
-        if (!allowedTypes.includes(file.type)) {
-          showToast('Only PDF, DOC, and DOCX files are allowed', 'error');
-          fileInput.value = '';
-          return;
-        }
-
-        selectedFile = file;
-        displayFilePreview(file);
+      if (file.size > 10 * 1024 * 1024) {
+        showToast('File must be less than 10MB', 'error');
+        fileInput.value = '';
+        return;
       }
+
+      const allowedTypes = [
+        'application/pdf',
+        'application/msword',
+        'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+      ];
+      if (!allowedTypes.includes(file.type)) {
+        showToast('Only PDF, DOC, and DOCX files are allowed', 'error');
+        fileInput.value = '';
+        return;
+      }
+
+      selectedFile = file;
+      displayFilePreview(file);
     });
   }
 
-  // Remove file
   if (removeFileBtn) {
     removeFileBtn.addEventListener('click', () => {
       selectedFile = null;
-      fileInput.value = '';
-      filePreview.style.display = 'none';
+      if (fileInput) fileInput.value = '';
+      if (filePreview) filePreview.style.display = 'none';
     });
   }
 
@@ -290,19 +341,20 @@ function initWelcomeMessageEditor() {
     previewBtn.addEventListener('click', () => {
       const message = textarea?.value || '';
       const previewMessage = replaceVariables(message);
-      showToast('Preview: ' + previewMessage.substring(0, 100) + '...', 'info');
+      showToast(
+        'Preview: ' + previewMessage.substring(0, 100) + (previewMessage.length > 100 ? '...' : ''),
+        'info'
+      );
     });
   }
 
   if (saveBtn) {
     saveBtn.addEventListener('click', async () => {
       const message = textarea?.value || '';
-
       if (!message.trim()) {
         showToast('Please enter a welcome message', 'error');
         return;
       }
-
       await saveWelcomeSettings(message, selectedFile);
     });
   }
@@ -315,12 +367,6 @@ function initWelcomeMessageEditor() {
     }
   }
 
-  function formatFileSize(bytes) {
-    if (bytes < 1024) return bytes + ' B';
-    if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(2) + ' KB';
-    return (bytes / (1024 * 1024)).toFixed(2) + ' MB';
-  }
-
   function replaceVariables(message) {
     return message
       .replace(/{boarder_name}/g, 'John')
@@ -330,39 +376,31 @@ function initWelcomeMessageEditor() {
   }
 }
 
-/**
- * Load welcome settings from backend
- */
 async function loadWelcomeSettings() {
   try {
-    const response = await fetch('/api/landlord/welcome-settings', {
+    const res = await fetch(`${CONFIG.API_BASE_URL}/api/landlord/welcome-settings`, {
       method: 'GET',
-      headers: {
-        'Content-Type': 'application/json',
-      },
+      headers: getAuthHeaders(),
       credentials: 'include',
     });
 
-    if (response.ok) {
-      const data = await response.json();
-      const textarea = document.getElementById('welcome-message-textarea');
-      const charCount = document.getElementById('char-count');
-      const filePreview = document.getElementById('file-preview');
-      const fileNameDisplay = document.getElementById('file-name-display');
-      const fileSizeDisplay = document.getElementById('file-size-display');
+    if (!res.ok) return;
 
-      if (data.data && textarea) {
-        textarea.value = data.data.welcome_message || '';
-        if (charCount) {
-          charCount.textContent = textarea.value.length;
-        }
+    const data = await res.json();
+    const textarea = document.getElementById('welcome-message-textarea');
+    const charCount = document.getElementById('char-count');
+    const filePreview = document.getElementById('file-preview');
+    const fileNameDisplay = document.getElementById('file-name-display');
+    const fileSizeDisplay = document.getElementById('file-size-display');
 
-        // Display existing file if present
-        if (data.data.house_rules_file_name && filePreview && fileNameDisplay && fileSizeDisplay) {
-          fileNameDisplay.textContent = data.data.house_rules_file_name;
-          fileSizeDisplay.textContent = formatFileSize(data.data.house_rules_file_size || 0);
-          filePreview.style.display = 'flex';
-        }
+    if (data.data && textarea) {
+      textarea.value = data.data.welcome_message || '';
+      if (charCount) charCount.textContent = textarea.value.length;
+
+      if (data.data.house_rules_file_name && filePreview && fileNameDisplay && fileSizeDisplay) {
+        fileNameDisplay.textContent = data.data.house_rules_file_name;
+        fileSizeDisplay.textContent = formatFileSize(data.data.house_rules_file_size || 0);
+        filePreview.style.display = 'flex';
       }
     }
   } catch (error) {
@@ -370,29 +408,28 @@ async function loadWelcomeSettings() {
   }
 }
 
-/**
- * Save welcome settings to backend
- */
 async function saveWelcomeSettings(message, file) {
   try {
     const formData = new FormData();
     formData.append('welcome_message', message);
+    if (file) formData.append('house_rules_file', file);
 
-    if (file) {
-      formData.append('house_rules_file', file);
-    }
+    const token = localStorage.getItem('token');
+    const headers = {};
+    if (token) headers['Authorization'] = `Bearer ${token}`;
 
-    const response = await fetch('/api/landlord/welcome-settings', {
+    const res = await fetch(`${CONFIG.API_BASE_URL}/api/landlord/welcome-settings`, {
       method: 'POST',
-      body: formData,
+      headers,
       credentials: 'include',
+      body: formData,
     });
 
-    if (response.ok) {
-      showToast('Welcome message and house rules saved successfully', 'success');
+    const data = await res.json();
+    if (res.ok) {
+      showToast('Welcome message saved successfully', 'success');
     } else {
-      const error = await response.json();
-      showToast(error.error || 'Failed to save settings', 'error');
+      showToast(data.error || 'Failed to save settings', 'error');
     }
   } catch (error) {
     console.error('Failed to save welcome settings:', error);
@@ -400,15 +437,8 @@ async function saveWelcomeSettings(message, file) {
   }
 }
 
-function formatFileSize(bytes) {
-  if (bytes < 1024) return bytes + ' B';
-  if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(2) + ' KB';
-  return (bytes / (1024 * 1024)).toFixed(2) + ' MB';
-}
+// ─── Documents ────────────────────────────────────────────────────────────────
 
-/**
- * Initialize document upload
- */
 function initDocumentUpload() {
   const uploadBtn = document.getElementById('upload-document-btn');
   const modal = document.getElementById('upload-modal');
@@ -417,121 +447,131 @@ function initDocumentUpload() {
   const submitBtn = document.getElementById('upload-submit-btn');
   const form = document.getElementById('upload-form');
 
-  if (uploadBtn && modal) {
-    // Open modal
-    uploadBtn.addEventListener('click', () => {
-      modal.style.display = 'flex';
-    });
-  }
+  const openModal = () => {
+    if (modal) modal.style.display = 'flex';
+  };
+  const closeModal = () => {
+    if (modal) modal.style.display = 'none';
+    form?.reset();
+  };
 
-  if (closeBtn) {
-    closeBtn.addEventListener('click', () => {
-      modal.style.display = 'none';
-      form?.reset();
-    });
-  }
+  uploadBtn?.addEventListener('click', openModal);
+  closeBtn?.addEventListener('click', closeModal);
+  cancelBtn?.addEventListener('click', closeModal);
+  modal?.addEventListener('click', e => {
+    if (e.target === modal) closeModal();
+  });
 
-  if (cancelBtn) {
-    cancelBtn.addEventListener('click', () => {
-      modal.style.display = 'none';
-      form?.reset();
-    });
-  }
+  submitBtn?.addEventListener('click', async e => {
+    e.preventDefault();
 
-  if (submitBtn) {
-    submitBtn.addEventListener('click', async e => {
-      e.preventDefault();
+    const category = document.getElementById('document-category')?.value;
+    const fileInput = document.getElementById('document-file');
+    const file = fileInput?.files[0];
+    const autoSend = document.getElementById('auto-send-toggle')?.checked;
 
-      const category = document.getElementById('document-category')?.value;
-      const fileInput = document.getElementById('document-file');
-      const file = fileInput?.files[0];
-      const autoSend = document.getElementById('auto-send-toggle')?.checked;
+    if (!file) {
+      showToast('Please select a file to upload', 'error');
+      return;
+    }
+    if (file.size > 10 * 1024 * 1024) {
+      showToast('File must be less than 10MB', 'error');
+      return;
+    }
+    if (file.type !== 'application/pdf') {
+      showToast('Only PDF files are allowed', 'error');
+      return;
+    }
 
-      if (!file) {
-        showToast('Please select a file to upload', 'error');
-        return;
+    submitBtn.disabled = true;
+
+    try {
+      const formData = new FormData();
+      formData.append('document', file);
+      formData.append('category', category);
+      formData.append('auto_send', autoSend ? 'true' : 'false');
+
+      const token = localStorage.getItem('token');
+      const headers = {};
+      if (token) headers['Authorization'] = `Bearer ${token}`;
+
+      const res = await fetch(`${CONFIG.API_BASE_URL}/api/landlord/documents`, {
+        method: 'POST',
+        headers,
+        credentials: 'include',
+        body: formData,
+      });
+
+      const data = await res.json();
+      if (res.ok) {
+        showToast('Document uploaded successfully', 'success');
+        closeModal();
+        loadDocuments();
+      } else {
+        showToast(data.error || 'Failed to upload document', 'error');
       }
+    } catch (err) {
+      console.error('Document upload error:', err);
+      showToast('Failed to upload document', 'error');
+    } finally {
+      submitBtn.disabled = false;
+    }
+  });
 
-      // Validate file size (max 10MB)
-      if (file.size > 10 * 1024 * 1024) {
-        showToast('File must be less than 10MB', 'error');
-        return;
-      }
-
-      // Validate file type
-      if (file.type !== 'application/pdf') {
-        showToast('Only PDF files are allowed', 'error');
-        return;
-      }
-
-      // TODO: Integrate with backend API
-      showToast('Document uploaded successfully', 'success');
-      modal.style.display = 'none';
-      form?.reset();
-    });
-  }
-
-  // Close modal on outside click
-  if (modal) {
-    modal.addEventListener('click', e => {
-      if (e.target === modal) {
-        modal.style.display = 'none';
-        form?.reset();
-      }
-    });
-  }
-
-  // Load documents
   loadDocuments();
 }
 
-/**
- * Load documents list
- */
-function loadDocuments() {
+async function loadDocuments() {
   const container = document.getElementById('landlord-documents-list');
   if (!container) return;
 
-  // TODO: Fetch from backend API
-  // For now, show sample data
-  const documents = [
-    {
-      id: 1,
-      title: 'House Rules',
-      category: 'House Rules',
-      uploadedAt: 'Jan 15, 2025',
-      autoSend: true,
-    },
-    {
-      id: 2,
-      title: 'Community Guidelines',
-      category: 'Community Guidelines',
-      uploadedAt: 'Jan 10, 2025',
-      autoSend: true,
-    },
-    {
-      id: 3,
-      title: 'Emergency Contacts',
-      category: 'Emergency Contacts',
-      uploadedAt: 'Dec 20, 2024',
-      autoSend: false,
-    },
-  ];
+  container.innerHTML = '<div class="loading-state">Loading documents...</div>';
 
-  renderDocuments(container, documents);
+  try {
+    const res = await fetch(`${CONFIG.API_BASE_URL}/api/landlord/documents`, {
+      method: 'GET',
+      headers: getAuthHeaders(),
+      credentials: 'include',
+    });
 
-  // Setup category filters
-  setupCategoryFilters();
+    const data = await res.json();
+
+    if (!res.ok) {
+      container.innerHTML = '<div class="empty-state">Failed to load documents.</div>';
+      return;
+    }
+
+    const documents = data.data || [];
+
+    if (documents.length === 0) {
+      container.innerHTML = '<div class="empty-state">No documents uploaded yet.</div>';
+      setupCategoryFilters();
+      return;
+    }
+
+    renderDocuments(container, documents);
+    setupCategoryFilters();
+  } catch (err) {
+    console.error('Load documents error:', err);
+    container.innerHTML = '<div class="empty-state">Failed to load documents.</div>';
+  }
 }
 
-/**
- * Render documents list
- */
 function renderDocuments(container, documents) {
   container.innerHTML = documents
-    .map(
-      doc => `
-    <div class="document-item" data-category="${doc.category}">
+    .map(doc => {
+      const uploadedAt = doc.created_at
+        ? new Date(doc.created_at).toLocaleDateString('en-US', {
+            year: 'numeric',
+            month: 'short',
+            day: 'numeric',
+          })
+        : 'Unknown date';
+      const category = doc.category || doc.document_type || 'Custom';
+      const autoSend = doc.auto_send_to_new_boarders || doc.auto_send || false;
+
+      return `
+    <div class="document-item" data-category="${category}" data-id="${doc.id}">
       <div class="document-item-left">
         <div class="document-icon-box">
           <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -539,96 +579,97 @@ function renderDocuments(container, documents) {
           </svg>
         </div>
         <div class="document-info">
-          <h4 class="document-title">${doc.title}</h4>
-          <p class="document-meta">Uploaded on ${doc.uploadedAt} • PDF ${
-        doc.autoSend ? '• Auto-sent to new boarders' : ''
+          <h4 class="document-title">${escapeHtml(doc.title || doc.file_name || 'Document')}</h4>
+          <p class="document-meta">Uploaded on ${uploadedAt} • PDF${
+        autoSend ? ' • Auto-sent to new boarders' : ''
       }</p>
         </div>
       </div>
       <div class="document-actions">
-        <button class="btn btn-outline btn-sm document-edit-btn" data-id="${doc.id}">
-          Edit
-        </button>
         <button class="btn btn-outline btn-sm document-delete-btn" data-id="${
           doc.id
         }" style="color: #dc3545; border-color: #dc3545;">
           Delete
         </button>
       </div>
-    </div>
-  `
-    )
+    </div>`;
+    })
     .join('');
 
-  // Add event listeners for edit and delete buttons
   setupDocumentActions();
 }
 
-/**
- * Setup category filters
- */
 function setupCategoryFilters() {
   const categoryTabs = document.querySelectorAll('.category-tab');
-  const documentItems = document.querySelectorAll('.document-item');
-
   categoryTabs.forEach(tab => {
     tab.addEventListener('click', () => {
       const category = tab.dataset.category;
-
-      // Update active tab
       categoryTabs.forEach(t => t.classList.remove('active'));
       tab.classList.add('active');
-
-      // Filter documents
-      documentItems.forEach(item => {
-        if (category === 'all' || item.dataset.category === category) {
-          item.style.display = 'flex';
-        } else {
-          item.style.display = 'none';
-        }
+      document.querySelectorAll('.document-item').forEach(item => {
+        item.style.display =
+          category === 'all' || item.dataset.category === category ? 'flex' : 'none';
       });
     });
   });
 }
 
-/**
- * Setup document actions (edit, delete)
- */
 function setupDocumentActions() {
-  const editBtns = document.querySelectorAll('.document-edit-btn');
-  const deleteBtns = document.querySelectorAll('.document-delete-btn');
-
-  editBtns.forEach(btn => {
-    btn.addEventListener('click', () => {
+  document.querySelectorAll('.document-delete-btn').forEach(btn => {
+    btn.addEventListener('click', async () => {
       const docId = btn.dataset.id;
-      showToast('Edit feature coming soon', 'info');
-    });
-  });
+      if (!confirm('Are you sure you want to delete this document?')) return;
 
-  deleteBtns.forEach(btn => {
-    btn.addEventListener('click', () => {
-      const docId = btn.dataset.id;
-      if (confirm('Are you sure you want to delete this document?')) {
-        // TODO: Integrate with backend API
-        btn.closest('.document-item')?.remove();
-        showToast('Document deleted successfully', 'success');
+      btn.disabled = true;
+      try {
+        const res = await fetch(`${CONFIG.API_BASE_URL}/api/landlord/documents/${docId}`, {
+          method: 'DELETE',
+          headers: getAuthHeaders(),
+          credentials: 'include',
+        });
+
+        const data = await res.json();
+        if (res.ok) {
+          btn.closest('.document-item')?.remove();
+          showToast('Document deleted', 'success');
+          const container = document.getElementById('landlord-documents-list');
+          if (container && !container.querySelector('.document-item')) {
+            container.innerHTML = '<div class="empty-state">No documents uploaded yet.</div>';
+          }
+        } else {
+          showToast(data.error || 'Failed to delete document', 'error');
+          btn.disabled = false;
+        }
+      } catch (err) {
+        console.error('Delete document error:', err);
+        showToast('Failed to delete document', 'error');
+        btn.disabled = false;
       }
     });
   });
 }
 
-/**
- * Show toast notification
- * @param {string} message - Toast message
- * @param {string} type - Toast type: success, error, warning, info
- */
+// ─── Utilities ────────────────────────────────────────────────────────────────
+
+function formatFileSize(bytes) {
+  if (bytes < 1024) return bytes + ' B';
+  if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(2) + ' KB';
+  return (bytes / (1024 * 1024)).toFixed(2) + ' MB';
+}
+
+function escapeHtml(str) {
+  return String(str)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;');
+}
+
 function showToast(message, type = 'info') {
-  // Create toast element
   const toast = document.createElement('div');
   toast.className = `toast toast-${type}`;
   toast.textContent = message;
 
-  // Add styles if not already present
   if (!document.getElementById('toast-styles')) {
     const style = document.createElement('style');
     style.id = 'toast-styles';
@@ -658,10 +699,7 @@ function showToast(message, type = 'info') {
     document.head.appendChild(style);
   }
 
-  // Add to DOM
   document.body.appendChild(toast);
-
-  // Remove after 3 seconds
   setTimeout(() => {
     toast.style.animation = 'slideIn 0.3s ease reverse';
     setTimeout(() => toast.remove(), 300);

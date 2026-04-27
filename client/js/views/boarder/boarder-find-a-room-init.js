@@ -66,9 +66,9 @@ export function initBoarderFindARoomAuth() {
     isAuthenticated: true,
     user: {
       id: user.id,
-      first_name: user.first_name,
-      last_name: user.last_name,
-      name: `${user.first_name || ''} ${user.last_name || ''}`.trim() || 'User',
+      first_name: user.first_name || user.name?.split(' ')[0] || '',
+      last_name: user.last_name || user.name?.split(' ').slice(1).join(' ') || '',
+      name: user.name || `${user.first_name || ''} ${user.last_name || ''}`.trim() || 'User',
       email: user.email || '',
       initials: getInitials(user),
       avatarUrl: user.avatar_url || '',
@@ -308,9 +308,23 @@ function ensureDropdownsWork() {
  * Get user initials
  */
 function getInitials(user) {
-  const first = (user.first_name || '').trim().charAt(0).toUpperCase();
-  const last = (user.last_name || '').trim().charAt(0).toUpperCase();
-  return first + last || 'U';
+  // Try first_name and last_name first
+  if (user.first_name || user.last_name) {
+    const first = (user.first_name || '').trim().charAt(0).toUpperCase();
+    const last = (user.last_name || '').trim().charAt(0).toUpperCase();
+    return first + last || 'U';
+  }
+  
+  // Fall back to parsing the name field
+  if (user.name) {
+    const parts = user.name.trim().split(' ');
+    if (parts.length >= 2) {
+      return (parts[0].charAt(0) + parts[parts.length - 1].charAt(0)).toUpperCase();
+    }
+    return user.name.charAt(0).toUpperCase();
+  }
+  
+  return 'U';
 }
 
 /**
@@ -348,11 +362,21 @@ function showAuthenticatedUI(authState) {
 function updateUserProfile(user) {
   if (!user) return;
 
-  // Create full name from first_name and last_name
-  const fullName = `${user.first_name || ''} ${user.last_name || ''}`.trim() || 'User';
+  // Create full name from first_name and last_name, or use name field
+  const fullName = user.name || `${user.first_name || ''} ${user.last_name || ''}`.trim() || 'User';
 
-  // Create initials from first and last name
-  const initials = `${user.first_name?.[0] || ''}${user.last_name?.[0] || ''}`.toUpperCase() || 'U';
+  // Create initials from first and last name, or parse from name field
+  let initials = 'U';
+  if (user.first_name || user.last_name) {
+    initials = `${user.first_name?.[0] || ''}${user.last_name?.[0] || ''}`.toUpperCase() || 'U';
+  } else if (user.name) {
+    const parts = user.name.trim().split(' ');
+    if (parts.length >= 2) {
+      initials = (parts[0].charAt(0) + parts[parts.length - 1].charAt(0)).toUpperCase();
+    } else {
+      initials = user.name.charAt(0).toUpperCase();
+    }
+  }
 
   // Update profile name
   const profileNames = document.querySelectorAll('.find-room-header-profile-name');

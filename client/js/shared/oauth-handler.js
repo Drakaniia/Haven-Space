@@ -25,6 +25,8 @@ export function handleOAuthRedirect() {
       // Store user data in localStorage
       const userRecord = {
         id: userData.id,
+        first_name: userData.first_name || '',
+        last_name: userData.last_name || '',
         name: [userData.first_name, userData.last_name].filter(Boolean).join(' ') || userData.email,
         email: userData.email,
         role: userData.role,

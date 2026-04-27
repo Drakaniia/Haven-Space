@@ -93,6 +93,8 @@ function initializeLogin() {
       // Build a user object compatible with the rest of the app
       const userRecord = {
         id: phpUser.id,
+        first_name: phpUser.first_name || '',
+        last_name: phpUser.last_name || '',
         name: [phpUser.first_name, phpUser.last_name].filter(Boolean).join(' ') || phpUser.email,
         email: phpUser.email,
         role,

@@ -149,6 +149,7 @@ export function updateProfileElements(user, basePath = '') {
   const avatarImageSelectors = [
     '.find-room-header-profile-avatar',
     '#navbar-avatar-img',
+    '#navbar-user-menu-avatar',
     '#profile-avatar-preview',
     '.profile-avatar',
     '.user-avatar-img',
@@ -165,7 +166,6 @@ export function updateProfileElements(user, basePath = '') {
   // Update avatar initials (for text-based avatars)
   const avatarInitialSelectors = [
     '.find-room-profile-menu-avatar',
-    '#navbar-user-menu-avatar',
     '.profile-avatar-initials',
     '.user-avatar-initials',
   ];
@@ -176,6 +176,8 @@ export function updateProfileElements(user, basePath = '') {
       el.textContent = initials;
     });
   });
+
+  // Note: #navbar-user-menu-avatar is now an img tag, handled separately
 }
 
 /**

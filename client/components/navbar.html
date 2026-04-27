@@ -81,7 +81,13 @@
     <!-- User Dropdown Menu -->
     <div class="navbar-user-menu" id="navbar-user-menu">
       <div class="navbar-user-menu-header">
-        <div class="navbar-user-menu-avatar" id="navbar-user-menu-avatar">JD</div>
+        <img
+          class="navbar-user-menu-avatar"
+          id="navbar-user-menu-avatar"
+          src=""
+          alt="User Avatar"
+          onerror="this.src='/assets/images/sample.png'; console.error('Menu avatar image failed to load:', this.src)"
+        />
         <div class="navbar-user-menu-info">
           <div class="navbar-user-menu-name" id="navbar-user-menu-name">Juan Dela Cruz</div>
           <div class="navbar-user-menu-email" id="navbar-user-menu-email">juan@example.com</div>

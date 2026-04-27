@@ -81,6 +81,13 @@ function updateUserInfo(user, basePath) {
     avatarImg.src = getAvatarUrl(user, basePath);
     avatarImg.alt = `${getDisplayName(user)} Avatar`;
   }
+
+  // Update menu avatar as well
+  const menuAvatarImg = document.getElementById('navbar-user-menu-avatar');
+  if (menuAvatarImg) {
+    menuAvatarImg.src = getAvatarUrl(user, basePath);
+    menuAvatarImg.alt = `${getDisplayName(user)} Avatar`;
+  }
 }
 
 /**
@@ -366,19 +373,18 @@ function setupUserMenu() {
  */
 function setupUserMenuHandlers(user) {
   // Update user menu info with real profile data
-  const menuAvatar = document.getElementById('navbar-user-menu-avatar');
   const menuName = document.getElementById('navbar-user-menu-name');
   const menuEmail = document.getElementById('navbar-user-menu-email');
 
-  if (menuAvatar) {
-    menuAvatar.textContent = getUserInitials(user);
-  }
   if (menuName) {
     menuName.textContent = getDisplayName(user);
   }
   if (menuEmail) {
     menuEmail.textContent = user.email || '';
   }
+
+  // Note: menu avatar is now handled by updateUserInfo function
+  // which sets the image source using getAvatarUrl
 
   // Profile menu item
   const profileBtn = document.getElementById('navbar-menu-profile');

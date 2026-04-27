@@ -23,21 +23,21 @@ class ApplicationRepository
      */
     public function findByBoarder(int $boarderId): array
     {
-        $sql = 'SELECT a.*, 
+        $sql = 'SELECT app.*, 
                        r.title as room_title, r.price as room_price,
                        prop.title as property_title, 
-                       CONCAT(a.address_line_1, 
-                              CASE WHEN a.address_line_2 IS NOT NULL THEN CONCAT(", ", a.address_line_2) ELSE "" END,
-                              ", ", a.city, ", ", a.province) as property_address,
+                       CONCAT(addr.address_line_1, 
+                              CASE WHEN addr.address_line_2 IS NOT NULL THEN CONCAT(", ", addr.address_line_2) ELSE "" END,
+                              ", ", addr.city, ", ", addr.province) as property_address,
                        prop.id as property_id,
                        u.first_name, u.last_name, u.email as landlord_email
-                FROM applications a
-                JOIN rooms r ON a.room_id = r.id
+                FROM applications app
+                JOIN rooms r ON app.room_id = r.id
                 JOIN properties prop ON r.property_id = prop.id
-                JOIN addresses a ON prop.address_id = a.id
-                JOIN users u ON a.landlord_id = u.id
-                WHERE a.boarder_id = ? AND a.deleted_at IS NULL
-                ORDER BY a.created_at DESC';
+                JOIN addresses addr ON prop.address_id = addr.id
+                JOIN users u ON app.landlord_id = u.id
+                WHERE app.boarder_id = ? AND app.deleted_at IS NULL
+                ORDER BY app.created_at DESC';
 
         $stmt = $this->pdo->prepare($sql);
         $stmt->execute([$boarderId]);

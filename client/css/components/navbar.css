@@ -242,13 +242,7 @@
   width: 40px;
   height: 40px;
   border-radius: 10px;
-  background: var(--bg-green);
-  color: var(--primary-green);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 0.875rem;
-  font-weight: 600;
+  object-fit: cover;
   flex-shrink: 0;
 }
 

@@ -136,6 +136,10 @@ Router::post('/auth/reset-password', function() {
     require_once __DIR__ . '/auth/reset-password.php';
 });
 
+Router::post('/auth/change-password', function() {
+    require_once __DIR__ . '/auth/change-password.php';
+});
+
 
 // ============================================
 // GOOGLE OAUTH ROUTES

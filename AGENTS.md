@@ -94,3 +94,8 @@ const response = await fetch(url, {
 
 qwenzy23062@gmail.com
 Kenjigwapo_123
+
+Boarder Credentials
+
+alistairybaez574@gmail.com
+Kenjigwapo_123
