@@ -42,12 +42,7 @@
   flex: 1;
   display: flex;
   flex-direction: column;
-  margin-left: 280px;
-  transition: margin-left 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-.landlord-dashboard.sidebar-collapsed .create-listing-main {
-  margin-left: 80px;
+  margin-left: 0;
 }
 
 .create-listing-content {
@@ -546,6 +541,67 @@
   color: var(--text-gray);
   font-size: 0.875rem;
   margin-bottom: 1.5rem;
+}
+
+/* Room Navigation */
+.room-navigation {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  gap: 1rem;
+  margin-top: 1.5rem;
+}
+
+.btn-nav {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.75rem 1.25rem;
+  border-radius: 8px;
+  font-size: 0.9rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  border: none;
+  font-family: var(--font-main);
+}
+
+.back-btn {
+  background-color: var(--white);
+  color: var(--text-gray);
+  border: 1px solid var(--border-color);
+}
+
+.back-btn:hover:not(:disabled) {
+  background-color: var(--bg-cream);
+  border-color: var(--text-gray);
+  color: var(--text-dark);
+}
+
+.back-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.next-btn {
+  background-color: var(--primary-green);
+  color: var(--white);
+}
+
+.next-btn:hover:not(:disabled) {
+  background-color: var(--dark-green);
+}
+
+.next-btn:disabled {
+  background-color: var(--border-color);
+  color: var(--text-gray);
+  cursor: not-allowed;
+}
+
+.room-counter {
+  font-size: 0.9rem;
+  color: var(--text-gray);
+  font-weight: 500;
 }
 
 .rooms-container {
