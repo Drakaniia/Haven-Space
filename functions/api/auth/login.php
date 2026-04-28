@@ -158,12 +158,12 @@ try {
         } else {
             RateLimiter::registerFailure($ip);
             http_response_code(401);
-            echo json_encode(['error' => 'Invalid email or password']);
+            echo json_encode(['error' => 'Account does not exist', 'message' => 'This account does not exist. Please sign up first.']);
         }
     } else {
         RateLimiter::registerFailure($ip);
         http_response_code(401);
-        echo json_encode(['error' => 'Invalid email or password']);
+        echo json_encode(['error' => 'Account does not exist', 'message' => 'This account does not exist. Please sign up first.']);
     }
 } catch (\Exception $e) {
     error_log('Login error: ' . $e->getMessage());
