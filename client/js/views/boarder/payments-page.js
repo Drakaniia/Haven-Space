@@ -5,12 +5,8 @@
 
 import CONFIG from '../../config.js';
 import { getIcon } from '../../shared/icons.js';
-import { getPaymentStatus, formatDaysRemaining } from './boarder-payments.js';
-import {
-  initBoarderAccessControl,
-  showProtectedEmptyState,
-  isFeatureReadonly,
-} from './access-control-init.js';
+import { getPaymentStatus } from './boarder-payments.js';
+import { initBoarderAccessControl, showProtectedEmptyState } from './access-control-init.js';
 
 /**
  * Get current user ID from localStorage

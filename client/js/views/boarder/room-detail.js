@@ -3,7 +3,6 @@
  * Handles room details display, gallery, and booking functionality
  */
 
-import { updateBoarderStatus } from '../../shared/routing.js';
 import { getImageUrl } from '../../shared/image-utils.js';
 import CONFIG from '../../config.js';
 import { initIconElements, getIcon } from '../../shared/icons.js';
@@ -41,16 +40,11 @@ export function initRoomDetail() {
  */
 async function setupPage() {
   try {
-    console.log('setupPage called, fetching data for room ID:', state.roomId);
-
     // Show loading state
     showLoadingState();
 
     // Fetch room data from API
-    console.log('Fetching from:', `${CONFIG.API_BASE_URL}/api/rooms/detail?id=${state.roomId}`);
     const response = await fetch(`${CONFIG.API_BASE_URL}/api/rooms/detail?id=${state.roomId}`);
-
-    console.log('Response status:', response.status);
 
     if (!response.ok) {
       if (response.status === 404) {
@@ -61,18 +55,13 @@ async function setupPage() {
     }
 
     const result = await response.json();
-    console.log('API response:', result);
     state.roomData = result.data;
 
     // Populate page with fetched data
-    console.log('Populating room data');
     populateRoomData(state.roomData);
     setupGallery();
     setupEventListeners(state.roomData);
-
-    console.log('Room detail page setup complete');
   } catch (error) {
-    console.error('Error loading room details:', error);
     showNotFound();
   }
 }
@@ -463,7 +452,6 @@ function initLeafletMap() {
 
   const mapContainer = document.getElementById('leaflet-map');
   if (!mapContainer) {
-    console.log('Leaflet map container not found');
     return;
   }
 
@@ -471,8 +459,6 @@ function initLeafletMap() {
     // Use room coordinates if available, otherwise use default coordinates (Quezon City, Philippines)
     const latitude = room && room.latitude ? room.latitude : 14.676;
     const longitude = room && room.longitude ? room.longitude : 121.0437;
-
-    console.log('Initializing map with coordinates:', latitude, longitude);
 
     // Initialize map centered on property location
     window.roomDetailMap = L.map('leaflet-map').setView([latitude, longitude], 15);
@@ -492,10 +478,8 @@ function initLeafletMap() {
       .addTo(window.roomDetailMap)
       .bindPopup(`<b>${markerTitle}</b><br>${markerAddress}`)
       .openPopup();
-
-    console.log('Leaflet map initialized successfully');
   } catch (error) {
-    console.error('Error initializing Leaflet map:', error);
+    console.error('Error in toggleView:', error);
   }
 }
 
@@ -505,31 +489,34 @@ function initLeafletMap() {
 function toggleView() {
   const gallerySection = document.querySelector('.room-detail-gallery');
   const mapSection = document.getElementById('room-map');
-  const toggleBtn = document.getElementById('toggle-view-btn');
-  const toggleText = toggleBtn.querySelector('.toggle-text');
-  const toggleIcon = toggleBtn.querySelector('span');
 
   if (gallerySection && mapSection) {
     const isMapVisible = mapSection.style.display === 'block';
+    const toggleText = document.getElementById('toggle-text');
+    const toggleIcon = document.getElementById('toggle-icon');
 
     if (isMapVisible) {
       // Switch to gallery view
       gallerySection.style.display = 'block';
       mapSection.style.display = 'none';
-      toggleText.textContent = 'Show Map';
+      if (toggleText) toggleText.textContent = 'Show Map';
 
       // Update icon to map
-      const mapIcon = getIcon('map', { width: 18, height: 18 });
-      toggleIcon.innerHTML = mapIcon;
+      if (toggleIcon) {
+        const mapIcon = getIcon('map', { width: 18, height: 18 });
+        toggleIcon.innerHTML = mapIcon;
+      }
     } else {
       // Switch to map view
       gallerySection.style.display = 'none';
       mapSection.style.display = 'block';
-      toggleText.textContent = 'Show Gallery';
+      if (toggleText) toggleText.textContent = 'Show Gallery';
 
       // Update icon to photo
-      const photoIcon = getIcon('photo', { width: 18, height: 18 });
-      toggleIcon.innerHTML = photoIcon;
+      if (toggleIcon) {
+        const photoIcon = getIcon('photo', { width: 18, height: 18 });
+        toggleIcon.innerHTML = photoIcon;
+      }
 
       // Initialize Leaflet map when shown
       setTimeout(() => {
@@ -591,8 +578,6 @@ function setupEventListeners(room) {
  * Handle Apply Now action
  */
 function handleApplyNow(room) {
-  console.log('handleApplyNow called', room);
-
   // Check if user is logged in
   const user = JSON.parse(localStorage.getItem('user') || '{}');
 
@@ -602,8 +587,6 @@ function handleApplyNow(room) {
     window.location.href = `../../public/auth/login.html?redirect=${redirectUrl}`;
     return;
   }
-
-  console.log('Redirecting to confirm-booking page');
 
   // Get selected room type and its price
   const selectedRoomType = document.querySelector('input[name="room-type"]:checked');
@@ -638,263 +621,6 @@ function handleApplyNow(room) {
   });
 
   window.location.href = `../confirm-booking/index.html?${params.toString()}`;
-}
-
-/**
- * Show application confirmation modal
- */
-function showApplicationModal(room) {
-  // Get selected room type
-  const selectedRoomType = document.querySelector('input[name="room-type"]:checked');
-  const roomType = selectedRoomType ? selectedRoomType.value : 'single';
-  const price = roomType === 'single' ? room.price : room.sharedPrice;
-
-  // Create modal overlay
-  const modalOverlay = document.createElement('div');
-  modalOverlay.className = 'application-modal-overlay';
-  modalOverlay.innerHTML = `
-    <div class="application-modal">
-      <div class="application-modal-header">
-        <div class="application-modal-icon">
-          <span data-icon="application" data-icon-width="24" data-icon-height="24"></span>
-        </div>
-        <h2 class="application-modal-title">Confirm Your Application</h2>
-        <p class="application-modal-subtitle">Review your application details before submitting</p>
-      </div>
-      
-      <div class="application-modal-body">
-        <div class="application-modal-info">
-          <div class="application-modal-info-item">
-            <span class="application-modal-info-label">Property</span>
-            <span class="application-modal-info-value">${room.title}</span>
-          </div>
-          <div class="application-modal-info-item">
-            <span class="application-modal-info-label">Room Type</span>
-            <span class="application-modal-info-value">${
-              roomType === 'single' ? 'Single Room' : 'Shared Room'
-            }</span>
-          </div>
-          <div class="application-modal-info-item">
-            <span class="application-modal-info-label">Monthly Rent</span>
-            <span class="application-modal-info-value">₱${price.toLocaleString()}</span>
-          </div>
-          <div class="application-modal-info-item">
-            <span class="application-modal-info-label">Deposit Required</span>
-            <span class="application-modal-info-value">${room.deposit}</span>
-          </div>
-        </div>
-
-        <div class="application-modal-message">
-          <h3 class="application-modal-message-title">
-            <span data-icon="informationCircle" data-icon-width="20" data-icon-height="20"></span>
-            What happens next?
-          </h3>
-          <p class="application-modal-message-text">
-            Your application will be sent to the landlord for review. You'll receive a notification once they respond. 
-            This typically takes 1-3 business days. You can continue browsing other properties while you wait.
-          </p>
-        </div>
-      </div>
-
-      <div class="application-modal-actions">
-        <button class="application-modal-btn application-modal-btn-secondary" id="modal-cancel-btn">
-          Cancel
-        </button>
-        <button class="application-modal-btn application-modal-btn-tertiary" id="modal-browse-btn">
-          <span data-icon="search" data-icon-width="18" data-icon-height="18"></span>
-          Browse More
-        </button>
-        <button class="application-modal-btn application-modal-btn-primary" id="modal-submit-btn">
-          <span data-icon="paperAirplane" data-icon-width="18" data-icon-height="18"></span>
-          Submit Application
-        </button>
-      </div>
-    </div>
-  `;
-
-  document.body.appendChild(modalOverlay);
-
-  // Trigger animation
-  requestAnimationFrame(() => {
-    modalOverlay.classList.add('active');
-  });
-
-  // Event listeners
-  const cancelBtn = modalOverlay.querySelector('#modal-cancel-btn');
-  const browseBtn = modalOverlay.querySelector('#modal-browse-btn');
-  const submitBtn = modalOverlay.querySelector('#modal-submit-btn');
-
-  // Cancel button - close modal
-  cancelBtn.addEventListener('click', () => {
-    closeModal(modalOverlay);
-  });
-
-  // Browse more button - close modal and stay on page
-  browseBtn.addEventListener('click', () => {
-    closeModal(modalOverlay);
-    // Optionally scroll to similar properties
-    const similarSection = document.querySelector('.similar-properties');
-    if (similarSection) {
-      similarSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
-    }
-  });
-
-  // Submit button - submit application
-  submitBtn.addEventListener('click', () => {
-    submitApplication(room, roomType, modalOverlay);
-  });
-
-  // Close on overlay click
-  modalOverlay.addEventListener('click', e => {
-    if (e.target === modalOverlay) {
-      closeModal(modalOverlay);
-    }
-  });
-}
-
-/**
- * Submit application
- */
-async function submitApplication(room, roomType, modalOverlay) {
-  const submitBtn = modalOverlay.querySelector('#modal-submit-btn');
-  submitBtn.classList.add('loading');
-  submitBtn.textContent = 'Submitting...';
-
-  try {
-    // Get form data
-    const messageInput = modalOverlay.querySelector('#application-message');
-    const moveInDateInput = modalOverlay.querySelector('#move-in-date');
-    const termsCheckbox = modalOverlay.querySelector('#terms-checkbox');
-
-    // Validate form
-    if (!termsCheckbox.checked) {
-      throw new Error('Please accept the terms and conditions');
-    }
-
-    if (!moveInDateInput.value) {
-      throw new Error('Please select a move-in date');
-    }
-
-    // Prepare application data
-    const applicationData = {
-      room_id: room.id,
-      landlord_id: room.landlord_id,
-      property_id: room.property_id,
-      message: `Move-in Date: ${moveInDateInput.value}\n\n${
-        messageInput.value || 'No additional message provided.'
-      }`,
-    };
-
-    // Get auth token
-    const user = JSON.parse(localStorage.getItem('user') || '{}');
-    if (!user.token) {
-      throw new Error('Authentication required. Please log in.');
-    }
-
-    // Submit to backend API
-    const response = await fetch(`${CONFIG.API_BASE_URL}/api/boarder/applications`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: `Bearer ${user.token}`,
-      },
-      credentials: 'include',
-      body: JSON.stringify(applicationData),
-    });
-
-    const result = await response.json();
-
-    if (!response.ok) {
-      throw new Error(result.error || 'Failed to submit application');
-    }
-
-    // Update boarder status
-    updateBoarderStatus('applied_pending');
-
-    // Show success state
-    showSuccessModal(room, modalOverlay);
-  } catch (error) {
-    console.error('Application submission error:', error);
-    submitBtn.classList.remove('loading');
-    submitBtn.innerHTML = `
-      <span data-icon="paperAirplane" data-icon-width="18" data-icon-height="18"></span>
-      Submit Application
-    `;
-    alert(error.message || 'Failed to submit application. Please try again.');
-  }
-}
-
-/**
- * Show success modal
- */
-function showSuccessModal(room, modalOverlay) {
-  const modal = modalOverlay.querySelector('.application-modal');
-  modal.classList.add('application-modal-success');
-  modal.innerHTML = `
-    <div class="application-modal-header">
-      <div class="application-modal-icon">
-        <span data-icon="checkCircle" data-icon-width="24" data-icon-height="24"></span>
-      </div>
-      <h2 class="application-modal-title">Application Submitted!</h2>
-      <p class="application-modal-subtitle">Your application has been sent to the landlord</p>
-    </div>
-    
-    <div class="application-modal-body">
-      <div class="application-modal-message">
-        <h3 class="application-modal-message-title">
-          <span data-icon="clock" data-icon-width="20" data-icon-height="20"></span>
-          What's next?
-        </h3>
-        <p class="application-modal-message-text">
-          The landlord will review your application and respond within 1-3 business days. 
-          You'll receive a notification when they make a decision. Feel free to continue browsing other properties!
-        </p>
-      </div>
-    </div>
-
-    <div class="application-modal-actions">
-      <button class="application-modal-btn application-modal-btn-tertiary" id="modal-browse-more-btn">
-        <span data-icon="search" data-icon-width="18" data-icon-height="18"></span>
-        Browse More Listings
-      </button>
-      <button class="application-modal-btn application-modal-btn-primary" id="modal-view-applications-btn">
-        <span data-icon="clipboardList" data-icon-width="18" data-icon-height="18"></span>
-        View My Applications
-      </button>
-    </div>
-  `;
-
-  // Event listeners for success modal
-  const browseMoreBtn = modal.querySelector('#modal-browse-more-btn');
-  const viewApplicationsBtn = modal.querySelector('#modal-view-applications-btn');
-
-  browseMoreBtn.addEventListener('click', () => {
-    closeModal(modalOverlay);
-    // Navigate to find a room page
-    const basePath = window.location.pathname.includes('github.io')
-      ? '/Haven-Space/client/views/public/find-a-room.html'
-      : '/views/public/find-a-room.html';
-    window.location.href = basePath;
-  });
-
-  viewApplicationsBtn.addEventListener('click', () => {
-    closeModal(modalOverlay);
-    // Navigate to applications page
-    const basePath = window.location.pathname.includes('github.io')
-      ? '/Haven-Space/client/views/boarder/applications/index.html'
-      : '/views/boarder/applications/index.html';
-    window.location.href = basePath;
-  });
-}
-
-/**
- * Close modal
- */
-function closeModal(modalOverlay) {
-  modalOverlay.classList.remove('active');
-  setTimeout(() => {
-    modalOverlay.remove();
-  }, 300);
 }
 
 /**
@@ -1064,18 +790,19 @@ function loadAvailableRooms(property) {
       const roomDescription = room.description || 'No description available';
       const roomSize = room.size ? `${room.size} sqm` : 'N/A';
       const furnishing = room.furnishing || 'Not specified';
+      const roomType = room.room_type || room.roomType || 'Room';
 
       return `
         <div class="available-room-card" data-room-id="${room.id}" data-room='${JSON.stringify(
         room
       ).replace(/'/g, '&apos;')}'>
           <div class="available-room-image-wrapper">
-            <img src="${roomImage}" alt="${room.roomType}" class="available-room-image" />
+            <img src="${roomImage}" alt="${roomType}" class="available-room-image" />
             <span class="available-room-status-badge ${statusClass}">${statusText}</span>
           </div>
           <div class="available-room-content">
             <div class="available-room-header">
-              <h3 class="available-room-type">${room.roomType}</h3>
+              <h3 class="available-room-type">${roomType}</h3>
               <div class="available-room-price">
                 <span class="available-room-price-amount">₱${room.price.toLocaleString()}</span>
                 <span class="available-room-price-period">/mo</span>
@@ -1123,7 +850,8 @@ function showRoomDetailModal(room, property) {
 
   // Populate modal with room data
   const modalTitle = document.getElementById('modal-room-title');
-  if (modalTitle) modalTitle.textContent = room.roomType;
+  const roomType = room.room_type || room.roomType || 'Room';
+  if (modalTitle) modalTitle.textContent = roomType;
 
   // Update status badge
   const statusBadge = document.getElementById('modal-room-status');
@@ -1144,8 +872,8 @@ function showRoomDetailModal(room, property) {
     capacity.textContent = `${room.capacity} ${room.capacity > 1 ? 'persons' : 'person'}`;
 
   // Update room type
-  const roomType = document.getElementById('modal-room-type');
-  if (roomType) roomType.textContent = room.roomType;
+  const modalRoomType = document.getElementById('modal-room-type');
+  if (modalRoomType) modalRoomType.textContent = roomType;
 
   // Update size
   const size = document.getElementById('modal-room-size');
@@ -1163,14 +891,16 @@ function showRoomDetailModal(room, property) {
   const mainImage = document.getElementById('modal-main-image');
   const thumbnailsContainer = document.getElementById('modal-thumbnails');
 
-  if (room.images && room.images.length > 0) {
+  const roomImages = room.images || [];
+
+  if (roomImages && roomImages.length > 0) {
     if (mainImage) {
-      mainImage.src = getImageUrl(room.images[0]);
-      mainImage.alt = room.roomType;
+      mainImage.src = getImageUrl(roomImages[0]);
+      mainImage.alt = roomType;
     }
 
     if (thumbnailsContainer) {
-      thumbnailsContainer.innerHTML = room.images
+      thumbnailsContainer.innerHTML = roomImages
         .map(
           (img, index) => `
           <img 
@@ -1188,7 +918,7 @@ function showRoomDetailModal(room, property) {
         thumb.addEventListener('click', () => {
           const index = parseInt(thumb.dataset.index);
           if (mainImage) {
-            mainImage.src = getImageUrl(room.images[index]);
+            mainImage.src = getImageUrl(roomImages[index]);
           }
           thumbnailsContainer
             .querySelectorAll('.room-modal-thumbnail')
@@ -1211,9 +941,11 @@ function showRoomDetailModal(room, property) {
   const amenitiesList = document.getElementById('modal-amenities-list');
   const amenitiesSection = document.getElementById('modal-room-amenities');
 
-  if (room.amenities && room.amenities.length > 0) {
+  const roomAmenities = room.amenities || [];
+
+  if (roomAmenities && roomAmenities.length > 0) {
     if (amenitiesList) {
-      amenitiesList.innerHTML = room.amenities
+      amenitiesList.innerHTML = roomAmenities
         .map(amenity => {
           const amenityName = typeof amenity === 'string' ? amenity : amenity.label;
           const amenityIcon = typeof amenity === 'object' ? amenity.icon : 'check';
@@ -1244,42 +976,29 @@ function showRoomDetailModal(room, property) {
 /**
  * Setup room modal event listeners
  */
-function setupRoomModalListeners(room, property, modal) {
+function setupRoomModalListeners(room, property, _modal) {
+  // Get the modal overlay
+  const modalOverlay = document.getElementById('room-detail-modal');
+
   // Close button
   const closeBtn = document.getElementById('close-room-modal');
-  const closeModalBtn = document.getElementById('modal-close-btn');
-
-  const closeHandler = () => {
-    modal.classList.remove('active');
-  };
-
   if (closeBtn) {
-    closeBtn.replaceWith(closeBtn.cloneNode(true));
-    document.getElementById('close-room-modal').addEventListener('click', closeHandler);
-  }
-
-  if (closeModalBtn) {
-    closeModalBtn.replaceWith(closeModalBtn.cloneNode(true));
-    document.getElementById('modal-close-btn').addEventListener('click', closeHandler);
+    closeBtn.addEventListener('click', () => {
+      modalOverlay.classList.remove('active');
+    });
   }
 
   // Close on overlay click
-  modal.replaceWith(modal.cloneNode(true));
-  const newModal = document.getElementById('room-detail-modal');
-
-  newModal.addEventListener('click', e => {
-    if (e.target === newModal) {
-      newModal.classList.remove('active');
+  modalOverlay.addEventListener('click', e => {
+    if (e.target === modalOverlay) {
+      modalOverlay.classList.remove('active');
     }
   });
 
   // Apply button
   const applyBtn = document.getElementById('modal-apply-btn');
   if (applyBtn) {
-    applyBtn.replaceWith(applyBtn.cloneNode(true));
-    document.getElementById('modal-apply-btn').addEventListener('click', () => {
-      newModal.classList.remove('active');
-
+    applyBtn.addEventListener('click', () => {
       // Check if user is logged in
       const user = JSON.parse(localStorage.getItem('user') || '{}');
 
@@ -1289,6 +1008,9 @@ function setupRoomModalListeners(room, property, modal) {
         return;
       }
 
+      // Get room type from the correct property
+      const roomType = room.room_type || room.roomType || 'Room';
+
       // Redirect to confirm-booking page with room details
       const params = new URLSearchParams({
         id: property.id || state.roomId,
@@ -1296,26 +1018,10 @@ function setupRoomModalListeners(room, property, modal) {
         price: room.price,
         address: property.address || '',
         landlordName: property.landlord?.name || 'Property Owner',
-        roomType: room.roomType,
+        roomType: roomType,
       });
 
       window.location.href = `../confirm-booking/index.html?${params.toString()}`;
-    });
-  }
-
-  // Re-setup close handlers for the new modal
-  const newCloseBtn = document.getElementById('close-room-modal');
-  const newCloseModalBtn = document.getElementById('modal-close-btn');
-
-  if (newCloseBtn) {
-    newCloseBtn.addEventListener('click', () => {
-      newModal.classList.remove('active');
-    });
-  }
-
-  if (newCloseModalBtn) {
-    newCloseModalBtn.addEventListener('click', () => {
-      newModal.classList.remove('active');
     });
   }
 }

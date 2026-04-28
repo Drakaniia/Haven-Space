@@ -3,12 +3,7 @@
  */
 
 import { authenticatedFetch, getState, setState } from '../../shared/state.js';
-import {
-  getDisplayName,
-  getUserInitials,
-  getAvatarUrl,
-  fetchAndUpdateProfile,
-} from '../../shared/profile-utils.js';
+import { getDisplayName, getAvatarUrl, fetchAndUpdateProfile } from '../../shared/profile-utils.js';
 import CONFIG from '../../config.js';
 
 /**

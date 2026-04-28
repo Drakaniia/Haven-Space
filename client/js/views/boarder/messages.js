@@ -322,23 +322,6 @@ function renderAttachments(attachments) {
 }
 
 /**
- * Mark conversation as read
- */
-async function markAsRead(conversationId) {
-  try {
-    await fetch(`${API_BASE_URL}/api/messages/conversations/${conversationId}/read`, {
-      method: 'PUT',
-      headers: {
-        'Content-Type': 'application/json',
-        'X-User-Id': getCurrentUserId(),
-      },
-    });
-  } catch (error) {
-    console.error('Error marking as read:', error);
-  }
-}
-
-/**
  * Handle conversation switching
  */
 function initConversationSwitching() {
