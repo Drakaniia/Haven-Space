@@ -3,19 +3,16 @@
  * Shows applications, saved properties, and search functionality
  */
 
-import { getIcon } from '../../shared/icons.js';
-import { updateBoarderStatus } from '../../shared/routing.js';
 import { initSidebar } from '../../components/sidebar.js';
 import { initNavbar } from '../../components/navbar.js';
 import { authenticatedFetch } from '../../shared/state.js';
+import { getIcon } from '../../shared/icons.js';
 import CONFIG from '../../config.js';
 
 /**
  * Initialize the applications dashboard
  */
 export async function initApplicationsDashboard() {
-  console.log('Initializing Applications Dashboard');
-
   // Initialize sidebar and navbar
   initializeComponents();
 

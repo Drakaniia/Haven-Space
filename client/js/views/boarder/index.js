@@ -4,7 +4,7 @@
  * Initializes sidebar, navbar, and loads dashboard data for boarder views
  */
 
-import CONFIG from '../../config.js';
+import '../../config.js';
 import { initSidebar } from '../../components/sidebar.js';
 import { initNavbar } from '../../components/navbar.js';
 import { loadDashboardData } from './dashboard.js';
@@ -13,7 +13,6 @@ import { initBoarderFindARoom } from './boarder-find-a-room-auth.js';
 import { initLeasePage } from './lease.js';
 import { initPaymentPage } from './boarder-payment-process.js';
 import { initSettingsPage } from './settings.js';
-import { getAuthHeadersOnly } from '../../shared/auth-headers.js';
 import { initAnnouncements } from './announcements.js';
 import { initDashboardMap } from './dashboard-map.js';
 import { initHouseRulesPage } from './house-rules.js';
@@ -77,8 +76,6 @@ export async function initBoarderDashboard() {
     window.location.href = loginPath();
     return;
   }
-
-  console.log('Boarder authenticated:', user);
 
   // Initialize profile data first
   await initDashboard();

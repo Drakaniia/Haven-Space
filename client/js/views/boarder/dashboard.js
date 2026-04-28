@@ -227,8 +227,7 @@ function initializeApplicationTracker() {
 
   viewDetailButtons.forEach(btn => {
     btn.addEventListener('click', () => {
-      const appCard = btn.closest('.boarder-application-card');
-      const appName = appCard?.querySelector('.boarder-application-name')?.textContent || '';
+      btn.closest('.boarder-application-card');
 
       // Show notification that this feature is not yet implemented
       showNotification('Application details feature coming soon', 'info');
@@ -237,8 +236,10 @@ function initializeApplicationTracker() {
 
   actionButtons.forEach(btn => {
     btn.addEventListener('click', () => {
-      const appCard = btn.closest('.boarder-application-card');
-      const appName = appCard?.querySelector('.boarder-application-name')?.textContent || '';
+      btn.closest('.boarder-application-card');
+      const appName =
+        btn.closest('.boarder-application-card')?.querySelector('.boarder-application-name')
+          ?.textContent || '';
       const action = btn.textContent.trim();
 
       if (action === 'Sign Contract') {

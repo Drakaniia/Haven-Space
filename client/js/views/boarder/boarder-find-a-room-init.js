@@ -34,8 +34,6 @@ function handleGoogleOAuthRedirect() {
         window.location.pathname + window.location.search
       );
 
-      console.log('Google OAuth user data stored in localStorage:', userData);
-
       return userData; // Return the user data for immediate use
     }
   } catch (error) {
@@ -155,8 +153,6 @@ function initHeaderHoverBehavior() {
 
   // Start with header hidden (let the existing hover system handle it)
   header.classList.remove('show');
-
-  console.log('Header hover behavior initialized for boarder user');
 }
 
 /**
@@ -190,7 +186,6 @@ function ensureDropdownsWork() {
       e.stopPropagation();
       e.preventDefault();
       statusDropdownMenu.classList.toggle('show');
-      console.log('Status dropdown toggled:', statusDropdownMenu.classList.contains('show'));
     });
 
     // Close button
@@ -210,8 +205,6 @@ function ensureDropdownsWork() {
         statusDropdownMenu.classList.remove('show');
       }
     });
-
-    console.log('Status dropdown initialized successfully');
   } else {
     console.warn('Status dropdown elements not found:', {
       btn: !!statusDropdownBtn,
@@ -237,7 +230,6 @@ function ensureDropdownsWork() {
       e.stopPropagation();
       e.preventDefault();
       profileDropdownMenu.classList.toggle('show');
-      console.log('Profile dropdown toggled:', profileDropdownMenu.classList.contains('show'));
     });
 
     // Re-attach logout handler after cloning (cloning removes all event listeners)
@@ -291,8 +283,6 @@ function ensureDropdownsWork() {
         profileDropdownMenu.classList.remove('show');
       }
     });
-
-    console.log('Profile dropdown initialized successfully');
   } else {
     console.warn('Profile dropdown elements not found:', {
       btn: !!profileDropdownBtn,
@@ -415,7 +405,6 @@ function updateUserProfile(user) {
 function addStatusToProfileDropdown(user) {
   const profileMenuHeader = document.querySelector('.find-room-profile-menu-header');
   if (!profileMenuHeader) {
-    console.log('Profile menu header not found');
     return;
   }
 
@@ -446,8 +435,6 @@ function addStatusToProfileDropdown(user) {
     // Insert right after header
     profileMenuHeader.parentNode.insertBefore(statusEl, profileMenuHeader.nextSibling);
   }
-
-  console.log('Status added to profile dropdown:', boarderStatus);
 }
 
 /**

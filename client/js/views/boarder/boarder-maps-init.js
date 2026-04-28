@@ -43,7 +43,7 @@ function drawRadiusCircle(radius) {
     dashArray: '5, 5',
   }).addTo(map);
 
-  console.log(`Drew radius circle: ${radius}m around location:`, location);
+  // console.log(`Drew radius circle: ${radius}m around location:`, location);
 }
 
 /**
@@ -140,7 +140,7 @@ async function initMap() {
   // Draw initial radius circle (500m by default)
   drawRadiusCircle(currentDistanceFilter);
 
-  console.log('Map initialized at:', defaultLocation);
+  // console.log('Map initialized at:', defaultLocation);
 }
 
 /**
@@ -148,7 +148,7 @@ async function initMap() {
  */
 async function loadProperties() {
   try {
-    console.log('Loading properties from API...');
+    // console.log('Loading properties from API...');
 
     // Show loading state
     updatePropertiesList([]);
@@ -167,10 +167,10 @@ async function loadProperties() {
     }
 
     const result = await response.json();
-    console.log('API Response:', result);
+    // console.log('API Response:', result);
 
     const properties = result.data?.properties || [];
-    console.log(`Loaded ${properties.length} properties`);
+    // console.log(`Loaded ${properties.length} properties`);
 
     // Filter properties that have location data
     allProperties = properties
@@ -194,7 +194,7 @@ async function loadProperties() {
         province: p.province || '',
       }));
 
-    console.log(`Filtered to ${allProperties.length} properties with location data`);
+    // console.log(`Filtered to ${allProperties.length} properties with location data`);
 
     // Calculate distances from user location
     if (currentUser?.location) {
@@ -216,7 +216,7 @@ async function loadProperties() {
     addPropertyMarkers(filteredProperties);
     updatePropertiesList(filteredProperties);
 
-    console.log('Properties loaded and displayed successfully');
+    // console.log('Properties loaded and displayed successfully');
   } catch (error) {
     console.error('Failed to load properties:', error);
 
@@ -289,7 +289,7 @@ async function loadUserData() {
       appliedRooms = (appliedData.data?.applications || []).map(a => a.property_id || a.room_id);
     }
 
-    console.log('User data loaded:', { savedRooms, appliedRooms });
+    // console.log('User data loaded:', { savedRooms, appliedRooms });
   } catch (error) {
     console.warn('Failed to load user data:', error);
   }
@@ -316,7 +316,7 @@ function addPropertyMarkers(properties) {
   markers.forEach(marker => map.removeLayer(marker));
   markers = [];
 
-  console.log(`Adding ${properties.length} markers to map`);
+  // console.log(`Adding ${properties.length} markers to map`);
 
   properties.forEach(property => {
     // Determine marker type
@@ -341,7 +341,7 @@ function addPropertyMarkers(properties) {
     markers.push(marker);
   });
 
-  console.log(`Added ${markers.length} markers to map`);
+  // console.log(`Added ${markers.length} markers to map`);
 }
 
 /**
@@ -511,7 +511,7 @@ function setupEventListeners() {
     });
   });
 
-  console.log('Event listeners setup complete');
+  // console.log('Event listeners setup complete');
 }
 
 /**
@@ -525,13 +525,13 @@ function performSearch() {
     cb => cb.value
   );
 
-  console.log('Performing search with filters:', {
-    searchTerm,
-    priceRange,
-    propertyType,
-    amenities,
-    currentDistanceFilter,
-  });
+  // console.log('Performing search with filters:', {
+  //   searchTerm,
+  //   priceRange,
+  //   propertyType,
+  //   amenities,
+  //   currentDistanceFilter,
+  // });
 
   // Start with all properties
   let filtered = [...allProperties];
@@ -570,7 +570,7 @@ function performSearch() {
     );
   }
 
-  console.log(`Filtered to ${filtered.length} properties`);
+  // console.log(`Filtered to ${filtered.length} properties`);
 
   // Update results
   filteredProperties = filtered;
@@ -590,7 +590,7 @@ function filterByTab(tab) {
     filtered = filtered.filter(p => appliedRooms.includes(p.id));
   }
 
-  console.log(`Tab filter '${tab}': ${filtered.length} properties`);
+  // console.log(`Tab filter '${tab}': ${filtered.length} properties`);
 
   filteredProperties = filtered;
   updatePropertiesList(filtered);
@@ -776,7 +776,7 @@ function getUserLocation() {
           lng: position.coords.longitude,
         };
 
-        console.log('User location obtained:', userLocation);
+        // console.log('User location obtained:', userLocation);
 
         // Center map on user location
         map.setView([userLocation.lat, userLocation.lng], 15);
@@ -815,17 +815,17 @@ function getUserLocation() {
 
 // Global functions for popup and card buttons
 window.viewProperty = id => {
-  console.log('View property:', id);
+  // console.log('View property:', id);
   window.location.href = `../rooms/detail.html?id=${id}`;
 };
 
 window.viewApplication = id => {
-  console.log('View application:', id);
+  // console.log('View application:', id);
   window.location.href = `../applications/index.html?id=${id}`;
 };
 
 window.saveProperty = async id => {
-  console.log('Toggle save property:', id);
+  // console.log('Toggle save property:', id);
 
   try {
     const isSaved = savedRooms.includes(id);

@@ -8,9 +8,6 @@ import { initSidebar } from '../../components/sidebar.js';
 import { initNavbar } from '../../components/navbar.js';
 import { initBoarderAccessControl, showProtectedEmptyState } from './access-control-init.js';
 
-// TODO: Integrate with backend API for lease data
-const API_BASE_URL = 'http://localhost:8000'; // TODO: Replace with actual API base URL
-
 function loginPath() {
   const pathname = window.location.pathname;
   if (pathname.includes('github.io')) {
@@ -124,8 +121,6 @@ async function fetchLeaseData() {
   try {
     const userId = localStorage.getItem('user_id') || '3';
     const token = localStorage.getItem('token');
-    console.log('[Lease] Fetching lease data for user ID:', userId);
-    console.log('[Lease] Token available:', !!token);
 
     const headers = {
       'Content-Type': 'application/json',
@@ -144,28 +139,19 @@ async function fetchLeaseData() {
       credentials: 'include',
     });
 
-    console.log('[Lease] Response status:', response.status, response.statusText);
-
     if (!response.ok) {
-      const errorText = await response.text();
-      console.error('[Lease] API error response:', errorText);
+      await response.text();
       throw new Error(`Failed to fetch lease data: ${response.status}`);
     }
 
     const result = await response.json();
-    console.log('[Lease] API response:', result);
 
     if (result.success && result.data) {
-      console.log('[Lease] Rendering lease details');
       renderLeaseDetails(result.data);
     } else {
-      console.log('[Lease] No lease data returned. Message:', result.message);
-      console.log('[Lease] Full result object:', JSON.stringify(result, null, 2));
       showNoLeaseState();
     }
   } catch (error) {
-    console.error('[Lease] Error fetching lease data:', error);
-    console.error('[Lease] Error stack:', error.stack);
     showNoLeaseState();
   }
 }

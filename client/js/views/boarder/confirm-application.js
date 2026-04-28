@@ -92,15 +92,6 @@ async function loadPropertyData() {
 }
 
 /**
- * Use fallback data for development
- */
-function useFallbackData() {
-  // No longer using hardcoded fallback - show error instead
-  alert('Failed to load property details. Please try again.');
-  window.location.href = `./detail.html?id=${state.propertyId}`;
-}
-
-/**
  * Populate property data into the page
  */
 function populatePropertyData(property) {
@@ -334,7 +325,7 @@ async function handleSubmit(e) {
   }
 
   // Get user info
-  const user = JSON.parse(localStorage.getItem('user') || '{}');
+  JSON.parse(localStorage.getItem('user') || '{}');
 
   // Get the selected room details to extract room_id
   const selectedRoomTypeInput = document.querySelector('input[name="room-type"]:checked');

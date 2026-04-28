@@ -336,8 +336,6 @@ async function handleSubmitApplication(application) {
       }`,
     };
 
-    console.log('Submitting application:', apiApplicationData);
-
     // Submit application to backend API
     const response = await fetch(`${CONFIG.API_BASE_URL}/api/boarder/applications`, {
       method: 'POST',
@@ -354,8 +352,6 @@ async function handleSubmitApplication(application) {
     if (!response.ok) {
       throw new Error(result.error || 'Failed to submit application');
     }
-
-    console.log('Application submitted successfully:', result);
 
     // Update boarder status to applied_pending
     updateBoarderStatus('applied_pending');
@@ -704,54 +700,6 @@ function formatDate(dateString) {
     month: 'long',
     day: 'numeric',
   });
-}
-
-/**
- * Update UI based on application status (pending vs accepted)
- * @param {Object} application - Application object
- */
-function _updateUIForStatus(application) {
-  const title = document.querySelector('.confirm-booking-title');
-  const subtitle = document.querySelector('.confirm-booking-subtitle');
-  const acceptBtn = document.getElementById('confirm-accept-btn');
-  const termsSection = document.querySelector('.confirm-booking-terms');
-
-  if (application.status === 'pending') {
-    // Pending application - show waiting message
-    if (title) {
-      title.textContent = 'Application Pending';
-    }
-    if (subtitle) {
-      subtitle.textContent =
-        'Your application is still under review. Please wait for the landlord to respond.';
-    }
-
-    // Disable accept button and hide terms section for pending applications
-    if (acceptBtn) {
-      acceptBtn.disabled = true;
-      acceptBtn.textContent = 'Waiting for Landlord';
-    }
-    if (termsSection) {
-      termsSection.style.display = 'none';
-    }
-  } else if (application.status === 'accepted') {
-    // Accepted application - show confirmation UI
-    if (title) {
-      title.textContent = "You've Been Accepted!";
-    }
-    if (subtitle) {
-      subtitle.textContent =
-        'The landlord has accepted your application. Ready to make it official?';
-    }
-
-    // Enable accept button (subject to terms checkbox)
-    if (acceptBtn) {
-      acceptBtn.textContent = 'Confirm Booking';
-    }
-    if (termsSection) {
-      termsSection.style.display = 'block';
-    }
-  }
 }
 
 /**

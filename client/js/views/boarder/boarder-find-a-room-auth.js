@@ -3,8 +3,6 @@
  * Handles property search, filtering, and application status display for logged-in boarders
  */
 
-import { getIcon } from '../../shared/icons.js';
-import { getBoarderStatus } from '../../shared/routing.js';
 import { getImageUrl, getImageErrorHandler } from '../../shared/image-utils.js';
 import CONFIG from '../../config.js';
 
@@ -299,7 +297,6 @@ function setupSearchAndFilters() {
   if (loadMoreBtn) {
     loadMoreBtn.addEventListener('click', () => {
       // TODO: Implement pagination
-      console.log('Load more properties');
     });
   }
 

@@ -43,7 +43,7 @@ function isProtectedPage() {
   }
 
   // Check if page is in protected features
-  for (const [feature, pages] of Object.entries(PROTECTED_FEATURES)) {
+  for (const [, pages] of Object.entries(PROTECTED_FEATURES)) {
     if (pages.some(page => currentPath.includes(page))) {
       return true;
     }
