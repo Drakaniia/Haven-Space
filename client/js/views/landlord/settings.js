@@ -75,7 +75,7 @@ function populateProfileForm(user) {
   if (!user) return;
   const set = (id, val) => {
     const el = document.getElementById(id);
-    if (el && val != null) el.value = val;
+    if (el && val !== null) el.value = val;
   };
   set('first-name', user.first_name);
   set('last-name', user.last_name);

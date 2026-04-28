@@ -57,9 +57,6 @@ export function initLandlordDashboard(config = {}) {
     // Load properties
     loadProperties();
 
-    // Initialize edit property modal handlers
-    initEditPropertyModal();
-
     // Dynamically import and initialize applications only on dashboard
     import('./landlord-applications.js').then(({ initLandlordApplications }) => {
       initLandlordApplications();
@@ -198,10 +195,9 @@ function _showErrorState() {
 
 /**
  * Send payment reminder to tenant
- * @param {number} paymentId - Payment ID
- * @param {string} tenantName - Tenant's name
+ * @param {number} _paymentId - Payment ID
  */
-export async function sendPaymentReminder(paymentId, tenantName) {
+export async function sendPaymentReminder(_paymentId) {
   // TODO: Implement API call to send payment reminder
   // Example:
   // try {
@@ -220,17 +216,16 @@ export async function sendPaymentReminder(paymentId, tenantName) {
 
 /**
  * Record a payment
- * @param {number} paymentId - Payment ID
- * @param {Object} paymentData - Payment information
+ * @param {number} _paymentId - Payment ID
  */
-export async function recordPayment(paymentId, paymentData) {
+export async function recordPayment(_paymentId) {
   // TODO: Implement API call to record payment
   // Example:
   // try {
   //   const response = await fetch('/api/payments/record', {
   //     method: 'POST',
   //     headers: { 'Content-Type': 'application/json' },
-  //     body: JSON.stringify({ paymentId, ...paymentData })
+  //     body: JSON.stringify({ paymentId })
   //   });
   //   const result = await response.json();
   //   showNotification('Payment recorded successfully', 'success');
@@ -243,9 +238,9 @@ export async function recordPayment(paymentId, paymentData) {
 
 /**
  * Approve rental application
- * @param {number} applicationId - Application ID
+ * @param {number} _applicationId - Application ID
  */
-export async function approveApplication(applicationId) {
+export async function approveApplication(_applicationId) {
   // TODO: Implement API call to approve application
   // Example:
   // try {
@@ -265,17 +260,16 @@ export async function approveApplication(applicationId) {
 
 /**
  * Reject rental application
- * @param {number} applicationId - Application ID
- * @param {string} reason - Rejection reason
+ * @param {number} _applicationId - Application ID
  */
-export async function rejectApplication(applicationId, reason = '') {
+export async function rejectApplication(_applicationId) {
   // TODO: Implement API call to reject application
   // Example:
   // try {
   //   const response = await fetch('/api/applications/reject', {
   //     method: 'POST',
   //     headers: { 'Content-Type': 'application/json' },
-  //     body: JSON.stringify({ applicationId, reason })
+  //     body: JSON.stringify({ applicationId })
   //   });
   //   const result = await response.json();
   //   showNotification('Application rejected', 'success');
@@ -284,15 +278,6 @@ export async function rejectApplication(applicationId, reason = '') {
   //   console.error('Failed to reject application:', error);
   //   showNotification('Failed to reject application', 'error');
   // }
-}
-
-/**
- * Show notification toast
- * @param {string} message - Notification message
- * @param {string} type - Notification type (success, error, warning, info)
- */
-function _showNotification(message, type = 'info') {
-  // TODO: Implement notification toast UI
 }
 
 /**
@@ -816,14 +801,12 @@ function createPropertyCard(property) {
           </div>
         </div>
         <div class="landlord-property-actions">
-          <button
-            type="button"
+          <a
+            href="listings/edit.html?id=${property.id}"
             class="landlord-btn landlord-btn-outline landlord-btn-sm"
-            data-action="edit-property"
-            data-id="${property.id}"
           >
             Edit
-          </button>
+          </a>
           <a
             href="boarders/index.html?propertyId=${property.id}"
             class="landlord-btn landlord-btn-outline landlord-btn-sm"
@@ -861,152 +844,4 @@ function renderErrorPropertiesState(container) {
       <p style="color: var(--text-gray);">Unable to load properties. Please try again later.</p>
     </div>
   `;
-}
-
-let currentEditProperty = null;
-
-function initEditPropertyModal() {
-  const editModal = document.getElementById('edit-property-modal');
-  if (!editModal) return;
-
-  const closeBtn = document.getElementById('edit-modal-close');
-  const cancelBtn = document.getElementById('edit-cancel');
-  const overlay = editModal.querySelector('.modal-overlay');
-  const form = document.getElementById('edit-property-form');
-
-  if (closeBtn) {
-    closeBtn.addEventListener('click', closeEditModal);
-  }
-  if (cancelBtn) {
-    cancelBtn.addEventListener('click', closeEditModal);
-  }
-  if (overlay) {
-    overlay.addEventListener('click', closeEditModal);
-  }
-  if (form) {
-    form.addEventListener('submit', savePropertyChanges);
-  }
-
-  document.addEventListener('keydown', e => {
-    if (e.key === 'Escape' && editModal.classList.contains('active')) {
-      closeEditModal();
-    }
-  });
-
-  document.addEventListener('click', e => {
-    const btn = e.target.closest('[data-action="edit-property"], [data-action="edit"]');
-    if (btn && btn.dataset.id) {
-      const propertyId = parseInt(btn.dataset.id);
-
-      // Navigate to edit page for listings
-      if (window.location.pathname.includes('/listings/')) {
-        window.location.href = `edit.html?id=${propertyId}`;
-        return;
-      }
-
-      openEditModal(propertyId);
-    }
-  });
-}
-
-async function openEditModal(propertyId) {
-  const editModal = document.getElementById('edit-property-modal');
-  if (!editModal) return;
-
-  try {
-    const response = await fetch(
-      `${CONFIG.API_BASE_URL}/api/landlord/properties?id=${propertyId}`,
-      {
-        headers: getAuthHeaders(),
-        credentials: 'include',
-      }
-    );
-
-    if (!response.ok) {
-      throw new Error('Failed to fetch property');
-    }
-
-    const result = await response.json();
-    const property = result.data || result;
-
-    currentEditProperty = property;
-
-    document.getElementById('edit-property-name').value = property.name || '';
-    document.getElementById('edit-property-type').value = property.type || 'boarding-house';
-    document.getElementById('edit-property-description').value = property.description || '';
-    document.getElementById('edit-property-price').value = property.price || 0;
-    document.getElementById('edit-property-rooms').value = property.total_rooms || 0;
-    document.getElementById('edit-property-status').value = property.status || 'active';
-    document.getElementById('edit-property-address').value = property.address || '';
-    document.getElementById('edit-property-city').value = property.city || '';
-    document.getElementById('edit-property-province').value = property.province || '';
-
-    const amenityCheckboxes = editModal.querySelectorAll('input[name="editAmenities"]');
-    const currentAmenities = property.amenities || [];
-    amenityCheckboxes.forEach(checkbox => {
-      checkbox.checked = currentAmenities.includes(checkbox.value);
-    });
-
-    editModal.classList.add('active');
-    document.body.style.overflow = 'hidden';
-  } catch (error) {
-    console.error('Failed to load property for edit:', error);
-    alert('Failed to load property details. Please try again.');
-  }
-}
-
-function closeEditModal() {
-  const editModal = document.getElementById('edit-property-modal');
-  if (!editModal) return;
-  editModal.classList.remove('active');
-  document.body.style.overflow = '';
-  currentEditProperty = null;
-}
-
-async function savePropertyChanges(event) {
-  event.preventDefault();
-
-  if (!currentEditProperty) return;
-
-  const form = event.target;
-  const formData = new FormData(form);
-
-  const amenityCheckboxes = form.querySelectorAll('input[name="editAmenities"]:checked');
-  const selectedAmenities = Array.from(amenityCheckboxes).map(cb => cb.value);
-
-  const updatedData = {
-    name: formData.get('propertyName'),
-    type: formData.get('propertyType'),
-    description: formData.get('propertyDescription'),
-    price: parseFloat(formData.get('propertyPrice')) || 0,
-    total_rooms: parseInt(formData.get('propertyRooms')) || 0,
-    status: formData.get('propertyStatus'),
-    address: formData.get('propertyAddress'),
-    city: formData.get('propertyCity'),
-    province: formData.get('propertyProvince'),
-    amenities: selectedAmenities,
-  };
-
-  try {
-    const response = await fetch(
-      `${CONFIG.API_BASE_URL}/api/landlord/properties?id=${currentEditProperty.id}`,
-      {
-        method: 'PUT',
-        credentials: 'include',
-        headers: getAuthHeaders(),
-        body: JSON.stringify(updatedData),
-      }
-    );
-
-    if (!response.ok) {
-      throw new Error('Failed to update property');
-    }
-
-    closeEditModal();
-    loadProperties();
-    alert(`Property "${updatedData.name}" has been updated successfully.`);
-  } catch (error) {
-    console.error('Failed to update property:', error);
-    alert('Failed to update property. Please try again.');
-  }
 }

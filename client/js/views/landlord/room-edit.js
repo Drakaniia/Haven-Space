@@ -156,8 +156,16 @@ function buildRoomCard(room) {
        </div>`
     : '';
 
+  // Use cover_photo if available, otherwise use placeholder
+  const imageUrl = room.cover_photo || '../../../assets/images/placeholder-room.svg';
+  const imageStyle = room.cover_photo
+    ? `background-image: url('${escHtml(
+        imageUrl
+      )}'); background-size: cover; background-position: center;`
+    : `background-image: url('${imageUrl}'); background-size: contain; background-position: center; background-repeat: no-repeat; background-color: var(--bg-secondary);`;
+
   card.innerHTML = `
-    <div class="room-card-image">
+    <div class="room-card-image" style="${imageStyle}">
       <span class="room-status ${statusClass}">${statusLabel}</span>
     </div>
     <div class="room-card-body">

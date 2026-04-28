@@ -6,7 +6,7 @@
 import CONFIG from '../../config.js';
 import { getIcon } from '../../shared/icons.js';
 import { getAuthHeaders } from '../../shared/state.js';
-import { getImageUrl, setImageWithFallback } from '../../shared/image-utils.js';
+import { setImageWithFallback } from '../../shared/image-utils.js';
 import { initSidebar } from '../../components/sidebar.js';
 import { initLandlordPermissions } from '../../shared/permissions.js';
 import { initNavbar, updateNavbarNotifications } from '../../components/navbar.js';
@@ -60,10 +60,7 @@ async function fetchPropertyData(userId) {
     );
     const profileData = await profileRes.json();
 
-    console.log('Profile API response:', profileData);
-
     if (!profileData.success) {
-      console.error('Profile API failed:', profileData.error);
       // Check if profile doesn't exist (404)
       if (profileRes.status === 404) {
         return { profileNotFound: true };
@@ -82,9 +79,8 @@ async function fetchPropertyData(userId) {
         }
       );
       locationData = await locationRes.json();
-      console.log('Location API response:', locationData);
     } catch (locationError) {
-      console.warn('Failed to fetch location data:', locationError);
+      // Empty catch block is intentional
     }
 
     // Combine profile and location data into property structure
@@ -105,10 +101,8 @@ async function fetchPropertyData(userId) {
       createdAt: new Date().toISOString().split('T')[0],
     };
 
-    console.log('Combined property data:', property);
     return property;
   } catch (error) {
-    console.error('Error fetching property data:', error);
     return null;
   }
 }
@@ -247,11 +241,9 @@ async function loadProperties(userId) {
       credentials: 'include',
     });
 
-    let hasFullProperties = false;
     if (propertiesRes.ok) {
       const propertiesData = await propertiesRes.json();
       if (propertiesData.success && propertiesData.data.properties.length > 0) {
-        hasFullProperties = true;
         const mappedProperties = propertiesData.data.properties.map(prop => ({
           id: prop.id,
           name: prop.name,
