@@ -35,7 +35,7 @@ class ApplicationRepository
                 JOIN rooms r ON app.room_id = r.id
                 JOIN properties prop ON r.property_id = prop.id
                 JOIN addresses addr ON prop.address_id = addr.id
-                JOIN users u ON app.landlord_id = u.id
+                JOIN users u ON prop.landlord_id = u.id
                 WHERE app.boarder_id = ? AND app.deleted_at IS NULL
                 ORDER BY app.created_at DESC';
 
@@ -56,7 +56,7 @@ class ApplicationRepository
                               CASE WHEN addr.address_line_2 IS NOT NULL THEN CONCAT(", ", addr.address_line_2) ELSE "" END,
                               ", ", addr.city, ", ", addr.province) as property_address,
                        prop.id as property_id,
-                       u.first_name, u.last_name, u.email as boarder_email
+                       u.first_name, u.last_name, u.email
                 FROM applications a
                 JOIN rooms r ON a.room_id = r.id
                 JOIN properties prop ON r.property_id = prop.id

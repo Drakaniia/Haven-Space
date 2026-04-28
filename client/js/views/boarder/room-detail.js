@@ -365,6 +365,9 @@ function populateRoomData(room) {
   // Initialize icons
   initIconElements();
 
+  // Load available rooms
+  loadAvailableRooms(room);
+
   // Load similar properties
   loadSimilarProperties(room.id);
 }
@@ -1021,6 +1024,299 @@ async function loadSimilarProperties(propertyId) {
   } catch (error) {
     console.error('Error loading similar properties:', error);
     // If there's an error, keep the hardcoded properties or show nothing
+  }
+}
+
+/**
+ * Load available rooms for the property
+ */
+function loadAvailableRooms(property) {
+  const roomsGrid = document.getElementById('available-rooms-grid');
+  if (!roomsGrid) return;
+
+  // Check if property has rooms data
+  if (!property.rooms || property.rooms.length === 0) {
+    roomsGrid.innerHTML = `
+      <div style="grid-column: 1 / -1; text-align: center; padding: 2rem; color: var(--text-gray);">
+        <p>No room details available for this property.</p>
+      </div>
+    `;
+    return;
+  }
+
+  // Render room cards
+  roomsGrid.innerHTML = property.rooms
+    .map(room => {
+      const statusClass =
+        room.status === 'available'
+          ? 'available'
+          : room.status === 'occupied'
+          ? 'occupied'
+          : 'limited';
+      const statusText =
+        room.status === 'available'
+          ? 'Available'
+          : room.status === 'occupied'
+          ? 'Occupied'
+          : 'Limited';
+      const roomImage =
+        room.images && room.images.length > 0 ? getImageUrl(room.images[0]) : getImageUrl(null);
+      const roomDescription = room.description || 'No description available';
+      const roomSize = room.size ? `${room.size} sqm` : 'N/A';
+      const furnishing = room.furnishing || 'Not specified';
+
+      return `
+        <div class="available-room-card" data-room-id="${room.id}" data-room='${JSON.stringify(
+        room
+      ).replace(/'/g, '&apos;')}'>
+          <div class="available-room-image-wrapper">
+            <img src="${roomImage}" alt="${room.roomType}" class="available-room-image" />
+            <span class="available-room-status-badge ${statusClass}">${statusText}</span>
+          </div>
+          <div class="available-room-content">
+            <div class="available-room-header">
+              <h3 class="available-room-type">${room.roomType}</h3>
+              <div class="available-room-price">
+                <span class="available-room-price-amount">₱${room.price.toLocaleString()}</span>
+                <span class="available-room-price-period">/mo</span>
+              </div>
+            </div>
+            <div class="available-room-details">
+              <div class="available-room-detail">
+                <span data-icon="userGroup" data-icon-width="16" data-icon-height="16"></span>
+                <span>${room.capacity} ${room.capacity > 1 ? 'persons' : 'person'}</span>
+              </div>
+              <div class="available-room-detail">
+                <span data-icon="ruler" data-icon-width="16" data-icon-height="16"></span>
+                <span>${roomSize}</span>
+              </div>
+              <div class="available-room-detail">
+                <span data-icon="bed" data-icon-width="16" data-icon-height="16"></span>
+                <span>${furnishing}</span>
+              </div>
+            </div>
+            <p class="available-room-description">${roomDescription}</p>
+          </div>
+        </div>
+      `;
+    })
+    .join('');
+
+  // Initialize icons for room cards
+  initIconElements();
+
+  // Add click event listeners to room cards
+  document.querySelectorAll('.available-room-card').forEach(card => {
+    card.addEventListener('click', () => {
+      const roomData = JSON.parse(card.dataset.room);
+      showRoomDetailModal(roomData, property);
+    });
+  });
+}
+
+/**
+ * Show room detail modal
+ */
+function showRoomDetailModal(room, property) {
+  const modal = document.getElementById('room-detail-modal');
+  if (!modal) return;
+
+  // Populate modal with room data
+  const modalTitle = document.getElementById('modal-room-title');
+  if (modalTitle) modalTitle.textContent = room.roomType;
+
+  // Update status badge
+  const statusBadge = document.getElementById('modal-room-status');
+  if (statusBadge) {
+    const statusClass = room.status === 'available' ? 'available' : 'occupied';
+    const statusText = room.status === 'available' ? 'Available' : 'Occupied';
+    statusBadge.className = `room-modal-status-badge ${statusClass}`;
+    statusBadge.textContent = statusText;
+  }
+
+  // Update price
+  const priceAmount = document.getElementById('modal-room-price');
+  if (priceAmount) priceAmount.textContent = `₱${room.price.toLocaleString()}`;
+
+  // Update capacity
+  const capacity = document.getElementById('modal-room-capacity');
+  if (capacity)
+    capacity.textContent = `${room.capacity} ${room.capacity > 1 ? 'persons' : 'person'}`;
+
+  // Update room type
+  const roomType = document.getElementById('modal-room-type');
+  if (roomType) roomType.textContent = room.roomType;
+
+  // Update size
+  const size = document.getElementById('modal-room-size');
+  if (size) size.textContent = room.size ? `${room.size} sqm` : 'Not specified';
+
+  // Update furnishing
+  const furnishing = document.getElementById('modal-room-furnishing');
+  if (furnishing) furnishing.textContent = room.furnishing || 'Not specified';
+
+  // Update description
+  const description = document.getElementById('modal-room-description');
+  if (description) description.textContent = room.description || 'No description available.';
+
+  // Update gallery
+  const mainImage = document.getElementById('modal-main-image');
+  const thumbnailsContainer = document.getElementById('modal-thumbnails');
+
+  if (room.images && room.images.length > 0) {
+    if (mainImage) {
+      mainImage.src = getImageUrl(room.images[0]);
+      mainImage.alt = room.roomType;
+    }
+
+    if (thumbnailsContainer) {
+      thumbnailsContainer.innerHTML = room.images
+        .map(
+          (img, index) => `
+          <img 
+            src="${getImageUrl(img)}" 
+            alt="Room ${index + 1}" 
+            class="room-modal-thumbnail ${index === 0 ? 'active' : ''}" 
+            data-index="${index}"
+          />
+        `
+        )
+        .join('');
+
+      // Add thumbnail click handlers
+      thumbnailsContainer.querySelectorAll('.room-modal-thumbnail').forEach(thumb => {
+        thumb.addEventListener('click', () => {
+          const index = parseInt(thumb.dataset.index);
+          if (mainImage) {
+            mainImage.src = getImageUrl(room.images[index]);
+          }
+          thumbnailsContainer
+            .querySelectorAll('.room-modal-thumbnail')
+            .forEach(t => t.classList.remove('active'));
+          thumb.classList.add('active');
+        });
+      });
+    }
+  } else {
+    if (mainImage) {
+      mainImage.src = getImageUrl(null);
+      mainImage.alt = 'No image available';
+    }
+    if (thumbnailsContainer) {
+      thumbnailsContainer.innerHTML = '';
+    }
+  }
+
+  // Update amenities
+  const amenitiesList = document.getElementById('modal-amenities-list');
+  const amenitiesSection = document.getElementById('modal-room-amenities');
+
+  if (room.amenities && room.amenities.length > 0) {
+    if (amenitiesList) {
+      amenitiesList.innerHTML = room.amenities
+        .map(amenity => {
+          const amenityName = typeof amenity === 'string' ? amenity : amenity.label;
+          const amenityIcon = typeof amenity === 'object' ? amenity.icon : 'check';
+          return `
+            <div class="room-modal-amenity-item">
+              <span data-icon="${amenityIcon}" data-icon-width="18" data-icon-height="18"></span>
+              <span>${amenityName}</span>
+            </div>
+          `;
+        })
+        .join('');
+    }
+    if (amenitiesSection) amenitiesSection.style.display = 'block';
+  } else {
+    if (amenitiesSection) amenitiesSection.style.display = 'none';
+  }
+
+  // Initialize icons in modal
+  initIconElements();
+
+  // Show modal
+  modal.classList.add('active');
+
+  // Setup modal event listeners
+  setupRoomModalListeners(room, property, modal);
+}
+
+/**
+ * Setup room modal event listeners
+ */
+function setupRoomModalListeners(room, property, modal) {
+  // Close button
+  const closeBtn = document.getElementById('close-room-modal');
+  const closeModalBtn = document.getElementById('modal-close-btn');
+
+  const closeHandler = () => {
+    modal.classList.remove('active');
+  };
+
+  if (closeBtn) {
+    closeBtn.replaceWith(closeBtn.cloneNode(true));
+    document.getElementById('close-room-modal').addEventListener('click', closeHandler);
+  }
+
+  if (closeModalBtn) {
+    closeModalBtn.replaceWith(closeModalBtn.cloneNode(true));
+    document.getElementById('modal-close-btn').addEventListener('click', closeHandler);
+  }
+
+  // Close on overlay click
+  modal.replaceWith(modal.cloneNode(true));
+  const newModal = document.getElementById('room-detail-modal');
+
+  newModal.addEventListener('click', e => {
+    if (e.target === newModal) {
+      newModal.classList.remove('active');
+    }
+  });
+
+  // Apply button
+  const applyBtn = document.getElementById('modal-apply-btn');
+  if (applyBtn) {
+    applyBtn.replaceWith(applyBtn.cloneNode(true));
+    document.getElementById('modal-apply-btn').addEventListener('click', () => {
+      newModal.classList.remove('active');
+
+      // Check if user is logged in
+      const user = JSON.parse(localStorage.getItem('user') || '{}');
+
+      if (!user || !user.id || user.role !== 'boarder') {
+        const redirectUrl = encodeURIComponent(window.location.href);
+        window.location.href = `../../public/auth/login.html?redirect=${redirectUrl}`;
+        return;
+      }
+
+      // Redirect to confirm-booking page with room details
+      const params = new URLSearchParams({
+        id: property.id || state.roomId,
+        title: property.title || 'Property',
+        price: room.price,
+        address: property.address || '',
+        landlordName: property.landlord?.name || 'Property Owner',
+        roomType: room.roomType,
+      });
+
+      window.location.href = `../confirm-booking/index.html?${params.toString()}`;
+    });
+  }
+
+  // Re-setup close handlers for the new modal
+  const newCloseBtn = document.getElementById('close-room-modal');
+  const newCloseModalBtn = document.getElementById('modal-close-btn');
+
+  if (newCloseBtn) {
+    newCloseBtn.addEventListener('click', () => {
+      newModal.classList.remove('active');
+    });
+  }
+
+  if (newCloseModalBtn) {
+    newCloseModalBtn.addEventListener('click', () => {
+      newModal.classList.remove('active');
+    });
   }
 }
 

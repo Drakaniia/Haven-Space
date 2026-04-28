@@ -1258,7 +1258,7 @@ function initProfileDropdown() {
     dropdownMenu.classList.toggle('show');
   });
 
-  // Profile link
+  // Profile link - route to appropriate page based on status
   const profileLink = document.getElementById('profile-menu-profile');
   if (profileLink) {
     profileLink.addEventListener('click', e => {
@@ -1275,8 +1275,8 @@ function initProfileDropdown() {
 
         // Redirect based on boarder status
         if (boarderStatus === 'accepted') {
-          // If accepted, go to main dashboard
-          window.location.href = `${basePath}boarder/index.html`;
+          // If accepted, go to main settings
+          window.location.href = `${basePath}boarder/settings/index.html`;
         } else {
           // If not yet accepted, go to applications dashboard
           window.location.href = `${basePath}boarder/applications-dashboard/index.html`;

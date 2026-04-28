@@ -45,6 +45,7 @@ try {
         $stmt = $pdo->prepare("
             SELECT 
                 a.id,
+                a.message,
                 a.status,
                 a.created_at,
                 a.updated_at,

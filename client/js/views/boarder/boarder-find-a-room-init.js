@@ -258,32 +258,29 @@ function ensureDropdownsWork() {
       });
     }
 
-    // Handle profile menu item click with status-based routing
+    // Handle profile menu item click - route to appropriate page based on status
     const profileMenuProfile = document.getElementById('profile-menu-profile');
     if (profileMenuProfile) {
       profileMenuProfile.addEventListener('click', e => {
         e.preventDefault();
         profileDropdownMenu.classList.remove('show');
 
-        // Check boarder status and redirect accordingly
+        // Check boarder status and redirect to appropriate page
         const user = JSON.parse(localStorage.getItem('user') || '{}');
         if (user.role === 'boarder') {
           const boarderStatus = user.boarder_status || user.boarderStatus || 'new';
-          const basePath = window.location.pathname.includes('github.io')
-            ? '/Haven-Space/client/views/'
-            : '/views/';
 
           // Redirect based on boarder status
           if (boarderStatus === 'accepted') {
-            // If accepted, go to main dashboard
-            window.location.href = `${basePath}boarder/index.html`;
+            // If accepted, go to main settings
+            window.location.href = '../settings/index.html';
           } else {
             // If not yet accepted, go to applications dashboard
-            window.location.href = `${basePath}boarder/applications-dashboard/index.html`;
+            window.location.href = '../applications-dashboard/index.html';
           }
         } else {
-          // For non-boarders, navigate to settings as before
-          window.location.href = profileMenuProfile.href;
+          // For non-boarders, navigate to settings
+          window.location.href = '../settings/index.html';
         }
       });
     }
@@ -314,7 +311,7 @@ function getInitials(user) {
     const last = (user.last_name || '').trim().charAt(0).toUpperCase();
     return first + last || 'U';
   }
-  
+
   // Fall back to parsing the name field
   if (user.name) {
     const parts = user.name.trim().split(' ');
@@ -323,7 +320,7 @@ function getInitials(user) {
     }
     return user.name.charAt(0).toUpperCase();
   }
-  
+
   return 'U';
 }
 

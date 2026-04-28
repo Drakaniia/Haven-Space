@@ -151,6 +151,21 @@ async function loadApplications() {
     state.applications = data.data || [];
     state.filteredApplications = [...state.applications];
 
+    // Debug logging
+    console.log('=== Applications Data Debug ===');
+    console.log('Total applications:', state.applications.length);
+    state.applications.forEach((app, index) => {
+      console.log(`Application ${index + 1}:`, {
+        id: app.id,
+        first_name: app.first_name,
+        last_name: app.last_name,
+        email: app.email,
+        room_title: app.room_title,
+        status: app.status,
+      });
+    });
+    console.log('=== End Debug ===');
+
     updateStats();
     filterAndRenderApplications();
   } catch (error) {

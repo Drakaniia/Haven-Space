@@ -271,8 +271,8 @@ async function loadRecentApplications() {
       return;
     }
 
-    // Show recent applications (first 3, already sorted newest-first by API)
-    const recentApplications = applications.slice(0, 3);
+    // Show recent applications (first 1, already sorted newest-first by API)
+    const recentApplications = applications.slice(0, 1);
 
     container.innerHTML = recentApplications
       .map(
