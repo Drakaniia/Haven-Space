@@ -73,8 +73,8 @@ try {
             a.city,
             a.province,
             pd.property_type,
-            (SELECT AVG(r.rating) FROM reviews r WHERE r.property_id = p.id) as rating,
-            (SELECT COUNT(*) FROM reviews r WHERE r.property_id = p.id) as review_count,
+            0 as rating,
+            0 as review_count,
             (SELECT photo_url FROM property_photos WHERE property_id = p.id AND is_cover = 1 LIMIT 1) as cover_image
         FROM properties p
         LEFT JOIN addresses a ON p.address_id = a.id
@@ -95,7 +95,7 @@ try {
             -- Then by rating
             rating DESC,
             -- Then by price proximity
-            ABS(p.price - ?) ASC
+            ABS(p.price - " . floatval($currentProperty['price']) . ") ASC
         LIMIT " . intval($limit);
 
     $similarStmt = $pdo->prepare($similarQuery);
@@ -106,8 +106,7 @@ try {
         $currentProperty['city'],
         $currentProperty['province'],
         $currentProperty['city'],
-        $currentProperty['property_type'],
-        $currentProperty['price']
+        $currentProperty['property_type']
     ]);
 
     $similarProperties = $similarStmt->fetchAll(PDO::FETCH_ASSOC);
