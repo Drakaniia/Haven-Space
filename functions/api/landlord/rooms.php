@@ -296,6 +296,33 @@ json_response(405, ['error' => 'Method not allowed']);
 /* Helper – normalise a rooms row for the frontend                     */
 /* ------------------------------------------------------------------ */
 function formatRoom(array $room): array {
+    // Get PDO instance for fetching photos
+    $pdo = Connection::getInstance()->getPdo();
+    
+    // Fetch room photos
+    $photosStmt = $pdo->prepare(
+        "SELECT id, photo_url, is_cover, display_order 
+         FROM room_photos 
+         WHERE room_id = ? 
+         ORDER BY is_cover DESC, display_order ASC"
+    );
+    $photosStmt->execute([intval($room['id'])]);
+    $photos = $photosStmt->fetchAll(PDO::FETCH_ASSOC);
+    
+    // Get cover photo or first photo
+    $coverPhoto = null;
+    if (!empty($photos)) {
+        foreach ($photos as $photo) {
+            if ($photo['is_cover']) {
+                $coverPhoto = $photo['photo_url'];
+                break;
+            }
+        }
+        if (!$coverPhoto) {
+            $coverPhoto = $photos[0]['photo_url'];
+        }
+    }
+    
     return [
         'id'          => intval($room['id']),
         'property_id' => intval($room['property_id']),
@@ -305,6 +332,15 @@ function formatRoom(array $room): array {
         'capacity'    => intval($room['capacity'] ?? 1),
         'size'        => $room['size'] ? floatval($room['size']) : null,
         'description' => $room['description'] ?? '',
+        'cover_photo' => $coverPhoto,
+        'photos'      => array_map(function($p) {
+            return [
+                'id'            => intval($p['id']),
+                'photo_url'     => $p['photo_url'],
+                'is_cover'      => (bool)$p['is_cover'],
+                'display_order' => intval($p['display_order'])
+            ];
+        }, $photos),
         'tenant'      => null, // No tenant info for now since leases table doesn't exist
         'created_at'  => $room['created_at'] ?? null,
         'updated_at'  => $room['updated_at'] ?? null,

@@ -324,6 +324,25 @@ Router::delete('/api/landlord/boarders.php', function() {
 });
 
 // ============================================
+// ROOM ROUTES - LANDLORD
+// ============================================
+Router::get('/api/landlord/rooms', function() {
+    require_once __DIR__ . '/landlord/rooms.php';
+});
+
+Router::post('/api/landlord/rooms', function() {
+    require_once __DIR__ . '/landlord/rooms.php';
+});
+
+Router::put('/api/landlord/rooms', function() {
+    require_once __DIR__ . '/landlord/rooms.php';
+});
+
+Router::delete('/api/landlord/rooms', function() {
+    require_once __DIR__ . '/landlord/rooms.php';
+});
+
+// ============================================
 // ANNOUNCEMENT ROUTES - LANDLORD
 // ============================================
 Router::get('/api/landlord/announcements', function() {
