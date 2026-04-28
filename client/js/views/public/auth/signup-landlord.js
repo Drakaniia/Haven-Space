@@ -683,24 +683,11 @@ function setupEventListeners() {
         // Show success message
         showToast('Account created successfully! Redirecting to your dashboard...', 'success');
 
-        // Debug: Log what we stored and routing info
-        console.log('=== LANDLORD SIGNUP DEBUG ===');
-        console.log('Current URL:', window.location.href);
-        console.log('Stored user:', localStorage.getItem('user'));
-        console.log('Stored user_id:', localStorage.getItem('user_id'));
-        console.log('Stored token:', localStorage.getItem('token'));
-        console.log('Token length:', localStorage.getItem('token')?.length);
-        console.log('Stored landlordStatus:', localStorage.getItem('landlordStatus'));
-
         const basePath = getBasePath();
         const redirectUrl = `${basePath}landlord/index.html`;
-        console.log('Calculated base path:', basePath);
-        console.log('Full redirect URL:', redirectUrl);
-        console.log('=== END DEBUG ===');
 
         // Redirect to landlord dashboard with sufficient delay for localStorage sync
         setTimeout(() => {
-          console.log('Executing redirect to:', redirectUrl);
           // Use location.replace to avoid back button issues
           window.location.replace(redirectUrl);
         }, 1500);

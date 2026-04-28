@@ -58,7 +58,6 @@ function initFloatingHeader() {
 function initFAQAccordion() {
   const faqItems = document.querySelectorAll('.faq-item');
   const faqTabs = document.querySelectorAll('.faq-tab');
-  let activeCategory = 'all';
 
   if (faqItems.length === 0) {
     return;
@@ -72,9 +71,6 @@ function initFAQAccordion() {
       // Update active tab
       faqTabs.forEach(t => t.classList.remove('active'));
       tab.classList.add('active');
-
-      // Update active category
-      activeCategory = category;
 
       // Filter FAQ items
       faqItems.forEach(item => {
@@ -134,8 +130,6 @@ export function initPublicViews() {
   } else {
     initPublicComponents();
   }
-
-  console.log('PublicViews: Initialized');
 }
 
 /**

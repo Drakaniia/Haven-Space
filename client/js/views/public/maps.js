@@ -168,7 +168,6 @@ function addPropertyMarkers(properties) {
     // Add click event to open property detail
     marker.on('click', function () {
       // Popup will open automatically, but we can also trigger detail view
-      console.log('Marker clicked:', property.id);
     });
 
     markers.push(marker);
@@ -179,15 +178,12 @@ function addPropertyMarkers(properties) {
 function setupEventListeners() {
   // Close map button - redirect back to find-a-room page
   const closeBtn = document.getElementById('close-map');
-  console.log('Close button element:', closeBtn);
 
   if (closeBtn) {
     closeBtn.addEventListener('click', () => {
-      console.log('Close button clicked! Redirecting to find-a-room page...');
       // Always redirect to public find-a-room page
       window.location.href = './find-a-room.html';
     });
-    console.log('Close button event listener attached successfully');
   } else {
     console.error('Close button not found!');
   }
@@ -272,7 +268,7 @@ function getUserLocation() {
           .bindPopup('You are here')
           .openPopup();
       },
-      error => {
+      _error => {
         alert('Unable to get your location. Please enable location permissions.');
       }
     );

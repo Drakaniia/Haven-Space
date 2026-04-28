@@ -1,4 +1,3 @@
-import { getIcon, getSolidIcon } from '../../shared/icons.js';
 import { initFindARoomEnhanced } from './find-a-room.js';
 import { redirectAuthenticatedUsers } from '../../shared/routing.js';
 

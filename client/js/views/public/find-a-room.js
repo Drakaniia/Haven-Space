@@ -4,14 +4,9 @@
  */
 
 import { getIcon } from '../../shared/icons.js';
-import { loadState, getState, authenticatedFetch } from '../../shared/state.js';
+import { loadState, authenticatedFetch } from '../../shared/state.js';
 import { getImageUrl, getImageErrorHandler } from '../../shared/image-utils.js';
-import {
-  getDisplayName,
-  getUserInitials,
-  getAvatarUrl,
-  updateProfileElements,
-} from '../../shared/profile-utils.js';
+import { getDisplayName, getUserInitials, getAvatarUrl } from '../../shared/profile-utils.js';
 import CONFIG from '../../config.js';
 
 // State management for enhanced features
@@ -107,7 +102,6 @@ async function fetchProperties(reset = false) {
       updateResultsCount(result.data.total_count);
     }
   } catch (error) {
-    console.error('Failed to fetch properties:', error);
     showErrorState();
   } finally {
     enhancedState.isLoading = false;
@@ -141,9 +135,7 @@ function renderProperties(properties, reset = false) {
       seenIds.add(property.id);
       uniqueProperties.push(property);
     } else {
-      console.warn(
-        `Duplicate property detected and skipped: ID ${property.id}, Title: ${property.title}`
-      );
+      // Duplicate property detected and skipped
     }
   });
 
@@ -351,8 +343,6 @@ async function toggleFavorite(propertyId, button) {
       showToast('Property removed from saved list', 'success');
     }
   } catch (error) {
-    console.error('Error toggling favorite:', error);
-
     // Revert UI on error
     button.dataset.favorite = isFavorite.toString();
     if (icon) {
@@ -655,7 +645,7 @@ async function loadPopularLocations(isAuthenticated) {
     // Re-attach chip click listeners after rendering
     attachChipListeners();
   } catch (err) {
-    console.warn('Could not load popular locations:', err.message);
+    // Ignore errors in chip attachment
   }
 }
 
@@ -715,7 +705,7 @@ function handleGoogleOAuthRedirect() {
       return true; // Indicates Google OAuth redirect was handled
     }
   } catch (error) {
-    console.error('Error handling Google OAuth redirect:', error);
+    // Ignore Google OAuth errors
   }
 
   return false; // No Google OAuth redirect handled
@@ -726,7 +716,7 @@ function handleGoogleOAuthRedirect() {
  */
 export function initFindARoomEnhanced() {
   // Handle Google OAuth redirect first
-  const isGoogleOAuthRedirect = handleGoogleOAuthRedirect();
+  handleGoogleOAuthRedirect();
 
   if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', setupEnhancedFeatures);
@@ -748,7 +738,6 @@ async function setupEnhancedFeatures() {
   // Ensure we have user data for testing
   const user = JSON.parse(localStorage.getItem('user') || '{}');
   if (!user.id && authState.isAuthenticated) {
-    console.warn('User is authenticated but no user ID found. Setting up test user...');
     // Set up a test user for development
     const testUser = {
       id: 5,
@@ -1007,12 +996,8 @@ async function loadApplicationsFromAPI() {
     const user = JSON.parse(localStorage.getItem('user') || '{}');
     const token = localStorage.getItem('token');
 
-    console.log('Loading applications for user:', user);
-    console.log('Authentication token present:', !!token);
-
     // Check if user is authenticated
     if (!token || !user || !user.id) {
-      console.warn('User not authenticated, using empty applications list');
       enhancedState.applications = [];
       updateStatusBadge();
       return;
@@ -1022,20 +1007,14 @@ async function loadApplicationsFromAPI() {
       method: 'GET',
     });
 
-    console.log('API response status:', response.status);
-    console.log('API response headers:', response.headers);
-
     if (!response.ok) {
       const errorText = await response.text();
-      console.error('API error response:', errorText);
+
       throw new Error(`Failed to fetch applications: ${response.status} - ${errorText}`);
     }
 
     const result = await response.json();
-    console.log('API response data:', result);
-
     const raw = result.data?.applications || result.data || [];
-    console.log('Raw applications data:', raw);
 
     // Normalise API shape → internal shape
     enhancedState.applications = raw.map(app => ({
@@ -1050,11 +1029,7 @@ async function loadApplicationsFromAPI() {
       roomTitle: app.room_title || '',
       landlordName: app.landlord_name || '',
     }));
-
-    console.log('Normalized applications:', enhancedState.applications);
   } catch (err) {
-    console.error('Could not load applications from API:', err);
-    console.warn('Using empty list due to error:', err.message);
     enhancedState.applications = [];
   }
 
@@ -1067,12 +1042,6 @@ function initStatusDropdown() {
   const dropdownMenu = document.getElementById('status-dropdown-menu');
   const closeBtn = document.getElementById('find-room-status-close');
 
-  console.log('initStatusDropdown called, elements found:', {
-    dropdownBtn: !!dropdownBtn,
-    dropdownMenu: !!dropdownMenu,
-    closeBtn: !!closeBtn,
-  });
-
   if (!dropdownBtn || !dropdownMenu) return;
 
   // Toggle dropdown
@@ -1082,7 +1051,6 @@ function initStatusDropdown() {
 
     // Render applications when dropdown is opened
     if (dropdownMenu.classList.contains('show')) {
-      console.log('Status dropdown opened, rendering applications');
       renderApplications();
     }
   });
@@ -1115,11 +1083,8 @@ function initStatusDropdown() {
 
 function renderApplications() {
   const list = document.getElementById('applications-list');
-  console.log('renderApplications called, list element:', list);
-  console.log('applications to render:', enhancedState.applications);
 
   if (!list) {
-    console.error('applications-list element not found!');
     return;
   }
 
@@ -1127,8 +1092,6 @@ function renderApplications() {
     if (enhancedState.currentStatusFilter === 'all') return true;
     return app.status === enhancedState.currentStatusFilter;
   });
-
-  console.log('filtered applications:', filtered);
 
   if (filtered.length === 0) {
     list.innerHTML = `
@@ -1312,8 +1275,6 @@ function initProfileDropdown() {
         // Call the proper logout function which handles Appwrite session deletion
         await logout();
       } catch (error) {
-        console.error('Logout failed:', error);
-
         // Fallback: clear local storage and redirect manually
         localStorage.removeItem('token');
         localStorage.removeItem('user');
@@ -1359,7 +1320,6 @@ function initMapView() {
  */
 function openDetailPanel(property) {
   const detailOverlay = document.getElementById('detail-overlay');
-  const _detailPanel = document.getElementById('detail-panel');
 
   if (detailOverlay) {
     detailOverlay.style.display = 'flex';
@@ -1675,21 +1635,7 @@ window.openDetailPanelById = function (propertyId) {
 /**
  * Close map view
  */
-function _closeMapView() {
-  const mapContainer = document.getElementById('find-room-map-container');
-  const mapBtnHeader = document.getElementById('map-view-btn');
-  const mapBtnHero = document.getElementById('map-view-btn-hero');
-  if (mapContainer) {
-    mapContainer.style.display = 'none';
-    enhancedState.mapViewActive = false;
-    if (mapBtnHeader) {
-      mapBtnHeader.classList.remove('active');
-    }
-    if (mapBtnHero) {
-      mapBtnHero.classList.remove('active');
-    }
-  }
-}
+// Function removed - map navigation now goes to maps.html
 
 /* ==========================================================================
    Modals
@@ -1827,10 +1773,6 @@ function initModals() {
         // Clear error if validation passes
         clearError();
       }
-
-      // Process rejection
-      const reason =
-        selectedRadio.value === 'others' ? otherInput?.value.trim() : selectedRadio.value;
 
       // Add to rejected set
       if (enhancedState.selectedProperty) {
@@ -2177,7 +2119,6 @@ async function handleRoomApplication(room, property) {
     updateStatusBadge();
     renderApplications();
   } catch (error) {
-    console.error('Error submitting application:', error);
     showToast(error.message || 'Failed to submit application', 'error');
   }
 }

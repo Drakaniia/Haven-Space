@@ -1,6 +1,5 @@
 document.addEventListener('DOMContentLoaded', () => {
   const teamCards = document.querySelectorAll('.team-card');
-  const teamGrid = document.getElementById('teamGrid');
 
   teamCards.forEach(card => {
     // Click on card to expand/collapse
