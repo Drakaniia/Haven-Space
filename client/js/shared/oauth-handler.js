@@ -16,12 +16,6 @@ export function handleOAuthRedirect() {
       const decodedData = decodeURIComponent(authData);
       const userData = JSON.parse(decodedData);
 
-      console.log('OAuth redirect detected, storing user data:', {
-        email: userData.email,
-        role: userData.role,
-        hasToken: !!userData.access_token,
-      });
-
       // Store user data in localStorage
       const userRecord = {
         id: userData.id,
@@ -52,11 +46,10 @@ export function handleOAuthRedirect() {
         window.location.pathname + window.location.search
       );
 
-      console.log('OAuth redirect handled successfully');
       return true; // Indicates OAuth redirect was handled
     }
   } catch (error) {
-    console.error('Error handling OAuth redirect:', error);
+    // Error handling OAuth redirect
   }
 
   return false; // No OAuth redirect handled

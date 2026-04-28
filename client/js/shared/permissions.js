@@ -544,7 +544,6 @@ export async function initLandlordPermissions() {
     window._verificationPollingInterval = pollingInterval;
   } else if (user && user.role === 'landlord' && isVerified) {
     // User is already verified - could show a welcome back message here
-    console.log('Landlord is verified');
   }
 
   return user;

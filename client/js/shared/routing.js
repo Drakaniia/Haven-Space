@@ -3,8 +3,6 @@
  * Handles conditional redirects based on boarder status
  */
 
-import { getState } from './state.js';
-
 /**
  * Check if user is authenticated
  * @returns {boolean} Whether user is authenticated

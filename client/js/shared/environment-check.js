@@ -3,8 +3,6 @@
  * Displays warning when app is accessed incorrectly
  */
 
-import CONFIG from '../config.js';
-
 /**
  * Check if the application is being accessed correctly
  * Shows a warning banner if not using the PHP built-in server

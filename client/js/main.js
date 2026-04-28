@@ -6,8 +6,6 @@
  * Uses dynamic imports to isolate failures - a broken view won't break others
  */
 
-console.log('main.js loaded');
-
 // Initialize theme system early
 import { initTheme } from './shared/theme-manager.js';
 initTheme();
@@ -19,8 +17,6 @@ initTheme();
 async function detectAndInitialize() {
   const body = document.body;
   const view = body.dataset.view || 'public';
-
-  console.log('Detected view:', view);
 
   // Initialize appropriate dashboard based on view type
   switch (view) {

@@ -243,9 +243,8 @@ function updateProfileCompletion(user) {
  * Update profile completion checklist
  * @param {Object} user - User data
  * @param {Array} completedFields - List of completed fields
- * @param {Array} requiredFields - List of required fields
  */
-function updateCompletionChecklist(user, completedFields, requiredFields) {
+function updateCompletionChecklist(user, completedFields) {
   const checklistItems = document.querySelectorAll('.completion-item');
 
   const fieldMapping = {

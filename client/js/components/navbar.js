@@ -3,13 +3,8 @@
  * Reusable top navigation bar with search, theme toggle, notifications, and user avatar
  */
 
-import {
-  getDisplayName,
-  getUserInitials,
-  getAvatarUrl,
-  updateProfileElements,
-} from '../shared/profile-utils.js';
-import { getCurrentTheme, toggleTheme, isDarkTheme } from '../shared/theme-manager.js';
+import { getDisplayName, getAvatarUrl } from '../shared/profile-utils.js';
+import { toggleTheme, isDarkTheme } from '../shared/theme-manager.js';
 
 /**
  * Initialize navbar component
@@ -107,6 +102,7 @@ function updateNotificationCount(count) {
 
 /**
  * Setup theme toggle button
+ * Only show and enable on dashboard pages
  */
 function setupThemeToggle() {
   const themeToggle = document.getElementById('navbar-theme-toggle');
@@ -114,6 +110,20 @@ function setupThemeToggle() {
 
   const iconLight = document.getElementById('navbar-theme-icon-light');
   const iconDark = document.getElementById('navbar-theme-icon-dark');
+
+  // Check if current page is a dashboard page
+  const body = document.body;
+  const isDashboard =
+    body.hasAttribute('data-dashboard-type') ||
+    body.getAttribute('data-view') === 'boarder' ||
+    body.getAttribute('data-view') === 'landlord' ||
+    body.getAttribute('data-view') === 'admin';
+
+  // Hide theme toggle on public pages
+  if (!isDashboard) {
+    if (themeToggle) themeToggle.style.display = 'none';
+    return;
+  }
 
   // Update icons based on current theme
   function updateThemeIcons() {

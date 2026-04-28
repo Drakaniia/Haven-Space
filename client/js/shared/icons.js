@@ -253,51 +253,7 @@ export function getIcon(iconName, options = {}) {
     );
   }
 
-  // Try to load from /assets/svg directory first
-  // Map icon names to actual SVG filenames
-  const iconNameMap = {
-    chevronDown: 'chevron-down',
-    chevronRight: 'chevron-right',
-    chevronLeft: 'chevron-left',
-    homeModern: 'home',
-    location: 'LocationPin',
-    map: 'maps',
-    exclamationCircle: 'informationCircle',
-    chatBubble: 'messages',
-    arrowRightSimple: 'arrow-right',
-    currencyDollar: 'payment',
-    target: 'search',
-    grid2x2: 'dashboard',
-    list: 'viewicon',
-    clipboard: 'document',
-    clipboardList: 'applications',
-    wrench: 'settings',
-    check: 'check',
-    phone: 'phone',
-    exclamation: 'informationCircle',
-    home: 'home',
-  };
-
-  const mappedIconName = iconNameMap[iconName] || iconName;
-  const svgFileName = `${mappedIconName}.svg`;
-
-  // Check if we're in a browser environment and can access the SVG files
-  if (typeof window !== 'undefined') {
-    try {
-      // Create a URL for the SVG file - use absolute path from root
-      const svgUrl = `/assets/svg/${svgFileName}`;
-
-      // Return an SVG that uses the external SVG file
-      // This approach works with SVG sprite sheets or individual SVG files
-      return `<svg width="${width}" height="${height}"${classAttr}>
-        <use href="${svgUrl}" />
-      </svg>`;
-    } catch (error) {
-      console.warn(`Icon ${iconName} not found in /assets/svg, falling back to path data`);
-    }
-  }
-
-  // Fallback to ICON_PATHS for backward compatibility
+  // Use ICON_PATHS inline path data
   const pathData = ICON_PATHS[iconName];
 
   if (!pathData) {
