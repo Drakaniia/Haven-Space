@@ -118,6 +118,9 @@ Router::post('/auth/login', function() {
 Router::post('/auth/login.php', function() {
     require_once __DIR__ . '/auth/login.php';
 });
+Router::post('/auth/check-email', function() {
+    require_once __DIR__ . '/auth/check-email.php';
+});
 
 // Forgot password routes
 Router::post('/auth/forgot-password', function() {

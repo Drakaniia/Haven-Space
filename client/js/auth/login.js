@@ -39,6 +39,7 @@ function initializeLogin() {
   const eyeOpen = passwordToggle?.querySelector('.eye-open');
   const eyeClosed = passwordToggle?.querySelector('.eye-closed');
   const loginForm = document.getElementById('loginForm');
+  const emailInput = document.getElementById('email');
 
   if (!loginForm) {
     console.error('Login form not found');
@@ -55,6 +56,32 @@ function initializeLogin() {
       passwordInput.type = isPassword ? 'text' : 'password';
       eyeOpen.classList.toggle('hidden');
       eyeClosed.classList.toggle('hidden');
+    });
+  }
+
+  // Check email on blur to detect Google OAuth accounts
+  if (emailInput) {
+    emailInput.addEventListener('blur', async function () {
+      const email = this.value.trim();
+      if (!email || !email.includes('@')) return;
+
+      try {
+        const response = await fetch(`${CONFIG.API_BASE_URL}/auth/check-email`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ email }),
+        });
+
+        if (response.ok) {
+          const data = await response.json();
+          handleEmailCheckResult(data);
+        }
+      } catch (error) {
+        console.error('Email check error:', error);
+        // Silently fail - don't disrupt user experience
+      }
     });
   }
 
@@ -154,6 +181,102 @@ function initializeLogin() {
     alert('Login error: ' + decodeURIComponent(error));
     // Clean up URL
     window.history.replaceState({}, document.title, window.location.pathname);
+  }
+}
+
+/**
+ * Handle the result of email check and update UI accordingly
+ */
+function handleEmailCheckResult(data) {
+  const passwordGroup = document.querySelector('.form-group:has(#password)');
+  const socialLogin = document.querySelector('.social-login');
+  const authDivider = document.querySelector('.auth-divider');
+
+  if (!passwordGroup) return;
+
+  // Remove any existing Google notice
+  const existingNotice = document.querySelector('.google-account-notice');
+  if (existingNotice) {
+    existingNotice.remove();
+  }
+
+  if (data.exists && data.is_google_account) {
+    // Hide password field and social buttons
+    passwordGroup.style.display = 'none';
+    if (socialLogin) socialLogin.style.display = 'none';
+    if (authDivider) authDivider.style.display = 'none';
+
+    // Create Google account notice
+    const notice = document.createElement('div');
+    notice.className = 'google-account-notice';
+    notice.innerHTML = `
+      <div class="google-notice-content">
+        <p class="google-notice-text">This account was created with Google. Please sign in with Google.</p>
+        <button type="button" class="auth-btn-primary google-signin-btn">
+          <img src="../../../assets/svg/google-icon-logo.svg" alt="Google" style="width: 18px; height: 18px; margin-right: 8px;">
+          Continue with Google
+        </button>
+        <button type="button" class="set-password-link">Set a password</button>
+      </div>
+    `;
+
+    // Insert notice after email field
+    const emailGroup = document.querySelector('.form-group:has(#email)');
+    if (emailGroup) {
+      emailGroup.insertAdjacentElement('afterend', notice);
+    }
+
+    // Add event listeners
+    const googleSigninBtn = notice.querySelector('.google-signin-btn');
+    const setPasswordBtn = notice.querySelector('.set-password-link');
+
+    googleSigninBtn?.addEventListener('click', function () {
+      const authUrl = `${CONFIG.API_BASE_URL}/auth/google/authorize.php?action=login`;
+      window.location.href = authUrl;
+    });
+
+    setPasswordBtn?.addEventListener('click', function () {
+      triggerPasswordReset();
+    });
+  } else {
+    // Show normal login form
+    passwordGroup.style.display = 'block';
+    if (socialLogin) socialLogin.style.display = 'block';
+    if (authDivider) authDivider.style.display = 'block';
+  }
+}
+
+/**
+ * Trigger password reset for Google account
+ */
+async function triggerPasswordReset() {
+  const emailInput = document.getElementById('email');
+  const email = emailInput?.value.trim();
+
+  if (!email) {
+    showToast('Please enter your email address', 'error');
+    return;
+  }
+
+  try {
+    const response = await fetch(`${CONFIG.API_BASE_URL}/auth/forgot-password`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ email }),
+    });
+
+    const data = await response.json();
+
+    if (response.ok) {
+      showToast('Password reset instructions sent to your email', 'success');
+    } else {
+      showToast(data.error || 'Failed to send password reset email', 'error');
+    }
+  } catch (error) {
+    console.error('Password reset error:', error);
+    showToast('Failed to send password reset email', 'error');
   }
 }
 
