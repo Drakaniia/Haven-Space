@@ -37,8 +37,6 @@ document.addEventListener('DOMContentLoaded', function () {
           return;
         }
 
-        console.log('Reset code:', data.reset_code); // For testing - remove in production
-
         // Switch to step 2
         step1.classList.add('hidden');
         step2.classList.remove('hidden');
@@ -182,7 +180,6 @@ document.addEventListener('DOMContentLoaded', function () {
           return;
         }
 
-        console.log('New reset code:', data.reset_code); // For testing - remove in production
         alert('A new reset code has been sent to your email!');
         startResendTimer();
       })
@@ -214,8 +211,6 @@ document.addEventListener('DOMContentLoaded', function () {
 
   // Show Google OAuth recovery options
   function showGoogleRecoveryOptions(data) {
-    const email = forgotPasswordForm.querySelector('#email').value;
-
     // Create modal for Google recovery options
     const modal = document.createElement('div');
     modal.className = 'google-recovery-modal';

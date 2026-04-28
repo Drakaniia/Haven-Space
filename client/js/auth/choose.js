@@ -47,8 +47,6 @@ function initializeRoleSelection() {
   const roleCards = document.querySelectorAll('.role-card');
   const googleOAuthMessage = document.getElementById('googleOAuthMessage');
 
-  console.log('Initializing role selection...', { continueBtn, roleCards });
-
   // Check if user came from Google OAuth
   const urlParams = new URLSearchParams(window.location.search);
   const isGoogleOAuth = urlParams.get('oauth') === 'google' && urlParams.get('token');
@@ -73,7 +71,6 @@ function initializeRoleSelection() {
   function updateButton() {
     const selectedCard = document.querySelector('.role-card.selected');
     const selectedRole = selectedCard?.getAttribute('data-role');
-    console.log('Selected role:', selectedRole);
 
     if (selectedRole) {
       continueBtn.disabled = false;
@@ -101,9 +98,6 @@ function initializeRoleSelection() {
   // Handle card clicks
   roleCards.forEach(card => {
     card.addEventListener('click', () => {
-      const role = card.getAttribute('data-role');
-      console.log('Card clicked, role:', role);
-
       // Remove selected class from all cards
       roleCards.forEach(c => c.classList.remove('selected'));
 
@@ -126,11 +120,8 @@ function initializeRoleSelection() {
     const selectedRole = selectedCard?.getAttribute('data-role');
 
     if (!selectedRole) {
-      console.log('No role selected');
       return;
     }
-
-    console.log('Navigating with role:', selectedRole);
 
     if (isGoogleOAuth) {
       // Complete Google OAuth registration with selected role

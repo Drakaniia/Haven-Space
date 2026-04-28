@@ -1,7 +1,6 @@
 import CONFIG from '../config.js';
 import { getIcon } from '../shared/icons.js';
 import { getBoarderRedirectPath, updateBoarderStatus } from '../shared/routing.js';
-import AIService from '../services/AIService.js';
 
 /**
  * Show toast notification
