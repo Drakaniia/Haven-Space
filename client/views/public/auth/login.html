@@ -170,12 +170,10 @@
           const hasModuleHandler = form && form.hasAttribute('data-module-handler-attached');
 
           if (form && !hasModuleHandler && !form.hasAttribute('data-fallback-handler-attached')) {
-            console.log('Attaching fallback login handler');
             form.setAttribute('data-fallback-handler-attached', 'true');
 
             form.addEventListener('submit', async function (e) {
               e.preventDefault();
-              console.log('Fallback login handler triggered');
 
               const formData = new FormData(form);
               const email = formData.get('email');
@@ -200,7 +198,6 @@
                 });
 
                 const data = await response.json();
-                console.log('Login response:', data);
 
                 if (data.success) {
                   localStorage.setItem('user', JSON.stringify(data.user));
