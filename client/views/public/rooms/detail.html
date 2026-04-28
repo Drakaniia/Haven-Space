@@ -14,14 +14,19 @@
     <link rel="stylesheet" href="../../../css/global.css?v=1777136032299" />
     <link rel="stylesheet" href="../../../css/views/public/public.css?v=1777136032299" />
     <link rel="stylesheet" href="../../../css/views/boarder/room-detail.css?v=1777136032299" />
+    <link
+      rel="stylesheet"
+      href="../../../css/views/boarder/room-detail-modal.css?v=1777136032299"
+    />
     <!-- Leaflet CSS -->
     <link
       rel="stylesheet"
       href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css?v=1777136032299"
     />
     <script type="module">
-      import { getIcon } from '../../../js/shared/icons.js';
+      import { getIcon, initIconElements } from '../../../js/shared/icons.js';
       window.getIcon = getIcon;
+      window.initIconElements = initIconElements;
     </script>
   </head>
   <body data-view="public">
@@ -540,6 +545,14 @@
             </aside>
           </div>
 
+          <!-- Available Rooms Section -->
+          <section class="room-detail-section available-rooms-section">
+            <h2 class="room-detail-section-title">Available Rooms</h2>
+            <div class="available-rooms-grid" id="available-rooms-grid">
+              <!-- Room cards will be loaded dynamically via JavaScript -->
+            </div>
+          </section>
+
           <!-- Similar Properties Section -->
           <section class="room-detail-section similar-properties">
             <h2 class="room-detail-section-title">Similar Properties</h2>
@@ -658,6 +671,90 @@
           </section>
         </div>
       </main>
+    </div>
+
+    <!-- Room Detail Modal -->
+    <div class="room-detail-modal-overlay" id="room-detail-modal">
+      <div class="room-detail-modal">
+        <div class="room-detail-modal-header">
+          <h3 class="room-detail-modal-title" id="modal-room-title">Room Details</h3>
+          <button class="room-detail-modal-close" id="close-room-modal">
+            <span data-icon="close" data-icon-width="20" data-icon-height="20"></span>
+          </button>
+        </div>
+        <div class="room-detail-modal-body">
+          <!-- Room Gallery -->
+          <div class="room-modal-gallery" id="modal-room-gallery">
+            <img src="" alt="Room" class="room-modal-main-image" id="modal-main-image" />
+            <div class="room-modal-thumbnails" id="modal-thumbnails">
+              <!-- Thumbnails will be populated by JavaScript -->
+            </div>
+          </div>
+
+          <!-- Room Info -->
+          <div class="room-modal-info">
+            <div class="room-modal-header-info">
+              <div class="room-modal-status-badge" id="modal-room-status">Available</div>
+              <div class="room-modal-price">
+                <span class="room-modal-price-amount" id="modal-room-price">₱0</span>
+                <span class="room-modal-price-period">/month</span>
+              </div>
+            </div>
+
+            <div class="room-modal-details-grid">
+              <div class="room-modal-detail-item">
+                <span data-icon="userGroup" data-icon-width="20" data-icon-height="20"></span>
+                <div>
+                  <span class="room-modal-detail-label">Capacity</span>
+                  <span class="room-modal-detail-value" id="modal-room-capacity">-</span>
+                </div>
+              </div>
+              <div class="room-modal-detail-item">
+                <span data-icon="home" data-icon-width="20" data-icon-height="20"></span>
+                <div>
+                  <span class="room-modal-detail-label">Room Type</span>
+                  <span class="room-modal-detail-value" id="modal-room-type">-</span>
+                </div>
+              </div>
+              <div class="room-modal-detail-item">
+                <span data-icon="ruler" data-icon-width="20" data-icon-height="20"></span>
+                <div>
+                  <span class="room-modal-detail-label">Size</span>
+                  <span class="room-modal-detail-value" id="modal-room-size">-</span>
+                </div>
+              </div>
+              <div class="room-modal-detail-item">
+                <span data-icon="bed" data-icon-width="20" data-icon-height="20"></span>
+                <div>
+                  <span class="room-modal-detail-label">Furnishing</span>
+                  <span class="room-modal-detail-value" id="modal-room-furnishing">-</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="room-modal-description">
+              <h4>Description</h4>
+              <p id="modal-room-description">No description available.</p>
+            </div>
+
+            <div class="room-modal-amenities" id="modal-room-amenities">
+              <h4>Room Amenities</h4>
+              <div class="room-modal-amenities-list" id="modal-amenities-list">
+                <!-- Amenities will be populated by JavaScript -->
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="room-detail-modal-footer">
+          <button class="room-modal-btn room-modal-btn-secondary" id="modal-close-btn">
+            Close
+          </button>
+          <button class="room-modal-btn room-modal-btn-primary" id="modal-apply-btn">
+            <span data-icon="application" data-icon-width="18" data-icon-height="18"></span>
+            Apply for This Room
+          </button>
+        </div>
+      </div>
     </div>
 
     <!-- Leaflet JS -->
