@@ -99,7 +99,6 @@ function createApplicationCard(application) {
   const firstName = application.first_name || '';
   const lastName = application.last_name || '';
   const fullName = [firstName, lastName].filter(Boolean).join(' ').trim() || 'Unknown';
-  const initials = getInitials(firstName, lastName);
   const statusClass = getStatusBadgeClass(application.status);
   const statusLabel = getStatusLabel(application.status);
   const roomTitle = application.room_title || 'Unknown Room';

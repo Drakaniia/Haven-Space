@@ -1,5 +1,6 @@
 import { getIcon } from '../../shared/icons.js';
 import CONFIG from '../../config.js';
+import { getImageUrl } from '../../shared/image-utils.js';
 import {
   initMap,
   setMarker,
@@ -122,7 +123,7 @@ function renderExistingPhotos() {
     photoCard.dataset.index = index;
 
     photoCard.innerHTML = `
-      <img src="${photoUrl}" alt="Property photo ${index + 1}" />
+      <img src="${getImageUrl(photoUrl)}" alt="Property photo ${index + 1}" />
       ${index === 0 ? '<span class="photo-cover-badge">Cover Photo</span>' : ''}
       <button type="button" class="photo-remove-btn" data-photo-url="${photoUrl}">
         ${getIcon('trash')}
@@ -161,7 +162,7 @@ function makeSortable(container) {
   container.querySelectorAll('.photo-preview-card').forEach(card => {
     card.draggable = true;
 
-    card.addEventListener('dragstart', e => {
+    card.addEventListener('dragstart', () => {
       draggedElement = card;
       card.classList.add('dragging');
     });
@@ -221,26 +222,34 @@ function setupPhotoUpload() {
   }
 
   uploadArea.addEventListener('click', e => {
+    // Prevent multiple triggers and event bubbling
+    e.stopPropagation();
+    e.preventDefault();
     if (e.target === fileInput) return;
     fileInput.click();
   });
 
   fileInput.addEventListener('change', e => {
     handleFileSelect(e.target.files);
+    // Reset file input to allow selecting the same file again
+    e.target.value = '';
   });
 
   // Drag and drop
   uploadArea.addEventListener('dragover', e => {
     e.preventDefault();
+    e.stopPropagation();
     uploadArea.classList.add('drag-over');
   });
 
-  uploadArea.addEventListener('dragleave', () => {
+  uploadArea.addEventListener('dragleave', e => {
+    e.stopPropagation();
     uploadArea.classList.remove('drag-over');
   });
 
   uploadArea.addEventListener('drop', e => {
     e.preventDefault();
+    e.stopPropagation();
     uploadArea.classList.remove('drag-over');
     handleFileSelect(e.dataTransfer.files);
   });
@@ -382,9 +391,16 @@ async function handleFormSubmit(e) {
     });
 
     try {
+      const token = localStorage.getItem('token');
+      const uploadHeaders = {};
+      if (token) {
+        uploadHeaders['Authorization'] = `Bearer ${token}`;
+      }
+
       const uploadResponse = await fetch(`${CONFIG.API_BASE_URL}/api/landlord/upload-photos.php`, {
         method: 'POST',
         credentials: 'include',
+        headers: uploadHeaders,
         body: uploadFormData,
       });
 
@@ -393,6 +409,8 @@ async function handleFormSubmit(e) {
         if (uploadResult.data && uploadResult.data.urls) {
           updatedData.photos = [...existingPhotos, ...uploadResult.data.urls];
         }
+      } else {
+        console.error('Photo upload failed:', uploadResponse.status);
       }
     } catch (error) {
       console.error('Failed to upload photos:', error);
@@ -400,23 +418,29 @@ async function handleFormSubmit(e) {
   }
 
   try {
+    const token = localStorage.getItem('token');
+    const headers = { 'Content-Type': 'application/json' };
+    if (token) {
+      headers['Authorization'] = `Bearer ${token}`;
+    }
+
     const response = await fetch(`${CONFIG.API_BASE_URL}/api/landlord/listings/${propertyId}`, {
       method: 'PUT',
       credentials: 'include',
-      headers: {
-        'Content-Type': 'application/json',
-      },
+      headers,
       body: JSON.stringify(updatedData),
     });
 
     if (!response.ok) {
-      throw new Error(`API error: ${response.status}`);
+      const errorData = await response.json().catch(() => ({}));
+      throw new Error(errorData.error || `API error: ${response.status}`);
     }
 
+    await response.json();
     showSuccessModal();
   } catch (error) {
-    console.error('Failed to update property:', error);
-    alert('Failed to update property. Please try again.');
+    // console.error('Failed to update property:', error);
+    alert(`Failed to update property: ${error.message}`);
   }
 }
 

@@ -22,10 +22,12 @@ const uploadedPhotos = [];
 
 // Store room data
 const roomsData = [];
+// Track current room index for navigation
+let currentRoomIndex = 0;
 
 // Map state
 let mapInstance = null;
-let currentMarker = null;
+null;
 let selectedLat = null;
 let selectedLng = null;
 
@@ -50,8 +52,6 @@ function injectIcons() {
  * Initialize the create listing form
  */
 export function initCreateListing() {
-  console.log('Initializing create listing...');
-
   // Check authentication first
   if (!requireAuth('landlord')) {
     return; // Will redirect to login
@@ -84,13 +84,6 @@ export function initCreateListing() {
  * Trigger file selection for photo upload
  */
 function triggerFileSelection() {
-  const fileInput = document.getElementById('property-photos');
-
-  if (!fileInput) {
-    console.error('File input not found');
-    return;
-  }
-
   // Create a new file input to ensure it works
   const input = document.createElement('input');
   input.type = 'file';
@@ -99,7 +92,6 @@ function triggerFileSelection() {
   input.style.display = 'none';
 
   input.addEventListener('change', event => {
-    console.log('Files selected:', event.target.files.length);
     if (event.target.files.length > 0) {
       handleFiles(event.target.files);
     }
@@ -119,14 +111,12 @@ function triggerFileSelection() {
  * Initialize photo upload functionality
  */
 function initPhotoUpload() {
-  console.log('Setting up photo upload...');
-
   const uploadArea = document.getElementById('photo-upload-area');
   const fileInput = document.getElementById('property-photos');
   const uploadBtn = document.getElementById('upload-photos-btn');
 
   if (!uploadArea || !fileInput) {
-    console.error('Photo upload elements not found');
+    // console.error('Photo upload elements not found');
     return;
   }
 
@@ -139,7 +129,7 @@ function initPhotoUpload() {
 
     e.preventDefault();
     e.stopPropagation();
-    console.log('Upload area clicked');
+    // console.log('Upload area clicked');
     triggerFileSelection();
   });
 
@@ -148,14 +138,14 @@ function initPhotoUpload() {
     uploadBtn.addEventListener('click', e => {
       e.preventDefault();
       e.stopPropagation();
-      console.log('Upload button clicked');
+      // console.log('Upload button clicked');
       triggerFileSelection();
     });
   }
 
   // Original file input (as backup)
   fileInput.addEventListener('change', e => {
-    console.log('Files selected via original input:', e.target.files.length);
+    // console.log('Files selected via original input:', e.target.files.length);
     if (e.target.files.length > 0) {
       handleFiles(e.target.files);
     }
@@ -177,7 +167,7 @@ function initPhotoUpload() {
   uploadArea.addEventListener('drop', e => {
     e.preventDefault();
     uploadArea.classList.remove('drag-over');
-    console.log('Files dropped:', e.dataTransfer.files.length);
+    // console.log('Files dropped:', e.dataTransfer.files.length);
     handleFiles(e.dataTransfer.files);
   });
 }
@@ -186,7 +176,7 @@ function initPhotoUpload() {
  * Handle selected/dropped files
  */
 function handleFiles(files) {
-  console.log('Processing files:', files.length);
+  // console.log('Processing files:', files.length);
 
   for (const file of files) {
     // Check if we've reached max photos
@@ -216,7 +206,7 @@ function handleFiles(files) {
     };
 
     uploadedPhotos.push(photoData);
-    console.log('Added photo:', photoData.id, 'Total photos:', uploadedPhotos.length);
+    // console.log('Added photo:', photoData.id, 'Total photos:', uploadedPhotos.length);
   }
 
   renderPhotoGrid();
@@ -286,6 +276,25 @@ function updateUploadAreaAppearance() {
     `;
     // Re-inject icons for the new plus icon
     injectIcons();
+
+    // Add click event listener to the add more placeholder
+    const addMorePlaceholder = uploadArea.querySelector('.add-more-placeholder');
+    if (addMorePlaceholder) {
+      addMorePlaceholder.addEventListener('click', function (e) {
+        e.preventDefault();
+        e.stopPropagation();
+        // console.log('Add More Photos clicked');
+        triggerFileSelection();
+      });
+    }
+
+    // Also add click listener to the upload area itself
+    uploadArea.addEventListener('click', function (e) {
+      e.preventDefault();
+      e.stopPropagation();
+      // console.log('Upload area clicked for add more');
+      triggerFileSelection();
+    });
   } else if (uploadedPhotos.length >= MAX_PHOTOS) {
     // Hide upload area when max photos reached
     uploadArea.style.display = 'none';
@@ -317,7 +326,7 @@ function updateUploadAreaAppearance() {
       uploadBtn.addEventListener('click', e => {
         e.preventDefault();
         e.stopPropagation();
-        console.log('Upload button clicked');
+        // console.log('Upload button clicked');
         triggerFileSelection();
       });
     }
@@ -490,7 +499,7 @@ function initAIDescriptionGenerator() {
           descriptionTextarea.parentElement.appendChild(errorElement);
         }
       } catch (error) {
-        console.error('AI description generation error:', error);
+        // console.error('AI description generation error:', error);
         const errorElement = document.createElement('div');
         errorElement.className = 'ai-error';
         errorElement.textContent = 'AI service error: ' + error.message;
@@ -629,7 +638,7 @@ async function handleFormSubmit(e) {
       try {
         await uploadPhotos(propertyId);
       } catch (photoError) {
-        console.error('Property photo upload failed:', photoError);
+        // console.error('Property photo upload failed:', photoError);
         showError(`Property created successfully, but photo upload failed: ${photoError.message}`);
         setTimeout(() => hideError(), 8000);
       }
@@ -640,7 +649,7 @@ async function handleFormSubmit(e) {
       try {
         await uploadRoomPhotos(propertyId);
       } catch (roomPhotoError) {
-        console.error('Room photo upload failed:', roomPhotoError);
+        // console.error('Room photo upload failed:', roomPhotoError);
         showError(
           `Property created successfully, but room photo upload failed: ${roomPhotoError.message}`
         );
@@ -663,11 +672,10 @@ async function handleFormSubmit(e) {
  * Upload photos to the server
  */
 async function uploadPhotos(propertyId) {
-  console.log('Starting photo upload for property:', propertyId);
+  // console.log('Starting photo upload for property:', propertyId);
 
   const photoFormData = new FormData();
-  uploadedPhotos.forEach((photo, index) => {
-    console.log(`Adding photo ${index + 1}:`, photo.file.name);
+  uploadedPhotos.forEach(photo => {
     photoFormData.append('propertyPhotos[]', photo.file);
   });
 
@@ -686,23 +694,22 @@ async function uploadPhotos(propertyId) {
     throw new Error(errorData.error || 'Failed to upload photos');
   }
 
-  const result = await response.json();
-  console.log('Photos uploaded successfully:', result);
+  await response.json();
 }
 
 /**
  * Upload room photos to the server
  */
 async function uploadRoomPhotos(propertyId) {
-  console.log('Starting room photos upload for property:', propertyId);
+  // console.log('Starting room photos upload for property:', propertyId);
 
   for (let i = 0; i < roomsData.length; i++) {
     const room = roomsData[i];
     if (room.photos.length === 0) continue;
 
     const roomPhotoFormData = new FormData();
-    room.photos.forEach((photo, photoIndex) => {
-      console.log(`Adding room ${i + 1} photo ${photoIndex + 1}:`, photo.file.name);
+    room.photos.forEach(photo => {
+      // console.log(`Adding room ${i + 1} photo:`, photo.file.name);
       roomPhotoFormData.append('roomPhotos[]', photo.file);
     });
 
@@ -725,8 +732,7 @@ async function uploadRoomPhotos(propertyId) {
       throw new Error(errorData.error || `Failed to upload photos for ${room.name}`);
     }
 
-    const result = await response.json();
-    console.log(`Room ${i + 1} photos uploaded successfully:`, result);
+    await response.json();
   }
 }
 
@@ -930,6 +936,79 @@ function initRoomConfiguration() {
     roomsInput.addEventListener('input', handleRoomsNumberChange);
     roomsInput.addEventListener('change', handleRoomsNumberChange);
   }
+
+  // Initialize navigation buttons
+  initRoomNavigation();
+}
+
+/**
+ * Initialize room navigation buttons
+ */
+function initRoomNavigation() {
+  const backBtn = document.getElementById('room-back-btn');
+  const nextBtn = document.getElementById('room-next-btn');
+
+  if (backBtn) {
+    backBtn.addEventListener('click', () => {
+      if (currentRoomIndex > 0) {
+        currentRoomIndex--;
+        renderRoomCards();
+        updateNavigationButtons();
+      }
+    });
+  }
+
+  if (nextBtn) {
+    nextBtn.addEventListener('click', () => {
+      if (currentRoomIndex < roomsData.length - 1) {
+        currentRoomIndex++;
+        renderRoomCards();
+        updateNavigationButtons();
+      }
+    });
+  }
+}
+
+/**
+ * Show room navigation controls
+ */
+function showRoomNavigation() {
+  const navigation = document.getElementById('room-navigation');
+  if (navigation) {
+    navigation.style.display = 'flex';
+    updateNavigationButtons();
+  }
+}
+
+/**
+ * Hide room navigation controls
+ */
+function hideRoomNavigation() {
+  const navigation = document.getElementById('room-navigation');
+  if (navigation) {
+    navigation.style.display = 'none';
+  }
+}
+
+/**
+ * Update navigation button states and counter
+ */
+function updateNavigationButtons() {
+  const backBtn = document.getElementById('room-back-btn');
+  const nextBtn = document.getElementById('room-next-btn');
+  const counter = document.getElementById('room-counter');
+
+  if (backBtn) {
+    backBtn.disabled = currentRoomIndex === 0;
+  }
+
+  if (nextBtn) {
+    nextBtn.disabled = currentRoomIndex >= roomsData.length - 1;
+  }
+
+  if (counter) {
+    counter.textContent = `${currentRoomIndex + 1} of ${roomsData.length}`;
+  }
 }
 
 /**
@@ -1000,10 +1079,19 @@ function renderRoomCards() {
 
   container.innerHTML = '';
 
-  roomsData.forEach((room, index) => {
-    const roomCard = createRoomCard(room, index);
+  // Only render the current room if there are multiple rooms
+  if (roomsData.length > 1) {
+    const roomCard = createRoomCard(roomsData[currentRoomIndex], currentRoomIndex);
     container.appendChild(roomCard);
-  });
+
+    // Show navigation and update counter
+    showRoomNavigation();
+  } else if (roomsData.length === 1) {
+    // Single room - show it without navigation
+    const roomCard = createRoomCard(roomsData[0], 0);
+    container.appendChild(roomCard);
+    hideRoomNavigation();
+  }
 
   // Inject icons for the new elements
   injectIcons();
@@ -1590,7 +1678,7 @@ function updateMapLocation(lat, lng) {
   selectedLng = lng;
 
   // Update or create marker
-  currentMarker = setMarker(mapInstance, lat, lng, {
+  setMarker(mapInstance, lat, lng, {
     draggable: true,
     onDragEnd: (newLat, newLng) => {
       updateMapLocation(newLat, newLng);
@@ -1623,8 +1711,8 @@ function updateMapLocation(lat, lng) {
         searchInput.value = result.display_name;
       }
     })
-    .catch(error => {
-      console.error('Reverse geocoding failed:', error);
+    .catch(_error => {
+      // console.error('Reverse geocoding failed:', _error);
     });
 }
 
@@ -1718,7 +1806,7 @@ async function confirmLocation() {
       }
     }
   } catch (error) {
-    console.error('Error reverse geocoding:', error);
+    // console.error('Error reverse geocoding:', error);
     // Continue anyway - coordinates are saved even if address lookup fails
   }
 
@@ -1774,7 +1862,7 @@ async function handleAddressSearch(query) {
       });
     });
   } catch (error) {
-    console.error('Address search failed:', error);
+    // console.error('Address search failed:', error);
     resultsContainer.innerHTML = '<div class="search-error">Search failed. Please try again.</div>';
   }
 }
@@ -1810,8 +1898,8 @@ function handleCurrentLocation() {
         btn.innerHTML = originalText;
       }
     },
-    error => {
-      console.error('Failed to get current location:', error);
+    _error => {
+      // console.error('Failed to get current location:', _error);
       alert('Failed to get your current location. Please check your browser permissions.');
 
       if (btn) {
@@ -1824,6 +1912,6 @@ function handleCurrentLocation() {
 
 // Initialize on page load
 document.addEventListener('DOMContentLoaded', () => {
-  console.log('DOM loaded, initializing create listing...');
+  // console.log('DOM loaded, initializing create listing...');
   initCreateListing();
 });

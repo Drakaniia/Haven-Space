@@ -13,7 +13,7 @@ import { initLandlordSettings } from './settings.js';
 import { initAnnouncements } from './announcements.js';
 import { initReports } from './reports.js';
 import { initLandlordPermissions } from '../../shared/permissions.js';
-import { getAuthHeadersOnly } from '../../shared/auth-headers.js';
+import '../../shared/auth-headers.js';
 import { initDashboard } from '../../shared/dashboard-init.js';
 import { initOAuthHandler } from '../../shared/oauth-handler.js';
 
@@ -80,13 +80,8 @@ function persistAuthenticatedUser(user) {
  * Sets up sidebar, navbar, and initializes landlord dashboard
  */
 export async function initLandlordDashboardEntry() {
-  console.log('=== LANDLORD DASHBOARD INIT ===');
-
   // Handle OAuth redirect FIRST before any auth checks
   await initOAuthHandler();
-
-  console.log('Token in localStorage:', localStorage.getItem('token')?.substring(0, 20) + '...');
-  console.log('User in localStorage:', localStorage.getItem('user'));
 
   const storedLandlordUser = getStoredLandlordUser();
   const hasStoredToken = !!localStorage.getItem('token');
@@ -95,18 +90,12 @@ export async function initLandlordDashboardEntry() {
   const landlordStatus = localStorage.getItem('landlordStatus');
   const isNewRegistration = landlordStatus === 'new';
 
-  console.log('Is new registration:', isNewRegistration);
-  console.log('Has stored token:', hasStoredToken);
-  console.log('Has stored user:', !!storedLandlordUser);
-
   // For new registrations, verify we have the essentials before proceeding
   if (isNewRegistration) {
     if (!hasStoredToken || !storedLandlordUser) {
-      console.error('New registration but missing token or user data. Redirecting to login.');
       window.location.href = loginPath();
       return;
     }
-    console.log('New landlord registration detected, adding delay for backend sync...');
     // Add delay for new registrations to ensure backend is ready
     await new Promise(resolve => setTimeout(resolve, 500));
   }
@@ -119,7 +108,6 @@ export async function initLandlordDashboardEntry() {
     try {
       const token = localStorage.getItem('token');
       if (!token) {
-        console.error('No token found in localStorage');
         window.location.href = loginPath();
         return;
       }
@@ -129,29 +117,21 @@ export async function initLandlordDashboardEntry() {
         'Content-Type': 'application/json',
       };
 
-      console.log('Attempting auth check (attempt', retryCount + 1, '/', maxRetries, ')');
-
       const res = await fetch(`${CONFIG.API_BASE_URL}/auth/me.php`, {
         method: 'GET',
         headers: headers,
         credentials: 'include',
       });
 
-      console.log('Auth response status:', res.status);
-
       if (res.ok) {
         const data = await res.json();
-        console.log('Auth successful, user role:', data.user?.role);
         user = data.user;
         persistAuthenticatedUser(user);
-        console.log('=== AUTH SUCCESS ===');
         break; // Success, exit retry loop
       } else {
-        const errorText = await res.text();
-        console.error('Auth failed:', res.status, errorText);
+        await res.text(); // Consume the response body
 
         if (retryCount < maxRetries - 1) {
-          console.log('Retrying in 1 second...');
           await new Promise(resolve => setTimeout(resolve, 1000));
           retryCount++;
         } else if (storedLandlordUser && hasStoredToken && isNewRegistration) {
@@ -166,19 +146,14 @@ export async function initLandlordDashboardEntry() {
         }
       }
     } catch (error) {
-      console.error('Auth error (attempt', retryCount + 1, '):', error);
-
       if (retryCount < maxRetries - 1) {
-        console.log('Retrying in 1 second...');
         await new Promise(resolve => setTimeout(resolve, 1000));
         retryCount++;
       } else if (storedLandlordUser && hasStoredToken && isNewRegistration) {
         // For new registrations, trust the stored data if auth keeps failing
-        console.warn('Using stored landlord data for new registration after error');
         user = storedLandlordUser;
         break;
       } else {
-        console.error('All auth attempts failed with errors, redirecting to login');
         window.location.href = loginPath();
         return;
       }
@@ -186,12 +161,9 @@ export async function initLandlordDashboardEntry() {
   }
 
   if (!user || user.role !== 'landlord') {
-    console.error('Invalid user or role:', user?.role);
     window.location.href = loginPath();
     return;
   }
-
-  console.log('Proceeding with dashboard initialization for:', user.first_name, user.last_name);
 
   // Initialize profile data first
   await initDashboard();
@@ -209,7 +181,6 @@ export async function initLandlordDashboardEntry() {
       role: 'landlord',
       user: {
         name,
-        initials,
         role: 'Landlord',
         email: updatedUser.email || '',
       },
@@ -224,7 +195,6 @@ export async function initLandlordDashboardEntry() {
     });
 
     // Fetch real notifications from API after navbar is initialized
-    // Small delay to allow the navbar template to finish rendering
     setTimeout(() => updateNavbarNotifications(), 100);
   }
 
@@ -250,33 +220,15 @@ export async function initLandlordDashboardEntry() {
   // Initialize announcements page
   if (currentPath.includes('announcements')) {
     initAnnouncements();
-    // Inject toast styles (one-time setup)
-    const style = document.createElement('style');
-    style.textContent = `
-      @keyframes slideIn {
-        from {
-          transform: translateX(100%);
-          opacity: 0;
-        }
-        to {
-          transform: translateX(0);
-          opacity: 1;
-        }
-      }
-
-      @keyframes slideOut {
-        from {
-          transform: translateX(0);
-          opacity: 1;
-        }
-        to {
-          transform: translateX(100%);
-          opacity: 0;
-        }
-      }
-    `;
-    document.head.appendChild(style);
   }
+
+  // Remove any CSS animations that might have been left behind
+  const styleElements = document.querySelectorAll('style');
+  styleElements.forEach(style => {
+    if (style.textContent.includes('@keyframes slideOut')) {
+      style.remove();
+    }
+  });
 
   // Initialize settings page
   if (currentPath.includes('settings')) {
@@ -296,23 +248,21 @@ export async function initLandlordDashboardEntry() {
 
   // Setup navbar event listeners
   setupNavbarListeners();
-}
 
-/**
- * Setup navbar event listeners for profile and settings
- */
-function setupNavbarListeners() {
-  // Listen for settings click from navbar
-  window.addEventListener('navbar:user:settings:click', () => {
-    console.log('Settings clicked from navbar');
-    // Navigate to settings page
-    window.location.href = '../settings/index.html';
-  });
+  /**
+   * Setup navbar event listeners for profile and settings
+   */
+  function setupNavbarListeners() {
+    // Listen for settings click from navbar
+    window.addEventListener('navbar:user:settings:click', () => {
+      // Navigate to settings page
+      window.location.href = '../settings/index.html';
+    });
 
-  // Listen for profile click from navbar
-  window.addEventListener('navbar:user:profile:click', () => {
-    console.log('Profile clicked from navbar');
-    // Navigate to profile tab in settings
-    window.location.href = '../settings/index.html#profile';
-  });
+    // Listen for profile click from navbar
+    window.addEventListener('navbar:user:profile:click', () => {
+      // Navigate to profile tab in settings
+      window.location.href = '../settings/index.html#profile';
+    });
+  }
 }

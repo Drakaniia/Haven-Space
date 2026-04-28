@@ -69,15 +69,6 @@ function formatDate(dateString) {
 }
 
 /**
- * Format date for input field
- * @param {string} dateString - Date in YYYY-MM-DD format
- * @returns {string} Date in YYYY-MM-DD format for input
- */
-function _formatDateForInput(dateString) {
-  return dateString;
-}
-
-/**
  * Load pending payments from API
  */
 async function loadPendingPayments() {
@@ -265,56 +256,44 @@ function updatePaymentSummary(payment) {
   if (elements.totalAmount) {
     elements.totalAmount.textContent = formatCurrency(payment.amount);
   }
-}
 
-/**
- * Prefill payment details from boarder's submission
- * TODO: This connects to the boarder's payment submission
- * @param {Object} payment - Payment data with boarderSubmittedPayment
- */
-function prefillBoarderPaymentDetails(payment) {
-  const submission = payment.boarderSubmittedPayment;
-
-  if (!submission) {
-    return;
-  }
-
+  // TODO: Implement when boarder payment submission is available
   // Prefill based on payment method
-  if (submission.paymentMethod === 'gcash') {
-    const refNumber = document.getElementById('gcashReferenceNumber');
-    const payerNumber = document.getElementById('gcashPayerNumber');
-    const paymentDate = document.getElementById('gcashPaymentDate');
-
-    if (refNumber) {
-      refNumber.value = submission.referenceNumber || '';
-    }
-    if (payerNumber) {
-      payerNumber.value = submission.payerNumber || '';
-    }
-    if (paymentDate) {
-      paymentDate.value = submission.paymentDate || '';
-    }
-
-    // Switch to GCash method
-    selectPaymentMethod('gcash');
-  } else if (submission.paymentMethod === 'bank') {
-    const refNumber = document.getElementById('bankReferenceNumber');
-    const bankName = document.getElementById('bankName');
-    const paymentDate = document.getElementById('bankPaymentDate');
-
-    if (refNumber) {
-      refNumber.value = submission.referenceNumber || '';
-    }
-    if (bankName) {
-      bankName.value = submission.bankName || '';
-    }
-    if (paymentDate) {
-      paymentDate.value = submission.paymentDate || '';
-    }
-
-    // Switch to Bank Transfer method
-    selectPaymentMethod('bank');
-  }
+  // if (submission.paymentMethod === 'gcash') {
+  //   const refNumber = document.getElementById('gcashReferenceNumber');
+  //   const payerNumber = document.getElementById('gcashPayerNumber');
+  //   const paymentDate = document.getElementById('gcashPaymentDate');
+  //
+  //   if (refNumber) {
+  //     refNumber.value = submission.referenceNumber || '';
+  //   }
+  //   if (payerNumber) {
+  //     payerNumber.value = submission.payerNumber || '';
+  //   }
+  //   if (paymentDate) {
+  //     paymentDate.value = submission.paymentDate || '';
+  //   }
+  //
+  //   // Switch to GCash method
+  //   selectPaymentMethod('gcash');
+  // } else if (submission.paymentMethod === 'bank') {
+  //   const refNumber = document.getElementById('bankReferenceNumber');
+  //   const bankName = document.getElementById('bankName');
+  //   const paymentDate = document.getElementById('bankPaymentDate');
+  //
+  //   if (refNumber) {
+  //     refNumber.value = submission.referenceNumber || '';
+  //   }
+  //   if (bankName) {
+  //     bankName.value = submission.bankName || '';
+  //   }
+  //   if (paymentDate) {
+  //     paymentDate.value = submission.paymentDate || '';
+  //   }
+  //
+  //   // Switch to Bank Transfer method
+  //   selectPaymentMethod('bank');
+  // }
 
   // Show notification that boarder already submitted
   showBoarderSubmissionNotification(payment);
@@ -464,25 +443,6 @@ function handleFileUpload(method, files) {
       previewContainer.appendChild(previewItem);
     }
   });
-}
-
-/**
- * Remove uploaded file
- * @param {string} method - Payment method
- * @param {string} fileName - File name to remove
- */
-function _removeFile(method, fileName) {
-  uploadedFiles[method] = uploadedFiles[method].filter(f => f.name !== fileName);
-
-  const previewContainer = document.getElementById(`${method}FilePreview`);
-  if (previewContainer) {
-    previewContainer.innerHTML = '';
-    // Re-add remaining previews
-    uploadedFiles[method].forEach(file => {
-      // Re-create preview (simplified version)
-      handleFileUpload(method, [file]);
-    });
-  }
 }
 
 /**

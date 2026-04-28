@@ -1,6 +1,6 @@
 import { getIcon } from '../../shared/icons.js';
 import CONFIG from '../../config.js';
-import { getImageUrl, setImageWithFallback } from '../../shared/image-utils.js';
+import { setImageWithFallback } from '../../shared/image-utils.js';
 import { showToast } from '../../shared/toast.js';
 import { initLandlordPermissions } from '../../shared/permissions.js';
 
@@ -260,7 +260,6 @@ function createPropertyCard(property) {
       e.preventDefault();
       const action = btn.dataset.action;
       const id = parseInt(btn.dataset.id);
-      console.log('Button clicked:', action, id);
       handlePropertyAction(action, id);
     });
   });
@@ -389,7 +388,6 @@ function openPropertyModal(property) {
 }
 
 function editProperty(property) {
-  console.log('Editing property:', property);
   // Navigate to edit page with property ID
   window.location.href = `edit.html?id=${property.id}`;
 }

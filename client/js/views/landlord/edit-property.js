@@ -129,7 +129,7 @@ async function loadPropertyData(id) {
 /**
  * Load draft property data from landlord profile
  */
-async function loadDraftPropertyData(profileId) {
+async function loadDraftPropertyData(_profileId) {
   try {
     // Fetch user data to get userId
     const userRes = await fetch(`${CONFIG.API_BASE_URL}/auth/me.php`, {
@@ -360,9 +360,6 @@ function hasUnsavedChanges() {
     return false;
   }
 
-  const form = document.getElementById('edit-property-form');
-  const _formData = new FormData(form);
-
   // Simple check - compare photo count
   if (uploadedPhotos.length !== originalProperty.photos.length) {
     return true;
@@ -409,8 +406,6 @@ function initPhotoUpload(uploadArea, fileInput) {
  * Handle selected/dropped files
  */
 function handleFiles(files) {
-  const _errorEl = document.getElementById('photo-error');
-
   for (const file of files) {
     // Check if we've reached max photos
     if (uploadedPhotos.length >= MAX_PHOTOS) {
@@ -734,17 +729,10 @@ async function handleFormSubmit(e) {
  */
 function handleSaveDraft() {
   // Gather form data without validation
-  const form = document.getElementById('edit-property-form');
-  const formData = new FormData(form);
+  const formData = new FormData(document.getElementById('edit-property-form'));
 
-  const data = {
-    id: propertyId,
-    propertyName: formData.get('propertyName'),
-    propertyType: formData.get('propertyType'),
-    propertyStatus: 'inactive', // Save as draft/inactive
-    amenities: formData.getAll('amenities'),
-    photos: uploadedPhotos.map(photo => photo.url || photo.preview),
-  };
+  // Save as draft/inactive
+  formData.set('propertyStatus', 'inactive');
 
   window.location.href = 'index.html';
 }
@@ -802,7 +790,7 @@ function handleCapacityChange() {
 /**
  * Store custom amenities
  */
-let customAmenitiesList = [];
+const customAmenitiesList = [];
 
 /**
  * Handle add custom amenity
@@ -843,35 +831,6 @@ function handleAddCustomAmenity() {
   // Clear input
   input.value = '';
   input.focus();
-}
-
-/**
- * Remove custom amenity
- */
-function _removeCustomAmenity(value) {
-  customAmenitiesList = customAmenitiesList.filter(a => a !== value);
-
-  // Re-render list
-  const listContainer = document.getElementById('custom-amenities-list');
-  if (listContainer) {
-    listContainer.innerHTML = '';
-    customAmenitiesList.forEach(amenity => {
-      const tag = document.createElement('div');
-      tag.className = 'amenity-tag-custom';
-      tag.style.cssText =
-        'display: inline-flex; align-items: center; gap: 0.5rem; padding: 0.5rem 1rem; background-color: var(--bg-green); color: var(--primary-green); border-radius: 20px; font-size: 0.85rem; font-weight: 500;';
-      tag.innerHTML = `
-        ${amenity}
-        <button type="button" onclick="removeCustomAmenity('${amenity.replace(
-          /'/g,
-          "\\'"
-        )}')" style="background: none; border: none; cursor: pointer; padding: 0; display: flex; align-items: center; color: var(--primary-green);">
-          ${getIcon('xMark', { width: 16, height: 16 })}
-        </button>
-      `;
-      listContainer.appendChild(tag);
-    });
-  }
 }
 
 /**

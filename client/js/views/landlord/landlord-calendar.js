@@ -10,7 +10,7 @@ import { getIcon } from '../../shared/icons.js';
 // ─── State ────────────────────────────────────────────────────────────────────
 
 let currentDate = new Date();
-let _currentView = 'month';
+('month');
 /** @type {Array<Object>} */
 let events = [];
 /** @type {Object|null} */
@@ -513,7 +513,6 @@ function initEventListeners() {
     btn.addEventListener('click', () => {
       document.querySelectorAll('.calendar-view-btn').forEach(b => b.classList.remove('active'));
       btn.classList.add('active');
-      _currentView = btn.dataset.view;
     });
   });
 

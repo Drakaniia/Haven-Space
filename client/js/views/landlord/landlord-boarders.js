@@ -21,164 +21,11 @@ function injectIcons() {
 }
 
 let currentProperty = null;
-let currentBoarder = null;
+const currentBoarder = null;
 let boardersData = [];
 let propertyData = null;
-let allProperties = [];
 
-export function initLandlordBoarders() {
-  const urlParams = new URLSearchParams(window.location.search);
-  const propertyId = urlParams.get('propertyId');
-
-  if (!propertyId) {
-    // If no propertyId provided, fetch all properties and show selector
-    console.log('No propertyId provided, fetching all properties...');
-    showLoadingState();
-    fetchAllProperties()
-      .then(properties => {
-        hideLoadingState();
-        allProperties = properties;
-        if (properties && properties.length > 0) {
-          if (properties.length === 1) {
-            // Only one property, redirect to it
-            console.log('Only one property found, redirecting to it:', properties[0].id);
-            window.location.href = `index.html?propertyId=${properties[0].id}`;
-          } else {
-            // Multiple properties, show selector
-            console.log('Multiple properties found, showing selector');
-            showPropertySelector(properties);
-          }
-        } else {
-          console.log('No properties found, showing no properties state');
-          showNoPropertiesState();
-        }
-      })
-      .catch(error => {
-        console.error('Error fetching properties:', error);
-        hideLoadingState();
-        showNoPropertiesState();
-      });
-    return;
-  }
-
-  console.log('Loading boarders for property:', propertyId);
-  // Also fetch all properties for the selector
-  fetchAllProperties().then(properties => {
-    allProperties = properties;
-    if (properties && properties.length > 1) {
-      showPropertySelector(properties, propertyId);
-    }
-  });
-
-  loadPropertyData(propertyId);
-  loadBoarders(propertyId);
-  setupEventListeners();
-
-  // Inject icons
-  setTimeout(() => injectIcons(), 100);
-}
-
-async function fetchAllProperties() {
-  try {
-    console.log('Fetching all properties from API...');
-    const token = localStorage.getItem('token');
-    const headers = {
-      'Content-Type': 'application/json',
-    };
-    if (token) {
-      headers['Authorization'] = `Bearer ${token}`;
-    }
-
-    const response = await fetch(`${CONFIG.API_BASE_URL}/api/landlord/properties.php`, {
-      method: 'GET',
-      headers,
-      credentials: 'include',
-    });
-
-    console.log('Properties API response status:', response.status);
-
-    if (!response.ok) {
-      throw new Error(`API error: ${response.status}`);
-    }
-
-    const result = await response.json();
-    console.log('Properties API result:', result);
-
-    // Check if there are properties in the response
-    if (result.data && result.data.properties && result.data.properties.length > 0) {
-      console.log('Found properties:', result.data.properties.length);
-      return result.data.properties;
-    }
-
-    console.log('No properties found in API response');
-    return [];
-  } catch (error) {
-    console.error('Failed to fetch properties:', error);
-    return [];
-  }
-}
-
-function showPropertySelector(properties, selectedPropertyId = null) {
-  const selector = document.getElementById('property-selector');
-  const propertyInfo = document.querySelector('.property-info');
-
-  if (!selector) return;
-
-  // Populate selector
-  selector.innerHTML = '<option value="">Select a property...</option>';
-  properties.forEach(property => {
-    const option = document.createElement('option');
-    option.value = property.id;
-    option.textContent = property.name || 'Unnamed Property';
-    if (selectedPropertyId && property.id === selectedPropertyId) {
-      option.selected = true;
-    }
-    selector.appendChild(option);
-  });
-
-  // Show selector
-  selector.style.display = 'block';
-
-  // Add change handler
-  selector.addEventListener('change', e => {
-    const newPropertyId = e.target.value;
-    if (newPropertyId) {
-      window.location.href = `index.html?propertyId=${newPropertyId}`;
-    }
-  });
-
-  // If no property is selected, show instruction
-  if (!selectedPropertyId) {
-    if (propertyInfo) {
-      const propertyName = document.getElementById('property-name');
-      const propertyLocation = document.getElementById('property-location');
-      if (propertyName) propertyName.textContent = 'Select a Property';
-      if (propertyLocation) propertyLocation.textContent = 'Choose a property to view its boarders';
-    }
-
-    // Hide header actions
-    const headerActions = document.querySelector('.header-actions');
-    if (headerActions) headerActions.style.display = 'none';
-
-    // Show empty state with instruction
-    const grid = document.getElementById('boarders-grid');
-    const emptyState = document.getElementById('empty-state');
-    if (grid) grid.style.display = 'none';
-    if (emptyState) {
-      emptyState.style.display = 'flex';
-      const h2 = emptyState.querySelector('h2');
-      const p = emptyState.querySelector('p');
-      if (h2) h2.textContent = 'Select a Property';
-      if (p)
-        p.textContent =
-          'Choose a property from the dropdown above to view and manage its boarders.';
-    }
-
-    // Inject icons
-    setTimeout(() => injectIcons(), 100);
-  }
-}
-
+// Move these functions to main scope so they can be called from initLandlordBoarders
 function showLoadingState() {
   const loadingState = document.getElementById('loading-state');
   const emptyState = document.getElementById('empty-state');
@@ -198,143 +45,13 @@ function hideLoadingState() {
 
 function showNoPropertiesState() {
   const noPropertiesState = document.getElementById('no-properties-state');
-  const emptyState = document.getElementById('empty-state');
   const grid = document.getElementById('boarders-grid');
 
   if (noPropertiesState) noPropertiesState.style.display = 'flex';
-  if (emptyState) emptyState.style.display = 'none';
   if (grid) grid.style.display = 'none';
-
-  // Hide the header actions since there's no property
-  const headerActions = document.querySelector('.header-actions');
-  if (headerActions) headerActions.style.display = 'none';
-
-  // Update the header text
-  const propertyName = document.getElementById('property-name');
-  const propertyLocation = document.getElementById('property-location');
-  if (propertyName) propertyName.textContent = 'Manage Boarders';
-  if (propertyLocation) propertyLocation.textContent = 'No properties available';
-
-  // Inject icons for the no properties state
-  setTimeout(() => injectIcons(), 100);
 }
 
-async function fetchFirstProperty() {
-  try {
-    console.log('Fetching properties from API...');
-    const token = localStorage.getItem('token');
-    const headers = {
-      'Content-Type': 'application/json',
-    };
-    if (token) {
-      headers['Authorization'] = `Bearer ${token}`;
-    }
-
-    const response = await fetch(`${CONFIG.API_BASE_URL}/api/landlord/properties.php`, {
-      method: 'GET',
-      headers,
-      credentials: 'include',
-    });
-
-    console.log('Properties API response status:', response.status);
-
-    if (!response.ok) {
-      throw new Error(`API error: ${response.status}`);
-    }
-
-    const result = await response.json();
-    console.log('Properties API result:', result);
-
-    // Check if there are properties in the response
-    if (result.data && result.data.properties && result.data.properties.length > 0) {
-      console.log('Found properties:', result.data.properties.length);
-      return result.data.properties[0];
-    }
-
-    console.log('No properties found in API response');
-    return null;
-  } catch (error) {
-    console.error('Failed to fetch first property:', error);
-    return null;
-  }
-}
-
-async function fetchPropertyFromApi(propertyId) {
-  try {
-    const token = localStorage.getItem('token');
-    const headers = { 'Content-Type': 'application/json' };
-    if (token) {
-      headers['Authorization'] = `Bearer ${token}`;
-    }
-
-    const response = await fetch(
-      `${CONFIG.API_BASE_URL}/api/landlord/properties.php?id=${propertyId}`,
-      {
-        credentials: 'include',
-        headers,
-      }
-    );
-
-    if (!response.ok) {
-      throw new Error(`API error: ${response.status}`);
-    }
-
-    const result = await response.json();
-
-    // Check if result.data has an id property (direct property object)
-    if (result.data && result.data.id) {
-      return result.data;
-    }
-
-    if (result.data && result.data.property) {
-      return result.data.property;
-    }
-
-    // API may return a properties array when queried by id
-    if (result.data && result.data.properties && result.data.properties.length > 0) {
-      return result.data.properties[0];
-    }
-
-    return null;
-  } catch (error) {
-    console.error('Failed to fetch property:', error);
-    return null;
-  }
-}
-
-async function fetchBoardersFromApi(propertyId) {
-  try {
-    const token = localStorage.getItem('token');
-    const headers = { 'Content-Type': 'application/json' };
-    if (token) {
-      headers['Authorization'] = `Bearer ${token}`;
-    }
-
-    const response = await fetch(
-      `${CONFIG.API_BASE_URL}/api/landlord/boarders.php?propertyId=${propertyId}`,
-      {
-        credentials: 'include',
-        headers,
-      }
-    );
-
-    if (!response.ok) {
-      throw new Error(`API error: ${response.status}`);
-    }
-
-    const result = await response.json();
-
-    if (result.data && result.data.boarders) {
-      return result.data.boarders;
-    }
-
-    return [];
-  } catch (error) {
-    console.error('Failed to fetch boarders:', error);
-    return [];
-  }
-}
-
+// Move function definitions before init so they can be called
 function loadPropertyData(propertyId) {
   fetchPropertyFromApi(propertyId).then(property => {
     if (!property) {
@@ -376,9 +93,6 @@ function loadBoarders(propertyId) {
   if (loadingState) {
     loadingState.style.display = 'flex';
   }
-  if (emptyState) {
-    emptyState.style.display = 'none';
-  }
   grid.style.display = 'none';
 
   fetchBoardersFromApi(propertyId).then(boarders => {
@@ -397,6 +111,120 @@ function loadBoarders(propertyId) {
       renderBoarders(boardersData);
     }
   });
+}
+
+function setupEventListeners() {
+  const btnFilter = document.getElementById('btn-filter');
+  if (btnFilter) {
+    btnFilter.addEventListener('click', () => {
+      const filterBar = document.getElementById('filter-bar');
+      if (filterBar) {
+        filterBar.style.display = filterBar.style.display === 'none' ? 'block' : 'none';
+      }
+    });
+  }
+
+  const btnAddBoarder = document.getElementById('btn-add-boarder');
+  if (btnAddBoarder) {
+    btnAddBoarder.addEventListener('click', openAddBoarderModal);
+  }
+
+  const searchInput = document.getElementById('search-boarders');
+  if (searchInput) {
+    searchInput.addEventListener('input', handleSearch);
+  }
+
+  const filterStatus = document.getElementById('filter-status');
+  const filterRoom = document.getElementById('filter-room');
+  const filterPayment = document.getElementById('filter-payment');
+
+  if (filterStatus) {
+    filterStatus.addEventListener('change', handleFilter);
+  }
+  if (filterRoom) {
+    filterRoom.addEventListener('change', handleFilter);
+  }
+  if (filterPayment) {
+    filterPayment.addEventListener('change', handleFilter);
+  }
+
+  setupModalHandlers();
+}
+
+// Move function definitions before init so they can be called
+
+async function fetchPropertyFromApi(propertyId) {
+  try {
+    const token = localStorage.getItem('token');
+    const headers = { 'Content-Type': 'application/json' };
+    if (token) {
+      headers['Authorization'] = `Bearer ${token}`;
+    }
+
+    const response = await fetch(
+      `${CONFIG.API_BASE_URL}/api/landlord/properties.php?id=${propertyId}`,
+      {
+        credentials: 'include',
+        headers,
+      }
+    );
+
+    if (!response.ok) {
+      throw new Error(`API error: ${response.status}`);
+    }
+
+    const result = await response.json();
+
+    // Check if result.data has an id property (direct property object)
+    if (result.data && result.data.id) {
+      return result.data;
+    }
+
+    if (result.data && result.data.property) {
+      return result.data.property;
+    }
+
+    // API may return a properties array when queried by id
+    if (result.data && result.data.properties && result.data.properties.length > 0) {
+      return result.data.properties[0];
+    }
+
+    return null;
+  } catch (error) {
+    return null;
+  }
+}
+
+async function fetchBoardersFromApi(propertyId) {
+  try {
+    const token = localStorage.getItem('token');
+    const headers = { 'Content-Type': 'application/json' };
+    if (token) {
+      headers['Authorization'] = `Bearer ${token}`;
+    }
+
+    const response = await fetch(
+      `${CONFIG.API_BASE_URL}/api/landlord/boarders.php?propertyId=${propertyId}`,
+      {
+        credentials: 'include',
+        headers,
+      }
+    );
+
+    if (!response.ok) {
+      throw new Error(`API error: ${response.status}`);
+    }
+
+    const result = await response.json();
+
+    if (result.data && result.data.boarders) {
+      return result.data.boarders;
+    }
+
+    return [];
+  } catch (error) {
+    return [];
+  }
 }
 
 function populateRoomFilter(totalRooms) {
@@ -445,102 +273,16 @@ function renderBoarders(boarders) {
   });
 }
 
-function createBoarderCard(boarder) {
-  const card = document.createElement('div');
-  card.className = 'boarder-card';
-  card.dataset.boarderId = boarder.id;
-
-  const initials = getInitials(boarder.first_name, boarder.last_name);
-  const statusLabel =
-    boarder.status === 'active' ? 'Active' : boarder.status === 'pending' ? 'Pending' : 'Inactive';
-
-  card.innerHTML = `
-    <div class="boarder-card-header">
-      <div class="boarder-avatar">${initials}</div>
-      <div class="boarder-info">
-        <h3 class="boarder-name">${boarder.first_name} ${boarder.last_name}</h3>
-        <p class="boarder-email">${boarder.email || 'No email'}</p>
-      </div>
-      <span class="boarder-status status-${boarder.status}">${statusLabel}</span>
-    </div>
-    <div class="boarder-card-body">
-      <div class="boarder-info-row">
-        <span class="boarder-info-label">Room</span>
-        <span class="boarder-info-value">Room ${boarder.room_id || '--'}</span>
-      </div>
-      <div class="boarder-info-row">
-        <span class="boarder-info-label">Rent</span>
-        <span class="boarder-info-value">₱${(boarder.rent || 0).toLocaleString()}/mo</span>
-      </div>
-      <div class="boarder-info-row">
-        <span class="boarder-info-label">Move-in</span>
-        <span class="boarder-info-value">${formatDate(boarder.move_in_date)}</span>
-      </div>
-      <div class="boarder-info-row">
-        <span class="boarder-info-label">Payment</span>
-        <span class="boarder-info-value" style="color: ${getPaymentStatusColor(
-          boarder.payment_status
-        )}">${capitalizeFirst(boarder.payment_status || 'N/A')}</span>
-      </div>
-    </div>
-    <div class="boarder-card-actions">
-      <button type="button" data-action="view" data-id="${boarder.id}">
-        ${getIcon('eye')}
-        View
-      </button>
-      <button type="button" data-action="edit" data-id="${boarder.id}">
-        ${getIcon('edit')}
-        Edit
-      </button>
-      <button type="button" class="btn-remove" data-action="remove" data-id="${boarder.id}">
-        ${getIcon('trash')}
-        Remove
-      </button>
-    </div>
-  `;
-
-  card.querySelectorAll('button').forEach(btn => {
-    btn.addEventListener('click', e => {
-      e.stopPropagation();
-      const action = btn.dataset.action;
-      const id = parseInt(btn.dataset.id);
-      handleBoarderAction(action, id);
-    });
-  });
-
-  return card;
-}
-
-function handleBoarderAction(action, id) {
-  const boarder = boardersData.find(b => b.id === id);
-  if (!boarder) {
-    return;
-  }
-
-  currentBoarder = boarder;
-
-  switch (action) {
-    case 'view':
-      openBoarderDetailModal(boarder);
-      break;
-    case 'edit':
-      editBoarder(boarder);
-      break;
-    case 'remove':
-      confirmRemoveBoarder(boarder);
-      break;
-  }
-}
-
 function openBoarderDetailModal(boarder) {
   const modal = document.getElementById('boarder-detail-modal');
   if (!modal) {
     return;
   }
 
-  const initials = getInitials(boarder.first_name, boarder.last_name);
-
-  document.getElementById('detail-initials').textContent = initials;
+  document.getElementById('detail-initials').textContent = getInitials(
+    boarder.first_name,
+    boarder.last_name
+  );
   document.getElementById('detail-name').textContent = `${boarder.first_name} ${boarder.last_name}`;
   document.getElementById('detail-email').textContent = boarder.email || 'No email';
   document.getElementById('detail-email-full').textContent = boarder.email || 'No email';
@@ -569,7 +311,7 @@ function openBoarderDetailModal(boarder) {
   document.body.style.overflow = 'hidden';
 }
 
-function editBoarder(boarder) {
+function editBoarder(_boarder) {
   alert('Edit boarder functionality will be implemented soon.');
 }
 
@@ -584,57 +326,6 @@ function confirmRemoveBoarder(boarder) {
   ).textContent = `${boarder.first_name} ${boarder.last_name}`;
   modal.classList.add('active');
   document.body.style.overflow = 'hidden';
-}
-
-function openAddBoarderModal() {
-  const modal = document.getElementById('add-boarder-modal');
-  if (!modal) {
-    return;
-  }
-
-  const form = document.getElementById('add-boarder-form');
-  form.reset();
-
-  const startDate = document.getElementById('boarder-start-date');
-  startDate.value = new Date().toISOString().split('T')[0];
-
-  if (propertyData) {
-    const rentInput = document.getElementById('boarder-rent');
-    rentInput.value = propertyData.price || 0;
-
-    const depositInput = document.getElementById('boarder-deposit');
-    depositInput.value = propertyData.price || 0;
-  }
-
-  modal.classList.add('active');
-  document.body.style.overflow = 'hidden';
-}
-
-function closeAddBoarderModal() {
-  const modal = document.getElementById('add-boarder-modal');
-  if (!modal) {
-    return;
-  }
-  modal.classList.remove('active');
-  document.body.style.overflow = '';
-}
-
-function closeBoarderDetailModal() {
-  const modal = document.getElementById('boarder-detail-modal');
-  if (!modal) {
-    return;
-  }
-  modal.classList.remove('active');
-  document.body.style.overflow = '';
-}
-
-function closeRemoveBoarderModal() {
-  const modal = document.getElementById('remove-boarder-modal');
-  if (!modal) {
-    return;
-  }
-  modal.classList.remove('active');
-  document.body.style.overflow = '';
 }
 
 async function addNewBoarder(event) {
@@ -683,7 +374,6 @@ async function addNewBoarder(event) {
       `Boarder "${newBoarderData.first_name} ${newBoarderData.last_name}" has been added successfully.`
     );
   } catch (error) {
-    console.error('Failed to add boarder:', error);
     alert('Failed to add boarder. Please try again.');
   }
 }
@@ -711,47 +401,243 @@ async function removeBoarder() {
     loadPropertyData(currentProperty.id);
     alert(`Boarder has been removed successfully.`);
   } catch (error) {
-    console.error('Failed to remove boarder:', error);
     alert('Failed to remove boarder. Please try again.');
   }
 }
 
-function setupEventListeners() {
-  const btnFilter = document.getElementById('btn-filter');
-  if (btnFilter) {
-    btnFilter.addEventListener('click', () => {
-      const filterBar = document.getElementById('filter-bar');
-      if (filterBar) {
-        filterBar.style.display = filterBar.style.display === 'none' ? 'block' : 'none';
-      }
+// Move function definitions before they're used
+function createBoarderCard(boarder) {
+  const card = document.createElement('div');
+  card.className = 'boarder-card';
+  card.dataset.boarderId = boarder.id;
+
+  const statusLabel =
+    boarder.status === 'active' ? 'Active' : boarder.status === 'pending' ? 'Pending' : 'Inactive';
+
+  const initials = boarder.first_name.charAt(0) + boarder.last_name.charAt(0);
+  card.innerHTML = `
+  <div class="boarder-card-header">
+    <div class="boarder-avatar">${initials}</div>
+    <div class="boarder-info">
+      <h3 class="boarder-name">${boarder.first_name} ${boarder.last_name}</h3>
+      <p class="boarder-email">${boarder.email || 'No email'}</p>
+    </div>
+    <span class="boarder-status status-${boarder.status}">${statusLabel}</span>
+  </div>
+  <div class="boarder-card-body">
+    <div class="boarder-info-row">
+      <span class="boarder-info-label">Room</span>
+      <span class="boarder-info-value">Room ${boarder.room_id || '--'}</span>
+    </div>
+    <div class="boarder-info-row">
+      <span class="boarder-info-label">Rent</span>
+      <span class="boarder-info-value">₱${(boarder.rent || 0).toLocaleString()}/mo</span>
+    </div>
+    <div class="boarder-info-row">
+      <span class="boarder-info-label">Move-in</span>
+      <span class="boarder-info-value">${formatDate(boarder.move_in_date)}</span>
+    </div>
+    <div class="boarder-info-row">
+      <span class="boarder-info-label">Payment</span>
+      <span class="boarder-info-value" style="color: ${getPaymentStatusColor(
+        boarder.payment_status
+      )}">${capitalizeFirst(boarder.payment_status || 'N/A')}</span>
+    </div>
+  </div>
+  <div class="boarder-card-actions">
+    <button type="button" data-action="view" data-id="${boarder.id}">
+      ${getIcon('eye')}
+      View
+    </button>
+    <button type="button" data-action="edit" data-id="${boarder.id}">
+      ${getIcon('edit')}
+      Edit
+    </button>
+    <button type="button" class="btn-remove" data-action="remove" data-id="${boarder.id}">
+      ${getIcon('trash')}
+      Remove
+    </button>
+  </div>
+  `;
+
+  card.querySelectorAll('button').forEach(btn => {
+    btn.addEventListener('click', e => {
+      e.stopPropagation();
+      const action = btn.dataset.action;
+      const id = parseInt(btn.dataset.id);
+      handleBoarderAction(action, id);
     });
+  });
+
+  return card;
+}
+
+function formatDate(dateString) {
+  if (!dateString) {
+    return 'N/A';
   }
 
-  const btnAddBoarder = document.getElementById('btn-add-boarder');
-  if (btnAddBoarder) {
-    btnAddBoarder.addEventListener('click', openAddBoarderModal);
+  const date = new Date(dateString);
+  return date.toLocaleDateString('en-US', {
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric',
+  });
+}
+
+function getPaymentStatusColor(status) {
+  switch (status) {
+    case 'paid':
+      return '#22c55e';
+    case 'pending':
+      return '#f59e0b';
+    case 'overdue':
+      return '#ef4444';
+    default:
+      return '#555555';
+  }
+}
+
+function capitalizeFirst(str) {
+  if (!str) {
+    return '';
+  }
+  return str.charAt(0).toUpperCase() + str.slice(1);
+}
+
+function getInitials(firstName, lastName) {
+  const first = (firstName || '').charAt(0).toUpperCase();
+  const last = (lastName || '').charAt(0).toUpperCase();
+  return `${first}${last}`;
+}
+
+function calculateDuration(startDate) {
+  if (!startDate) {
+    return 'N/A';
   }
 
+  const start = new Date(startDate);
+  const now = new Date();
+  const diffTime = Math.abs(now - start);
+  const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+  const diffMonths = Math.floor(diffDays / 30);
+
+  if (diffMonths === 0) {
+    return `${diffDays} day${diffDays > 1 ? 's' : ''}`;
+  } else if (diffMonths === 1) {
+    return '1 month';
+  } else {
+    return `${diffMonths} months`;
+  }
+}
+
+function handleBoarderAction(action, id) {
+  const boarder = boardersData.find(b => b.id === id);
+  if (!boarder) {
+    return;
+  }
+
+  switch (action) {
+    case 'view':
+      openBoarderDetailModal(boarder);
+      break;
+    case 'edit':
+      editBoarder(boarder);
+      break;
+    case 'remove':
+      confirmRemoveBoarder(boarder);
+      break;
+  }
+}
+
+function filterAndSortBoarders(_searchQuery = '') {
   const searchInput = document.getElementById('search-boarders');
-  if (searchInput) {
-    searchInput.addEventListener('input', handleSearch);
-  }
-
   const filterStatus = document.getElementById('filter-status');
   const filterRoom = document.getElementById('filter-room');
   const filterPayment = document.getElementById('filter-payment');
 
-  if (filterStatus) {
-    filterStatus.addEventListener('change', handleFilter);
-  }
-  if (filterRoom) {
-    filterRoom.addEventListener('change', handleFilter);
-  }
-  if (filterPayment) {
-    filterPayment.addEventListener('change', handleFilter);
+  if (!searchInput || !filterStatus || !filterRoom || !filterPayment) {
+    return;
   }
 
-  setupModalHandlers();
+  const query = searchInput || searchInput.value.toLowerCase().trim();
+  const statusFilter = filterStatus.value;
+  const roomFilter = filterRoom.value;
+  const paymentFilter = filterPayment.value;
+
+  const filtered = boardersData.filter(boarder => {
+    const fullName = `${boarder.first_name || ''} ${boarder.last_name || ''}`.toLowerCase();
+    const matchesSearch =
+      !query || fullName.includes(query) || (boarder.email || '').toLowerCase().includes(query);
+
+    const matchesStatus = statusFilter === 'all' || boarder.status === statusFilter;
+    const matchesRoom = roomFilter === 'all' || boarder.room_id === parseInt(roomFilter);
+    const matchesPayment = paymentFilter === 'all' || boarder.payment_status === paymentFilter;
+
+    return matchesSearch && matchesStatus && matchesRoom && matchesPayment;
+  });
+
+  renderBoarders(filtered);
+}
+
+function closeAddBoarderModal() {
+  const modal = document.getElementById('add-boarder-modal');
+  if (!modal) {
+    return;
+  }
+  modal.classList.remove('active');
+  document.body.style.overflow = '';
+}
+
+function closeBoarderDetailModal() {
+  const modal = document.getElementById('boarder-detail-modal');
+  if (!modal) {
+    return;
+  }
+  modal.classList.remove('active');
+  document.body.style.overflow = '';
+}
+
+function closeRemoveBoarderModal() {
+  const modal = document.getElementById('remove-boarder-modal');
+  if (!modal) {
+    return;
+  }
+  modal.classList.remove('active');
+  document.body.style.overflow = '';
+}
+
+function openAddBoarderModal() {
+  const modal = document.getElementById('add-boarder-modal');
+  if (!modal) {
+    return;
+  }
+
+  const form = document.getElementById('add-boarder-form');
+  form.reset();
+
+  const startDate = document.getElementById('boarder-start-date');
+  startDate.value = new Date().toISOString().split('T')[0];
+
+  if (propertyData) {
+    const rentInput = document.getElementById('boarder-rent');
+    rentInput.value = propertyData.price || 0;
+
+    const depositInput = document.getElementById('boarder-deposit');
+    depositInput.value = propertyData.price || 0;
+  }
+
+  modal.classList.add('active');
+  document.body.style.overflow = 'hidden';
+}
+
+function handleSearch(e) {
+  const query = e.target.value.toLowerCase().trim();
+  filterAndSortBoarders(query);
+}
+
+function handleFilter() {
+  filterAndSortBoarders();
 }
 
 function setupModalHandlers() {
@@ -819,102 +705,137 @@ function setupModalHandlers() {
   });
 }
 
-function handleSearch(e) {
-  const query = e.target.value.toLowerCase().trim();
-  filterAndSortBoarders(query);
-}
+export function initLandlordBoarders() {
+  const urlParams = new URLSearchParams(window.location.search);
+  const propertyId = urlParams.get('propertyId');
 
-function handleFilter() {
-  filterAndSortBoarders();
-}
-
-function filterAndSortBoarders(searchQuery = '') {
-  const searchInput = document.getElementById('search-boarders');
-  const filterStatus = document.getElementById('filter-status');
-  const filterRoom = document.getElementById('filter-room');
-  const filterPayment = document.getElementById('filter-payment');
-
-  if (!searchInput || !filterStatus || !filterRoom || !filterPayment) {
+  if (!propertyId) {
+    // If no propertyId provided, fetch all properties and show selector
+    showLoadingState();
+    fetchAllProperties()
+      .then(properties => {
+        hideLoadingState();
+        if (properties && properties.length > 0) {
+          if (properties.length === 1) {
+            // Only one property, redirect to it
+            window.location.href = `index.html?propertyId=${properties[0].id}`;
+          } else {
+            // Multiple properties, show selector
+            showPropertySelector(properties);
+          }
+        } else {
+          showNoPropertiesState();
+        }
+      })
+      .catch(() => {
+        hideLoadingState();
+        showNoPropertiesState();
+      });
     return;
   }
 
-  const query = searchInput || searchInput.value.toLowerCase().trim();
-  const statusFilter = filterStatus.value;
-  const roomFilter = filterRoom.value;
-  const paymentFilter = filterPayment.value;
-
-  const filtered = boardersData.filter(boarder => {
-    const fullName = `${boarder.first_name || ''} ${boarder.last_name || ''}`.toLowerCase();
-    const matchesSearch =
-      !query || fullName.includes(query) || (boarder.email || '').toLowerCase().includes(query);
-
-    const matchesStatus = statusFilter === 'all' || boarder.status === statusFilter;
-    const matchesRoom = roomFilter === 'all' || boarder.room_id === parseInt(roomFilter);
-    const matchesPayment = paymentFilter === 'all' || boarder.payment_status === paymentFilter;
-
-    return matchesSearch && matchesStatus && matchesRoom && matchesPayment;
+  // Also fetch all properties for the selector
+  fetchAllProperties().then(properties => {
+    if (properties && properties.length > 1) {
+      showPropertySelector(properties, propertyId);
+    }
   });
 
-  renderBoarders(filtered);
+  loadPropertyData(propertyId);
+  loadBoarders(propertyId);
+  setupEventListeners();
+
+  // Inject icons
+  setTimeout(() => injectIcons(), 100);
 }
 
-function getInitials(firstName, lastName) {
-  const first = (firstName || '').charAt(0).toUpperCase();
-  const last = (lastName || '').charAt(0).toUpperCase();
-  return `${first}${last}`;
-}
+async function fetchAllProperties() {
+  try {
+    const token = localStorage.getItem('token');
+    const headers = {
+      'Content-Type': 'application/json',
+    };
+    if (token) {
+      headers['Authorization'] = `Bearer ${token}`;
+    }
 
-function formatDate(dateString) {
-  if (!dateString) {
-    return 'N/A';
+    const response = await fetch(`${CONFIG.API_BASE_URL}/api/landlord/properties.php`, {
+      method: 'GET',
+      headers,
+      credentials: 'include',
+    });
+
+    if (!response.ok) {
+      throw new Error(`API error: ${response.status}`);
+    }
+
+    const result = await response.json();
+
+    // Check if there are properties in the response
+    if (result.data && result.data.properties && result.data.properties.length > 0) {
+      return result.data.properties;
+    }
+
+    return [];
+  } catch (error) {
+    return [];
   }
+}
 
-  const date = new Date(dateString);
-  return date.toLocaleDateString('en-US', {
-    year: 'numeric',
-    month: 'long',
-    day: 'numeric',
+function showPropertySelector(properties, selectedPropertyId = null) {
+  const selector = document.getElementById('property-selector');
+
+  if (!selector) return;
+
+  // Populate selector
+  selector.innerHTML = '<option value="">Select a property...</option>';
+  properties.forEach(property => {
+    const option = document.createElement('option');
+    option.value = property.id;
+    option.textContent = property.name || 'Unnamed Property';
+    if (selectedPropertyId && property.id === selectedPropertyId) {
+      option.selected = true;
+    }
+    selector.appendChild(option);
   });
-}
 
-function calculateDuration(startDate) {
-  if (!startDate) {
-    return 'N/A';
+  // Show selector
+  selector.style.display = 'block';
+
+  // Add change handler
+  selector.addEventListener('change', e => {
+    const newPropertyId = e.target.value;
+    if (newPropertyId) {
+      window.location.href = `index.html?propertyId=${newPropertyId}`;
+    }
+  });
+
+  // If no property is selected, show instruction
+  if (!selectedPropertyId) {
+    const propertyName = document.getElementById('property-name');
+    const propertyLocation = document.getElementById('property-location');
+    if (propertyName) propertyName.textContent = 'Select a Property';
+    if (propertyLocation) propertyLocation.textContent = 'Choose a property to view its boarders';
+
+    // Hide header actions
+    const headerActions = document.querySelector('.header-actions');
+    if (headerActions) headerActions.style.display = 'none';
+
+    // Show empty state with instruction
+    const grid = document.getElementById('boarders-grid');
+    const emptyState = document.getElementById('empty-state');
+    if (grid) grid.style.display = 'none';
+    if (emptyState) {
+      emptyState.style.display = 'flex';
+      const h2 = emptyState.querySelector('h2');
+      const p = emptyState.querySelector('p');
+      if (h2) h2.textContent = 'Select a Property';
+      if (p)
+        p.textContent =
+          'Choose a property from the dropdown above to view and manage its boarders.';
+    }
+    setTimeout(() => injectIcons(), 100);
   }
-
-  const start = new Date(startDate);
-  const now = new Date();
-  const diffTime = Math.abs(now - start);
-  const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-  const diffMonths = Math.floor(diffDays / 30);
-
-  if (diffMonths === 0) {
-    return `${diffDays} day${diffDays > 1 ? 's' : ''}`;
-  } else if (diffMonths === 1) {
-    return '1 month';
-  } else {
-    return `${diffMonths} months`;
-  }
-}
-
-function getPaymentStatusColor(status) {
-  switch (status) {
-    case 'paid':
-      return '#22c55e';
-    case 'pending':
-      return '#f59e0b';
-    case 'overdue':
-      return '#ef4444';
-    default:
-      return '#555555';
-  }
-}
-
-function capitalizeFirst(str) {
-  if (!str) {
-    return '';
-  }
-  return str.charAt(0).toUpperCase() + str.slice(1);
 }
 
 document.addEventListener('DOMContentLoaded', initLandlordBoarders);
