@@ -5,6 +5,8 @@
 
 import { getIcon } from '../../shared/icons.js';
 import { updateBoarderStatus } from '../../shared/routing.js';
+import CONFIG from '../../config.js';
+import { getAuthHeaders } from '../../shared/auth-headers.js';
 
 /**
  * Initialize the confirm booking page
@@ -621,18 +623,14 @@ async function handleAcceptBooking(application) {
 
     localStorage.setItem('confirmedBooking', JSON.stringify(booking));
 
-    // TODO: Call API to confirm booking
-    // await fetch(`${API_BASE_URL}/bookings/confirm.php`, {
-    //   method: 'POST',
-    //   headers: { 'Content-Type': 'application/json' },
-    //   body: JSON.stringify({
-    //     applicationId: application.id,
-    //     paymentMethod: selectedMethod.value
-    //   })
-    // });
-
-    // Cancel other applications
-    cancelOtherApplications(application.id);
+    // Call API to confirm booking
+    await fetch(`${CONFIG.API_BASE_URL}/api/boarder/applications/${application.id}/confirm`, {
+      method: 'POST',
+      headers: getAuthHeaders(),
+      body: JSON.stringify({
+        payment_method: selectedMethod.value,
+      }),
+    });
 
     // Update status to 'accepted'
     updateBoarderStatus('accepted');

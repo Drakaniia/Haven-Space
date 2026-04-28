@@ -132,4 +132,36 @@ class ApplicationController
             json_response(500, ['error' => 'Failed to delete application']);
         }
     }
+
+    /**
+     * Confirm a booking for an accepted application (boarder only)
+     * POST /api/boarder/applications/:id/confirm
+     */
+    public function confirmBooking($request, $id)
+    {
+        $user = Middleware::authorize(['boarder']);
+        $userId = $user['user_id'];
+
+        $data = json_decode(file_get_contents('php://input'), true);
+
+        if (!$data || empty($data['payment_method'])) {
+            json_response(400, ['error' => 'Payment method is required']);
+            return;
+        }
+
+        try {
+            $result = $this->service->confirmBooking((int) $id, $userId, $data['payment_method']);
+            json_response(200, [
+                'data' => $result,
+                'message' => 'Booking confirmed successfully',
+                'success' => true
+            ]);
+        } catch (\InvalidArgumentException $e) {
+            json_response(400, ['error' => $e->getMessage()]);
+        } catch (\RuntimeException $e) {
+            json_response(403, ['error' => $e->getMessage()]);
+        } catch (\Exception $e) {
+            json_response(500, ['error' => 'Failed to confirm booking']);
+        }
+    }
 }

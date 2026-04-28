@@ -239,4 +239,27 @@ class NotificationService
 
         return $this->repository->create($data);
     }
+
+    /**
+     * Create booking confirmed notification for landlord
+     */
+    public function notifyBookingConfirmed(int $landlordId, int $boarderId, int $applicationId, int $propertyId, int $roomId, string $propertyName, string $roomTitle): int
+    {
+        $data = [
+            'user_id' => $landlordId,
+            'type' => 'booking_confirmed',
+            'title' => 'Booking Confirmed',
+            'message' => "A boarder has confirmed their booking for {$roomTitle} at {$propertyName}.",
+            'metadata' => [
+                'application_id' => $applicationId,
+                'property_id' => $propertyId,
+                'room_id' => $roomId,
+                'boarder_id' => $boarderId,
+                'property_name' => $propertyName,
+                'room_title' => $roomTitle,
+            ],
+        ];
+
+        return $this->repository->create($data);
+    }
 }

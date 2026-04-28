@@ -8,6 +8,7 @@ import { initSidebar } from '../../components/sidebar.js';
 import { initNavbar } from '../../components/navbar.js';
 import { initBoarderStatus } from './status.js';
 import { getIcon } from '../../shared/icons.js';
+import { authenticatedFetch } from '../../shared/state.js';
 import { updateBoarderStatus } from '../../shared/routing.js';
 
 function loginPath() {
@@ -94,21 +95,7 @@ export async function initBoarderApplications() {
  */
 async function fetchApplications() {
   try {
-    const userId = getCurrentUserId();
-    const token = localStorage.getItem('token');
-    const headers = {
-      'Content-Type': 'application/json',
-      'X-User-Id': userId,
-    };
-    if (token) {
-      headers['Authorization'] = `Bearer ${token}`;
-    }
-
-    const response = await fetch(`${CONFIG.API_BASE_URL}/api/boarder/applications`, {
-      method: 'GET',
-      headers: headers,
-      credentials: 'include',
-    });
+    const response = await authenticatedFetch(`${CONFIG.API_BASE_URL}/api/boarder/applications`);
 
     if (!response.ok) {
       throw new Error('Failed to fetch applications');
@@ -116,7 +103,6 @@ async function fetchApplications() {
 
     const result = await response.json();
     const applications = result.data || [];
-
     renderApplications(applications);
   } catch (error) {
     console.error('Error fetching applications:', error);
@@ -382,35 +368,3 @@ function showSuccess(message) {
   document.body.appendChild(successDiv);
   setTimeout(() => successDiv.remove(), 3000);
 }
-
-/**
- * Fetch applications from backend
- * TODO: Implement when backend is ready
- */
-// async function fetchApplications() {
-//   try {
-//     // const response = await fetch(`${CONFIG.API_BASE_URL}/boarder/applications`);
-//     // const applications = await response.json();
-//     // renderApplications(applications);
-//   } catch (error) {
-//     // Error fetching applications
-//   }
-// }
-
-/**
- * Render applications list
- * @param {Array} applications
- * TODO: Implement when backend is ready
- */
-// function renderApplications(applications) {
-//   const list = document.getElementById('applications-list');
-//   const emptyState = document.getElementById('applications-empty');
-//
-//   if (applications.length === 0) {
-//     list.style.display = 'none';
-//     emptyState.style.display = 'block';
-//   } else {
-//     list.style.display = 'flex';
-//     emptyState.style.display = 'none';
-//   }
-// }

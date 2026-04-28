@@ -143,7 +143,7 @@ class ApplicationRepository
         $fields = [];
         $params = [];
 
-        $allowedFields = ['status', 'message'];
+        $allowedFields = ['status', 'message', 'payment_method', 'confirmed_at'];
 
         foreach ($allowedFields as $field) {
             if (isset($data[$field])) {

@@ -6,6 +6,8 @@
 import { getIcon } from '../shared/icons.js';
 import { fetchAcceptedApplications } from '../shared/notifications.js';
 import { showToast } from '../shared/toast.js';
+import CONFIG from '../config.js';
+import { getAuthHeaders } from '../shared/auth-headers.js';
 
 /**
  * Open the "Choose Your Boarding House" overlay
@@ -250,8 +252,24 @@ function openConfirmationStep(app) {
     confirmBtn.textContent = 'Confirming...';
 
     try {
-      // TODO: Call API to confirm the booking
-      // await confirmBooking(app.application_id);
+      // Call API to confirm the booking
+      const paymentMethod =
+        overlay.querySelector('input[name="payment-method"]:checked')?.value || 'GCash';
+
+      const response = await fetch(
+        `${CONFIG.API_BASE_URL}/api/boarder/applications/${app.application_id}/confirm`,
+        {
+          method: 'POST',
+          headers: getAuthHeaders(),
+          body: JSON.stringify({
+            payment_method: paymentMethod,
+          }),
+        }
+      );
+
+      if (!response.ok) {
+        throw new Error('Failed to confirm booking');
+      }
 
       closeConfirmationOverlay(overlay);
       showToast('Booking confirmed! Welcome to your new boarding house.', 'success');

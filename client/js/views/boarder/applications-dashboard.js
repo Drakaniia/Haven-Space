@@ -634,9 +634,16 @@ async function loadRecentActivity() {
       applications = applicationsData.data || [];
     }
 
-    // TODO: Fetch saved properties from API when endpoint is available
-    // For now, fall back to localStorage
-    const savedProperties = JSON.parse(localStorage.getItem('savedProperties') || '[]');
+    // Fetch saved properties from API
+    const savedPropertiesResponse = await authenticatedFetch(
+      `${CONFIG.API_BASE_URL}/api/boarder/saved-listings`
+    );
+
+    let savedProperties = [];
+    if (savedPropertiesResponse.ok) {
+      const savedPropertiesData = await savedPropertiesResponse.json();
+      savedProperties = savedPropertiesData.data || [];
+    }
 
     const activities = [];
 
@@ -668,11 +675,15 @@ async function loadRecentActivity() {
 
     // Add saved property activities
     savedProperties.slice(-3).forEach(property => {
+      // Handle both API format (with property object) and localStorage format
+      const propertyTitle = property.property?.title || property.title || 'Property';
+      const savedDate = property.saved_at || property.savedAt || new Date().toISOString();
+
       activities.push({
         type: 'saved',
-        title: `Saved ${property.title}`,
+        title: `Saved ${propertyTitle}`,
         description: `Added property to your saved list`,
-        date: property.savedAt || new Date().toISOString(),
+        date: savedDate,
         icon: 'bookmark',
       });
     });
@@ -732,11 +743,15 @@ async function loadRecentActivity() {
 
     // Add saved property activities
     savedProperties.slice(-3).forEach(property => {
+      // Handle both API format (with property object) and localStorage format
+      const propertyTitle = property.property?.title || property.title || 'Property';
+      const savedDate = property.saved_at || property.savedAt || new Date().toISOString();
+
       activities.push({
         type: 'saved',
-        title: `Saved ${property.title}`,
+        title: `Saved ${propertyTitle}`,
         description: `Added property to your saved list`,
-        date: property.savedAt || new Date().toISOString(),
+        date: savedDate,
         icon: 'bookmark',
       });
     });

@@ -168,6 +168,65 @@ class ApplicationService
     }
 
     /**
+     * Confirm an accepted application (boarder only)
+     * Boarder confirms they want to book the room after landlord acceptance
+     */
+    public function confirmBooking(int $applicationId, int $boarderId, string $paymentMethod): array
+    {
+        $application = $this->repository->findById($applicationId);
+        
+        if (!$application) {
+            throw new \RuntimeException('Application not found');
+        }
+
+        if ($application['boarder_id'] !== $boarderId) {
+            throw new \RuntimeException('Unauthorized');
+        }
+
+        // Only allow confirming applications that are in 'accepted' status
+        if ($application['status'] !== 'accepted') {
+            throw new \RuntimeException('Only accepted applications can be confirmed');
+        }
+
+        // Update application status to 'confirmed'
+        $this->repository->update($applicationId, [
+            'status' => 'confirmed',
+            'payment_method' => $paymentMethod,
+            'confirmed_at' => date('Y-m-d H:i:s')
+        ]);
+
+        // Update user's boarder status to 'accepted' (has confirmed a booking)
+        $pdo = Connection::getInstance()->getPdo();
+        $userUpdateStmt = $pdo->prepare('UPDATE users SET boarder_status = ? WHERE id = ?');
+        $userUpdateStmt->execute(['accepted', $boarderId]);
+
+        // Cancel all other pending applications for this boarder
+        $cancelOtherStmt = $pdo->prepare('UPDATE applications SET status = ?, deleted_at = CURRENT_TIMESTAMP WHERE boarder_id = ? AND id != ? AND status IN (?, ?, ?)');
+        $cancelOtherStmt->execute(['cancelled', $boarderId, $applicationId, 'pending', 'accepted', 'confirmed']);
+
+        // Send notification to landlord that boarder has confirmed
+        try {
+            $propertyDetails = $this->repository->getPropertyDetails($application['room_id']);
+            $houseName = $propertyDetails['house_name'] ?? 'a property';
+            
+            $this->notificationService->notifyBookingConfirmed(
+                $application['landlord_id'],
+                $application['boarder_id'],
+                $application['id'],
+                $application['property_id'] ?? 0,
+                $application['room_id'],
+                $houseName,
+                $application['room_title'] ?? 'a room'
+            );
+        } catch (\Exception $e) {
+            error_log("Failed to send booking confirmation notification: " . $e->getMessage());
+        }
+
+        // Get updated application
+        return $this->getApplication($applicationId, $boarderId, 'boarder');
+    }
+
+    /**
      * Trigger onboarding flow for accepted application
      */
     private function triggerOnboardingForAcceptedApplication(array $application): void
