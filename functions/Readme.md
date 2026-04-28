@@ -2,6 +2,8 @@
 
 Backend API for Haven Space, a platform connecting boarders with verified boarding houses.
 
+**Base Directory:** `functions/`
+
 ---
 
 ## Table of Contents
@@ -38,10 +40,10 @@ The application automatically detects the environment and loads appropriate sett
 
 ```bash
 # Copy XAMPP environment template
-cp server/.env.xampp server/.env
+cp functions/.env.xampp functions/.env
 
 # Start XAMPP (Apache + MySQL), then:
-cd server
+cd functions
 php -S localhost:8000 -t api
 ```
 
@@ -49,7 +51,7 @@ php -S localhost:8000 -t api
 
 ```bash
 # Copy example environment file
-cp server/.env.example server/.env
+cp functions/.env.example functions/.env
 
 # Edit .env with production values:
 # - APP_ENV=production
@@ -60,7 +62,7 @@ cp server/.env.example server/.env
 
 ### Environment Variables
 
-Key environment variables (see `server/.env.example` for full list):
+Key environment variables (see `functions/.env.example` for full list):
 
 ```env
 # Application Environment
@@ -134,7 +136,7 @@ npm -v
 
 ```bash
 git clone https://github.com/Drakaniia/Haven-Space.git
-cd Haven-Space/server
+cd Haven-Space/functions
 ```
 
 ### 2. Install PHP Dependencies
@@ -228,7 +230,7 @@ openssl rand -hex 32
 
 ```bash
 # Start PHP built-in server
-cd server
+cd functions
 php -S localhost:8000 -t api
 ```
 
@@ -446,7 +448,7 @@ Google OAuth allows users to sign in with their Google accounts. Follow these st
 
 ### Step 2: Configure Environment
 
-Edit `server/.env`:
+Edit `functions/.env`:
 
 ```env
 GOOGLE_CLIENT_ID=123456789-abc123def456.apps.googleusercontent.com
@@ -462,7 +464,7 @@ mysql -u root -p havenspace_db < database/migrations/002_add_google_auth_to_user
 
 ### Step 4: Test Google Login
 
-1. Start the backend server: `php -S localhost:8000 -t api`
+1. Start the backend server: `cd functions && php -S localhost:8000 -t api`
 2. Start the frontend: `bun run start`
 3. Go to login page: `http://localhost:3000/client/views/public/auth/login.html`
 4. Click **"Log in with Google"**
@@ -484,7 +486,7 @@ For production deployment:
 
 3. Set `secure=true` for cookies in production
 
-For detailed instructions, see `server/docs/GOOGLE_OAUTH_SETUP.md`
+For detailed instructions, see `functions/docs/GOOGLE_OAUTH_SETUP.md`
 
 ---
 
@@ -493,7 +495,7 @@ For detailed instructions, see `server/docs/GOOGLE_OAUTH_SETUP.md`
 ### Run PHPUnit Tests
 
 ```bash
-cd server
+cd functions
 
 # Run all tests
 composer test
@@ -526,7 +528,7 @@ curl -X GET http://localhost:8000/auth/me.php \
 ## Project Structure
 
 ```
-server/
+functions/
 ├── api/                      # API entry points
 │   ├── auth/                 # Authentication endpoints
 │   │   ├── google/           # Google OAuth endpoints
@@ -575,6 +577,7 @@ server/
 │       ├── Message/          # Messaging system
 │       └── Notice/           # Notices/announcements
 ├── storage/                  # File storage
+├── public/                   # Public assets
 ├── tests/                    # PHPUnit tests
 │   ├── Unit/                 # Unit tests
 │   └── Integration/          # Integration tests

@@ -643,3 +643,4 @@ CREATE TABLE IF NOT EXISTS boarder_document_acknowledgments (
     INDEX idx_document (document_id),
     INDEX idx_acknowledged (acknowledged)
 );
+

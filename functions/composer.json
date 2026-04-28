@@ -11,8 +11,12 @@
     "guzzlehttp/guzzle": "^7.0"
   },
   "require-dev": {
+    "codeception/codeception": "^5.3",
+    "codeception/module-phpbrowser": "^4.0",
+    "codeception/module-rest": "^3.4",
     "phpstan/phpstan": "1.10",
-    "phpunit/phpunit": "^9.0"
+    "phpunit/phpunit": "^9.0",
+    "codeception/module-asserts": "*"
   },
   "autoload": {
     "psr-4": {
@@ -21,7 +25,7 @@
   },
   "autoload-dev": {
     "psr-4": {
-      "App\\Tests\\": "tests/"
+      "Tests\\": "tests/"
     }
   },
   "config": {
@@ -31,6 +35,8 @@
   },
   "scripts": {
     "test": "phpunit",
+    "test:codeception": "vendor/bin/codecept run",
+    "test:api": "vendor/bin/codecept run api",
     "analyze": "phpstan analyse"
   }
 }
