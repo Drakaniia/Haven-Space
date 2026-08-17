@@ -23,6 +23,7 @@ import {
   updateBoarderStatus,
   verifyBoarderEmail,
 } from '../repositories/applications';
+import { findActiveAccess } from '../repositories/property-access';
 
 const applicationRoutes = new Hono<{ Bindings: Env }>();
 // Landlords may only move an application forward to accepted or rejected; every
@@ -77,13 +78,24 @@ function requiredNonEmptyString(body: JsonRecord, field: string): string | null 
   return normalizedValue ? normalizedValue : null;
 }
 
-function canAccessApplication(application: ApplicationDetailRow, user: AuthenticatedUser): boolean {
+// A landlord can view/manage an application when they are the application's
+// landlord or they hold active shared access to the application's property.
+async function canAccessApplication(
+  db: D1Database,
+  application: ApplicationDetailRow,
+  user: AuthenticatedUser
+): Promise<boolean> {
   if (user.role === 'boarder') {
     return Number(application.boarder_id) === user.user_id;
   }
 
   if (user.role === 'landlord') {
-    return Number(application.landlord_id) === user.user_id;
+    if (Number(application.landlord_id) === user.user_id) {
+      return true;
+    }
+
+    const access = await findActiveAccess(db, Number(application.property_id), user.user_id);
+    return access !== null;
   }
 
   return false;
@@ -100,7 +112,7 @@ async function showApplication(c: Context<{ Bindings: Env }>) {
 
   const application = await findApplicationById(db, applicationId);
 
-  if (!application || !canAccessApplication(application, user)) {
+  if (!application || !(await canAccessApplication(db, application, user))) {
     return errorResponse(404, 'Application not found');
   }
 
@@ -351,7 +363,7 @@ applicationRoutes.patch('/api/landlord/applications/:id/status', async c => {
     return errorResponse(403, 'Application not found');
   }
 
-  if (Number(application.landlord_id) !== user.user_id) {
+  if (!(await canAccessApplication(db, application, user))) {
     return errorResponse(403, 'Unauthorized');
   }
 

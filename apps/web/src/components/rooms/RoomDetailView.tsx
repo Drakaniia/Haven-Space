@@ -51,7 +51,11 @@ function formatPrice(value: number | null | undefined): string {
 function formatAmount(value: string): string {
   if (!value) return 'Contact for details';
   const numeric = Number(value.replace(/[^\d.]/g, ''));
-  if (!Number.isNaN(numeric) && String(value).trim() !== '' && /^[₱\s]*[\d.,]+$/.test(value.trim())) {
+  if (
+    !Number.isNaN(numeric) &&
+    String(value).trim() !== '' &&
+    /^[₱\s]*[\d.,]+$/.test(value.trim())
+  ) {
     return formatPrice(numeric);
   }
   return value;
@@ -79,14 +83,20 @@ function roomStatusLabel(room: RoomDetail): { label: string; className: string }
   return { label: 'Available', className: 'bg-green-100 text-green-700' };
 }
 
-function genderInfo(
-  preference: string
-): { label: string; icon: string; description: string } {
+function genderInfo(preference: string): { label: string; icon: string; description: string } {
   switch ((preference || 'any').toLowerCase()) {
     case 'male':
-      return { label: 'Male Only', icon: 'user', description: 'This property accepts male boarders.' };
+      return {
+        label: 'Male Only',
+        icon: 'user',
+        description: 'This property accepts male boarders.',
+      };
     case 'female':
-      return { label: 'Female Only', icon: 'user', description: 'This property accepts female boarders.' };
+      return {
+        label: 'Female Only',
+        icon: 'user',
+        description: 'This property accepts female boarders.',
+      };
     default:
       return {
         label: 'Open to All Genders',
@@ -164,8 +174,7 @@ export function RoomDetailView({
     return [listing.coverImage || PLACEHOLDER_IMAGE];
   }, [listing.images, listing.coverImage]);
 
-  const hasCoords =
-    typeof listing.latitude === 'number' && typeof listing.longitude === 'number';
+  const hasCoords = typeof listing.latitude === 'number' && typeof listing.longitude === 'number';
   const availableRooms = useMemo(() => listing.rooms.filter(isRoomAvailable), [listing.rooms]);
   const gender = genderInfo(listing.genderPreference);
 
@@ -211,14 +220,17 @@ export function RoomDetailView({
     listing.houseRules.length > 0
       ? listing.houseRules
       : listing.propertyRules
-        ? [listing.propertyRules]
-        : [];
+      ? [listing.propertyRules]
+      : [];
 
   return (
     <div className="mx-auto w-full max-w-6xl px-4 py-6 sm:px-6">
       {/* Breadcrumb */}
       <nav className="flex items-center gap-2 text-sm" aria-label="Breadcrumb">
-        <Link to={browseHref} className="flex items-center gap-1.5 font-medium text-primary hover:underline">
+        <Link
+          to={browseHref}
+          className="flex items-center gap-1.5 font-medium text-primary hover:underline"
+        >
           <Icon name="home" size={16} />
           Find a Room
         </Link>
@@ -419,7 +431,11 @@ export function RoomDetailView({
               label="Availability"
               value={listing.availability || 'Contact for availability'}
             />
-            <QuickInfoCard icon="clock" label="Minimum Stay" value={listing.minStay || 'Flexible'} />
+            <QuickInfoCard
+              icon="clock"
+              label="Minimum Stay"
+              value={listing.minStay || 'Flexible'}
+            />
           </section>
 
           {/* Description */}
@@ -528,19 +544,26 @@ export function RoomDetailView({
               <div className="flex items-center gap-2">
                 <Icon name="calendar" size={18} className="shrink-0 text-primary" />
                 <span>
-                  Available: <strong className="font-semibold text-ink">{listing.availability || 'Now'}</strong>
+                  Available:{' '}
+                  <strong className="font-semibold text-ink">
+                    {listing.availability || 'Now'}
+                  </strong>
                 </span>
               </div>
               <div className="flex items-center gap-2">
                 <Icon name="banknotes" size={18} className="shrink-0 text-primary" />
                 <span>
-                  Deposit: <strong className="font-semibold text-ink">{formatAmount(listing.deposit)}</strong>
+                  Deposit:{' '}
+                  <strong className="font-semibold text-ink">
+                    {formatAmount(listing.deposit)}
+                  </strong>
                 </span>
               </div>
               <div className="flex items-center gap-2">
                 <Icon name="clock" size={18} className="shrink-0 text-primary" />
                 <span>
-                  Advance: <strong className="font-semibold text-ink">{listing.advance || '1 month'}</strong>
+                  Advance:{' '}
+                  <strong className="font-semibold text-ink">{listing.advance || '1 month'}</strong>
                 </span>
               </div>
             </div>
@@ -582,9 +605,7 @@ export function RoomDetailView({
                             selected ? 'border-primary bg-primary' : 'border-gray-300'
                           }`}
                         >
-                          {selected ? (
-                            <span className="h-1.5 w-1.5 rounded-full bg-white" />
-                          ) : null}
+                          {selected ? <span className="h-1.5 w-1.5 rounded-full bg-white" /> : null}
                         </span>
                       </span>
                     </button>
@@ -655,9 +676,7 @@ export function RoomDetailView({
                     <p className="text-base font-bold text-ink">
                       {listing.landlord?.properties ?? 0}
                     </p>
-                    <p className="text-[11px] uppercase tracking-wider text-gray-ink">
-                      Properties
-                    </p>
+                    <p className="text-[11px] uppercase tracking-wider text-gray-ink">Properties</p>
                   </div>
                   <div>
                     <p className="text-base font-bold text-ink">
@@ -722,7 +741,9 @@ export function RoomDetailView({
                   <div className="p-4">
                     <div className="flex items-center justify-between gap-2">
                       <h3 className="truncate font-semibold text-ink">{cleanRoomType(room)}</h3>
-                      <p className="shrink-0 font-bold text-primary">{formatPrice(room.price)}/mo</p>
+                      <p className="shrink-0 font-bold text-primary">
+                        {formatPrice(room.price)}/mo
+                      </p>
                     </div>
                     <div className="mt-2.5 flex flex-wrap gap-x-4 gap-y-1 text-sm text-gray-ink">
                       <span className="flex items-center gap-1.5">
@@ -744,7 +765,8 @@ export function RoomDetailView({
                     </div>
                     {room.deposit > 0 ? (
                       <p className="mt-2 text-xs text-gray-ink">
-                        Deposit: <span className="font-medium text-ink">{formatPrice(room.deposit)}</span>
+                        Deposit:{' '}
+                        <span className="font-medium text-ink">{formatPrice(room.deposit)}</span>
                       </p>
                     ) : null}
                     {room.description ? (
@@ -808,7 +830,9 @@ export function RoomDetailView({
                         <span className="text-amber-400">★</span>
                         {property.rating > 0 ? property.rating.toFixed(1) : 'New'}
                         {property.reviewCount > 0 ? (
-                          <span className="font-normal text-gray-ink">({property.reviewCount})</span>
+                          <span className="font-normal text-gray-ink">
+                            ({property.reviewCount})
+                          </span>
                         ) : null}
                       </span>
                       <span className="font-bold text-primary">
@@ -828,20 +852,10 @@ export function RoomDetailView({
 }
 
 function SectionTitle({ children }: { children: React.ReactNode }) {
-  return (
-    <h2 className="mb-4 text-lg font-bold tracking-tight text-ink">{children}</h2>
-  );
+  return <h2 className="mb-4 text-lg font-bold tracking-tight text-ink">{children}</h2>;
 }
 
-function QuickInfoCard({
-  icon,
-  label,
-  value,
-}: {
-  icon: string;
-  label: string;
-  value: string;
-}) {
+function QuickInfoCard({ icon, label, value }: { icon: string; label: string; value: string }) {
   return (
     <div className="flex items-start gap-3 rounded-2xl bg-white p-4 shadow-card">
       <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-mint text-primary">

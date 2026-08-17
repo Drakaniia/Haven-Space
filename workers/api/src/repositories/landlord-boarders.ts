@@ -1,3 +1,5 @@
+import { accessiblePropertyClause } from './property-access';
+
 export interface LandlordBoarderRow {
   application_id: number;
   id: number;
@@ -140,7 +142,6 @@ export async function listLandlordBoarders(
         JOIN users u ON app.boarder_id = u.id
         JOIN rooms r ON app.room_id = r.id
         WHERE r.property_id = ?
-          AND app.landlord_id = ?
           AND app.status IN ('accepted', 'approved', 'confirmed')
           AND app.deleted_at IS NULL
           AND u.deleted_at IS NULL
@@ -148,7 +149,7 @@ export async function listLandlordBoarders(
         ORDER BY app.created_at DESC
       `
     )
-    .bind(propertyId, landlordId)
+    .bind(propertyId)
     .all<LandlordBoarderRow>();
 
   return (result.results ?? []).map(formatLandlordBoarder);
@@ -238,14 +239,13 @@ export async function findLandlordBoarderApplication(
         FROM applications app
         JOIN rooms r ON app.room_id = r.id
         WHERE app.boarder_id = ?
-          AND app.landlord_id = ?
           AND app.status IN ('accepted', 'approved', 'confirmed')
           AND app.deleted_at IS NULL
           AND r.property_id = ?
         LIMIT 1
       `
     )
-    .bind(boarderId, landlordId, propertyId)
+    .bind(boarderId, propertyId)
     .first<BoarderApplicationIdentityRow>();
 }
 
@@ -317,6 +317,8 @@ export async function softDeleteLandlordBoarderApplications(
   boarderId: number,
   landlordId: number
 ): Promise<number> {
+  // The delete route has no property id, so scope the removal to applications
+  // whose room belongs to a property the caller owns or shares.
   const result = await db
     .prepare(
       `
@@ -324,12 +326,17 @@ export async function softDeleteLandlordBoarderApplications(
         SET deleted_at = CURRENT_TIMESTAMP,
             updated_at = CURRENT_TIMESTAMP
         WHERE boarder_id = ?
-          AND landlord_id = ?
           AND status IN ('accepted', 'approved', 'confirmed')
           AND deleted_at IS NULL
+          AND room_id IN (
+            SELECT r.id
+            FROM rooms r
+            JOIN properties p ON r.property_id = p.id
+            WHERE ${accessiblePropertyClause('p')}
+          )
       `
     )
-    .bind(boarderId, landlordId)
+    .bind(boarderId, landlordId, landlordId)
     .run();
 
   return Number(result.meta.changes ?? 0);

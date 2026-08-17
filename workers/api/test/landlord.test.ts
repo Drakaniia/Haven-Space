@@ -78,6 +78,7 @@ const propertyRow: LandlordPropertyListRow = {
   price: 4500,
   status: 'available',
   listing_moderation_status: 'published',
+  role: 'owner',
   created_at: '2026-05-01 10:00:00',
   rooms_count: 2,
   occupied_rooms: 1,
@@ -104,6 +105,7 @@ const detailRow: LandlordPropertyDetailRow = {
   property_rules: 'No smoking',
   status: 'available',
   listing_moderation_status: 'published',
+  role: 'owner',
   created_at: '2026-05-01 10:00:00',
   rooms_count: 2,
   occupied_rooms: 1,
@@ -456,7 +458,7 @@ describe('landlord property routes', () => {
     });
     expect(capturedBinds).toEqual([
       [3],
-      [10, 3],
+      [10, 3, 3],
       [100],
       ['456 Rizal Ave', 'Quezon City', 'Metro Manila', 14.6, 121, 100],
       [
@@ -471,6 +473,7 @@ describe('landlord property routes', () => {
         'female',
         'hidden',
         10,
+        3,
         3,
       ],
       [10],
@@ -520,7 +523,7 @@ describe('landlord property routes', () => {
     });
     expect(capturedBinds).toEqual([
       [3],
-      [10, 3],
+      [10, 3, 3],
       [
         'Pine House',
         'Near campus',
@@ -533,6 +536,7 @@ describe('landlord property routes', () => {
         'any',
         'available',
         10,
+        3,
         3,
       ],
       [10],
@@ -578,7 +582,7 @@ describe('landlord property routes', () => {
     });
     expect(capturedBinds).toEqual([
       [3],
-      [10, 3],
+      [10, 3, 3],
       [
         'Pine House',
         'Near campus',
@@ -591,6 +595,7 @@ describe('landlord property routes', () => {
         'any',
         'available',
         10,
+        3,
         3,
       ],
       [10, 'https://utfs.io/f/removed-key'],
@@ -635,7 +640,7 @@ describe('landlord property routes', () => {
     expect(await inaccessibleResponse.json()).toEqual({
       error: 'Property not found or access denied',
     });
-    expect(capturedBinds).toEqual([[3], [404, 3]]);
+    expect(capturedBinds).toEqual([[3], [404, 3, 3]]);
   });
 
   it('requires a landlord role for listing updates', async () => {
@@ -685,6 +690,7 @@ describe('landlord property routes', () => {
             province: 'Metro Manila',
             price: 4500,
             status: 'active',
+            role: 'owner',
             total_rooms: 2,
             occupied_rooms: 1,
             monthly_revenue: 5000,
@@ -697,7 +703,7 @@ describe('landlord property routes', () => {
         total_count: 1,
       },
     });
-    expect(capturedBinds).toEqual([[3], [3], [10], [10]]);
+    expect(capturedBinds).toEqual([[3], [3, 3, 3], [10], [10]]);
   });
 
   it('returns an empty landlord property list from the non-php route', async () => {
@@ -722,7 +728,13 @@ describe('landlord property routes', () => {
       'http://localhost/api/landlord/properties?id=10',
       { headers: { 'X-User-ID': '3' } },
       createSequenceEnv(
-        [{ first: landlordUser }, { first: detailRow }, { all: amenities }, { all: photos }],
+        [
+          { first: landlordUser },
+          { first: detailRow },
+          { all: amenities },
+          { all: photos },
+          { all: [] },
+        ],
         capturedBinds
       )
     );
@@ -746,6 +758,7 @@ describe('landlord property routes', () => {
         min_stay: '6 months',
         availability: 'available-now',
         status: 'active',
+        role: 'owner',
         total_rooms: 2,
         rooms: 2,
         occupied_rooms: 1,
@@ -756,9 +769,10 @@ describe('landlord property routes', () => {
         monthlyPayment: 4500,
         monthlyDeposit: 1000,
         advancePayment: '1 month',
+        authorized_landlords: [],
       },
     });
-    expect(capturedBinds).toEqual([[3], [10, 3], [10], [10]]);
+    expect(capturedBinds).toEqual([[3], [3, 10, 3, 3], [10], [10], [10]]);
   });
 
   it('returns PHP-compatible landlord property not found behavior', async () => {

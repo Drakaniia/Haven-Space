@@ -1,3 +1,5 @@
+import { accessiblePropertyClause } from './property-access';
+
 export interface LandlordRoomPropertyRow {
   id: number;
   title: string;
@@ -89,12 +91,12 @@ export async function findLandlordRoomProperty(
         SELECT id, title, status
         FROM properties
         WHERE id = ?
-          AND landlord_id = ?
           AND deleted_at IS NULL
+          AND ${accessiblePropertyClause()}
         LIMIT 1
       `
     )
-    .bind(propertyId, landlordId)
+    .bind(propertyId, landlordId, landlordId)
     .first<LandlordRoomPropertyRow>();
 }
 
@@ -103,18 +105,19 @@ export async function listLandlordManagedRooms(
   propertyId: number,
   landlordId: number
 ): Promise<LandlordRoomRow[]> {
+  // Rooms are property-scoped: every landlord with access to the property sees
+  // and manages all of its rooms (rooms.landlord_id is only the creator).
   const result = await db
     .prepare(
       `
         SELECT r.*
         FROM rooms r
         WHERE r.property_id = ?
-          AND r.landlord_id = ?
           AND r.deleted_at IS NULL
         ORDER BY r.room_number ASC, r.id ASC
       `
     )
-    .bind(propertyId, landlordId)
+    .bind(propertyId)
     .all<LandlordRoomRow>();
 
   return result.results ?? [];
@@ -133,12 +136,11 @@ export async function getLandlordManagedRoom(
         FROM rooms r
         WHERE r.id = ?
           AND r.property_id = ?
-          AND r.landlord_id = ?
           AND r.deleted_at IS NULL
         LIMIT 1
       `
     )
-    .bind(roomId, propertyId, landlordId)
+    .bind(roomId, propertyId)
     .first<LandlordRoomRow>();
 }
 
@@ -357,18 +359,22 @@ export async function findLandlordManagedRoomIdentity(
   roomId: number,
   landlordId: number
 ): Promise<LandlordRoomIdentityRow | null> {
+  // Room-id-only lookups (update/delete/photo ops) resolve the room's property
+  // and require the caller to own it or hold active shared access.
   return await db
     .prepare(
       `
         SELECT r.id, r.property_id, r.room_number
         FROM rooms r
+        JOIN properties p ON r.property_id = p.id
         WHERE r.id = ?
-          AND r.landlord_id = ?
           AND r.deleted_at IS NULL
+          AND p.deleted_at IS NULL
+          AND ${accessiblePropertyClause('p')}
         LIMIT 1
       `
     )
-    .bind(roomId, landlordId)
+    .bind(roomId, landlordId, landlordId)
     .first<LandlordRoomIdentityRow>();
 }
 

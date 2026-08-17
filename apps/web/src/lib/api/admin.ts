@@ -3,9 +3,12 @@ import type {
   AdminApplicationsResponse,
   AdminLandlordsResponse,
   AdminPropertiesResponse,
+  AdminPropertyAccessResponse,
   AdminSettingsResponse,
   AdminSummaryResponse,
   AdminUsersResponse,
+  LandlordCreatedDataResponse,
+  PropertyAccessHistoryResponse,
 } from '../types';
 import { apiFetch, jsonOptions } from './http';
 
@@ -103,5 +106,76 @@ export function updateLandlordVerification(
       method: 'POST',
       body: JSON.stringify({ landlordId, action }),
     })
+  );
+}
+
+export function getVerifiedLandlords(token: string): Promise<AdminLandlordsResponse> {
+  return apiFetch<AdminLandlordsResponse>(base(), '/api/admin/landlords?status=verified', {
+    headers: { Authorization: `Bearer ${token}` },
+  });
+}
+
+export function getPropertyAccess(token: string): Promise<AdminPropertyAccessResponse> {
+  return apiFetch<AdminPropertyAccessResponse>(base(), '/api/admin/property-access', {
+    headers: { Authorization: `Bearer ${token}` },
+  });
+}
+
+export function sendPropertyAccessInvitation(
+  token: string,
+  input: { landlordId: number; propertyId: number }
+): Promise<{ message: string; data: { invitation: Record<string, unknown> } }> {
+  return apiFetch(
+    base(),
+    '/api/admin/property-access/invitations',
+    jsonOptions(token, {
+      method: 'POST',
+      body: JSON.stringify(input),
+    })
+  );
+}
+
+export function revokePropertyAccessInvitation(
+  token: string,
+  invitationId: number
+): Promise<{ message: string }> {
+  return apiFetch(
+    base(),
+    `/api/admin/property-access/invitations/${invitationId}/revoke`,
+    jsonOptions(token, { method: 'POST' })
+  );
+}
+
+export function removePropertyAccess(
+  token: string,
+  input: { propertyId: number; landlordId: number }
+): Promise<{ message: string; data: { property_id: number; landlord_id: number } }> {
+  return apiFetch(
+    base(),
+    '/api/admin/property-access/remove',
+    jsonOptions(token, {
+      method: 'POST',
+      body: JSON.stringify(input),
+    })
+  );
+}
+
+export function getPropertyAccessHistory(token: string): Promise<PropertyAccessHistoryResponse> {
+  return apiFetch<PropertyAccessHistoryResponse>(base(), '/api/admin/property-access/history', {
+    headers: { Authorization: `Bearer ${token}` },
+  });
+}
+
+export function getLandlordCreatedData(
+  token: string,
+  propertyId: number,
+  landlordId: number
+): Promise<LandlordCreatedDataResponse> {
+  return apiFetch<LandlordCreatedDataResponse>(
+    base(),
+    `/api/admin/property-access/${propertyId}/landlord-data?landlordId=${encodeURIComponent(
+      landlordId
+    )}`,
+    { headers: { Authorization: `Bearer ${token}` } }
   );
 }

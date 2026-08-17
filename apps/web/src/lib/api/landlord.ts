@@ -1,10 +1,12 @@
 import { getApiBaseUrl } from '../config';
 import type {
+  AcceptInvitationResponse,
   BoarderMutationResponse,
   BoardersResponse,
   DashboardStatsResponse,
   LandlordAnnouncementsResponse,
   LandlordApplicationsResponse,
+  LandlordInvitationsResponse,
   LandlordPropertiesResponse,
   LandlordPropertyDetailResponse,
   LandlordRoomListResponse,
@@ -19,6 +21,34 @@ export function getDashboardStats(token: string): Promise<DashboardStatsResponse
   return apiFetch<DashboardStatsResponse>(base(), '/api/landlord/dashboard-stats', {
     headers: { Authorization: `Bearer ${token}` },
   });
+}
+
+export function getInvitations(token: string): Promise<LandlordInvitationsResponse> {
+  return apiFetch<LandlordInvitationsResponse>(base(), '/api/landlord/invitations', {
+    headers: { Authorization: `Bearer ${token}` },
+  });
+}
+
+export function acceptInvitation(
+  token: string,
+  invitationId: number
+): Promise<AcceptInvitationResponse> {
+  return apiFetch<AcceptInvitationResponse>(
+    base(),
+    `/api/landlord/invitations/${invitationId}/accept`,
+    jsonOptions(token, { method: 'POST' })
+  );
+}
+
+export function rejectInvitation(
+  token: string,
+  invitationId: number
+): Promise<{ message: string }> {
+  return apiFetch(
+    base(),
+    `/api/landlord/invitations/${invitationId}/reject`,
+    jsonOptions(token, { method: 'POST' })
+  );
 }
 
 export function getProperties(token: string): Promise<LandlordPropertiesResponse> {

@@ -75,6 +75,7 @@ function formatLandlordPropertyListItem(
     province: property.province ?? '',
     price: Number(property.price),
     status: mapListStatus(property),
+    role: property.role ?? 'owner',
     total_rooms: totalRooms,
     occupied_rooms: occupiedRooms,
     monthly_revenue: Number(property.monthly_revenue),
@@ -87,6 +88,7 @@ function formatLandlordPropertyListItem(
 
 function formatLandlordPropertyDetail(result: LandlordPropertyDetailResult) {
   const property = result.property;
+  const isOwner = property.role === 'owner';
 
   return {
     id: Number(property.id),
@@ -105,6 +107,7 @@ function formatLandlordPropertyDetail(result: LandlordPropertyDetailResult) {
     min_stay: property.min_stay ?? '',
     availability: 'available-now',
     status: mapDetailStatus(property.status),
+    role: property.role ?? 'owner',
     total_rooms: Number(property.rooms_count),
     rooms: Number(property.rooms_count),
     occupied_rooms: Number(property.occupied_rooms),
@@ -115,6 +118,17 @@ function formatLandlordPropertyDetail(result: LandlordPropertyDetailResult) {
     monthlyPayment: Number(property.price),
     monthlyDeposit: property.deposit === null ? 0 : Number(property.deposit),
     advancePayment: property.advance ?? 'None',
+    ...(isOwner
+      ? {
+          authorized_landlords: result.authorized_landlords.map(landlord => ({
+            id: Number(landlord.landlord_id),
+            first_name: landlord.first_name,
+            last_name: landlord.last_name,
+            email: landlord.email,
+            granted_at: landlord.granted_at,
+          })),
+        }
+      : {}),
   };
 }
 

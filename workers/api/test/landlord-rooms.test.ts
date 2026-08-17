@@ -213,7 +213,7 @@ describe('landlord room routes', () => {
         ],
       },
     });
-    expect(capturedBinds).toEqual([[3], [10, 3], [10, 3], [11, 12]]);
+    expect(capturedBinds).toEqual([[3], [10, 3, 3], [10], [11, 12]]);
   });
 
   it('returns a single landlord room', async () => {
@@ -260,7 +260,7 @@ describe('landlord room routes', () => {
         updated_at: '2026-05-02 10:00:00',
       },
     });
-    expect(capturedBinds).toEqual([[3], [10, 3], [11, 10, 3], [11]]);
+    expect(capturedBinds).toEqual([[3], [10, 3, 3], [11, 10], [11]]);
   });
 
   it('creates a landlord room with the PHP response shape', async () => {
@@ -333,7 +333,7 @@ describe('landlord room routes', () => {
     });
     expect(capturedBinds).toEqual([
       [3],
-      [10, 3],
+      [10, 3, 3],
       [10, 'A3'],
       [10, 3, 'A3', 'A3', 'single', 4700, 700, 'available', 1, 'New room', 13.5],
       [13],
@@ -423,7 +423,7 @@ describe('landlord room routes', () => {
         updated_at: '2026-05-02 10:00:00',
       },
     });
-    expect(capturedBinds).toEqual([[3], [11, 3], [4800, 'maintenance', 11], [11], [11]]);
+    expect(capturedBinds).toEqual([[3], [11, 3, 3], [4800, 'maintenance', 11], [11], [11]]);
   });
 
   it('returns PHP-compatible room update errors', async () => {
@@ -489,7 +489,7 @@ describe('landlord room routes', () => {
       success: true,
       message: 'Room deleted successfully',
     });
-    expect(capturedBinds).toEqual([[3], [11, 3], [11]]);
+    expect(capturedBinds).toEqual([[3], [11, 3, 3], [11]]);
   });
 
   it('uploads room photos through UploadThing and records returned URLs', async () => {
@@ -557,7 +557,7 @@ describe('landlord room routes', () => {
     ]);
     expect(capturedBinds).toEqual([
       [3],
-      [11, 3],
+      [11, 3, 3],
       [11],
       [11, 'https://utfs.io/f/room-front-key', 1, 0],
     ]);
@@ -601,7 +601,7 @@ describe('landlord room routes', () => {
     });
     expect(capturedBinds).toEqual([
       [3],
-      [11, 3],
+      [11, 3, 3],
       [11],
       [11, 'https://utfs.io/f/key-side.png', 0, 3],
     ]);
@@ -665,7 +665,7 @@ describe('landlord room routes', () => {
       error: 'No photos were saved. Check file types (jpg/png/webp) and sizes (max 5 MB).',
       errors: ['File front.jpg: UploadThing rejected the room photo'],
     });
-    expect(capturedBinds).toEqual([[3], [11, 3], [11]]);
+    expect(capturedBinds).toEqual([[3], [11, 3, 3], [11]]);
   });
 
   it('requires room ownership for room photo uploads', async () => {
@@ -720,7 +720,7 @@ describe('landlord room routes', () => {
       success: true,
       message: 'Cover photo updated',
     });
-    expect(capturedBinds).toEqual([[3], [11, 3], [102, 11], [11], [102]]);
+    expect(capturedBinds).toEqual([[3], [11, 3, 3], [102, 11], [11], [102]]);
   });
 
   it('returns PHP-compatible room photo cover errors', async () => {
@@ -802,7 +802,7 @@ describe('landlord room routes', () => {
       success: true,
       message: 'Photo deleted',
     });
-    expect(capturedBinds).toEqual([[3], [11, 3], [102, 11], [102]]);
+    expect(capturedBinds).toEqual([[3], [11, 3, 3], [102, 11], [102]]);
     expect(deletedKeys).toEqual([['room-side-key']]);
   });
 
@@ -844,7 +844,7 @@ describe('landlord room routes', () => {
       success: true,
       message: 'Photo deleted',
     });
-    expect(capturedBinds).toEqual([[3], [11, 3], [101, 11], [101], [11], [102]]);
+    expect(capturedBinds).toEqual([[3], [11, 3, 3], [101, 11], [101], [11], [102]]);
   });
 
   it('returns PHP-compatible room photo delete errors', async () => {

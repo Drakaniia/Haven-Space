@@ -24,8 +24,7 @@
     {
       "binding": "DB",
       "database_name": "haven-space",
-      "database_id": "bc45d25b-7e79-4418-9f8c-b53b206ffc44",
-      "remote": true
+      "database_id": "bc45d25b-7e79-4418-9f8c-b53b206ffc44"
     }
   ]
 }

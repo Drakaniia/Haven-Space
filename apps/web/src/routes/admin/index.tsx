@@ -1,6 +1,7 @@
 import { createFileRoute } from '@tanstack/react-router';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useState, type ReactNode } from 'react';
+import { PropertyAccessTab } from '../../components/admin/PropertyAccessTab';
 import { Protected } from '../../components/auth/Protected';
 import { RoleShell } from '../../components/layout/RoleShell';
 import { Button } from '../../components/ui/Button';
@@ -41,13 +42,14 @@ export const Route = createFileRoute('/admin/')({
   ),
 });
 
-type TabKey = 'users' | 'properties' | 'applications' | 'landlords' | 'settings';
+type TabKey = 'users' | 'properties' | 'applications' | 'landlords' | 'settings' | 'propertyAccess';
 
 const TABS: { key: TabKey; label: string; icon: string }[] = [
   { key: 'users', label: 'Users', icon: 'users' },
   { key: 'properties', label: 'Properties', icon: 'list' },
   { key: 'applications', label: 'Applications', icon: 'application' },
   { key: 'landlords', label: 'Landlords', icon: 'shieldCheck' },
+  { key: 'propertyAccess', label: 'Property Access', icon: 'users' },
   { key: 'settings', label: 'Settings', icon: 'settings' },
 ];
 
@@ -440,6 +442,8 @@ function AdminOverview() {
             ) : null}
           </AdminTab>
         )}
+
+        {tab === 'propertyAccess' && <PropertyAccessTab token={token!} />}
 
         {tab === 'settings' && (
           <AdminTab isLoading={settings.isLoading} error={settings.error} empty={false}>

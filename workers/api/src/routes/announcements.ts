@@ -13,8 +13,8 @@ import {
   listAnnouncementBoarders,
   listAnnouncementTargets,
   listBoarderAnnouncements,
+  listAccessiblePropertyIds,
   listLandlordAnnouncements,
-  listOwnedPropertyIds,
   replaceAnnouncementTargets,
   softDeleteAnnouncement,
   todayDateString,
@@ -99,7 +99,7 @@ async function announcementInput(db: D1Database, landlordId: number, body: JsonR
 
   const requestedTargetIds = parseTargetProperties(body);
   const targetPropertyIds = requestedTargetIds
-    ? await listOwnedPropertyIds(db, landlordId, requestedTargetIds)
+    ? await listAccessiblePropertyIds(db, landlordId, requestedTargetIds)
     : null;
 
   if (requestedTargetIds && targetPropertyIds?.length === 0) {

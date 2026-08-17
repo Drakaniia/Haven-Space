@@ -149,7 +149,7 @@ describe('landlord boarder routes', () => {
         total_count: 1,
       },
     });
-    expect(capturedBinds).toEqual([[3], [10, 3], [10, 3]]);
+    expect(capturedBinds).toEqual([[3], [10, 3, 3], [10]]);
   });
 
   it('maps pending and approved leave requests to leaving statuses', async () => {
@@ -266,8 +266,8 @@ describe('landlord boarder routes', () => {
     });
     expect(capturedBinds).toEqual([
       [3],
-      [10, 3],
-      [11, 10, 3],
+      [10, 3, 3],
+      [11, 10],
       ['nia@example.com'],
       ['Nia', 'Cruz', 'nia@example.com'],
       [8, 3, 11, '2026-05-29'],
@@ -315,8 +315,8 @@ describe('landlord boarder routes', () => {
     });
     expect(capturedBinds).toEqual([
       [3],
-      [10, 3],
-      [11, 10, 3],
+      [10, 3, 3],
+      [11, 10],
       ['bea@example.com'],
       [7, 3, 11, '2026-05-29'],
     ]);
@@ -411,9 +411,9 @@ describe('landlord boarder routes', () => {
     });
     expect(capturedBinds).toEqual([
       [3],
-      [10, 3],
-      [7, 3, 10],
-      [11, 10, 3],
+      [10, 3, 3],
+      [7, 10],
+      [11, 10],
       ['Bea', 'Reyes', 'bea.reyes@example.com', 7],
       [11, '2026-06-01', 20],
       [5000, 1500, 11, 10],
@@ -491,7 +491,7 @@ describe('landlord boarder routes', () => {
         message: 'Boarder removed successfully',
       },
     });
-    expect(capturedBinds).toEqual([[3], [7, 3]]);
+    expect(capturedBinds).toEqual([[3], [7, 3, 3]]);
   });
 
   it('returns PHP-compatible manual boarder delete errors', async () => {

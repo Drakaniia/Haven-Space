@@ -43,6 +43,7 @@ import { Route as LandlordAnnouncementsRouteImport } from './routes/landlord/ann
 import { Route as LandlordApplicationsRouteImport } from './routes/landlord/applications'
 import { Route as LandlordBoardersRouteImport } from './routes/landlord/boarders'
 import { Route as LandlordCalendarRouteImport } from './routes/landlord/calendar'
+import { Route as LandlordInvitationsRouteImport } from './routes/landlord/invitations'
 import { Route as LandlordListingsRouteImport } from './routes/landlord/listings'
 import { Route as LandlordMapsRouteImport } from './routes/landlord/maps'
 import { Route as LandlordMessagesRouteImport } from './routes/landlord/messages'
@@ -247,6 +248,11 @@ const LandlordCalendarRoute = LandlordCalendarRouteImport.update({
   path: '/landlord/calendar',
   getParentRoute: () => rootRouteImport,
 } as any)
+const LandlordInvitationsRoute = LandlordInvitationsRouteImport.update({
+  id: '/landlord/invitations',
+  path: '/landlord/invitations',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const LandlordListingsRoute = LandlordListingsRouteImport.update({
   id: '/landlord/listings',
   path: '/landlord/listings',
@@ -442,6 +448,7 @@ export interface FileRoutesByFullPath {
   '/landlord/applications': typeof LandlordApplicationsRoute
   '/landlord/boarders': typeof LandlordBoardersRoute
   '/landlord/calendar': typeof LandlordCalendarRoute
+  '/landlord/invitations': typeof LandlordInvitationsRoute
   '/landlord/listings': typeof LandlordListingsRouteWithChildren
   '/landlord/maps': typeof LandlordMapsRoute
   '/landlord/messages': typeof LandlordMessagesRoute
@@ -506,6 +513,7 @@ export interface FileRoutesByTo {
   '/landlord/applications': typeof LandlordApplicationsRoute
   '/landlord/boarders': typeof LandlordBoardersRoute
   '/landlord/calendar': typeof LandlordCalendarRoute
+  '/landlord/invitations': typeof LandlordInvitationsRoute
   '/landlord/maps': typeof LandlordMapsRoute
   '/landlord/messages': typeof LandlordMessagesRoute
   '/landlord/onboarding': typeof LandlordOnboardingRoute
@@ -572,6 +580,7 @@ export interface FileRoutesById {
   '/landlord/applications': typeof LandlordApplicationsRoute
   '/landlord/boarders': typeof LandlordBoardersRoute
   '/landlord/calendar': typeof LandlordCalendarRoute
+  '/landlord/invitations': typeof LandlordInvitationsRoute
   '/landlord/listings': typeof LandlordListingsRouteWithChildren
   '/landlord/maps': typeof LandlordMapsRoute
   '/landlord/messages': typeof LandlordMessagesRoute
@@ -642,6 +651,7 @@ export interface FileRouteTypes {
     | '/landlord/applications'
     | '/landlord/boarders'
     | '/landlord/calendar'
+    | '/landlord/invitations'
     | '/landlord/listings'
     | '/landlord/maps'
     | '/landlord/messages'
@@ -706,6 +716,7 @@ export interface FileRouteTypes {
     | '/landlord/applications'
     | '/landlord/boarders'
     | '/landlord/calendar'
+    | '/landlord/invitations'
     | '/landlord/maps'
     | '/landlord/messages'
     | '/landlord/onboarding'
@@ -771,6 +782,7 @@ export interface FileRouteTypes {
     | '/landlord/applications'
     | '/landlord/boarders'
     | '/landlord/calendar'
+    | '/landlord/invitations'
     | '/landlord/listings'
     | '/landlord/maps'
     | '/landlord/messages'
@@ -840,6 +852,7 @@ export interface RootRouteChildren {
   LandlordApplicationsRoute: typeof LandlordApplicationsRoute
   LandlordBoardersRoute: typeof LandlordBoardersRoute
   LandlordCalendarRoute: typeof LandlordCalendarRoute
+  LandlordInvitationsRoute: typeof LandlordInvitationsRoute
   LandlordListingsRoute: typeof LandlordListingsRouteWithChildren
   LandlordMapsRoute: typeof LandlordMapsRoute
   LandlordMessagesRoute: typeof LandlordMessagesRoute
@@ -1098,6 +1111,13 @@ declare module '@tanstack/react-router' {
       path: '/landlord/calendar'
       fullPath: '/landlord/calendar'
       preLoaderRoute: typeof LandlordCalendarRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/landlord/invitations': {
+      id: '/landlord/invitations'
+      path: '/landlord/invitations'
+      fullPath: '/landlord/invitations'
+      preLoaderRoute: typeof LandlordInvitationsRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/landlord/listings': {
@@ -1459,6 +1479,7 @@ const rootRouteChildren: RootRouteChildren = {
   LandlordApplicationsRoute: LandlordApplicationsRoute,
   LandlordBoardersRoute: LandlordBoardersRoute,
   LandlordCalendarRoute: LandlordCalendarRoute,
+  LandlordInvitationsRoute: LandlordInvitationsRoute,
   LandlordListingsRoute: LandlordListingsRouteWithChildren,
   LandlordMapsRoute: LandlordMapsRoute,
   LandlordMessagesRoute: LandlordMessagesRoute,

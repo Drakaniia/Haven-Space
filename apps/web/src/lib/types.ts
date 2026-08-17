@@ -350,6 +350,7 @@ export interface LandlordProperty {
   province: string;
   price: number;
   status: string;
+  role?: 'owner' | 'shared';
   total_rooms: number;
   occupied_rooms: number;
   monthly_revenue: number;
@@ -361,6 +362,30 @@ export interface LandlordProperty {
 
 export interface LandlordPropertiesResponse {
   data: { properties: LandlordProperty[]; total_count: number };
+}
+
+export interface LandlordInvitation {
+  id: number;
+  property_id: number;
+  property_name: string;
+  owner_name: string;
+  owner_email: string;
+  status: string;
+  created_at: string;
+  accepted_at: string | null;
+  rejected_at: string | null;
+  revoked_at: string | null;
+}
+
+export interface LandlordInvitationsResponse {
+  data: { invitations: LandlordInvitation[] };
+}
+
+export interface AcceptInvitationResponse {
+  message: string;
+  data: {
+    access: { property_id: number; property_name: string; role: string };
+  };
 }
 
 export interface LandlordPropertyDetailResponse {
@@ -576,6 +601,76 @@ export interface AdminLandlordRow {
   is_verified: number;
   created_at: string;
   boarding_house_name: string | null;
+}
+
+export interface PropertyAccessOwner {
+  id: number;
+  name: string;
+  email: string;
+}
+
+export interface AuthorizedLandlord {
+  id: number;
+  first_name: string;
+  last_name: string;
+  email: string;
+  granted_by: number;
+  granted_at: string;
+}
+
+export interface PendingAccessInvitation {
+  id: number;
+  invitee_id: number;
+  invitee_name: string;
+  invitee_email: string;
+  invited_by: number;
+  created_at: string;
+}
+
+export interface AdminPropertyAccessRow {
+  id: number;
+  title: string;
+  owner: PropertyAccessOwner;
+  authorized_landlords: AuthorizedLandlord[];
+  pending_invitations: PendingAccessInvitation[];
+}
+
+export interface AdminPropertyAccessResponse {
+  data: { properties: AdminPropertyAccessRow[] };
+}
+
+export interface LandlordCreatedData {
+  rooms: number;
+  tenants: number;
+  payments: number;
+  announcements: number;
+}
+
+export interface LandlordCreatedDataResponse {
+  data: {
+    landlord_id: number;
+    landlord_name: string;
+    property_id: number;
+    property_name: string;
+    created: LandlordCreatedData;
+  };
+}
+
+export interface PropertyAccessHistoryEvent {
+  type: string;
+  invitation_id: number | null;
+  access_id: number | null;
+  property_id: number;
+  property_name: string;
+  landlord_id: number;
+  landlord_name: string;
+  actor_id: number | null;
+  actor_name: string | null;
+  at: string;
+}
+
+export interface PropertyAccessHistoryResponse {
+  data: { events: PropertyAccessHistoryEvent[] };
 }
 
 export interface AdminLandlordsResponse {

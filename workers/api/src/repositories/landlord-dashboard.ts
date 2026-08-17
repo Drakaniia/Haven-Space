@@ -1,3 +1,5 @@
+import { accessiblePropertyClause } from './property-access';
+
 export interface LandlordDashboardStats {
   occupancy: {
     rate: number;
@@ -57,12 +59,12 @@ export async function getLandlordDashboardStats(
           COALESCE(SUM(CASE WHEN r.status = 'occupied' THEN r.price ELSE 0 END), 0) as monthly_revenue
         FROM rooms r
         INNER JOIN properties p ON r.property_id = p.id
-        WHERE p.landlord_id = ?
-          AND p.deleted_at IS NULL
+        WHERE p.deleted_at IS NULL
           AND r.deleted_at IS NULL
+          AND ${accessiblePropertyClause('p')}
       `
     )
-    .bind(landlordId)
+    .bind(landlordId, landlordId)
     .first<RoomStatsRow>();
 
   const renewals = await db
@@ -72,14 +74,14 @@ export async function getLandlordDashboardStats(
         FROM applications app
         INNER JOIN rooms r ON app.room_id = r.id
         INNER JOIN properties p ON r.property_id = p.id
-        WHERE app.landlord_id = ?
-          AND app.status IN ('accepted', 'approved', 'confirmed')
+        WHERE app.status IN ('accepted', 'approved', 'confirmed')
           AND app.deleted_at IS NULL
           AND p.deleted_at IS NULL
           AND r.deleted_at IS NULL
+          AND ${accessiblePropertyClause('p')}
       `
     )
-    .bind(landlordId)
+    .bind(landlordId, landlordId)
     .first<RenewalsRow>();
 
   const totalRooms = numeric(roomStats?.total_rooms);

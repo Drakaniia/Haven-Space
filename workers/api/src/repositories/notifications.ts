@@ -63,7 +63,14 @@ function roleVisibleTypes(role: string): string[] | null {
   }
 
   if (role === 'landlord') {
-    return ['new_application', 'application_accepted', 'application_rejected', 'booking_confirmed'];
+    return [
+      'new_application',
+      'application_accepted',
+      'application_rejected',
+      'booking_confirmed',
+      'property_invitation',
+      'property_access_removed',
+    ];
   }
 
   if (role === 'boarder') {

@@ -22,6 +22,22 @@ export const Route = createFileRoute('/landlord/properties')({
   ),
 });
 
+function AccessBadge({ role }: { role?: 'owner' | 'shared' }) {
+  if (role === 'shared') {
+    return (
+      <span className="inline-flex items-center rounded-full bg-blue-100 px-2.5 py-0.5 text-xs font-medium text-blue-700">
+        Shared
+      </span>
+    );
+  }
+
+  return (
+    <span className="inline-flex items-center rounded-full bg-mint px-2.5 py-0.5 text-xs font-medium text-primary-dark">
+      Owned
+    </span>
+  );
+}
+
 function PropertiesPage() {
   const { token } = useAuth();
   const properties = useQuery({
@@ -62,6 +78,10 @@ function PropertiesPage() {
               ),
             },
             { header: 'Address', cell: row => `${row.address}, ${row.city}` },
+            {
+              header: 'Access',
+              cell: row => <AccessBadge role={row.role} />,
+            },
             {
               header: 'Status',
               cell: row => <StatusBadge status={row.status} />,

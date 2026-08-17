@@ -325,7 +325,7 @@ describe('application read routes', () => {
 
     expect(response.status).toBe(200);
     expect(await response.json()).toEqual({ data: [landlordApplication] });
-    expect(capturedBinds).toEqual([[3], [3]]);
+    expect(capturedBinds).toEqual([[3], [3, 3]]);
   });
 
   it('updates application status for a verified landlord with the PHP response shape', async () => {

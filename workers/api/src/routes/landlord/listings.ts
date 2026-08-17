@@ -15,6 +15,7 @@ import {
   createLandlordRoom,
   deleteLandlordAmenities,
   deleteLandlordPropertyPhotoByUrl,
+  findAccessibleLandlordPropertyIdentity,
   findLandlordPropertyForUpdate,
   findLandlordPropertyIdentity,
   getLandlordAddress,
@@ -642,7 +643,7 @@ async function handleUploadListingPhotos(c: Context<{ Bindings: Env }>) {
     return errorResponse(400, 'Invalid property ID');
   }
 
-  const property = await findLandlordPropertyIdentity(db, propertyId, user.user_id);
+  const property = await findAccessibleLandlordPropertyIdentity(db, propertyId, user.user_id);
 
   if (!property) {
     return errorResponse(403, 'Property not found or access denied');

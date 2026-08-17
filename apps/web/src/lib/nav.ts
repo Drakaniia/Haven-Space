@@ -27,6 +27,7 @@ export const LANDLORD_NAV: NavItem[] = [
   { to: '/landlord/listings', label: 'My Listings', icon: 'list', group: 'Main' },
   { to: '/landlord/properties', label: 'Properties', icon: 'buildingOffice', group: 'Main' },
   { to: '/landlord/maps', label: 'Map View', icon: 'map', group: 'Main' },
+  { to: '/landlord/invitations', label: 'Invitations', icon: 'document', group: 'Main' },
   { to: '/landlord/applications', label: 'Applications', icon: 'application', group: 'Main' },
   { to: '/landlord/boarders', label: 'Tenants', icon: 'users', group: 'Main' },
   { to: '/landlord/messages', label: 'Messages', icon: 'chat', group: 'Communication' },

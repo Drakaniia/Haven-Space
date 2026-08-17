@@ -71,6 +71,8 @@ export interface CreateApplicationInput {
   status: string;
 }
 
+import { accessiblePropertyClause } from './property-access';
+
 function propertyAddressExpression(): string {
   return `a.address_line_1 || ', ' || a.city || ', ' || a.province`;
 }
@@ -130,12 +132,12 @@ export async function listLandlordApplications(
         JOIN properties p ON r.property_id = p.id
         JOIN addresses a ON p.address_id = a.id
         JOIN users u ON app.boarder_id = u.id
-        WHERE app.landlord_id = ?
-          AND app.deleted_at IS NULL
+        WHERE app.deleted_at IS NULL
+          AND ${accessiblePropertyClause('p')}
         ORDER BY app.created_at DESC
       `
     )
-    .bind(landlordId)
+    .bind(landlordId, landlordId)
     .all<ApplicationListRow>();
 
   return result.results ?? [];

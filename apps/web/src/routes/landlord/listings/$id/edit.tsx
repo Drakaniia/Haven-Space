@@ -96,6 +96,24 @@ function EditListingPage() {
 
   const photos: string[] = Array.isArray(detail?.photos) ? detail.photos.map(p => String(p)) : [];
 
+  // Only the primary owner receives this field from the API.
+  const authorizedLandlords = Array.isArray(detail?.authorized_landlords)
+    ? detail.authorized_landlords.map(landlord => {
+        const record = landlord as Record<string, unknown>;
+        return {
+          id: Number(record.id),
+          name: `${String(record.first_name ?? '')} ${String(record.last_name ?? '')}`.trim(),
+          email: String(record.email ?? ''),
+          granted_at: String(record.granted_at ?? ''),
+        };
+      })
+    : null;
+
+  function formatWhen(value: string): string {
+    const date = new Date(value);
+    return Number.isNaN(date.getTime()) ? value : date.toLocaleDateString();
+  }
+
   const submit = useMutation({
     mutationFn: () =>
       updateListing(token!, propertyId, {
@@ -371,6 +389,42 @@ function EditListingPage() {
 
         <LandlordRoomList token={token!} propertyId={propertyId} />
       </Card>
+
+      {authorizedLandlords !== null ? (
+        <Card className="mt-6">
+          <div className="mb-3 flex items-center gap-3">
+            <Icon name="users" size={22} className="shrink-0" />
+            <div>
+              <h2 className="font-semibold text-ink">Authorized landlords</h2>
+              <p className="text-sm text-gray-ink">
+                Landlords who can also manage this property. Only the Haven Space Admin can change
+                who has access.
+              </p>
+            </div>
+          </div>
+          {authorizedLandlords.length > 0 ? (
+            <ul className="divide-y divide-gray-100">
+              {authorizedLandlords.map(landlord => (
+                <li
+                  key={landlord.id}
+                  className="flex flex-wrap items-center justify-between gap-2 py-2"
+                >
+                  <div>
+                    <p className="text-sm font-medium text-ink">{landlord.name}</p>
+                    <p className="text-xs text-gray-ink">
+                      {landlord.email} · granted {formatWhen(landlord.granted_at)}
+                    </p>
+                  </div>
+                </li>
+              ))}
+            </ul>
+          ) : (
+            <p className="text-sm text-gray-ink">
+              No other landlords have access to this property.
+            </p>
+          )}
+        </Card>
+      ) : null}
     </div>
   );
 }

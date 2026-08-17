@@ -103,7 +103,7 @@ describe('landlord dashboard stats routes', () => {
         },
       },
     });
-    expect(capturedBinds).toEqual([[3], [3], [3]]);
+    expect(capturedBinds).toEqual([[3], [3, 3], [3, 3]]);
   });
 
   it('returns zeroed dashboard stats when the landlord has no rooms', async () => {

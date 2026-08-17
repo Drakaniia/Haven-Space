@@ -1,4 +1,5 @@
 import { freeRoom } from './applications';
+import { accessiblePropertyClause } from './property-access';
 
 export interface TenancyRow {
   application_id: number;
@@ -417,16 +418,18 @@ export async function findPendingLeaveRequest(
           u.first_name,
           u.last_name
         FROM applications app
+        JOIN rooms r ON app.room_id = r.id
+        JOIN properties p ON r.property_id = p.id
         JOIN users u ON app.boarder_id = u.id
         WHERE app.id = ?
-          AND app.landlord_id = ?
           AND app.leave_request_status = 'pending'
           AND app.status = 'confirmed'
           AND app.deleted_at IS NULL
+          AND ${accessiblePropertyClause('p')}
         LIMIT 1
       `
     )
-    .bind(applicationId, landlordId)
+    .bind(applicationId, landlordId, landlordId)
     .first<PendingLeaveRequestRow>();
 }
 

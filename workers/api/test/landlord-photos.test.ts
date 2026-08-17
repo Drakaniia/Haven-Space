@@ -207,7 +207,7 @@ describe('landlord listing photo routes', () => {
     ]);
     expect(capturedBinds).toEqual([
       [3],
-      [10, 3],
+      [10, 3, 3],
       [10],
       [10, 'https://utfs.io/f/uploadthing-key-front', 1, 0],
     ]);
@@ -236,7 +236,7 @@ describe('landlord listing photo routes', () => {
     expect(response.status).toBe(200);
     expect(capturedBinds).toEqual([
       [3],
-      [10, 3],
+      [10, 3, 3],
       [10],
       [10, 'https://utfs.io/f/key-side.png', 0, 3],
     ]);
@@ -298,7 +298,7 @@ describe('landlord listing photo routes', () => {
 
     expect(response.status).toBe(400);
     expect(await response.json()).toEqual({ error: 'UploadThing rejected the upload' });
-    expect(capturedBinds).toEqual([[3], [10, 3], [10]]);
+    expect(capturedBinds).toEqual([[3], [10, 3, 3], [10]]);
   });
 
   it('requires landlord ownership for property photo uploads', async () => {

@@ -1,3 +1,5 @@
+import { accessiblePropertyClause } from './property-access';
+
 export interface AnnouncementRow {
   id: number;
   title: string;
@@ -61,6 +63,40 @@ export interface AnnouncementInput {
   category: string;
   priority: string;
   publishDate: string;
+}
+
+// SQL fragment: true when the announcement row referenced by `announcementRef`
+// (an alias for SELECT queries, or the `announcements` table name for
+// UPDATE/DELETE — SQLite forbids aliases there) is manageable by the landlord:
+// they created it, or it targets a property they own/share, or it is a global
+// (untargeted) announcement from a landlord whose property they can access.
+// Consumes five `?` binds, all bound to the landlord id.
+function manageableAnnouncementClause(announcementRef: string): string {
+  return `(
+    ${announcementRef}.landlord_id = ?
+    OR EXISTS (
+      SELECT 1
+      FROM announcement_properties ap
+      JOIN properties p ON ap.property_id = p.id
+      WHERE ap.announcement_id = ${announcementRef}.id
+        AND p.deleted_at IS NULL
+        AND ${accessiblePropertyClause('p')}
+    )
+    OR (
+      NOT EXISTS (
+        SELECT 1
+        FROM announcement_properties ap_any
+        WHERE ap_any.announcement_id = ${announcementRef}.id
+      )
+      AND EXISTS (
+        SELECT 1
+        FROM properties p_global
+        WHERE p_global.landlord_id = ${announcementRef}.landlord_id
+          AND p_global.deleted_at IS NULL
+          AND ${accessiblePropertyClause('p_global')}
+      )
+    )
+  )`;
 }
 
 function numeric(value: number | string | null | undefined): number {
@@ -139,14 +175,14 @@ export async function listLandlordAnnouncements(
   const result = await db
     .prepare(
       `
-        SELECT id, title, description, category, priority, publish_date, view_count, created_at, updated_at
-        FROM announcements
-        WHERE landlord_id = ?
-          AND deleted_at IS NULL
-        ORDER BY publish_date DESC, created_at DESC
+        SELECT DISTINCT ann.id, ann.title, ann.description, ann.category, ann.priority, ann.publish_date, ann.view_count, ann.created_at, ann.updated_at
+        FROM announcements ann
+        WHERE ann.deleted_at IS NULL
+          AND ${manageableAnnouncementClause('ann')}
+        ORDER BY ann.publish_date DESC, ann.created_at DESC
       `
     )
-    .bind(landlordId)
+    .bind(landlordId, landlordId, landlordId, landlordId, landlordId)
     .all<AnnouncementRow>();
 
   return result.results ?? [];
@@ -286,8 +322,8 @@ export async function updateAnnouncement(
             publish_date = ?,
             updated_at = CURRENT_TIMESTAMP
         WHERE id = ?
-          AND landlord_id = ?
           AND deleted_at IS NULL
+          AND ${manageableAnnouncementClause('announcements')}
       `
     )
     .bind(
@@ -297,6 +333,10 @@ export async function updateAnnouncement(
       input.priority,
       input.publishDate,
       announcementId,
+      input.landlordId,
+      input.landlordId,
+      input.landlordId,
+      input.landlordId,
       input.landlordId
     )
     .run();
@@ -310,15 +350,15 @@ export async function findLandlordAnnouncement(
   return await db
     .prepare(
       `
-        SELECT id
-        FROM announcements
-        WHERE id = ?
-          AND landlord_id = ?
-          AND deleted_at IS NULL
+        SELECT ann.id
+        FROM announcements ann
+        WHERE ann.id = ?
+          AND ann.deleted_at IS NULL
+          AND ${manageableAnnouncementClause('ann')}
         LIMIT 1
       `
     )
-    .bind(announcementId, landlordId)
+    .bind(announcementId, landlordId, landlordId, landlordId, landlordId, landlordId)
     .first<{ id: number }>();
 }
 
@@ -345,7 +385,7 @@ export async function replaceAnnouncementTargets(
   }
 }
 
-export async function listOwnedPropertyIds(
+export async function listAccessiblePropertyIds(
   db: D1Database,
   landlordId: number,
   propertyIds: number[]
@@ -359,12 +399,12 @@ export async function listOwnedPropertyIds(
       `
         SELECT id
         FROM properties
-        WHERE landlord_id = ?
+        WHERE deleted_at IS NULL
           AND id IN (${placeholders(propertyIds)})
-          AND deleted_at IS NULL
+          AND ${accessiblePropertyClause()}
       `
     )
-    .bind(landlordId, ...propertyIds)
+    .bind(...propertyIds, landlordId, landlordId)
     .all<{ id: number }>();
 
   return (result.results ?? []).map(row => Number(row.id));
@@ -382,11 +422,11 @@ export async function softDeleteAnnouncement(
         SET deleted_at = CURRENT_TIMESTAMP,
             updated_at = CURRENT_TIMESTAMP
         WHERE id = ?
-          AND landlord_id = ?
           AND deleted_at IS NULL
+          AND ${manageableAnnouncementClause('announcements')}
       `
     )
-    .bind(announcementId, landlordId)
+    .bind(announcementId, landlordId, landlordId, landlordId, landlordId, landlordId)
     .run();
 
   return Number(result.meta.changes ?? 0);
@@ -418,7 +458,10 @@ export async function listAnnouncementBoarders(
     propertyIds && propertyIds.length > 0
       ? `AND r.property_id IN (${placeholders(propertyIds)})`
       : '';
-  const binds = propertyIds && propertyIds.length > 0 ? [landlordId, ...propertyIds] : [landlordId];
+  const binds =
+    propertyIds && propertyIds.length > 0
+      ? [landlordId, landlordId, ...propertyIds]
+      : [landlordId, landlordId];
   const result = await db
     .prepare(
       `
@@ -426,7 +469,8 @@ export async function listAnnouncementBoarders(
         FROM applications app
         JOIN rooms r ON app.room_id = r.id
         JOIN properties p ON r.property_id = p.id
-        WHERE p.landlord_id = ?
+        WHERE p.deleted_at IS NULL
+          AND ${accessiblePropertyClause('p')}
           ${propertyFilter}
           AND app.status IN ('accepted', 'confirmed')
           AND app.deleted_at IS NULL

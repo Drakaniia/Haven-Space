@@ -33,8 +33,8 @@ export const Route = createFileRoute('/boarder/find-a-room/$id/tour')({
       typeof search.room === 'number'
         ? String(search.room)
         : typeof search.room === 'string'
-          ? search.room
-          : '',
+        ? search.room
+        : '',
   }),
   component: TourPage,
 });
@@ -117,8 +117,8 @@ function TourPage() {
           <h1 className="mt-5 text-2xl font-bold text-ink">Tour request sent!</h1>
           <p className="mt-2 text-gray-ink">
             Your tour request for <strong className="text-ink">{listing.title}</strong> has been
-            sent to {listing.landlord.name}. They&apos;ll confirm the schedule shortly, and you&apos;ll
-            be notified of their response.
+            sent to {listing.landlord.name}. They&apos;ll confirm the schedule shortly, and
+            you&apos;ll be notified of their response.
           </p>
           <div className="mt-6 rounded-2xl bg-white p-5 text-left shadow-card">
             <h3 className="text-sm font-semibold text-ink">Your request</h3>
@@ -257,8 +257,8 @@ function TourPage() {
               {submit.isPending ? 'Sending request…' : 'Request Tour'}
             </Button>
             <p className="mt-3 text-xs text-gray-ink">
-              Your request is sent to the landlord and will appear in your applications. They&apos;ll
-              confirm the schedule once they respond.
+              Your request is sent to the landlord and will appear in your applications.
+              They&apos;ll confirm the schedule once they respond.
             </p>
           </form>
         </div>
