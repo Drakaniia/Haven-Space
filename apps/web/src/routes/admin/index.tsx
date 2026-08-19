@@ -26,7 +26,6 @@ import {
   updateLandlordVerification,
 } from '../../lib/api/admin';
 import { useAuth } from '../../lib/auth-context';
-import { ADMIN_NAV } from '../../lib/nav';
 import type {
   AdminApplicationRow,
   AdminLandlordRow,
@@ -292,7 +291,7 @@ function AdminOverview() {
   const counts = summary.data?.data.counts;
 
   return (
-    <RoleShell title="Admin overview" nav={ADMIN_NAV}>
+    <RoleShell title="Admin overview">
       {/* Greeting */}
       <div className="mb-6">
         <h2 className="text-2xl font-bold text-ink">Command Center</h2>
