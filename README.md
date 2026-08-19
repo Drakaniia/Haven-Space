@@ -96,12 +96,11 @@ The API Worker's `ALLOWED_ORIGINS` (or `APP_ORIGIN`) must include the frontend's
 - local frontend: `http://localhost:3000`
 - production frontend: `https://haven-space.pages.dev` (the `haven-space` Cloudflare Pages project)
 
-## Legacy Design Reference (`client/`)
+## Legacy Design Reference
 
-The `client/` folder holds the legacy vanilla HTML/CSS/JS frontend. It is kept only as a local
-design reference (git-ignored): the TanStack homepage and FAQ were rebuilt to match it. It is not
-part of the app or any deploy.
-
+The legacy vanilla HTML/CSS/JS frontend previously in `client/` was removed in August 2026
+(`client/` was git-ignored and deleted as part of the codebase audit — see `haven-space-audit.md`).
+Design reference is now `apps/web` and `docs/assets/screenshot1.png`. The TanStack homepage and FAQ were rebuilt to match the legacy design.
 ## Scripts
 
 | Command                    | Description                                                                             |
