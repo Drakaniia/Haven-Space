@@ -45,3 +45,17 @@ export function updateOnboarding(
     body: JSON.stringify(input),
   });
 }
+
+export function updateOnboardingData(
+  token: string,
+  role: 'boarder' | 'landlord',
+  step: string,
+  data: Record<string, unknown>
+): Promise<{ success: boolean; message: string }> {
+  const path = role === 'landlord' ? '/api/landlord/update-onboarding-data' : '/api/boarder/update-onboarding-data';
+  return apiFetch(base(), path, {
+    method: 'POST',
+    headers: { Authorization: `Bearer ${token}` },
+    body: JSON.stringify({ step, data }),
+  });
+}

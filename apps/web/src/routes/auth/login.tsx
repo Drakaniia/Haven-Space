@@ -3,7 +3,7 @@ import { useEffect, useState, type FormEvent } from 'react';
 import { AuthDivider, AuthSplitLayout, GoogleButton } from '../../components/auth/AuthSplitLayout';
 import { Button } from '../../components/ui/Button';
 import { ErrorState } from '../../components/ui/ErrorState';
-import { Field, TextInput } from '../../components/ui/Field';
+import { Field, PasswordInput, TextInput } from '../../components/ui/Field';
 import { ApiRequestError } from '../../lib/api/http';
 import { checkEmail } from '../../lib/api/auth';
 import { setPendingToast } from '../../lib/toast';
@@ -107,9 +107,8 @@ function LoginPage() {
           </div>
         ) : (
           <Field label="Password" htmlFor="password">
-            <TextInput
+            <PasswordInput
               id="password"
-              type="password"
               name="password"
               placeholder="Enter your password"
               autoComplete="current-password"

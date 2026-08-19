@@ -12,7 +12,8 @@ import {
 import { requireD1 } from '../lib/d1';
 import { errorResponse, jsonResponse } from '../lib/http';
 import { uploadFilesToUploadThing } from '../lib/uploadthing';
-import { readJsonObject, type JsonRecord } from '../lib/validation';
+import { isJsonRecord, readJsonObject, type JsonRecord } from '../lib/validation';
+import { z } from 'zod';
 import {
   ensureBoarderProfile,
   findPasswordResetByCode,
@@ -23,11 +24,14 @@ import {
   hasAcceptedApplication,
   incrementPasswordResetAttempts,
   markPasswordResetUsed,
+  upsertPasswordResetRequest,
   updateBoarderOnboardingAction,
+  updateBoarderOnboardingData,
+  updateLandlordOnboardingData,
   updatePasswordHash,
   updateUserAvatarUrl,
   updateUserProfile,
-  upsertPasswordResetRequest,
+  ensureLandlordProfile,
 } from '../repositories/account';
 import {
   determineBoarderStatus,
@@ -568,6 +572,74 @@ async function handleUpdateOnboarding(c: Context<{ Bindings: Env }>) {
   });
 }
 
+const BOARDER_ONBOARDING_STEPS = ['profile', 'preferences'] as const;
+const LANDLORD_ONBOARDING_STEPS = ['profile', 'property', 'verification'] as const;
+
+const BOARDER_ONBOARDING_SCHEMA = z.object({
+  bio: z.string().optional(),
+  occupation: z.string().optional(),
+  moveInDate: z.string().optional(),
+  emergencyContactName: z.string().optional(),
+  emergencyContactPhone: z.string().optional(),
+  searchPreferences: z.record(z.string(), z.unknown()).optional(),
+});
+
+const LANDLORD_ONBOARDING_SCHEMA = z.object({
+  businessName: z.string().optional(),
+  description: z.string().optional(),
+  bio: z.string().optional(),
+  contactNumber: z.string().optional(),
+  city: z.string().optional(),
+  province: z.string().optional(),
+  totalRooms: z.number().int().nonnegative().optional(),
+  availableRooms: z.number().int().nonnegative().optional(),
+  stripeConnectId: z.string().optional(),
+  verificationStatus: z.string().optional(),
+});
+async function handleOnboardingDataUpdate(c: Context<{ Bindings: Env }>) {
+  const db = requireD1(c.env);
+  const user = await authenticateUser(db, c.req.raw, c.env.JWT_SECRET);
+
+  if (user.role !== 'boarder' && user.role !== 'landlord') {
+    return errorResponse(403, 'Access denied. Boarders and landlords only.');
+  }
+
+  const schema =
+    user.role === 'boarder' ? BOARDER_ONBOARDING_SCHEMA : LANDLORD_ONBOARDING_SCHEMA;
+  const steps =
+    user.role === 'boarder' ? BOARDER_ONBOARDING_STEPS : LANDLORD_ONBOARDING_STEPS;
+
+  const body = await readJsonObject(c.req.raw);
+  const step = stringField(body, 'step');
+
+  if (!step || !(steps as readonly string[]).includes(step)) {
+    return errorResponse(400, `Invalid step. Expected one of: ${steps.join(', ')}`);
+  }
+
+  const raw = body['data'];
+  if (!isJsonRecord(raw)) {
+    return errorResponse(400, 'A data object is required for onboarding steps');
+  }
+
+  const parsed = schema.safeParse(raw);
+  if (!parsed.success) {
+    return errorResponse(400, 'Invalid onboarding data');
+  }
+
+  if (user.role === 'boarder') {
+    await ensureBoarderProfile(db, user.user_id);
+    await updateBoarderOnboardingData(db, user.user_id, step, parsed.data);
+  } else {
+    await ensureLandlordProfile(db, user.user_id);
+    await updateLandlordOnboardingData(db, user.user_id, step, parsed.data);
+  }
+
+  return jsonResponse({
+    success: true,
+    message: 'Onboarding step saved',
+  });
+}
+
 accountRoutes.get('/api/users/profile', handleProfile);
 accountRoutes.put('/api/users/profile', handleUpdateProfile);
 accountRoutes.patch('/api/users/profile', handleUpdateProfile);
@@ -581,5 +653,7 @@ accountRoutes.post('/auth/refresh-token', handleRefreshToken);
 accountRoutes.post('/auth/logout', c => clearAuthResponse(c.env));
 accountRoutes.get('/api/boarder/onboarding-status', handleOnboardingStatus);
 accountRoutes.post('/api/boarder/update-onboarding', handleUpdateOnboarding);
+accountRoutes.post('/api/boarder/update-onboarding-data', handleOnboardingDataUpdate);
+accountRoutes.post('/api/landlord/update-onboarding-data', handleOnboardingDataUpdate);
 
 export default accountRoutes;

@@ -3,7 +3,7 @@ import { useState, type FormEvent } from 'react';
 import { AuthSplitLayout } from '../../components/auth/AuthSplitLayout';
 import { Button } from '../../components/ui/Button';
 import { ErrorState } from '../../components/ui/ErrorState';
-import { Field, TextInput } from '../../components/ui/Field';
+import { Field, PasswordInput, TextInput } from '../../components/ui/Field';
 import { ApiRequestError } from '../../lib/api/http';
 import { resetPassword } from '../../lib/api/auth';
 
@@ -80,9 +80,8 @@ function ResetPasswordPage() {
           {error ? <ErrorState message={error} /> : null}
           <form className="flex flex-col gap-4" onSubmit={handleSubmit}>
             <Field label="New Password" htmlFor="newPassword">
-              <TextInput
+              <PasswordInput
                 id="newPassword"
-                type="password"
                 name="newPassword"
                 autoComplete="new-password"
                 placeholder="Enter your new password"
@@ -93,9 +92,8 @@ function ResetPasswordPage() {
               />
             </Field>
             <Field label="Confirm Password" htmlFor="confirmPassword">
-              <TextInput
+              <PasswordInput
                 id="confirmPassword"
-                type="password"
                 name="confirmPassword"
                 autoComplete="new-password"
                 placeholder="Confirm your new password"

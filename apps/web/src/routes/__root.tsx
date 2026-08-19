@@ -24,6 +24,8 @@ export const Route = createRootRoute({
     meta: [
       { charSet: 'utf-8' },
       { name: 'viewport', content: 'width=device-width, initial-scale=1' },
+      // Always light mode — never follow the device's dark-mode preference.
+      { name: 'color-scheme', content: 'light' },
       { title: 'Haven Space' },
     ],
     links: [
