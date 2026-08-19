@@ -58,7 +58,6 @@ bun.lock
 
 # Cloudflare local output
 .wrangler/
-/client
 
 .freebuff
 
