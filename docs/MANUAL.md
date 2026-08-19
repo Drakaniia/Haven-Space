@@ -53,7 +53,7 @@ bunx wrangler secret put UPLOADTHING_TOKEN --env=""
 ## Cloudflare Pages Frontend
 
 The TanStack Start frontend (`apps/web`) is built by Vite + `@cloudflare/vite-plugin` in
-Worker mode, then `scripts/build-pages.mjs` assembles the Cloudflare Pages "advanced mode"
+Worker mode, then `scripts/build/build-pages.mjs` assembles the Cloudflare Pages "advanced mode"
 bundle into `apps/web/dist/pages/` (`_worker.js` + static assets + `_routes.json`).
 
 Build the Pages bundle locally:
@@ -83,7 +83,7 @@ on push to `main`; it needs the `CLOUDFLARE_API_TOKEN` and `CLOUDFLARE_ACCOUNT_I
 secrets.
 
 The Pages project's git build settings (build command
-`bun install --cwd apps/web && bun run --cwd apps/web build && bun scripts/build-pages.mjs`,
+`bun install --cwd apps/web && bun run --cwd apps/web build && bun scripts/build/build-pages.mjs`,
 output dir `apps/web/dist/pages`) are configured so that any git-triggered or dashboard build
 also produces the correct `_worker.js` + assets deployment.
 

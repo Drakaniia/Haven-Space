@@ -6,7 +6,7 @@
     "dev": "vite dev",
     "build": "vite build",
     "preview": "vite preview",
-    "deploy": "bun run build && bun ../../scripts/build-pages.mjs && wrangler pages deploy dist/pages --project-name haven-space --branch main",
+    "deploy": "bun run build && bun ../../scripts/build/build-pages.mjs && wrangler pages deploy dist/pages --project-name haven-space --branch main",
     "typecheck": "tsc --noEmit",
     "test": "bun test --preload ./test/setup.ts",
     "cf-typegen": "wrangler types"
