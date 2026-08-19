@@ -1,7 +1,7 @@
 node_modules/
 dist/
 build/
-vendor/
+!scripts/build/
 functions/vendor/
 functions/api/vendor/
 *.log

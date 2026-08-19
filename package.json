@@ -18,7 +18,7 @@
     "web:dev": "bun run --cwd apps/web dev",
     "web:build": "bun run --cwd apps/web build",
     "web:deploy": "bun run --cwd apps/web deploy",
-    "pages:build": "bun scripts/build-pages.mjs",
+    "pages:build": "bun scripts/build/build-pages.mjs",
     "web:test": "bun run --cwd apps/web test",
     "web:typecheck": "bun run --cwd apps/web typecheck"
   },

@@ -37,6 +37,7 @@ const initialPreferences: BoarderPreferencesStepData = {
 };
 
 function BoarderOnboardingPage() {
+  const { token } = useAuth();
   const [step, setStep] = useState(1);
   const [saving, setSaving] = useState(false);
   const [profile, setProfile] = useState(initialProfile);

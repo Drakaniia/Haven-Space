@@ -127,8 +127,7 @@ bun run deploy
 ```
 
 The frontend is built with Vite + `@cloudflare/vite-plugin` in Worker mode
-(`apps/web/wrangler.jsonc`); `scripts/build-pages.mjs` then assembles a Cloudflare Pages
-"advanced mode" bundle (`_worker.js` + static assets + `_routes.json`) into `apps/web/dist/pages`,
+(`apps/web/wrangler.jsonc`); `scripts/build/build-pages.mjs` then assembles a Cloudflare Pages
 which is uploaded to the `haven-space` Pages project (production site:
 `https://haven-space.pages.dev`). Run the pieces individually with
 `bun run web:build` / `bun run pages:build` / `bun run web:deploy`.
@@ -136,8 +135,7 @@ which is uploaded to the `haven-space` Pages project (production site:
 The `haven-space` Pages project uses Cloudflare's **git integration** (connected to this GitHub
 repo): every pull request gets a Cloudflare preview build — a bot comment + check with a unique
 preview URL, just like Vercel — and every push to `main` deploys to production. The project's git
-build settings are: build command
-`bun install --cwd apps/web && bun run --cwd apps/web build && bun scripts/build-pages.mjs`,
+`bun install --cwd apps/web && bun run --cwd apps/web build && bun scripts/build/build-pages.mjs`,
 output dir `apps/web/dist/pages`. Manual deploys (above) still work as a fallback. The GitHub
 Actions workflow (`.github/workflows/deploy.yml`) runs the API tests and typechecks on every push
 to `main`, then deploys only the `haven-space-api` Worker; it needs the `CLOUDFLARE_API_TOKEN`
