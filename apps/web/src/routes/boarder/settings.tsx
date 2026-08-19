@@ -6,7 +6,7 @@ import { RoleShell } from '../../components/layout/RoleShell';
 import { Button } from '../../components/ui/Button';
 import { Card } from '../../components/ui/Card';
 import { ErrorState } from '../../components/ui/ErrorState';
-import { Field, TextInput } from '../../components/ui/Field';
+import { Field, PasswordInput, TextInput } from '../../components/ui/Field';
 import { Icon } from '../../components/ui/Icon';
 import { Spinner } from '../../components/ui/Spinner';
 import { ToastStack, useToasts } from '../../components/ui/Toast';
@@ -187,9 +187,8 @@ function SettingsPage() {
           </h2>
           <form className="mt-4 flex flex-col gap-4" onSubmit={handlePasswordSubmit}>
             <Field label="Current password" htmlFor="currentPassword">
-              <TextInput
+              <PasswordInput
                 id="currentPassword"
-                type="password"
                 autoComplete="current-password"
                 required
                 value={currentPassword}
@@ -197,9 +196,8 @@ function SettingsPage() {
               />
             </Field>
             <Field label="New password" htmlFor="newPassword">
-              <TextInput
+              <PasswordInput
                 id="newPassword"
-                type="password"
                 autoComplete="new-password"
                 required
                 minLength={8}

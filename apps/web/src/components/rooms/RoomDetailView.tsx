@@ -245,7 +245,7 @@ export function RoomDetailView({
             <button
               type="button"
               onClick={() => setShowMap(false)}
-              className="absolute left-3 top-3 z-10 flex items-center gap-2 rounded-lg border border-gray-200 bg-white/95 px-3 py-2 text-sm font-medium text-gray-ink shadow-card transition hover:bg-white"
+              className="absolute left-3 top-3 z-10 flex items-center gap-2 rounded-lg border border-gray-200 bg-white/95 px-3 py-2 text-sm font-medium text-gray-ink shadow-card transition-colors hover:bg-white"
             >
               <Icon name="chevronLeft" size={16} />
               Back to Images
@@ -274,7 +274,7 @@ export function RoomDetailView({
                     type="button"
                     onClick={prevImage}
                     aria-label="Previous photo"
-                    className="absolute left-3 top-1/2 flex h-11 w-11 -translate-y-1/2 items-center justify-center rounded-full bg-white/90 text-ink shadow-card transition hover:bg-white hover:shadow-pop"
+                    className="absolute left-3 top-1/2 flex h-11 w-11 -translate-y-1/2 items-center justify-center rounded-full bg-white/90 text-ink shadow-card transition-[background-color,box-shadow] hover:bg-white hover:shadow-pop"
                   >
                     <Icon name="chevronLeft" size={22} />
                   </button>
@@ -282,7 +282,7 @@ export function RoomDetailView({
                     type="button"
                     onClick={nextImage}
                     aria-label="Next photo"
-                    className="absolute right-3 top-1/2 flex h-11 w-11 -translate-y-1/2 items-center justify-center rounded-full bg-white/90 text-ink shadow-card transition hover:bg-white hover:shadow-pop"
+                    className="absolute right-3 top-1/2 flex h-11 w-11 -translate-y-1/2 items-center justify-center rounded-full bg-white/90 text-ink shadow-card transition-[background-color,box-shadow] hover:bg-white hover:shadow-pop"
                   >
                     <Icon name="chevronRight" size={22} />
                   </button>
@@ -293,7 +293,7 @@ export function RoomDetailView({
                 <button
                   type="button"
                   onClick={() => setShowMap(true)}
-                  className="absolute left-3 top-3 flex items-center gap-2 rounded-lg border border-gray-200 bg-white/95 px-3 py-2 text-sm font-medium text-gray-ink shadow-card transition hover:bg-white"
+                  className="absolute left-3 top-3 flex items-center gap-2 rounded-lg border border-gray-200 bg-white/95 px-3 py-2 text-sm font-medium text-gray-ink shadow-card transition-colors hover:bg-white"
                 >
                   <Icon name="map" size={16} />
                   Show Map
@@ -309,7 +309,7 @@ export function RoomDetailView({
                     type="button"
                     onClick={() => setCurrentImage(index)}
                     aria-label={`View photo ${index + 1}`}
-                    className={`h-[60px] w-[80px] shrink-0 overflow-hidden rounded-lg border-2 transition sm:h-[72px] sm:w-[96px] ${
+                    className={`h-[60px] w-[80px] shrink-0 overflow-hidden rounded-lg border-2 transition-[opacity,border-color] sm:h-[72px] sm:w-[96px] ${
                       index === currentImage
                         ? 'border-primary opacity-100'
                         : 'border-transparent opacity-60 hover:opacity-100'
@@ -582,7 +582,7 @@ export function RoomDetailView({
                       role="radio"
                       aria-checked={selected}
                       onClick={() => setSelectedRoomId(room.id)}
-                      className={`flex w-full items-center justify-between gap-2 rounded-lg border-2 px-3.5 py-3 text-left transition ${
+                      className={`flex w-full items-center justify-between gap-2 rounded-lg border-2 px-3.5 py-3 text-left transition-all ${
                         selected
                           ? 'border-primary bg-mint/40 shadow-[0_0_0_3px_rgba(74,124,35,0.1)]'
                           : 'border-gray-200 bg-cream/50 hover:border-primary/60'
@@ -623,7 +623,7 @@ export function RoomDetailView({
                 <Link
                   to={applyTo}
                   search={{ room: roomParam }}
-                  className="flex items-center justify-center gap-2 rounded-lg bg-primary px-5 py-3 text-sm font-semibold text-white transition hover:-translate-y-0.5 hover:bg-primary-dark hover:shadow-pop"
+                  className="flex items-center justify-center gap-2 rounded-lg bg-primary px-5 py-3 text-sm font-semibold text-white transition-all hover:-translate-y-0.5 hover:bg-primary-dark hover:shadow-pop"
                 >
                   <Icon name="application" size={18} />
                   Apply Now
@@ -631,7 +631,7 @@ export function RoomDetailView({
               ) : (
                 <Link
                   to={applyHref}
-                  className="flex items-center justify-center gap-2 rounded-lg bg-primary px-5 py-3 text-sm font-semibold text-white transition hover:-translate-y-0.5 hover:bg-primary-dark hover:shadow-pop"
+                  className="flex items-center justify-center gap-2 rounded-lg bg-primary px-5 py-3 text-sm font-semibold text-white transition-all hover:-translate-y-0.5 hover:bg-primary-dark hover:shadow-pop"
                 >
                   <Icon name="application" size={18} />
                   Apply Now
@@ -640,7 +640,7 @@ export function RoomDetailView({
               <Link
                 to={secondaryHref}
                 search={applyTo ? { room: roomParam } : undefined}
-                className="flex items-center justify-center gap-2 rounded-lg border-2 border-primary bg-white px-5 py-2.5 text-sm font-semibold text-primary transition hover:bg-mint"
+                className="flex items-center justify-center gap-2 rounded-lg border-2 border-primary bg-white px-5 py-2.5 text-sm font-semibold text-primary transition-colors hover:bg-mint"
               >
                 <Icon name="calendarDays" size={18} />
                 Schedule a Tour
@@ -882,7 +882,7 @@ function FilterChip({
     <button
       type="button"
       onClick={onClick}
-      className={`rounded-full px-4 py-1.5 text-sm font-medium transition ${
+      className={`rounded-full px-4 py-1.5 text-sm font-medium transition-all ${
         active
           ? 'bg-primary text-white'
           : 'border border-gray-200 bg-white text-gray-ink hover:border-primary hover:text-primary'

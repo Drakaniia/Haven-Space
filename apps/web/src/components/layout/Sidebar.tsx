@@ -17,7 +17,7 @@ export function Sidebar({ nav }: { nav: NavItem[] }) {
 
   return (
     <aside
-      className={`flex shrink-0 flex-col border-r border-gray-200 bg-white transition-all ${
+      className={`flex shrink-0 flex-col border-r border-gray-200 bg-white transition-[width] ${
         collapsed ? 'w-20' : 'w-72'
       }`}
     >

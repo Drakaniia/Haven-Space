@@ -7,7 +7,7 @@ import {
 } from '../../../components/auth/AuthSplitLayout';
 import { Button } from '../../../components/ui/Button';
 import { ErrorState } from '../../../components/ui/ErrorState';
-import { Field, SelectInput, TextArea, TextInput } from '../../../components/ui/Field';
+import { Field, PasswordInput, SelectInput, TextArea, TextInput } from '../../../components/ui/Field';
 import { ApiRequestError } from '../../../lib/api/http';
 import { useAuth } from '../../../lib/auth-context';
 import {
@@ -168,9 +168,8 @@ function LandlordSignupPage() {
 
         <div className="grid grid-cols-2 gap-3">
           <Field label="Password" htmlFor="password">
-            <TextInput
+            <PasswordInput
               id="password"
-              type="password"
               name="password"
               autoComplete="new-password"
               placeholder="8 or more characters"
@@ -181,9 +180,8 @@ function LandlordSignupPage() {
             />
           </Field>
           <Field label="Confirm password" htmlFor="confirm">
-            <TextInput
+            <PasswordInput
               id="confirm"
-              type="password"
               name="confirm"
               autoComplete="new-password"
               required

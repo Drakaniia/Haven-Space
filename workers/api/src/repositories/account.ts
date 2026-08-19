@@ -41,6 +41,28 @@ export interface BoarderProfileRow {
   move_in_date: string;
   onboarding_dismissed_at: string | null;
   onboarding_completed_at: string | null;
+  emergency_contact_name: string | null;
+  emergency_contact_phone: string | null;
+  search_preferences: string | null;
+}
+
+export interface LandlordProfile {
+  id: number;
+  user_id: number;
+  boarding_house_name: string;
+  boarding_house_description: string;
+  property_type: string;
+  total_rooms: number;
+  available_rooms: number;
+  welcome_message: string;
+  house_rules_file_url: string | null;
+  house_rules_file_name: string | null;
+  house_rules_file_size: number | null;
+  business_bio: string | null;
+  stripe_connect_id: string | null;
+  verification_status: string;
+  created_at: string;
+  updated_at: string;
 }
 
 export async function findUserProfileById(
@@ -120,6 +142,22 @@ export async function updateUserProfile(
       .bind(userId, input.city, input.province)
       .run();
   }
+}
+
+export async function ensureLandlordProfile(
+  db: D1Database,
+  userId: number
+): Promise<void> {
+  await db
+    .prepare(
+      `
+        INSERT INTO landlord_profiles (user_id)
+        VALUES (?)
+        ON CONFLICT(user_id) DO NOTHING
+      `
+    )
+    .bind(userId)
+    .run();
 }
 
 export async function updateUserAvatarUrl(
@@ -355,7 +393,10 @@ export async function ensureBoarderProfile(
           occupation,
           move_in_date,
           onboarding_dismissed_at,
-          onboarding_completed_at
+          onboarding_completed_at,
+          emergency_contact_name,
+          emergency_contact_phone,
+          search_preferences
         FROM boarder_profiles
         WHERE user_id = ?
         LIMIT 1
@@ -388,7 +429,10 @@ export async function ensureBoarderProfile(
           occupation,
           move_in_date,
           onboarding_dismissed_at,
-          onboarding_completed_at
+          onboarding_completed_at,
+          emergency_contact_name,
+          emergency_contact_phone,
+          search_preferences
         FROM boarder_profiles
         WHERE user_id = ?
         LIMIT 1
@@ -454,4 +498,112 @@ export async function updateBoarderOnboardingAction(
       .bind(userId)
       .run();
   }
+}
+
+const BOARDER_ONBOARDING_MAP: Record<string, string> = {
+  bio: 'bio',
+  occupation: 'occupation',
+  moveInDate: 'move_in_date',
+  emergencyContactName: 'emergency_contact_name',
+  emergencyContactPhone: 'emergency_contact_phone',
+  searchPreferences: 'search_preferences',
+};
+
+const LANDLORD_ONBOARDING_MAP: Record<string, string> = {
+  businessName: 'boarding_house_name',
+  description: 'boarding_house_description',
+  bio: 'business_bio',
+  contactNumber: 'contact_number',
+  city: 'city',
+  stripeConnectId: 'stripe_connect_id',
+  verificationStatus: 'verification_status',
+  totalRooms: 'total_rooms',
+  availableRooms: 'available_rooms',
+};
+
+export async function updateBoarderOnboardingData(
+  db: D1Database,
+  userId: number,
+  step: string,
+  data: Record<string, unknown>
+): Promise<void> {
+  const tableMap: Record<string, Record<string, string>> = {
+    profile: BOARDER_ONBOARDING_MAP,
+    preferences: BOARDER_ONBOARDING_MAP,
+  };
+  const columnMap = tableMap[step];
+  if (!columnMap) return;
+
+  const assignments: string[] = [];
+  const values: unknown[] = [];
+
+  for (const [key, column] of Object.entries(columnMap)) {
+    const value = data[key];
+    if (value === undefined) continue;
+    if (typeof value === 'object' && value !== null) {
+      assignments.push(`${column} = ?`);
+      values.push(JSON.stringify(value));
+    } else {
+      assignments.push(`${column} = ?`);
+      values.push(value);
+    }
+  }
+
+  if (assignments.length === 0) return;
+
+  values.push(userId);
+  await db
+    .prepare(
+      `
+        UPDATE boarder_profiles
+        SET ${assignments.join(', ')}, updated_at = CURRENT_TIMESTAMP
+        WHERE user_id = ?
+      `
+    )
+    .bind(...values)
+    .run();
+}
+
+export async function updateLandlordOnboardingData(
+  db: D1Database,
+  userId: number,
+  step: string,
+  data: Record<string, unknown>
+): Promise<void> {
+  const tableMap: Record<string, Record<string, string>> = {
+    profile: LANDLORD_ONBOARDING_MAP,
+    property: LANDLORD_ONBOARDING_MAP,
+    verification: LANDLORD_ONBOARDING_MAP,
+  };
+  const columnMap = tableMap[step];
+  if (!columnMap) return;
+
+  const assignments: string[] = [];
+  const values: unknown[] = [];
+
+  for (const [key, column] of Object.entries(columnMap)) {
+    const value = data[key];
+    if (value === undefined) continue;
+    if (typeof value === 'object' && value !== null) {
+      assignments.push(`${column} = ?`);
+      values.push(JSON.stringify(value));
+    } else {
+      assignments.push(`${column} = ?`);
+      values.push(value);
+    }
+  }
+
+  if (assignments.length === 0) return;
+
+  values.push(userId);
+  await db
+    .prepare(
+      `
+        UPDATE landlord_profiles
+        SET ${assignments.join(', ')}, updated_at = CURRENT_TIMESTAMP
+        WHERE user_id = ?
+      `
+    )
+    .bind(...values)
+    .run();
 }

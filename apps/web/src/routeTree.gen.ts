@@ -56,6 +56,9 @@ import { Route as LandlordVerificationRouteImport } from './routes/landlord/veri
 import { Route as LegalPrivacyPolicyRouteImport } from './routes/legal/privacy-policy'
 import { Route as LegalTermsOfServiceRouteImport } from './routes/legal/terms-of-service'
 import { Route as LegalUserAgreementRouteImport } from './routes/legal/user-agreement'
+import { Route as OnboardingIndexRouteImport } from './routes/onboarding/index'
+import { Route as OnboardingBoarderRouteImport } from './routes/onboarding/boarder'
+import { Route as OnboardingLandlordRouteImport } from './routes/onboarding/landlord'
 import { Route as RoomsIdRouteImport } from './routes/rooms/$id'
 import { Route as AuthSignupIndexRouteImport } from './routes/auth/signup/index'
 import { Route as AuthSignupLandlordRouteImport } from './routes/auth/signup/landlord'
@@ -313,6 +316,21 @@ const LegalUserAgreementRoute = LegalUserAgreementRouteImport.update({
   path: '/legal/user-agreement',
   getParentRoute: () => rootRouteImport,
 } as any)
+const OnboardingIndexRoute = OnboardingIndexRouteImport.update({
+  id: '/onboarding/',
+  path: '/onboarding/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const OnboardingBoarderRoute = OnboardingBoarderRouteImport.update({
+  id: '/onboarding/boarder',
+  path: '/onboarding/boarder',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const OnboardingLandlordRoute = OnboardingLandlordRouteImport.update({
+  id: '/onboarding/landlord',
+  path: '/onboarding/landlord',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const RoomsIdRoute = RoomsIdRouteImport.update({
   id: '/rooms/$id',
   path: '/rooms/$id',
@@ -461,11 +479,14 @@ export interface FileRoutesByFullPath {
   '/legal/privacy-policy': typeof LegalPrivacyPolicyRoute
   '/legal/terms-of-service': typeof LegalTermsOfServiceRoute
   '/legal/user-agreement': typeof LegalUserAgreementRoute
+  '/onboarding/boarder': typeof OnboardingBoarderRoute
+  '/onboarding/landlord': typeof OnboardingLandlordRoute
   '/rooms/$id': typeof RoomsIdRoute
   '/admin/': typeof AdminIndexRoute
   '/boarder/': typeof BoarderIndexRoute
   '/find-a-room/': typeof FindARoomIndexRoute
   '/landlord/': typeof LandlordIndexRoute
+  '/onboarding/': typeof OnboardingIndexRoute
   '/auth/signup/landlord': typeof AuthSignupLandlordRoute
   '/boarder/applications/$id': typeof BoarderApplicationsIdRoute
   '/boarder/applications/settings': typeof BoarderApplicationsSettingsRoute
@@ -524,11 +545,14 @@ export interface FileRoutesByTo {
   '/legal/privacy-policy': typeof LegalPrivacyPolicyRoute
   '/legal/terms-of-service': typeof LegalTermsOfServiceRoute
   '/legal/user-agreement': typeof LegalUserAgreementRoute
+  '/onboarding/boarder': typeof OnboardingBoarderRoute
+  '/onboarding/landlord': typeof OnboardingLandlordRoute
   '/rooms/$id': typeof RoomsIdRoute
   '/admin': typeof AdminIndexRoute
   '/boarder': typeof BoarderIndexRoute
   '/find-a-room': typeof FindARoomIndexRoute
   '/landlord': typeof LandlordIndexRoute
+  '/onboarding': typeof OnboardingIndexRoute
   '/auth/signup/landlord': typeof AuthSignupLandlordRoute
   '/boarder/applications/$id': typeof BoarderApplicationsIdRoute
   '/boarder/applications/settings': typeof BoarderApplicationsSettingsRoute
@@ -593,11 +617,14 @@ export interface FileRoutesById {
   '/legal/privacy-policy': typeof LegalPrivacyPolicyRoute
   '/legal/terms-of-service': typeof LegalTermsOfServiceRoute
   '/legal/user-agreement': typeof LegalUserAgreementRoute
+  '/onboarding/boarder': typeof OnboardingBoarderRoute
+  '/onboarding/landlord': typeof OnboardingLandlordRoute
   '/rooms/$id': typeof RoomsIdRoute
   '/admin/': typeof AdminIndexRoute
   '/boarder/': typeof BoarderIndexRoute
   '/find-a-room/': typeof FindARoomIndexRoute
   '/landlord/': typeof LandlordIndexRoute
+  '/onboarding/': typeof OnboardingIndexRoute
   '/auth/signup/landlord': typeof AuthSignupLandlordRoute
   '/boarder/applications/$id': typeof BoarderApplicationsIdRoute
   '/boarder/applications/settings': typeof BoarderApplicationsSettingsRoute
@@ -664,11 +691,14 @@ export interface FileRouteTypes {
     | '/legal/privacy-policy'
     | '/legal/terms-of-service'
     | '/legal/user-agreement'
+    | '/onboarding/boarder'
+    | '/onboarding/landlord'
     | '/rooms/$id'
     | '/admin/'
     | '/boarder/'
     | '/find-a-room/'
     | '/landlord/'
+    | '/onboarding/'
     | '/auth/signup/landlord'
     | '/boarder/applications/$id'
     | '/boarder/applications/settings'
@@ -727,11 +757,14 @@ export interface FileRouteTypes {
     | '/legal/privacy-policy'
     | '/legal/terms-of-service'
     | '/legal/user-agreement'
+    | '/onboarding/boarder'
+    | '/onboarding/landlord'
     | '/rooms/$id'
     | '/admin'
     | '/boarder'
     | '/find-a-room'
     | '/landlord'
+    | '/onboarding'
     | '/auth/signup/landlord'
     | '/boarder/applications/$id'
     | '/boarder/applications/settings'
@@ -795,11 +828,14 @@ export interface FileRouteTypes {
     | '/legal/privacy-policy'
     | '/legal/terms-of-service'
     | '/legal/user-agreement'
+    | '/onboarding/boarder'
+    | '/onboarding/landlord'
     | '/rooms/$id'
     | '/admin/'
     | '/boarder/'
     | '/find-a-room/'
     | '/landlord/'
+    | '/onboarding/'
     | '/auth/signup/landlord'
     | '/boarder/applications/$id'
     | '/boarder/applications/settings'
@@ -865,11 +901,14 @@ export interface RootRouteChildren {
   LegalPrivacyPolicyRoute: typeof LegalPrivacyPolicyRoute
   LegalTermsOfServiceRoute: typeof LegalTermsOfServiceRoute
   LegalUserAgreementRoute: typeof LegalUserAgreementRoute
+  OnboardingBoarderRoute: typeof OnboardingBoarderRoute
+  OnboardingLandlordRoute: typeof OnboardingLandlordRoute
   RoomsIdRoute: typeof RoomsIdRoute
   AdminIndexRoute: typeof AdminIndexRoute
   BoarderIndexRoute: typeof BoarderIndexRoute
   FindARoomIndexRoute: typeof FindARoomIndexRoute
   LandlordIndexRoute: typeof LandlordIndexRoute
+  OnboardingIndexRoute: typeof OnboardingIndexRoute
   BoarderRoomsIdRoute: typeof BoarderRoomsIdRoute
 }
 
@@ -1204,6 +1243,27 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof LegalUserAgreementRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/onboarding/': {
+      id: '/onboarding/'
+      path: '/onboarding'
+      fullPath: '/onboarding/'
+      preLoaderRoute: typeof OnboardingIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/onboarding/boarder': {
+      id: '/onboarding/boarder'
+      path: '/onboarding/boarder'
+      fullPath: '/onboarding/boarder'
+      preLoaderRoute: typeof OnboardingBoarderRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/onboarding/landlord': {
+      id: '/onboarding/landlord'
+      path: '/onboarding/landlord'
+      fullPath: '/onboarding/landlord'
+      preLoaderRoute: typeof OnboardingLandlordRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/rooms/$id': {
       id: '/rooms/$id'
       path: '/rooms/$id'
@@ -1492,11 +1552,14 @@ const rootRouteChildren: RootRouteChildren = {
   LegalPrivacyPolicyRoute: LegalPrivacyPolicyRoute,
   LegalTermsOfServiceRoute: LegalTermsOfServiceRoute,
   LegalUserAgreementRoute: LegalUserAgreementRoute,
+  OnboardingBoarderRoute: OnboardingBoarderRoute,
+  OnboardingLandlordRoute: OnboardingLandlordRoute,
   RoomsIdRoute: RoomsIdRoute,
   AdminIndexRoute: AdminIndexRoute,
   BoarderIndexRoute: BoarderIndexRoute,
   FindARoomIndexRoute: FindARoomIndexRoute,
   LandlordIndexRoute: LandlordIndexRoute,
+  OnboardingIndexRoute: OnboardingIndexRoute,
   BoarderRoomsIdRoute: BoarderRoomsIdRoute,
 }
 export const routeTree = rootRouteImport

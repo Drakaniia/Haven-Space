@@ -455,4 +455,192 @@ describe('account, profile, password, and onboarding routes', () => {
         .get() as { dismissed: number }
     ).toEqual({ dismissed: 1 });
   });
+
+  it('auto-saves boarder onboarding step data', async () => {
+    const sqlite = new Database(':memory:');
+    runMigrations(sqlite);
+    await seedAccountData(sqlite);
+    const env = createEnv(sqlite);
+
+    const save = await app.request(
+      'http://localhost/api/boarder/update-onboarding-data',
+      {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-User-ID': '2',
+        },
+        body: JSON.stringify({
+          step: 'profile',
+          data: {
+            bio: 'Looking for a quiet room',
+            occupation: 'Engineer',
+            emergencyContactName: 'Mom',
+            emergencyContactPhone: '09170000000',
+          },
+        }),
+      },
+      env
+    );
+
+    expect(save.status).toBe(200);
+    expect(await save.json()).toEqual({
+      success: true,
+      message: 'Onboarding step saved',
+    });
+
+    const profile = sqlite
+      .prepare(
+        'SELECT bio, occupation, emergency_contact_name, emergency_contact_phone FROM boarder_profiles WHERE user_id = 2'
+      )
+      .get() as {
+      bio: string;
+      occupation: string;
+      emergency_contact_name: string;
+      emergency_contact_phone: string;
+    };
+
+    expect(profile).toEqual({
+      bio: 'Looking for a quiet room',
+      occupation: 'Engineer',
+      emergency_contact_name: 'Mom',
+      emergency_contact_phone: '09170000000',
+    });
+  });
+
+  it('stores boarder search preferences as JSON', async () => {
+    const sqlite = new Database(':memory:');
+    runMigrations(sqlite);
+    await seedAccountData(sqlite);
+    const env = createEnv(sqlite);
+
+    const save = await app.request(
+      'http://localhost/api/boarder/update-onboarding-data',
+      {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-User-ID': '2',
+        },
+        body: JSON.stringify({
+          step: 'preferences',
+          data: {
+            moveInDate: '2026-09-01',
+            searchPreferences: { budget: 6000, locations: ['Manila', 'Quezon City'] },
+          },
+        }),
+      },
+      env
+    );
+
+    expect(save.status).toBe(200);
+    const row = sqlite
+      .prepare('SELECT search_preferences, move_in_date FROM boarder_profiles WHERE user_id = 2')
+      .get() as { search_preferences: string; move_in_date: string };
+    expect(row.move_in_date).toBe('2026-09-01');
+    expect(JSON.parse(row.search_preferences)).toEqual({
+      budget: 6000,
+      locations: ['Manila', 'Quezon City'],
+    });
+  });
+
+  it('rejects an invalid boarder onboarding step', async () => {
+    const sqlite = new Database(':memory:');
+    runMigrations(sqlite);
+    await seedAccountData(sqlite);
+    const env = createEnv(sqlite);
+
+    const save = await app.request(
+      'http://localhost/api/boarder/update-onboarding-data',
+      {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-User-ID': '2',
+        },
+        body: JSON.stringify({ step: 'nope', data: { bio: 'x' } }),
+      },
+      env
+    );
+
+    expect(save.status).toBe(400);
+  });
+
+  it('auto-saves landlord onboarding step data', async () => {
+    const sqlite = new Database(':memory:');
+    runMigrations(sqlite);
+    await seedAccountData(sqlite);
+    const env = createEnv(sqlite);
+
+    const save = await app.request(
+      'http://localhost/api/landlord/update-onboarding-data',
+      {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-User-ID': '3',
+        },
+        body: JSON.stringify({
+          step: 'property',
+          data: {
+            businessName: 'Sunrise Boarding House',
+            description: 'Cozy rooms near the university',
+            totalRooms: 8,
+            availableRooms: 3,
+          },
+        }),
+      },
+      env
+    );
+
+    expect(save.status).toBe(200);
+    const profile = sqlite
+      .prepare(
+        'SELECT boarding_house_name, boarding_house_description FROM landlord_profiles WHERE user_id = 3'
+      )
+      .get() as { boarding_house_name: string; boarding_house_description: string };
+
+    expect(profile).toEqual({
+      boarding_house_name: 'Sunrise Boarding House',
+      boarding_house_description: 'Cozy rooms near the university',
+    });
+  });
+
+  it('stores landlord verification and payout data', async () => {
+    const sqlite = new Database(':memory:');
+    runMigrations(sqlite);
+    await seedAccountData(sqlite);
+    const env = createEnv(sqlite);
+
+    const save = await app.request(
+      'http://localhost/api/landlord/update-onboarding-data',
+      {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-User-ID': '3',
+        },
+        body: JSON.stringify({
+          step: 'verification',
+          data: {
+            stripeConnectId: 'acct_123',
+            verificationStatus: 'verified',
+          },
+        }),
+      },
+      env
+    );
+
+    expect(save.status).toBe(200);
+    const profile = sqlite
+      .prepare(
+        'SELECT stripe_connect_id, verification_status FROM landlord_profiles WHERE user_id = 3'
+      )
+      .get() as { stripe_connect_id: string; verification_status: string };
+
+    expect(profile).toEqual({
+      stripe_connect_id: 'acct_123',
+      verification_status: 'verified',
+    });
+  });
 });

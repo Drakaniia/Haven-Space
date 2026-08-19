@@ -19,6 +19,12 @@
   --shadow-pop: 0 10px 15px rgba(0, 0, 0, 0.1);
 }
 
+:root {
+  /* Always render light: prevents browsers from switching native form controls,
+     scrollbars, and the page canvas to dark when the device is in dark mode. */
+  color-scheme: light;
+}
+
 body {
   font-family: var(--font-sans);
   background-color: var(--color-cream);
@@ -167,4 +173,53 @@ body {
   object-fit: contain;
   pointer-events: none;
   user-select: none;
+}
+
+/* ── Hover-transform gating ───────────────────────────────────────────
+   Touch devices trigger :hover on tap, causing transforms that stick
+   until the user taps elsewhere. Gate transform hovers behind a fine
+   pointer + hover-capable media query so they only fire on devices
+   where hover is meaningful (mouse / stylus). Color-only hovers are
+   left ungated — they cause no layout shift and feel correct on tap.
+
+   We reset Tailwind's generated hover utilities to no-op by default,
+   then re-enable them inside @media (hover: hover) and (pointer: fine).
+   ─────────────────────────────────────────────────────────────────── */
+
+/* Reset: suppress transform hovers on touch / coarse-pointer devices */
+.hover\:-translate-y-0\.5:hover,
+.hover\:-translate-y-1:hover,
+.hover\:scale-105:hover,
+.hover\:scale-110:hover {
+  transform: none;
+}
+
+/* Re-enable on devices with fine pointer + hover support */
+@media (hover: hover) and (pointer: fine) {
+  .hover\:-translate-y-0\.5:hover {
+    --tw-translate-y: -0.125rem;
+    transform: translate(var(--tw-translate-x), var(--tw-translate-y))
+      rotate(var(--tw-rotate)) skewX(var(--tw-skew-x)) skewY(var(--tw-skew-y))
+      scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y));
+  }
+  .hover\:-translate-y-1:hover {
+    --tw-translate-y: -0.25rem;
+    transform: translate(var(--tw-translate-x), var(--tw-translate-y))
+      rotate(var(--tw-rotate)) skewX(var(--tw-skew-x)) skewY(var(--tw-skew-y))
+      scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y));
+  }
+  .hover\:scale-105:hover {
+    --tw-scale-x: 1.05;
+    --tw-scale-y: 1.05;
+    transform: translate(var(--tw-translate-x), var(--tw-translate-y))
+      rotate(var(--tw-rotate)) skewX(var(--tw-skew-x)) skewY(var(--tw-skew-y))
+      scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y));
+  }
+  .hover\:scale-110:hover {
+    --tw-scale-x: 1.1;
+    --tw-scale-y: 1.1;
+    transform: translate(var(--tw-translate-x), var(--tw-translate-y))
+      rotate(var(--tw-rotate)) skewX(var(--tw-skew-x)) skewY(var(--tw-skew-y))
+      scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y));
+  }
 }

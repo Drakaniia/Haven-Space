@@ -1,9 +1,5 @@
-import type {
-  InputHTMLAttributes,
-  ReactNode,
-  SelectHTMLAttributes,
-  TextareaHTMLAttributes,
-} from 'react';
+import { useState, type InputHTMLAttributes, type ReactNode, type SelectHTMLAttributes, type TextareaHTMLAttributes } from 'react';
+import { Icon } from './Icon';
 
 export function Field({
   label,
@@ -30,6 +26,29 @@ const inputClasses =
 
 export function TextInput(props: InputHTMLAttributes<HTMLInputElement>) {
   return <input className={inputClasses} {...props} />;
+}
+
+export function PasswordInput(props: InputHTMLAttributes<HTMLInputElement>) {
+  const [visible, setVisible] = useState(false);
+  const { className, ...rest } = props;
+  return (
+    <div className="relative">
+      <input
+        {...rest}
+        type={visible ? 'text' : 'password'}
+        className={`${inputClasses} pr-10 ${className ?? ''}`}
+      />
+      <button
+        type="button"
+        aria-pressed={visible}
+        aria-label={visible ? 'Hide password' : 'Show password'}
+        onClick={() => setVisible(v => !v)}
+        className="absolute inset-y-0 right-0 flex w-10 items-center justify-center text-gray-400 hover:text-gray-600 focus:outline-none"
+      >
+        <Icon name={visible ? 'eye' : 'eyeOff'} size={18} />
+      </button>
+    </div>
+  );
 }
 
 export function SelectInput(props: SelectHTMLAttributes<HTMLSelectElement>) {
