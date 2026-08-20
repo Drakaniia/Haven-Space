@@ -43,7 +43,6 @@ export async function createLandlordRoom(
   return insertedId(result, 'Room');
 }
 
-
 export async function countLandlordRooms(db: D1Database, propertyId: number): Promise<number> {
   const row = await db
     .prepare('SELECT COUNT(*) as count FROM rooms WHERE property_id = ? AND deleted_at IS NULL')
@@ -52,7 +51,6 @@ export async function countLandlordRooms(db: D1Database, propertyId: number): Pr
 
   return Number(row?.count ?? 0);
 }
-
 
 export async function listLandlordRoomIdsForRemoval(
   db: D1Database,
@@ -80,7 +78,6 @@ export async function listLandlordRoomIdsForRemoval(
   return (result.results ?? []).map(row => Number(row.id));
 }
 
-
 export async function softDeleteLandlordRoomsById(
   db: D1Database,
   roomIds: number[]
@@ -100,7 +97,6 @@ export async function softDeleteLandlordRoomsById(
     .bind(...roomIds)
     .run();
 }
-
 
 export async function updateLandlordActiveRooms(
   db: D1Database,

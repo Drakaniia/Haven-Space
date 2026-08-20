@@ -156,7 +156,6 @@ export async function listPropertyAccessHistory(
   return events.sort((left, right) => left.at.localeCompare(right.at));
 }
 
-
 export async function createPropertyInvitationNotification(
   db: D1Database,
   input: {
@@ -187,7 +186,6 @@ export async function createPropertyInvitationNotification(
     .run();
 }
 
-
 export async function deleteInvitationNotifications(
   db: D1Database,
   inviteeId: number,
@@ -208,7 +206,6 @@ export async function deleteInvitationNotifications(
     .bind(inviteeId, invitationId)
     .run();
 }
-
 
 export async function createPropertyAccessRemovedNotification(
   db: D1Database,
@@ -235,4 +232,3 @@ export async function createPropertyAccessRemovedNotification(
     )
     .run();
 }
-

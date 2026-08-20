@@ -30,7 +30,6 @@ export async function findActiveAccess(
   );
 }
 
-
 export async function findInviteeLandlord(
   db: D1Database,
   inviteeId: number
@@ -50,7 +49,6 @@ export async function findInviteeLandlord(
   );
 }
 
-
 export async function findPropertyForAccess(
   db: D1Database,
   propertyId: number
@@ -68,7 +66,6 @@ export async function findPropertyForAccess(
     'Property'
   );
 }
-
 
 export async function listAuthorizedLandlords(
   db: D1Database,
@@ -98,7 +95,6 @@ export async function listAuthorizedLandlords(
   return result.results ?? [];
 }
 
-
 export async function listAccessiblePropertyIds(
   db: D1Database,
   landlordId: number
@@ -117,7 +113,6 @@ export async function listAccessiblePropertyIds(
 
   return (result.results ?? []).map(row => Number(row.property_id));
 }
-
 
 export async function listPropertyAccessOverview(
   db: D1Database
@@ -144,7 +139,6 @@ export async function listPropertyAccessOverview(
   return result.results ?? [];
 }
 
-
 export async function grantPropertyAccess(
   db: D1Database,
   input: GrantPropertyAccessInput
@@ -166,7 +160,6 @@ export async function grantPropertyAccess(
 
   return insertedId(result, 'Property access');
 }
-
 
 export async function removePropertyAccess(
   db: D1Database,
@@ -190,7 +183,6 @@ export async function removePropertyAccess(
 
   return Number(result.meta.changes ?? 0);
 }
-
 
 export async function countLandlordCreatedData(
   db: D1Database,
@@ -256,7 +248,6 @@ export async function countLandlordCreatedData(
   };
 }
 
-
 export async function revokeAllForLandlord(
   db: D1Database,
   landlordId: number,
@@ -291,7 +282,6 @@ export async function revokeAllForLandlord(
     .run();
 }
 
-
 export async function revokeAllForProperty(
   db: D1Database,
   propertyId: number,
@@ -325,4 +315,3 @@ export async function revokeAllForProperty(
     .bind(actedBy, propertyId)
     .run();
 }
-

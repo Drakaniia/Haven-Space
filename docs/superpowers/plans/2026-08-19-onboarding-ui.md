@@ -4,7 +4,8 @@
 
 **Goal:** Implement a tailored multi-step onboarding wizard for Boarders and Landlords, including database schema updates, restrictive UI components (banner/modal), and API endpoints for progressive saving.
 
-**Architecture:** 
+**Architecture:**
+
 - Backend: A new D1 migration adds JSON preference columns and verification fields. Hono API routes handle step-by-step auto-saving and validation.
 - Frontend: TanStack Start routing handles the wizard wrapper (`WizardLayout`) and individual steps. Zod handles strict validation. A React context or Zustand store (if needed, or just standard React state lifted to the route) tracks cross-step data.
 - UI: Uses Framer Motion / TanStack transitions for fluid animations and a responsive stepper.
@@ -26,10 +27,12 @@
 ### Task 1: Database Migration for Onboarding Fields
 
 **Files:**
+
 - Create: `workers/api/migrations/0015_onboarding_fields.sql`
 - Modify: `workers/api/src/repositories/account.ts`
 
 **Interfaces:**
+
 - Consumes: Existing `boarder_profiles` and `landlord_profiles` tables.
 - Produces: Updated schema with `search_preferences` (JSON), `emergency_contact_name`, `emergency_contact_phone` on `boarder_profiles`; `business_bio`, `stripe_connect_id`, `verification_status` on `landlord_profiles`.
 
@@ -69,10 +72,12 @@ git commit -m "feat(db): add onboarding schema fields to boarder and landlord pr
 ### Task 2: Backend API Endpoints for Auto-Saving
 
 **Files:**
+
 - Modify: `workers/api/src/routes/account.ts`
 - Modify: `workers/api/src/repositories/account.ts`
 
 **Interfaces:**
+
 - Consumes: Updated database schemas.
 - Produces: Enhanced `POST /api/boarder/update-onboarding` and new `POST /api/landlord/update-onboarding` endpoints that accept partial JSON data (step data) and update the respective profiles.
 
@@ -85,10 +90,12 @@ git commit -m "feat(db): add onboarding schema fields to boarder and landlord pr
 ### Task 3: Shared UI Components (WizardLayout & Stepper)
 
 **Files:**
+
 - Create: `apps/web/src/components/onboarding/WizardLayout.tsx`
 - Create: `apps/web/src/components/onboarding/Stepper.tsx`
 
 **Interfaces:**
+
 - Consumes: Framer Motion for transitions.
 - Produces: A wrapper component that takes `currentStep`, `totalSteps`, `title`, and `children`, rendering a fluidly animated container and progress indicator.
 
@@ -99,11 +106,13 @@ git commit -m "feat(db): add onboarding schema fields to boarder and landlord pr
 ### Task 4: Shared Restrictions (Banner & Modal)
 
 **Files:**
+
 - Create: `apps/web/src/components/shared/RestrictionBanner.tsx`
 - Create: `apps/web/src/components/shared/RestrictionModal.tsx`
 - Modify: `apps/web/src/components/layout/RoleShell.tsx`
 
 **Interfaces:**
+
 - Consumes: Global user/profile context (to check `onboarding_completed_at` and `onboarding_dismissed_at`).
 - Produces: A persistent top banner if onboarding is incomplete/skipped, and an action-blocking modal component.
 
@@ -115,11 +124,13 @@ git commit -m "feat(db): add onboarding schema fields to boarder and landlord pr
 ### Task 5: Boarder Onboarding Flow
 
 **Files:**
+
 - Create: `apps/web/src/routes/onboarding/boarder.tsx`
 - Create: `apps/web/src/components/onboarding/boarder/StepProfile.tsx`
 - Create: `apps/web/src/components/onboarding/boarder/StepPreferences.tsx`
 
 **Interfaces:**
+
 - Consumes: `WizardLayout`, API auto-save endpoints.
 - Produces: The 2-step boarder wizard.
 
@@ -131,12 +142,14 @@ git commit -m "feat(db): add onboarding schema fields to boarder and landlord pr
 ### Task 6: Landlord Onboarding Flow
 
 **Files:**
+
 - Create: `apps/web/src/routes/onboarding/landlord.tsx`
 - Create: `apps/web/src/components/onboarding/landlord/StepProperty.tsx`
 - Create: `apps/web/src/components/onboarding/landlord/StepVerification.tsx`
 - Modify: `apps/web/src/routes/landlord/onboarding.tsx` (redirect or replace with the new flow)
 
 **Interfaces:**
+
 - Consumes: `WizardLayout`, API auto-save endpoints.
 - Produces: The 3-step landlord wizard (Extended Profile, First Property, Verification).
 
@@ -148,10 +161,12 @@ git commit -m "feat(db): add onboarding schema fields to boarder and landlord pr
 ### Task 7: Onboarding Dispatcher & Trigger
 
 **Files:**
+
 - Create: `apps/web/src/routes/onboarding/index.tsx`
 - Modify: `apps/web/src/routes/auth/choose-role.tsx` (or equivalent post-signup handler)
 
 **Interfaces:**
+
 - Consumes: User context/role.
 - Produces: Redirects to the correct onboarding flow based on role, and triggers onboarding after signup.
 

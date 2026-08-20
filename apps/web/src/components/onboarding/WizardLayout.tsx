@@ -9,12 +9,7 @@ export interface WizardLayoutProps {
   children: ReactNode;
 }
 
-export function WizardLayout({
-  currentStep,
-  totalSteps,
-  title,
-  children,
-}: WizardLayoutProps) {
+export function WizardLayout({ currentStep, totalSteps, title, children }: WizardLayoutProps) {
   return (
     <div className="flex flex-col w-full max-w-3xl mx-auto min-h-[400px] p-6 sm:p-8 bg-white rounded-2xl shadow-sm border border-gray-100">
       <div className="mb-8 w-full">
@@ -32,9 +27,9 @@ export function WizardLayout({
             initial={{ opacity: 0, x: 20 }}
             animate={{ opacity: 1, x: 0 }}
             exit={{ opacity: 0, x: -20 }}
-            transition={{ 
-              duration: 0.3, 
-              ease: [0.25, 0.1, 0.25, 1.0] 
+            transition={{
+              duration: 0.3,
+              ease: [0.25, 0.1, 0.25, 1.0],
             }}
             className="flex-1 flex flex-col"
           >

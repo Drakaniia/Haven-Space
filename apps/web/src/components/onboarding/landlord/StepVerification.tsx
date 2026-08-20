@@ -19,8 +19,7 @@ export function StepVerification({
   onSkip: () => void;
 }) {
   const [error, setError] = useState<string | null>(null);
-  const set = (patch: Partial<LandlordVerificationStepData>) =>
-    onChange({ ...data, ...patch });
+  const set = (patch: Partial<LandlordVerificationStepData>) => onChange({ ...data, ...patch });
 
   return (
     <form
@@ -33,8 +32,8 @@ export function StepVerification({
       <div className="rounded-md bg-cream p-3 text-sm">
         <p className="font-medium">Verification &amp; payouts</p>
         <p className="text-gray-ink">
-          Link your identity verification and bank/payout account to receive rent. If your
-          platform already has your details, you can skip this step.
+          Link your identity verification and bank/payout account to receive rent. If your platform
+          already has your details, you can skip this step.
         </p>
       </div>
       <label className="block">

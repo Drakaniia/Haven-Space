@@ -11,10 +11,10 @@ export function Stepper({ currentStep, totalSteps }: StepperProps) {
       {Array.from({ length: totalSteps }).map((_, index) => {
         const isActive = index === currentStep;
         const isCompleted = index < currentStep;
-        
+
         return (
-          <div 
-            key={index} 
+          <div
+            key={index}
             className="h-2 flex-1 rounded-full bg-gray-100 overflow-hidden relative"
             role="progressbar"
             aria-valuenow={isActive ? 100 : isCompleted ? 100 : 0}
@@ -28,7 +28,7 @@ export function Stepper({ currentStep, totalSteps }: StepperProps) {
               initial={false}
               animate={{
                 width: isCompleted || isActive ? '100%' : '0%',
-                opacity: isCompleted ? 1 : isActive ? 1 : 0
+                opacity: isCompleted ? 1 : isActive ? 1 : 0,
               }}
               transition={{ duration: 0.3, ease: 'easeInOut' }}
             />

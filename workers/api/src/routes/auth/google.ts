@@ -230,7 +230,10 @@ export function profileEmailVerified(profile: GoogleProfileResponse): boolean {
   return profile.email_verified === true || profile.email_verified === 'true';
 }
 
-export function splitGoogleName(profile: GoogleProfileResponse): { firstName: string; lastName: string } {
+export function splitGoogleName(profile: GoogleProfileResponse): {
+  firstName: string;
+  lastName: string;
+} {
   const given = profile.given_name?.trim() ?? '';
   const family = profile.family_name?.trim() ?? '';
 

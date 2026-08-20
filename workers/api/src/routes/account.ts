@@ -604,10 +604,8 @@ async function handleOnboardingDataUpdate(c: Context<{ Bindings: Env }>) {
     return errorResponse(403, 'Access denied. Boarders and landlords only.');
   }
 
-  const schema =
-    user.role === 'boarder' ? BOARDER_ONBOARDING_SCHEMA : LANDLORD_ONBOARDING_SCHEMA;
-  const steps =
-    user.role === 'boarder' ? BOARDER_ONBOARDING_STEPS : LANDLORD_ONBOARDING_STEPS;
+  const schema = user.role === 'boarder' ? BOARDER_ONBOARDING_SCHEMA : LANDLORD_ONBOARDING_SCHEMA;
+  const steps = user.role === 'boarder' ? BOARDER_ONBOARDING_STEPS : LANDLORD_ONBOARDING_STEPS;
 
   const body = await readJsonObject(c.req.raw);
   const step = stringField(body, 'step');

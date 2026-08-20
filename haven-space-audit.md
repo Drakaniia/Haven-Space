@@ -18,21 +18,22 @@ Haven Space is a healthy mid-size monorepo (~280 source files outside vendor) wi
 
 ## Metrics Dashboard
 
-| # | Metric | Threshold | Found | Worst Offender |
-|---|--------|-----------|-------|----------------|
-| 1 | Folder file count | >30 files/dir | 🔴 2 | `apps/web/public/assets/svg` — 77, `client/assets/svg` — 77 (near-duplicate) |
-| 2 | File line count | >400 lines/file | 🔴 76 | `client/js/views/public/find-a-room.ts` — 2149, `client/js/views/landlord/create-listing.ts` — 2089 |
-| 3 | Nesting depth | >4 levels | 🟡 26 dirs ≥5 | `apps/web/src/routes/landlord/listings/rooms/$id` — 8 levels |
-| 4 | Naming conventions | single style/level | 🟢 Mixed | `*/assets/svg` — kebab + camelCase + snake_case + PascalCase + other intermingled |
-| 5 | Orphaned/misplaced files | no misplacement | 🟡 3 classes | `setup.bat`/`setup.ps1` at root, `client/css.bak/`, duplicated `client/assets` ↔ `apps/web/public/assets` |
-| 6 | Doc sprawl | ≤5 scattered .md | 🟢 42 files | 14 placeholder `README.md` under `client/css/` + `client/views/` |
-| 7 | Empty/dead dirs | 0 | 🟢 0 empty, 5 single-child chains | `apps → web`, `workers → api`, `docs/superpowers → plans` |
+| #   | Metric                   | Threshold          | Found                             | Worst Offender                                                                                            |
+| --- | ------------------------ | ------------------ | --------------------------------- | --------------------------------------------------------------------------------------------------------- |
+| 1   | Folder file count        | >30 files/dir      | 🔴 2                              | `apps/web/public/assets/svg` — 77, `client/assets/svg` — 77 (near-duplicate)                              |
+| 2   | File line count          | >400 lines/file    | 🔴 76                             | `client/js/views/public/find-a-room.ts` — 2149, `client/js/views/landlord/create-listing.ts` — 2089       |
+| 3   | Nesting depth            | >4 levels          | 🟡 26 dirs ≥5                     | `apps/web/src/routes/landlord/listings/rooms/$id` — 8 levels                                              |
+| 4   | Naming conventions       | single style/level | 🟢 Mixed                          | `*/assets/svg` — kebab + camelCase + snake_case + PascalCase + other intermingled                         |
+| 5   | Orphaned/misplaced files | no misplacement    | 🟡 3 classes                      | `setup.bat`/`setup.ps1` at root, `client/css.bak/`, duplicated `client/assets` ↔ `apps/web/public/assets` |
+| 6   | Doc sprawl               | ≤5 scattered .md   | 🟢 42 files                       | 14 placeholder `README.md` under `client/css/` + `client/views/`                                          |
+| 7   | Empty/dead dirs          | 0                  | 🟢 0 empty, 5 single-child chains | `apps → web`, `workers → api`, `docs/superpowers → plans`                                                 |
 
 ---
 
 ## Issues Found
 
 ### Phase 1: Quick Cleanup
+
 _Low effort, safe changes. No behavior change. Do this first to deflate the numbers._
 
 #### 1.1 Remove dead backup directory `client/css.bak/` — 🔴 Blocker
@@ -43,6 +44,7 @@ _Low effort, safe changes. No behavior change. Do this first to deflate the numb
 - **Risk if kept:** Confuses `grep`, doubles CSS review surface, pollutes file-count rankings.
 
 **Before:**
+
 ```
 client/
 ├── css/                 (67 files, live)
@@ -59,6 +61,7 @@ client/
 ```
 
 **After (proposed):**
+
 ```
 client/
 ├── css/                 (67 files, live — retained until legacy removal)
@@ -77,6 +80,7 @@ client/
 - **Decision:** Do **not** split either SVG folder yet — deduplicate first. Splitting a duplicated folder doubles work.
 
 **Before:**
+
 ```
 repo/
 ├── client/assets/               (131 files — legacy)
@@ -88,6 +92,7 @@ repo/
 ```
 
 **After (proposed) — Option A (recommended): keep modern, archive legacy:**
+
 ```
 repo/
 ├── apps/web/public/assets/      (133 files — single source of truth)
@@ -95,6 +100,7 @@ repo/
 │   └── images/
 └── client/assets/               (deleted — legacy static site archived per 1.4)
 ```
+
 Option B if `client/` must stay briefly: replace `client/assets/` with a symlink or build-time copy script; never maintain two copies manually.
 
 - [ ] **Deduplicate assets** — keep `apps/web/public/assets/` as canonical; delete `client/assets/` when `client/` is archived (see 1.4). If `client/` must survive one more milestone, add a one-way sync script `scripts/sync-assets.mjs` (`cp -r apps/web/public/assets/* client/assets/`) and enforce it in CI.
@@ -109,6 +115,7 @@ Option B if `client/` must stay briefly: replace `client/assets/` with a symlink
 - **Recommended action:** Standardize on one convention; prefer `scripts/` for all executable helpers.
 
 **Before:**
+
 ```
 repo/
 ├── setup.bat
@@ -121,6 +128,7 @@ repo/
 ```
 
 **After (proposed):**
+
 ```
 repo/
 ├── scripts/
@@ -144,6 +152,7 @@ repo/
 - **Why not split the 45 legacy files?** Splitting `find-a-room.ts` (2149) or `create-listing.ts` (2089) is wasted effort on dead code. The correct fix is **archive, not refactor**.
 
 **Before:**
+
 ```
 repo/
 ├── client/                      (legacy — ~260 files)
@@ -159,6 +168,7 @@ repo/
 ```
 
 **After (proposed):**
+
 ```
 repo/
 ├── _archive/
@@ -183,6 +193,7 @@ repo/
 - **Recommended action:** Keep `docs/` as single source of truth; remove placeholder READMEs (they fail the "evidence over opinion" test — they carry no measured value).
 
 **Before:**
+
 ```
 repo/
 ├── README.md, AGENTS.md
@@ -198,6 +209,7 @@ repo/
 ```
 
 **After (proposed):**
+
 ```
 repo/
 ├── README.md, AGENTS.md
@@ -216,6 +228,7 @@ repo/
 ---
 
 ### Phase 2: File Refactoring
+
 _Medium effort — split genuinely oversized modern-stack files. Each plan includes language-specific mechanics, target files, and import changes._
 
 > **Prerequisite:** Complete Phase 1.4 (`client/` archive). All line counts below are for the modern stack only (post-archive). If you skip 1.4, every plan below still holds but you will carry ~45 additional legacy files that should not be split.
@@ -228,6 +241,7 @@ _Medium effort — split genuinely oversized modern-stack files. Each plan inclu
 - **Language mechanics (TypeScript/Hono):** Extract pure functions to sibling modules; re-export the router. Hono routes stay registered identically; no API surface change.
 
 **Mermaid — before:**
+
 ```mermaid
 flowchart LR
   A[auth.ts 1123 lines] --> B[helpers\nnormalizeEmail, safeRedirect,\nstringField, userPayload,\nauthTokens, authCookie...]
@@ -237,6 +251,7 @@ flowchart LR
 ```
 
 **Mermaid — after:**
+
 ```mermaid
 flowchart LR
   H[auth/helpers.ts\n~180 lines] --> R[auth.ts\n~220 lines]
@@ -248,12 +263,12 @@ flowchart LR
 
 **Proposed split:**
 
-| New file | Lines | Contents (from `auth.ts`) | Exports |
-|----------|-------|---------------------------|---------|
-| `workers/api/src/routes/auth/helpers.ts` | ~180 | `normalizeEmail`, `isEmail`, `safeRedirectPath`, `stringField`, `missingRequired`, `userPayload`, `authTokens`, `authCookie`, `authResponse`, `googleStateCookie`, `redirectResponse`, `randomToken`, `configuredOrigins`, `parseOrigin`, `isLocalhostOrigin`, `allowFrontendOrigin`, `frontendOrigin`, `frontendUrl`, `authErrorRedirect`, `clearGoogleStateHeaders`, `oauthAction`, `oauthRole`, `googleRedirectUri`, `requireGoogleConfig`, `userHashPayload`, `boarderRedirectPath`, `redirectPathForUser` | named exports, no Hono |
-| `workers/api/src/routes/auth/google.ts` | ~450 | `GoogleStatePayload`, `GoogleTokenResponse`, `GoogleProfileResponse`, `GooglePendingPayload`, `formatUserResponse`, `validatePhilippinePhone`, `createGoogleState`, `verifiedGoogleState`, `googleTokens`, `googleProfile`, `profileEmailVerified`, `splitGoogleName`, `resolveGoogleUser`, `createGooglePendingToken`, `pendingSessionRedirect`, `handleGoogleAuthorize`, `handleGoogleCallback`, `handleGoogleComplete` | named exports `handleGoogle*` + helpers |
-| `workers/api/src/routes/auth/password.ts` | ~320 | `handleRegister`, `handleLogin`, `handleMe` (+ `formatUserResponse` share via `helpers` or `google.ts`) | named exports |
-| `workers/api/src/routes/auth.ts` | ~220 | Re-exports + Hono route wiring only: `import { handleGoogleAuthorize, ... } from './auth/google.js'` etc., then `authRoutes.get/post(...)` | `default authRoutes` |
+| New file                                  | Lines | Contents (from `auth.ts`)                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      | Exports                                 |
+| ----------------------------------------- | ----- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------- |
+| `workers/api/src/routes/auth/helpers.ts`  | ~180  | `normalizeEmail`, `isEmail`, `safeRedirectPath`, `stringField`, `missingRequired`, `userPayload`, `authTokens`, `authCookie`, `authResponse`, `googleStateCookie`, `redirectResponse`, `randomToken`, `configuredOrigins`, `parseOrigin`, `isLocalhostOrigin`, `allowFrontendOrigin`, `frontendOrigin`, `frontendUrl`, `authErrorRedirect`, `clearGoogleStateHeaders`, `oauthAction`, `oauthRole`, `googleRedirectUri`, `requireGoogleConfig`, `userHashPayload`, `boarderRedirectPath`, `redirectPathForUser` | named exports, no Hono                  |
+| `workers/api/src/routes/auth/google.ts`   | ~450  | `GoogleStatePayload`, `GoogleTokenResponse`, `GoogleProfileResponse`, `GooglePendingPayload`, `formatUserResponse`, `validatePhilippinePhone`, `createGoogleState`, `verifiedGoogleState`, `googleTokens`, `googleProfile`, `profileEmailVerified`, `splitGoogleName`, `resolveGoogleUser`, `createGooglePendingToken`, `pendingSessionRedirect`, `handleGoogleAuthorize`, `handleGoogleCallback`, `handleGoogleComplete`                                                                                      | named exports `handleGoogle*` + helpers |
+| `workers/api/src/routes/auth/password.ts` | ~320  | `handleRegister`, `handleLogin`, `handleMe` (+ `formatUserResponse` share via `helpers` or `google.ts`)                                                                                                                                                                                                                                                                                                                                                                                                        | named exports                           |
+| `workers/api/src/routes/auth.ts`          | ~220  | Re-exports + Hono route wiring only: `import { handleGoogleAuthorize, ... } from './auth/google.js'` etc., then `authRoutes.get/post(...)`                                                                                                                                                                                                                                                                                                                                                                     | `default authRoutes`                    |
 
 **Import changes:**
 
@@ -266,7 +281,11 @@ export default authRoutes;
 // After (workers/api/src/routes/auth.ts barrel)
 import { Hono } from 'hono';
 import * as helpers from './auth/helpers.js';
-import { handleGoogleAuthorize, handleGoogleCallback, handleGoogleComplete } from './auth/google.js';
+import {
+  handleGoogleAuthorize,
+  handleGoogleCallback,
+  handleGoogleComplete,
+} from './auth/google.js';
 import { handleRegister, handleLogin, handleMe } from './auth/password.js';
 // ... route wiring only
 export default authRoutes;
@@ -297,12 +316,12 @@ flowchart LR
 
 **Proposed split:**
 
-| New file | Contents |
-|----------|----------|
-| `workers/api/src/repositories/landlord/properties-core.ts` | `LandlordProperty*Row` interfaces + `listLandlordProperties`, `createLandlordProperty*`, `findLandlordPropertyForUpdate`, `getLandlordPropertyDetail`, `updateLandlordProperty`, `softDeleteLandlordProperty*`, `getLandlordAddress`, `updateLandlordAddress` |
+| New file                                                     | Contents                                                                                                                                                                                                                                                                                                                                            |
+| ------------------------------------------------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `workers/api/src/repositories/landlord/properties-core.ts`   | `LandlordProperty*Row` interfaces + `listLandlordProperties`, `createLandlordProperty*`, `findLandlordPropertyForUpdate`, `getLandlordPropertyDetail`, `updateLandlordProperty`, `softDeleteLandlordProperty*`, `getLandlordAddress`, `updateLandlordAddress`                                                                                       |
 | `workers/api/src/repositories/landlord/properties-photos.ts` | `LandlordPhotoRow`, `PropertyPhotoDisplayOrderRow`, photo/amenity fns: `listLandlordAmenities`, `listLandlordPhotos`, `createLandlordAmenity`, `deleteLandlordAmenities`, `getMaxPropertyPhotoDisplayOrder`, `createLandlordPropertyPhoto`, `listLandlordPropertyPhotoUrls`, `deleteLandlordPropertyPhotoByUrl`, `updateLandlordPropertyPhotoOrder` |
-| `workers/api/src/repositories/landlord/properties-rooms.ts` | `LandlordRoomCountRow`, `LandlordRoomIdRow`, `CreateLandlordRoomInput`, `countLandlordRooms`, `listLandlordRoomIdsForRemoval`, `softDeleteLandlordRoomsById`, `updateLandlordActiveRooms`, `createLandlordRoom` |
-| `workers/api/src/repositories/landlord-properties.ts` | **Barrel (compat):** `export * from './landlord/properties-core.js'; export * from './landlord/properties-photos.js'; export * from './landlord/properties-rooms.js';` |
+| `workers/api/src/repositories/landlord/properties-rooms.ts`  | `LandlordRoomCountRow`, `LandlordRoomIdRow`, `CreateLandlordRoomInput`, `countLandlordRooms`, `listLandlordRoomIdsForRemoval`, `softDeleteLandlordRoomsById`, `updateLandlordActiveRooms`, `createLandlordRoom`                                                                                                                                     |
+| `workers/api/src/repositories/landlord-properties.ts`        | **Barrel (compat):** `export * from './landlord/properties-core.js'; export * from './landlord/properties-photos.js'; export * from './landlord/properties-rooms.js';`                                                                                                                                                                              |
 
 - [ ] **Split `landlord-properties.ts` → `landlord/properties-core.ts` + `properties-photos.ts` + `properties-rooms.ts` + barrel** — keep `landlord-properties.ts` as barrel during migration to avoid touching every caller; delete barrel in follow-up once callers migrate to direct imports.
 - [ ] Verify: `bun run cf:api:typecheck` + `bun run cf:api:test -- --run landlord.test.ts landlord-rooms.test.ts landlord-photos.test.ts property-access.test.ts`
@@ -323,12 +342,12 @@ flowchart LR
   PA --> H[history & notifications\nlistPropertyAccessHistory,\ncreate*Notification,\ndeleteInvitationNotifications]
 ```
 
-| New file | Contents |
-|----------|----------|
-| `workers/api/src/repositories/property-access/invitations.ts` | `PropertyInvitationRow`, `PendingInvitationRow`, `InvitationListItemRow`, `CreatePropertyInvitationInput`, `createPropertyInvitation`, `findPropertyInvitation`, `findPendingInvitation`, `listInvitationsForInvitee`, `listPendingInvitationsForProperty`, `acceptPropertyInvitation`, `rejectPropertyInvitation`, `revokePropertyInvitation` |
-| `workers/api/src/repositories/property-access/grants.ts` | `PropertyAccessRow`, `InviteeLandlordRow`, `PropertyForAccessRow`, `AuthorizedLandlordRow`, `PropertyAccessOverviewRow`, `accessiblePropertyClause`, `findActiveAccess`, `findInviteeLandlord`, `findPropertyForAccess`, `listAuthorizedLandlords`, `listAccessiblePropertyIds`, `listPropertyAccessOverview`, `grantPropertyAccess`, `removePropertyAccess`, `countLandlordCreatedData`, `revokeAllFor*` |
-| `workers/api/src/repositories/property-access/history.ts` | `AccessHistoryEvent*`, `listPropertyAccessHistory`, `createPropertyInvitationNotification`, `deleteInvitationNotifications`, `createPropertyAccessRemovedNotification` |
-| `workers/api/src/repositories/property-access.ts` | Barrel re-export (`export * from './property-access/invitations.js'` etc.) |
+| New file                                                      | Contents                                                                                                                                                                                                                                                                                                                                                                                                  |
+| ------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `workers/api/src/repositories/property-access/invitations.ts` | `PropertyInvitationRow`, `PendingInvitationRow`, `InvitationListItemRow`, `CreatePropertyInvitationInput`, `createPropertyInvitation`, `findPropertyInvitation`, `findPendingInvitation`, `listInvitationsForInvitee`, `listPendingInvitationsForProperty`, `acceptPropertyInvitation`, `rejectPropertyInvitation`, `revokePropertyInvitation`                                                            |
+| `workers/api/src/repositories/property-access/grants.ts`      | `PropertyAccessRow`, `InviteeLandlordRow`, `PropertyForAccessRow`, `AuthorizedLandlordRow`, `PropertyAccessOverviewRow`, `accessiblePropertyClause`, `findActiveAccess`, `findInviteeLandlord`, `findPropertyForAccess`, `listAuthorizedLandlords`, `listAccessiblePropertyIds`, `listPropertyAccessOverview`, `grantPropertyAccess`, `removePropertyAccess`, `countLandlordCreatedData`, `revokeAllFor*` |
+| `workers/api/src/repositories/property-access/history.ts`     | `AccessHistoryEvent*`, `listPropertyAccessHistory`, `createPropertyInvitationNotification`, `deleteInvitationNotifications`, `createPropertyAccessRemovedNotification`                                                                                                                                                                                                                                    |
+| `workers/api/src/repositories/property-access.ts`             | Barrel re-export (`export * from './property-access/invitations.js'` etc.)                                                                                                                                                                                                                                                                                                                                |
 
 - [ ] **Split `property-access.ts` → `property-access/{invitations,grants,history}.ts` + barrel**
 - [ ] Verify: `bun run cf:api:typecheck` + `bun run cf:api:test -- --run property-access.test.ts`
@@ -348,11 +367,11 @@ flowchart LR
   RD --> V[RoomDetailView.tsx\n~280 lines\norchestrator + state]
 ```
 
-| New file | Lines | Contents |
-|----------|-------|----------|
-| `apps/web/src/components/rooms/detail-helpers.ts` | ~120 | `amenityIcon`, `capitalize`, `formatPrice`, `formatAmount`, `cleanRoomType`, `isRoomAvailable`, `roomStatusLabel`, `genderInfo` — pure, testable |
-| `apps/web/src/components/rooms/detail-parts.tsx` | ~250 | `Stars`, `MapEmbed`, `SectionTitle`, `QuickInfoCard`, `FilterChip` — presentational |
-| `apps/web/src/components/rooms/RoomDetailView.tsx` | ~280 | `RoomDetailView` orchestrator: state, `useMemo` for images/filteredRooms, carousel logic — imports from `detail-helpers` + `detail-parts` |
+| New file                                           | Lines | Contents                                                                                                                                         |
+| -------------------------------------------------- | ----- | ------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `apps/web/src/components/rooms/detail-helpers.ts`  | ~120  | `amenityIcon`, `capitalize`, `formatPrice`, `formatAmount`, `cleanRoomType`, `isRoomAvailable`, `roomStatusLabel`, `genderInfo` — pure, testable |
+| `apps/web/src/components/rooms/detail-parts.tsx`   | ~250  | `Stars`, `MapEmbed`, `SectionTitle`, `QuickInfoCard`, `FilterChip` — presentational                                                              |
+| `apps/web/src/components/rooms/RoomDetailView.tsx` | ~280  | `RoomDetailView` orchestrator: state, `useMemo` for images/filteredRooms, carousel logic — imports from `detail-helpers` + `detail-parts`        |
 
 - [ ] **Split `RoomDetailView.tsx` → `detail-helpers.ts` + `detail-parts.tsx` + slim `RoomDetailView.tsx`**
 - [ ] Verify: `bun run web:typecheck` + `bun run web:test` (or manual `vite build` smoke: `bun run web:build`).
@@ -374,13 +393,13 @@ flowchart LR
   B[types.ts barrel] --> A & D & U & W
 ```
 
-| New file | Contents |
-|----------|----------|
-| `apps/web/src/lib/types/domain.ts` | `RoomSummary`, `PublicProperty`, `PublicListingsResponse`, `RoomDetail`, `ListingDetail`, `SimilarProperty`, `PopularLocation`, `LandlordProperty*` |
-| `apps/web/src/lib/types/auth.ts` | `AuthUser`, `LoginResponse`, `RegisterInput`, `RegisterResponse`, `MeResponse`, `CheckEmailResponse`, `ProfileResponse`, `UpdateProfileInput` |
+| New file                              | Contents                                                                                                                                                                          |
+| ------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `apps/web/src/lib/types/domain.ts`    | `RoomSummary`, `PublicProperty`, `PublicListingsResponse`, `RoomDetail`, `ListingDetail`, `SimilarProperty`, `PopularLocation`, `LandlordProperty*`                               |
+| `apps/web/src/lib/types/auth.ts`      | `AuthUser`, `LoginResponse`, `RegisterInput`, `RegisterResponse`, `MeResponse`, `CheckEmailResponse`, `ProfileResponse`, `UpdateProfileInput`                                     |
 | `apps/web/src/lib/types/workspace.ts` | `ApplicationSummary`, `ApplicationsResponse`, `TenancyResponse`, `LeaveRequestInput`, `OnboardingStatusResponse`, `Announcement`, `DashboardStatsResponse`, `SavedStatusResponse` |
-| `apps/web/src/lib/types/api.ts` | `ApiErrorBody`, generic pagination wrappers |
-| `apps/web/src/lib/types.ts` | **Barrel:** `export * from './types/domain.js'; export * from './types/auth.js'; ...` — no breaking change |
+| `apps/web/src/lib/types/api.ts`       | `ApiErrorBody`, generic pagination wrappers                                                                                                                                       |
+| `apps/web/src/lib/types.ts`           | **Barrel:** `export * from './types/domain.js'; export * from './types/auth.js'; ...` — no breaking change                                                                        |
 
 - [ ] **Split `types.ts` → `types/{domain,auth,workspace,api}.ts` + barrel** — preserve import path `~/lib/types` via barrel. Optionally add `~/lib/types/domain` direct imports for new code.
 - [ ] Verify: `bun run web:typecheck` (covers all consumers).
@@ -393,12 +412,12 @@ flowchart LR
 - **Callers:** TanStack file-router (`admin/index.tsx` is the route file); `PropertyAccessTab` is imported by it.
 - **Mechanics:** Extract data hooks + table logic.
 
-| New file | Contents |
-|----------|----------|
-| `apps/web/src/routes/admin/hooks.ts` | Data fetching: `useAdminDashboard`, `usePropertyAccessOverview` (extracted from `index.tsx` effects) |
-| `apps/web/src/components/admin/AdminStats.tsx` | Stats cards (extracted from `admin/index.tsx` JSX) |
-| Keep `apps/web/src/routes/admin/index.tsx` | ~180 lines: route shell, tab state, composition |
-| Keep `apps/web/src/components/admin/PropertyAccessTab.tsx` | 413 → ~220 after extracting `access-table.tsx` subcomponent if needed |
+| New file                                                   | Contents                                                                                             |
+| ---------------------------------------------------------- | ---------------------------------------------------------------------------------------------------- |
+| `apps/web/src/routes/admin/hooks.ts`                       | Data fetching: `useAdminDashboard`, `usePropertyAccessOverview` (extracted from `index.tsx` effects) |
+| `apps/web/src/components/admin/AdminStats.tsx`             | Stats cards (extracted from `admin/index.tsx` JSX)                                                   |
+| Keep `apps/web/src/routes/admin/index.tsx`                 | ~180 lines: route shell, tab state, composition                                                      |
+| Keep `apps/web/src/components/admin/PropertyAccessTab.tsx` | 413 → ~220 after extracting `access-table.tsx` subcomponent if needed                                |
 
 - [ ] **Slim `admin/index.tsx` → extract `admin/hooks.ts` + `admin/AdminStats.tsx`** — keep `PropertyAccessTab.tsx` as-is or split its table rows into `property-access-table.tsx` if second pass needed.
 
@@ -408,18 +427,18 @@ flowchart LR
 
 After the 6 splits above, these files still exceed 400 but are lower priority (1.0–1.9× over). Fix opportunistically or on next touch:
 
-| File | Lines | Suggested split | Effort |
-|------|-------|---------------|--------|
-| `workers/api/src/routes/landlord/listings.ts` | 720 | Extract `listings/validation.ts` (zod schemas) + `listings/handlers.ts` (per-route handlers); keep `listings.ts` as router barrel | S |
-| `apps/web/src/components/rooms/FindARoomContent.tsx` | 711 | Extract filter state to `find-a-room/filters.ts` (hook) + `find-a-room/results.tsx` (list) | S |
-| `workers/api/src/routes/account.ts` | 660 | Split `account/profile.ts` (get/update) + `account/password.ts` (change/reset) + `account/onboarding.ts` | S |
-| `workers/api/src/routes/admin.ts` | 634 | Extract `admin/handlers.ts` per admin table/tab | S |
-| `workers/api/src/routes/ai.ts` | 621 | Extract `ai/guest-limit.ts` + `ai/chat.ts` | S |
-| `workers/api/src/repositories/account.ts` | 610 | Split `account/profile.ts` + `account/auth.ts` | S |
-| `workers/api/src/repositories/listings.ts` | 601 | Split `listings/queries.ts` + `listings/mappers.ts` | S |
-| `workers/api/src/repositories/tenancy.ts` | 508 | Split `tenancy/queries.ts` + `tenancy/status.ts` | S |
-| `workers/api/src/repositories/announcements.ts` | 506 | Already focused — consider inline, or split `announcements/queries.ts` if grows | S (defer) |
-| `workers/api/src/routes/rooms.ts` | 413 | Trim or extract `rooms/filters.ts` (query builder) | XS |
+| File                                                 | Lines | Suggested split                                                                                                                   | Effort    |
+| ---------------------------------------------------- | ----- | --------------------------------------------------------------------------------------------------------------------------------- | --------- |
+| `workers/api/src/routes/landlord/listings.ts`        | 720   | Extract `listings/validation.ts` (zod schemas) + `listings/handlers.ts` (per-route handlers); keep `listings.ts` as router barrel | S         |
+| `apps/web/src/components/rooms/FindARoomContent.tsx` | 711   | Extract filter state to `find-a-room/filters.ts` (hook) + `find-a-room/results.tsx` (list)                                        | S         |
+| `workers/api/src/routes/account.ts`                  | 660   | Split `account/profile.ts` (get/update) + `account/password.ts` (change/reset) + `account/onboarding.ts`                          | S         |
+| `workers/api/src/routes/admin.ts`                    | 634   | Extract `admin/handlers.ts` per admin table/tab                                                                                   | S         |
+| `workers/api/src/routes/ai.ts`                       | 621   | Extract `ai/guest-limit.ts` + `ai/chat.ts`                                                                                        | S         |
+| `workers/api/src/repositories/account.ts`            | 610   | Split `account/profile.ts` + `account/auth.ts`                                                                                    | S         |
+| `workers/api/src/repositories/listings.ts`           | 601   | Split `listings/queries.ts` + `listings/mappers.ts`                                                                               | S         |
+| `workers/api/src/repositories/tenancy.ts`            | 508   | Split `tenancy/queries.ts` + `tenancy/status.ts`                                                                                  | S         |
+| `workers/api/src/repositories/announcements.ts`      | 506   | Already focused — consider inline, or split `announcements/queries.ts` if grows                                                   | S (defer) |
+| `workers/api/src/routes/rooms.ts`                    | 413   | Trim or extract `rooms/filters.ts` (query builder)                                                                                | XS        |
 
 - [ ] **Batch-triage 400–800-line files** — apply the per-file split notes on next feature touch; no dedicated migration sprint required. Each split should follow the same barrel pattern (TypeScript ESM `*.js` imports) to keep diffs small.
 
@@ -433,6 +452,7 @@ After the 6 splits above, these files still exceed 400 but are lower priority (1
 ---
 
 ### Phase 3: Structural Refactoring
+
 _Higher effort — reorganize folders, flatten nesting, fix naming._
 
 #### 3.1 Split bloated SVG asset folders — 🟡 Warning
@@ -442,6 +462,7 @@ _Higher effort — reorganize folders, flatten nesting, fix naming._
 - **Proposed after dedup (single canonical dir):**
 
 **Before:**
+
 ```
 apps/web/public/assets/svg/          (77 files — flat)
 ├── add_listing.svg, aircon.svg, alert.svg, ameneties.svg, ...
@@ -452,6 +473,7 @@ apps/web/public/assets/svg/          (77 files — flat)
 ```
 
 **After (proposed):**
+
 ```
 apps/web/public/assets/svg/
 ├── ui/               (navigation & chrome)
@@ -501,6 +523,7 @@ apps/web/public/assets/svg/
 - **Recommended action:** **Resolved by Phase 1.4 archive.** If `client/` must outlive one release, group by subdomain similarly to `apps/web`:
 
 **Before (legacy):**
+
 ```
 client/js/views/
 ├── boarder/   (28 files — flat)
@@ -512,6 +535,7 @@ client/js/views/
 ```
 
 **After (if retention required — NOT recommended):**
+
 ```
 client/js/views/
 ├── boarder/
@@ -546,6 +570,7 @@ client/js/views/
 - **Recommended action:**
 
 **Before:**
+
 ```
 scripts/
 ├── build-pages.mjs
@@ -560,6 +585,7 @@ workers/api/migrations/
 ```
 
 **After (proposed):**
+
 ```
 scripts/
 ├── build/
@@ -622,29 +648,29 @@ Use this checklist to track completion. Mark `[x]` when a task is done:
 
 > 76 files exceed 400 lines repo-wide. Filtering to **active code** (excluding `client/`, generated files, `.tanstack/`, `worker-configuration.d.ts`) leaves **18 modern-stack files** + `routeTree.gen.ts` (generated). Table below is the actionable set. Full legacy list available via `Get-ChildItem -Recurse -Include *.ts,*.tsx,*.js -Exclude routeTree.gen.ts | Where-Object Lines -gt 400`.
 
-| # | File | Lines | Severity | Phase | Notes |
-|---|------|------:|----------|-------|-------|
-| 1 | `workers/api/src/routes/auth.ts` | 1123 | 🔴 | 2.1 | Split into helpers/google/password |
-| 2 | `workers/api/src/repositories/landlord-properties.ts` | 953 | 🔴 | 2.2 | Split into core/photos/rooms |
-| 3 | `apps/web/src/components/rooms/RoomDetailView.tsx` | 919 | 🔴 | 2.4 | Extract helpers + parts |
-| 4 | `workers/api/src/repositories/property-access.ts` | 911 | 🔴 | 2.3 | Split into invitations/grants/history |
-| 5 | `workers/api/src/routes/landlord/listings.ts` | 720 | 🟡 | 2.7 | Validation + handlers |
-| 6 | `apps/web/src/components/rooms/FindARoomContent.tsx` | 711 | 🟡 | 2.7 | Filters + results |
-| 7 | `apps/web/src/lib/types.ts` | 679 | 🟡 | 2.5 | Domain barrels |
-| 8 | `workers/api/src/routes/account.ts` | 660 | 🟡 | 2.7 | Profile/password/onboarding |
-| 9 | `workers/api/src/routes/admin.ts` | 634 | 🟡 | 2.7 | Per-tab handlers |
-| 10 | `workers/api/src/routes/ai.ts` | 621 | 🟡 | 2.7 | Guest-limit + chat |
-| 11 | `workers/api/src/repositories/account.ts` | 610 | 🟡 | 2.7 | Profile/auth split |
-| 12 | `workers/api/src/repositories/listings.ts` | 601 | 🟡 | 2.7 | Queries/mappers |
-| 13 | `workers/api/src/repositories/tenancy.ts` | 508 | 🟡 | 2.7 | Queries/status |
-| 14 | `workers/api/src/repositories/announcements.ts` | 506 | 🟡 | 2.7 | Defer — focused |
-| 15 | `apps/web/src/routes/admin/index.tsx` | 458 | 🟡 | 2.6 | Hooks + stats |
-| 16 | `apps/web/src/routes/landlord/listings/$id/edit.tsx` | 446 | 🟡 | 2.7 | Extract form/validation |
-| 17 | `apps/web/src/components/admin/PropertyAccessTab.tsx` | 413 | 🟡 | 2.6 | Table subcomponent |
-| 18 | `workers/api/src/routes/rooms.ts` | 413 | 🟡 | 2.7 | Filter builder |
-| 19 | `workers/api/src/repositories/users.ts` | 404 | 🟡 | 2.7 | Borderline — monitor |
-| — | `apps/web/src/routeTree.gen.ts` | 1577 | — | 2.8 | **Generated — exclude** |
-| — | `apps/web/worker-configuration.d.ts` | 16536 | — | 2.8 | **Generated — exclude** |
+| #   | File                                                  | Lines | Severity | Phase | Notes                                 |
+| --- | ----------------------------------------------------- | ----: | -------- | ----- | ------------------------------------- |
+| 1   | `workers/api/src/routes/auth.ts`                      |  1123 | 🔴       | 2.1   | Split into helpers/google/password    |
+| 2   | `workers/api/src/repositories/landlord-properties.ts` |   953 | 🔴       | 2.2   | Split into core/photos/rooms          |
+| 3   | `apps/web/src/components/rooms/RoomDetailView.tsx`    |   919 | 🔴       | 2.4   | Extract helpers + parts               |
+| 4   | `workers/api/src/repositories/property-access.ts`     |   911 | 🔴       | 2.3   | Split into invitations/grants/history |
+| 5   | `workers/api/src/routes/landlord/listings.ts`         |   720 | 🟡       | 2.7   | Validation + handlers                 |
+| 6   | `apps/web/src/components/rooms/FindARoomContent.tsx`  |   711 | 🟡       | 2.7   | Filters + results                     |
+| 7   | `apps/web/src/lib/types.ts`                           |   679 | 🟡       | 2.5   | Domain barrels                        |
+| 8   | `workers/api/src/routes/account.ts`                   |   660 | 🟡       | 2.7   | Profile/password/onboarding           |
+| 9   | `workers/api/src/routes/admin.ts`                     |   634 | 🟡       | 2.7   | Per-tab handlers                      |
+| 10  | `workers/api/src/routes/ai.ts`                        |   621 | 🟡       | 2.7   | Guest-limit + chat                    |
+| 11  | `workers/api/src/repositories/account.ts`             |   610 | 🟡       | 2.7   | Profile/auth split                    |
+| 12  | `workers/api/src/repositories/listings.ts`            |   601 | 🟡       | 2.7   | Queries/mappers                       |
+| 13  | `workers/api/src/repositories/tenancy.ts`             |   508 | 🟡       | 2.7   | Queries/status                        |
+| 14  | `workers/api/src/repositories/announcements.ts`       |   506 | 🟡       | 2.7   | Defer — focused                       |
+| 15  | `apps/web/src/routes/admin/index.tsx`                 |   458 | 🟡       | 2.6   | Hooks + stats                         |
+| 16  | `apps/web/src/routes/landlord/listings/$id/edit.tsx`  |   446 | 🟡       | 2.7   | Extract form/validation               |
+| 17  | `apps/web/src/components/admin/PropertyAccessTab.tsx` |   413 | 🟡       | 2.6   | Table subcomponent                    |
+| 18  | `workers/api/src/routes/rooms.ts`                     |   413 | 🟡       | 2.7   | Filter builder                        |
+| 19  | `workers/api/src/repositories/users.ts`               |   404 | 🟡       | 2.7   | Borderline — monitor                  |
+| —   | `apps/web/src/routeTree.gen.ts`                       |  1577 | —        | 2.8   | **Generated — exclude**               |
+| —   | `apps/web/worker-configuration.d.ts`                  | 16536 | —        | 2.8   | **Generated — exclude**               |
 
 **Legacy `client/js/views/` (archived, not split) — for reference:**
 
@@ -654,17 +680,17 @@ Use this checklist to track completion. Mark `[x]` when a task is done:
 
 ## Appendix B: Folder Health Detail
 
-| Directory | Files | Threshold | Status | Action |
-|-----------|------:|-----------|--------|--------|
-| `apps/web/public/assets/svg` | 77 | 30 | 🔴 2.6× | 3.1 — categorize into 4 subdirs |
-| `client/assets/svg` | 77 | 30 | 🔴 2.6× | 1.2 — delete (duplicate) |
-| `client/js/views/boarder` | 28 | 30 | 🟢 just under | 1.4 — archived |
-| `client/js/views/landlord` | 27 | 30 | 🟢 just under | 1.4 — archived |
-| `workers/api/src/repositories` | 16 | 30 | 🟢 ok | split internals, not folder |
-| `apps/web/src/routes/landlord` | 16 | 30 | 🟢 ok | file-router grouping — keep |
-| `apps/web/src/components/ui` | 14 | 30 | 🟢 ok | design-system primitives — keep flat |
-| `workers/api/src/routes` | 13 | 30 | 🟢 ok | add `landlord/` sub-splits per 2.7 |
-| `workers/api/migrations` | 16 | 30 | 🟢 ok | fix numbering per 3.5 |
+| Directory                      | Files | Threshold | Status        | Action                               |
+| ------------------------------ | ----: | --------- | ------------- | ------------------------------------ |
+| `apps/web/public/assets/svg`   |    77 | 30        | 🔴 2.6×       | 3.1 — categorize into 4 subdirs      |
+| `client/assets/svg`            |    77 | 30        | 🔴 2.6×       | 1.2 — delete (duplicate)             |
+| `client/js/views/boarder`      |    28 | 30        | 🟢 just under | 1.4 — archived                       |
+| `client/js/views/landlord`     |    27 | 30        | 🟢 just under | 1.4 — archived                       |
+| `workers/api/src/repositories` |    16 | 30        | 🟢 ok         | split internals, not folder          |
+| `apps/web/src/routes/landlord` |    16 | 30        | 🟢 ok         | file-router grouping — keep          |
+| `apps/web/src/components/ui`   |    14 | 30        | 🟢 ok         | design-system primitives — keep flat |
+| `workers/api/src/routes`       |    13 | 30        | 🟢 ok         | add `landlord/` sub-splits per 2.7   |
+| `workers/api/migrations`       |    16 | 30        | 🟢 ok         | fix numbering per 3.5                |
 
 No directory exceeds 30 in the active stack after dedup; only the SVG asset dump does.
 

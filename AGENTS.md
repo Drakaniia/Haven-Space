@@ -85,6 +85,7 @@ output dir `apps/web/dist/pages` (assembled by `scripts/build/build-pages.mjs`).
 - **Server functions:** Fetch API data with `createServerFn` from `@tanstack/react-start`; keep mutations in `apps/web/src/lib/api/*`.
 - **Role shells:** Wrap role pages in `<Protected role="...">` + `<RoleShell>`; configure nav in `apps/web/src/lib/nav.ts`.
 - **UI primitives:** Reuse `components/ui/*` (Card, DataTable, Modal, Button, Field).
+
 ### General
 
 - **Naming:** Use `camelCase` for JavaScript/TypeScript variables and functions, `snake_case` for database columns and API response fields (where matching DB schema).

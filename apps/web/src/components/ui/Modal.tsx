@@ -45,9 +45,9 @@ export function Modal({
           >
             <div className="mb-4 flex items-center justify-between">
               <h2 className="text-xl font-semibold tracking-tight">{title}</h2>
-              <button 
-                type="button" 
-                aria-label="Close" 
+              <button
+                type="button"
+                aria-label="Close"
                 onClick={onClose}
                 className="rounded-full p-1.5 hover:bg-black/5 active:scale-[0.97] transition-all duration-100 ease-out"
               >

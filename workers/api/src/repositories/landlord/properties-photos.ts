@@ -5,7 +5,12 @@ import type {
   LandlordPropertyPhotoUrlRow,
   PropertyPhotoDisplayOrderRow,
 } from './properties-types.js';
-import { groupRows, normalizePropertyPhoto, placeholders, insertedId } from './properties-helpers.js';
+import {
+  groupRows,
+  normalizePropertyPhoto,
+  placeholders,
+  insertedId,
+} from './properties-helpers.js';
 export async function listLandlordAmenities(
   db: D1Database,
   propertyIds: number[]
@@ -25,7 +30,9 @@ export async function listLandlordAmenities(
     )
     .bind(...propertyIds)
     .all<LandlordAmenityRow>();
-  const groups = groupRows(result.results ?? [], (row: LandlordAmenityRow) => Number(row.property_id));
+  const groups = groupRows(result.results ?? [], (row: LandlordAmenityRow) =>
+    Number(row.property_id)
+  );
 
   return new Map(
     Array.from(groups.entries()).map(([propertyId, rows]) => [
@@ -34,7 +41,6 @@ export async function listLandlordAmenities(
     ])
   );
 }
-
 
 export async function listLandlordPhotos(
   db: D1Database,
@@ -55,7 +61,9 @@ export async function listLandlordPhotos(
     )
     .bind(...propertyIds)
     .all<LandlordPhotoRow>();
-  const groups = groupRows(result.results ?? [], (row: LandlordPhotoRow) => Number(row.property_id));
+  const groups = groupRows(result.results ?? [], (row: LandlordPhotoRow) =>
+    Number(row.property_id)
+  );
 
   return new Map(
     Array.from(groups.entries()).map(([propertyId, rows]) => [
@@ -64,7 +72,6 @@ export async function listLandlordPhotos(
     ])
   );
 }
-
 
 export async function createLandlordAmenity(
   db: D1Database,
@@ -76,7 +83,6 @@ export async function createLandlordAmenity(
     .bind(propertyId, amenityName)
     .run();
 }
-
 
 export async function getMaxPropertyPhotoDisplayOrder(
   db: D1Database,
@@ -96,7 +102,6 @@ export async function getMaxPropertyPhotoDisplayOrder(
   return Number(row?.max_order ?? -1);
 }
 
-
 export async function createLandlordPropertyPhoto(
   db: D1Database,
   propertyId: number,
@@ -114,7 +119,6 @@ export async function createLandlordPropertyPhoto(
     .bind(propertyId, photoUrl, isCover, displayOrder)
     .run();
 }
-
 
 export async function listLandlordPropertyPhotoUrls(
   db: D1Database,
@@ -135,7 +139,6 @@ export async function listLandlordPropertyPhotoUrls(
   return (result.results ?? []).map(row => row.photo_url);
 }
 
-
 export async function deleteLandlordPropertyPhotoByUrl(
   db: D1Database,
   propertyId: number,
@@ -146,7 +149,6 @@ export async function deleteLandlordPropertyPhotoByUrl(
     .bind(propertyId, photoUrl)
     .run();
 }
-
 
 export async function updateLandlordPropertyPhotoOrder(
   db: D1Database,
@@ -168,7 +170,6 @@ export async function updateLandlordPropertyPhotoOrder(
     .bind(displayOrder, isCover, propertyId, photoUrl)
     .run();
 }
-
 
 export async function deleteLandlordAmenities(db: D1Database, propertyId: number): Promise<void> {
   await db.prepare('DELETE FROM amenities WHERE property_id = ?').bind(propertyId).run();

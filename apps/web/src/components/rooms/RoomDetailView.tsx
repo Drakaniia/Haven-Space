@@ -3,7 +3,16 @@ import { Link } from '@tanstack/react-router';
 import type { ListingDetail, RoomDetail, SimilarProperty } from '../../lib/types';
 import { Icon } from '../ui/Icon';
 import { SaveButton } from './SaveButton';
-import { amenityIcon, capitalize, cleanRoomType, formatAmount, formatPrice, genderInfo, isRoomAvailable, roomStatusLabel } from './detail-helpers';
+import {
+  amenityIcon,
+  capitalize,
+  cleanRoomType,
+  formatAmount,
+  formatPrice,
+  genderInfo,
+  isRoomAvailable,
+  roomStatusLabel,
+} from './detail-helpers';
 
 function Stars({ rating, className = '' }: { rating: number; className?: string }) {
   const clamped = Math.max(0, Math.min(5, Math.round(rating)));
