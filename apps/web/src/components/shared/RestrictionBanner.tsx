@@ -27,9 +27,7 @@ export function RestrictionBanner({
             <Icon name="flag" className="h-5 w-5" />
           </div>
           <div>
-            <h3 className="text-sm font-semibold text-amber-900">
-              Complete your profile
-            </h3>
+            <h3 className="text-sm font-semibold text-amber-900">Complete your profile</h3>
             <p className="text-sm text-amber-700">
               {isSkipped
                 ? 'You skipped the onboarding process. Complete it to unlock all features.'
@@ -37,7 +35,11 @@ export function RestrictionBanner({
             </p>
           </div>
         </div>
-        <Button onClick={onCompleteProfile} variant="primary" className="whitespace-nowrap bg-amber-600 hover:bg-amber-700">
+        <Button
+          onClick={onCompleteProfile}
+          variant="primary"
+          className="whitespace-nowrap bg-amber-600 hover:bg-amber-700"
+        >
           Complete Profile
         </Button>
       </div>

@@ -17,7 +17,12 @@ import type {
   UpdateLandlordAddressInput,
   UpdateLandlordPropertyInput,
 } from './properties-types.js';
-import { groupRows, placeholders, insertedId, normalizePropertyPhoto } from './properties-helpers.js';
+import {
+  groupRows,
+  placeholders,
+  insertedId,
+  normalizePropertyPhoto,
+} from './properties-helpers.js';
 
 export async function createLandlordAddress(
   db: D1Database,
@@ -39,8 +44,6 @@ export async function createLandlordAddress(
 
   return insertedId(result, 'Address');
 }
-
-
 
 export async function createLandlordProperty(
   db: D1Database,
@@ -87,8 +90,6 @@ export async function createLandlordProperty(
   return insertedId(result, 'Property');
 }
 
-
-
 export async function createLandlordPropertyFromAlias(
   db: D1Database,
   input: CreateLandlordPropertyAliasInput
@@ -121,8 +122,6 @@ export async function createLandlordPropertyFromAlias(
   return insertedId(result, 'Property');
 }
 
-
-
 export async function updateLandlordAddress(
   db: D1Database,
   input: UpdateLandlordAddressInput
@@ -150,8 +149,6 @@ export async function updateLandlordAddress(
     )
     .run();
 }
-
-
 
 export async function updateLandlordProperty(
   db: D1Database,
@@ -195,8 +192,6 @@ export async function updateLandlordProperty(
     .run();
 }
 
-
-
 export async function softDeleteLandlordProperty(
   db: D1Database,
   propertyId: number,
@@ -215,8 +210,6 @@ export async function softDeleteLandlordProperty(
     .run();
 }
 
-
-
 export async function softDeleteLandlordPropertyRooms(
   db: D1Database,
   propertyId: number
@@ -232,4 +225,3 @@ export async function softDeleteLandlordPropertyRooms(
     .bind(propertyId)
     .run();
 }
-

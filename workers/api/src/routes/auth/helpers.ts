@@ -182,7 +182,11 @@ export function isLocalhostOrigin(value: string): boolean {
   }
 }
 
-export function allowFrontendOrigin(env: Env, requestedOrigin: string, allowedOrigins: string[]): boolean {
+export function allowFrontendOrigin(
+  env: Env,
+  requestedOrigin: string,
+  allowedOrigins: string[]
+): boolean {
   if (allowedOrigins.includes(requestedOrigin)) {
     return true;
   }

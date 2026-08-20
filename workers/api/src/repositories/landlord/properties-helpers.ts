@@ -4,7 +4,6 @@ export function placeholders(length: number): string {
   return Array.from({ length }, () => '?').join(', ');
 }
 
-
 export function groupRows<Row, Key extends string | number>(
   rows: Row[],
   keyForRow: (row: Row) => Key
@@ -19,7 +18,6 @@ export function groupRows<Row, Key extends string | number>(
   return groups;
 }
 
-
 export function normalizePropertyPhoto(propertyId: number, photoUrl: string): string {
   if (!photoUrl || photoUrl.startsWith('/') || photoUrl.startsWith('http')) {
     return photoUrl;
@@ -27,7 +25,6 @@ export function normalizePropertyPhoto(propertyId: number, photoUrl: string): st
 
   return `/storage/properties/${propertyId}/${photoUrl}`;
 }
-
 
 export function insertedId(result: D1Result, label: string): number {
   const id = Number(result.meta.last_row_id);

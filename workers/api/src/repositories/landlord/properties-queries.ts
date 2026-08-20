@@ -17,7 +17,12 @@ import type {
   UpdateLandlordAddressInput,
   UpdateLandlordPropertyInput,
 } from './properties-types.js';
-import { groupRows, placeholders, insertedId, normalizePropertyPhoto } from './properties-helpers.js';
+import {
+  groupRows,
+  placeholders,
+  insertedId,
+  normalizePropertyPhoto,
+} from './properties-helpers.js';
 import { listLandlordAmenities, listLandlordPhotos } from './properties-photos.js';
 
 export async function listLandlordProperties(
@@ -102,8 +107,6 @@ export async function listLandlordProperties(
   };
 }
 
-
-
 export async function findLandlordPropertyForUpdate(
   db: D1Database,
   propertyId: number,
@@ -135,8 +138,6 @@ export async function findLandlordPropertyForUpdate(
     .first<LandlordPropertyUpdateRow>();
 }
 
-
-
 export async function getLandlordAddress(
   db: D1Database,
   addressId: number
@@ -153,8 +154,6 @@ export async function getLandlordAddress(
     .bind(addressId)
     .first<LandlordAddressRow>();
 }
-
-
 
 export async function findLandlordPropertyIdentity(
   db: D1Database,
@@ -177,8 +176,6 @@ export async function findLandlordPropertyIdentity(
     .first<LandlordPropertyIdentityRow>();
 }
 
-
-
 export async function findAccessibleLandlordPropertyIdentity(
   db: D1Database,
   propertyId: number,
@@ -199,8 +196,6 @@ export async function findAccessibleLandlordPropertyIdentity(
     .bind(propertyId, landlordId, landlordId)
     .first<LandlordPropertyIdentityRow>();
 }
-
-
 
 export async function getLandlordPropertyDetail(
   db: D1Database,

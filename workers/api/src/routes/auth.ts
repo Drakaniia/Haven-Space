@@ -5,12 +5,7 @@ import {
   handleGoogleCallback,
   handleGoogleComplete,
 } from './auth/google.js';
-import {
-  handleCheckEmail,
-  handleLogin,
-  handleMe,
-  handleRegister,
-} from './auth/password.js';
+import { handleCheckEmail, handleLogin, handleMe, handleRegister } from './auth/password.js';
 
 const authRoutes = new Hono<{ Bindings: Env }>();
 

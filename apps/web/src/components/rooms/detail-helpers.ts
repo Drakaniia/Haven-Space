@@ -25,7 +25,6 @@ const AMENITY_ICONS: Record<string, string> = {
   generator: 'lightbulb',
 };
 
-
 export function amenityIcon(name: string): string {
   const key = name.toLowerCase();
   for (const [match, icon] of Object.entries(AMENITY_ICONS)) {
@@ -80,7 +79,11 @@ export function roomStatusLabel(room: RoomDetail): { label: string; className: s
   return { label: 'Available', className: 'bg-green-100 text-green-700' };
 }
 
-export function genderInfo(preference: string): { label: string; icon: string; description: string } {
+export function genderInfo(preference: string): {
+  label: string;
+  icon: string;
+  description: string;
+} {
   switch ((preference || 'any').toLowerCase()) {
     case 'male':
       return {
@@ -102,4 +105,3 @@ export function genderInfo(preference: string): { label: string; icon: string; d
       };
   }
 }
-

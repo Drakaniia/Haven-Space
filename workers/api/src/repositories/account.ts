@@ -144,10 +144,7 @@ export async function updateUserProfile(
   }
 }
 
-export async function ensureLandlordProfile(
-  db: D1Database,
-  userId: number
-): Promise<void> {
+export async function ensureLandlordProfile(db: D1Database, userId: number): Promise<void> {
   await db
     .prepare(
       `

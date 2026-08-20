@@ -101,6 +101,7 @@ The API Worker's `ALLOWED_ORIGINS` (or `APP_ORIGIN`) must include the frontend's
 The legacy vanilla HTML/CSS/JS frontend previously in `client/` was removed in August 2026
 (`client/` was git-ignored and deleted as part of the codebase audit — see `haven-space-audit.md`).
 Design reference is now `apps/web` and `docs/assets/screenshot1.png`. The TanStack homepage and FAQ were rebuilt to match the legacy design.
+
 ## Scripts
 
 | Command                    | Description                                                                             |

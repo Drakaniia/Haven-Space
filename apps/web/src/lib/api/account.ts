@@ -52,7 +52,10 @@ export function updateOnboardingData(
   step: string,
   data: Record<string, unknown>
 ): Promise<{ success: boolean; message: string }> {
-  const path = role === 'landlord' ? '/api/landlord/update-onboarding-data' : '/api/boarder/update-onboarding-data';
+  const path =
+    role === 'landlord'
+      ? '/api/landlord/update-onboarding-data'
+      : '/api/boarder/update-onboarding-data';
   return apiFetch(base(), path, {
     method: 'POST',
     headers: { Authorization: `Bearer ${token}` },

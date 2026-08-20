@@ -71,7 +71,10 @@ function BoarderOnboardingPage() {
         searchPreferences: {
           budget: Number(preferences.budget) || undefined,
           locations: preferences.locations
-            ? preferences.locations.split(',').map(s => s.trim()).filter(Boolean)
+            ? preferences.locations
+                .split(',')
+                .map(s => s.trim())
+                .filter(Boolean)
             : [],
         },
       },

@@ -18,8 +18,7 @@ export function StepProperty({
   saving?: boolean;
   onNext: () => void;
 }) {
-  const set = (patch: Partial<LandlordPropertyStepData>) =>
-    onChange({ ...data, ...patch });
+  const set = (patch: Partial<LandlordPropertyStepData>) => onChange({ ...data, ...patch });
 
   return (
     <form

@@ -26,7 +26,6 @@ export async function createPropertyInvitation(
   return insertedId(result, 'Property invitation');
 }
 
-
 export async function findPropertyInvitation(
   db: D1Database,
   invitationId: number
@@ -44,7 +43,6 @@ export async function findPropertyInvitation(
     'Property invitation'
   );
 }
-
 
 export async function findPendingInvitation(
   db: D1Database,
@@ -66,7 +64,6 @@ export async function findPendingInvitation(
     'Property invitation'
   );
 }
-
 
 export async function listInvitationsForInvitee(
   db: D1Database,
@@ -102,7 +99,6 @@ export async function listInvitationsForInvitee(
   return result.results ?? [];
 }
 
-
 export async function listPendingInvitationsForProperty(
   db: D1Database,
   propertyId: number
@@ -131,7 +127,6 @@ export async function listPendingInvitationsForProperty(
 
   return result.results ?? [];
 }
-
 
 export async function acceptPropertyInvitation(
   db: D1Database,
@@ -182,7 +177,6 @@ export async function acceptPropertyInvitation(
   return insertedId(insertResult, 'Property access');
 }
 
-
 export async function rejectPropertyInvitation(
   db: D1Database,
   invitationId: number
@@ -204,7 +198,6 @@ export async function rejectPropertyInvitation(
 
   return Number(result.meta.changes ?? 0);
 }
-
 
 export async function revokePropertyInvitation(
   db: D1Database,
@@ -229,4 +222,3 @@ export async function revokePropertyInvitation(
 
   return Number(result.meta.changes ?? 0);
 }
-
