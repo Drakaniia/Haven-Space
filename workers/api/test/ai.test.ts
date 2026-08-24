@@ -52,37 +52,38 @@ function createEnv(db: Database): Env {
     APP_ENV: 'test',
     APP_ORIGIN: 'http://localhost:4173,http://localhost:8788',
     JWT_SECRET: 'test-secret',
-    GROQ_API_KEY: 'test-groq-key',
+    GEMINI_API_KEY: 'test-gemini-key',
     DB: createSqliteD1(db),
   };
 }
 
 const originalFetch = globalThis.fetch;
-let groqCalls = 0;
-let groqFails = false;
+let geminiCalls = 0;
+let geminiFails = false;
 
-/** Mock the Groq chat completions API used by the AI route. */
-function mockGroq(): void {
+/** Mock the Gemini generateContent API used by the AI route. */
+function mockGemini(): void {
   globalThis.fetch = (async (input: RequestInfo | URL, init?: RequestInit) => {
     const url = typeof input === 'string' ? input : input instanceof URL ? input.href : input.url;
 
-    if (url.startsWith('https://api.groq.com/openai/v1/chat/completions')) {
-      groqCalls += 1;
+    if (url.startsWith('https://generativelanguage.googleapis.com/v1beta/models/')) {
+      geminiCalls += 1;
 
-      if (groqFails) {
+      if (geminiFails) {
         return new Response('provider exploded', { status: 500 });
       }
 
-      const body = JSON.parse(String(init?.body ?? '{}')) as { stream?: boolean };
+      const isStream = url.includes(':streamGenerateContent');
 
-      if (body.stream) {
+      if (isStream) {
         const encoder = new TextEncoder();
         const stream = new ReadableStream({
           start(controller) {
             controller.enqueue(
-              encoder.encode('data: {"choices":[{"delta":{"content":"Mock stream"}}]}\n\n')
+              encoder.encode(
+                'data: {"candidates":[{"content":{"parts":[{"text":"Mock stream"}]}}]}\n\n'
+              )
             );
-            controller.enqueue(encoder.encode('data: [DONE]\n\n'));
             controller.close();
           },
         });
@@ -93,10 +94,13 @@ function mockGroq(): void {
         });
       }
 
-      return new Response(JSON.stringify({ choices: [{ message: { content: 'Mock answer' } }] }), {
-        status: 200,
-        headers: { 'Content-Type': 'application/json' },
-      });
+      return new Response(
+        JSON.stringify({ candidates: [{ content: { parts: [{ text: 'Mock answer' }] } }] }),
+        {
+          status: 200,
+          headers: { 'Content-Type': 'application/json' },
+        }
+      );
     }
 
     return originalFetch(input, init);
@@ -105,8 +109,8 @@ function mockGroq(): void {
 
 afterEach(() => {
   globalThis.fetch = originalFetch;
-  groqCalls = 0;
-  groqFails = false;
+  geminiCalls = 0;
+  geminiFails = false;
 });
 
 function postChat(
@@ -172,7 +176,7 @@ describe('ai chat response limits', () => {
     const sqlite = new Database(':memory:');
     runMigrations(sqlite);
     const env = createEnv(sqlite);
-    mockGroq();
+    mockGemini();
 
     const first = await postChat(env, { message: 'Find a room' });
 
@@ -194,16 +198,16 @@ describe('ai chat response limits', () => {
       limit: { scope: 'guest', max: 1 },
     });
     // The blocked request never reached the AI provider.
-    expect(groqCalls).toBe(1);
+    expect(geminiCalls).toBe(1);
   });
 
   it('refunds the guest freebie when the provider fails', async () => {
     const sqlite = new Database(':memory:');
     runMigrations(sqlite);
     const env = createEnv(sqlite);
-    mockGroq();
+    mockGemini();
 
-    groqFails = true;
+    geminiFails = true;
     const failed = await postChat(env, { message: 'Hi' });
 
     expect(failed.status).toBe(502);
@@ -211,7 +215,7 @@ describe('ai chat response limits', () => {
     expect(((await failed.json()) as { code: string }).code).toBe('AI_PROVIDER_ERROR');
 
     // The freebie is preserved, so a retry succeeds and then writes the cookie.
-    groqFails = false;
+    geminiFails = false;
     const retry = await postChat(env, { message: 'Hi' });
 
     expect(retry.status).toBe(200);
@@ -223,7 +227,7 @@ describe('ai chat response limits', () => {
     const sqlite = new Database(':memory:');
     runMigrations(sqlite);
     const env = createEnv(sqlite);
-    mockGroq();
+    mockGemini();
     insertUser(sqlite, { role: 'boarder', email: 'boarder@example.com' });
 
     let cookie: string | null = null;
@@ -261,14 +265,14 @@ describe('ai chat response limits', () => {
       code: 'AI_LIMIT_REACHED',
       limit: { scope: 'user', max: 10 },
     });
-    expect(groqCalls).toBe(10);
+    expect(geminiCalls).toBe(10);
   });
 
   it('resets the daily cap when the cookie date is stale', async () => {
     const sqlite = new Database(':memory:');
     runMigrations(sqlite);
     const env = createEnv(sqlite);
-    mockGroq();
+    mockGemini();
     insertUser(sqlite, { role: 'boarder', email: 'boarder@example.com' });
 
     const staleCookie = await signJwt(
@@ -292,7 +296,7 @@ describe('ai chat response limits', () => {
     const sqlite = new Database(':memory:');
     runMigrations(sqlite);
     const env = createEnv(sqlite);
-    mockGroq();
+    mockGemini();
     insertUser(sqlite, { role: 'admin', email: 'admin@example.com' });
 
     for (let index = 0; index < 12; index += 1) {
@@ -303,14 +307,14 @@ describe('ai chat response limits', () => {
       expect(response.headers.get('Set-Cookie')).toBeNull();
     }
 
-    expect(groqCalls).toBe(12);
+    expect(geminiCalls).toBe(12);
   });
 
   it('treats a tampered or malformed cookie as absent', async () => {
     const sqlite = new Database(':memory:');
     runMigrations(sqlite);
     const env = createEnv(sqlite);
-    mockGroq();
+    mockGemini();
 
     const tampered = await postChat(env, { cookie: 'not-a-real-jwt' });
 
@@ -324,7 +328,7 @@ describe('ai chat response limits', () => {
     const sqlite = new Database(':memory:');
     runMigrations(sqlite);
     const env = createEnv(sqlite);
-    mockGroq();
+    mockGemini();
 
     const first = await postChat(env, { message: 'Stream me', stream: true });
 
@@ -342,6 +346,6 @@ describe('ai chat response limits', () => {
     expect(second.status).toBe(429);
     expect(second.headers.get('content-type')).toContain('application/json');
     expect(((await second.json()) as { code: string }).code).toBe('AI_LIMIT_REACHED');
-    expect(groqCalls).toBe(1);
+    expect(geminiCalls).toBe(1);
   });
 });

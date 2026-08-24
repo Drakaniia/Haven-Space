@@ -3,3 +3,4 @@ GOOGLE_CLIENT_ID=replace_with_google_oauth_client_id
 GOOGLE_CLIENT_SECRET=replace_with_google_oauth_client_secret
 
 UPLOADTHING_TOKEN=replace_with_uploadthing_token
+GEMINI_API_KEY=replace_with_gemini_api_key

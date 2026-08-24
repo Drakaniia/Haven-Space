@@ -8,8 +8,9 @@ import { HttpError, jsonResponse } from '../lib/http';
 
 const aiRoutes = new Hono<{ Bindings: Env }>();
 
-const DEFAULT_MODEL = 'llama-3.3-70b-versatile';
-const GROQ_CHAT_URL = 'https://api.groq.com/openai/v1/chat/completions';
+const DEFAULT_MODEL = 'gemini-3.6-flash';
+const GEMINI_GENERATE_URL = `https://generativelanguage.googleapis.com/v1beta/models/${DEFAULT_MODEL}:generateContent`;
+const GEMINI_STREAM_URL = `https://generativelanguage.googleapis.com/v1beta/models/${DEFAULT_MODEL}:streamGenerateContent?alt=sse`;
 const MAX_HISTORY_MESSAGES = 10;
 const MAX_LISTINGS = 6;
 
@@ -330,19 +331,29 @@ async function aiUsageCookieValue(
   return aiUsageCookie(c.req.url, value, maxAgeSeconds);
 }
 
-async function groqChatCompletion(apiKey: string, messages: ChatMessage[]): Promise<string> {
-  const response = await fetch(GROQ_CHAT_URL, {
+function toGeminiPayload(messages: ChatMessage[]): Record<string, unknown> {
+  const systemTexts: string[] = [];
+  const contents: Array<{ role: string; parts: Array<{ text: string }> }> = [];
+  for (const m of messages) {
+    if (m.role === 'system') systemTexts.push(m.content);
+    else contents.push({ role: m.role === 'assistant' ? 'model' : 'user', parts: [{ text: m.content }] });
+  }
+  const body: Record<string, unknown> = {
+    contents,
+    generationConfig: { temperature: 0.7, maxOutputTokens: 1024 },
+  };
+  if (systemTexts.length) body.systemInstruction = { parts: [{ text: systemTexts.join('\n\n') }] };
+  return body;
+}
+
+async function geminiChatCompletion(apiKey: string, messages: ChatMessage[]): Promise<string> {
+  const response = await fetch(GEMINI_GENERATE_URL, {
     method: 'POST',
     headers: {
-      Authorization: `Bearer ${apiKey}`,
+      'x-goog-api-key': apiKey,
       'Content-Type': 'application/json',
     },
-    body: JSON.stringify({
-      model: DEFAULT_MODEL,
-      messages,
-      temperature: 0.7,
-      max_tokens: 1024,
-    }),
+    body: JSON.stringify(toGeminiPayload(messages)),
     signal: AbortSignal.timeout(30_000),
   });
 
@@ -355,36 +366,30 @@ async function groqChatCompletion(apiKey: string, messages: ChatMessage[]): Prom
   }
 
   const data = (await response.json()) as {
-    choices?: Array<{ message?: { content?: string } }>;
+    candidates?: Array<{ content?: { parts?: Array<{ text?: string }> } }>;
   };
 
-  const content = data.choices?.[0]?.message?.content;
-  if (!content) {
+  const content = data.candidates?.[0]?.content?.parts?.map(p => p.text ?? '').join('');
+  if (!content || !content.trim()) {
     throw new HttpError(502, 'AI provider returned no response', { code: 'AI_EMPTY_RESPONSE' });
   }
 
   return content;
 }
 
-function streamGroqChat(
+function streamGeminiChat(
   apiKey: string,
   messages: ChatMessage[],
   propertyCount: number,
   usageCookie: string | null
 ): Promise<Response> {
-  return fetch(GROQ_CHAT_URL, {
+  return fetch(GEMINI_STREAM_URL, {
     method: 'POST',
     headers: {
-      Authorization: `Bearer ${apiKey}`,
+      'x-goog-api-key': apiKey,
       'Content-Type': 'application/json',
     },
-    body: JSON.stringify({
-      model: DEFAULT_MODEL,
-      messages,
-      temperature: 0.7,
-      max_tokens: 1024,
-      stream: true,
-    }),
+    body: JSON.stringify(toGeminiPayload(messages)),
     signal: AbortSignal.timeout(60_000),
   })
     .then(async upstream => {
@@ -430,9 +435,9 @@ function streamGroqChat(
               if (!payload || payload === '[DONE]') continue;
               try {
                 const parsed = JSON.parse(payload) as {
-                  choices?: Array<{ delta?: { content?: string } }>;
+                  candidates?: Array<{ content?: { parts?: Array<{ text?: string }> } }>;
                 };
-                const delta = parsed.choices?.[0]?.delta?.content;
+                const delta = parsed.candidates?.[0]?.content?.parts?.map(p => p.text ?? '').join('');
                 if (delta) {
                   await writer.write(encoder.encode(`data: ${JSON.stringify({ delta })}\n\n`));
                 }
@@ -481,7 +486,7 @@ function streamGroqChat(
 }
 
 aiRoutes.post('/api/ai/chat', async c => {
-  const apiKey = c.env.GROQ_API_KEY;
+  const apiKey = c.env.GEMINI_API_KEY;
   if (!apiKey) {
     return jsonResponse(
       { success: false, error: 'AI assistant is not configured', code: 'AI_NOT_CONFIGURED' },
@@ -602,10 +607,10 @@ aiRoutes.post('/api/ai/chat', async c => {
   const propertyCount = roomContext.searched ? roomContext.listings.length : 0;
 
   if (body.stream === true) {
-    return streamGroqChat(apiKey, messages, propertyCount, usageCookie);
+    return streamGeminiChat(apiKey, messages, propertyCount, usageCookie);
   }
 
-  const response = await groqChatCompletion(apiKey, messages);
+  const response = await geminiChatCompletion(apiKey, messages);
   const result = jsonResponse({
     success: true,
     response,

@@ -35,7 +35,7 @@
 
 - **Page:** `apps/web/src/routes/haven-ai.tsx` — public chat with `PublicNavbar`, in-memory `history` state, suggestion buttons, streaming via `chatStream`. No auth awareness.
 - **Client API:** `apps/web/src/lib/api/ai.ts` — `chat()` (via `apiFetch`) and `chatStream()` (raw `fetch`). Sends `session_id`/`user_id` (localStorage, ignored server-side). No `Authorization` header, no `credentials: 'include'`.
-- **Server endpoint:** `workers/api/src/routes/ai.ts` — `POST /api/ai/chat`, completely open. Reads `GROQ_API_KEY`, fetches room context from D1, calls Groq (non-streaming `groqChatCompletion` / streaming `streamGroqChat`). `session_id`/`user_id` from the body are **not read**.
+- **Server endpoint:** `workers/api/src/routes/ai.ts` — `POST /api/ai/chat`, completely open. Reads `GEMINI_API_KEY`, fetches room context from D1, calls Gemini (non-streaming `geminiChatCompletion` / streaming `streamGeminiChat`). `session_id`/`user_id` from the body are **not read**.
 - **Auth:** `apps/web/src/lib/auth-context.tsx` (`useAuth()` → `isAuthenticated`, `user`, `token`). Login page `apps/web/src/routes/auth/login.tsx` navigates to `redirectPathForUser(user)` (role home) after login. Google OAuth threaded through `apps/web/src/lib/oauth.ts`.
 - **Server auth helpers:** `authenticateUser(db, request, secret)` in `workers/api/src/lib/auth.ts` — supports Bearer header, `access_token` cookie, and test-only `X-User-ID` header; throws `HttpError(401)` when unauthenticated. `signJwt`/`verifyJwt` available for signing cookies.
 - **Cross-origin cookies:** The API already handles this pattern — `googleStateCookie()` in `routes/auth.ts` sets `SameSite=None; Secure` over https, `SameSite=Lax` over http. CORS middleware already sets `credentials: true`.
@@ -86,13 +86,13 @@ Order of operations in the handler (applies to both streaming and non-streaming)
 
 1. **Resolve identity (non-throwing):** `try { authenticateUser(db, c.req.raw, c.env.JWT_SECRET) } catch { guest }`. This picks up the Bearer header, the `access_token` cookie, or the test `X-User-ID` header.
 2. **Admin check:** if authenticated with role `admin` → skip all limit logic.
-3. **Guest path:** read `ai_usage` cookie → if a valid guest cookie exists → reject with **`429` + `{ success: false, error: 'You've used your one free Haven AI question. Log in or sign up for unlimited chat.', code: 'AI_LIMIT_REACHED', limit: { scope: 'guest', max: 1 } }`** — before any Groq call.
+3. **Guest path:** read `ai_usage` cookie → if a valid guest cookie exists → reject with **`429` + `{ success: false, error: 'You've used your one free Haven AI question. Log in or sign up for unlimited chat.', code: 'AI_LIMIT_REACHED', limit: { scope: 'guest', max: 1 } }`** — before any Gemini call.
 4. **Authenticated path (boarder/landlord):** read `ai_usage` cookie → normalize per §4.1 reset rules → if `count >= 10` → reject with **`429` + `{ success: false, error: 'You've reached today's limit of 10 Haven AI questions. Come back tomorrow.', code: 'AI_LIMIT_REACHED', limit: { scope: 'user', max: 10 } }`**.
-5. **Proceed with existing chat logic** (room context, Groq call).
+5. **Proceed with existing chat logic** (room context, Gemini call).
 6. **On success, write/refresh the cookie:** append `Set-Cookie` to the response.
-   - Non-streaming: after `groqChatCompletion` returns a non-empty content → `jsonResponse(...)` then `response.headers.append('Set-Cookie', aiUsageCookie(...))` (same pattern as `authResponse`).
-   - Streaming: after the upstream Groq response is `ok` (stream accepted) → `Set-Cookie` on the returned `Response` headers. **Decision:** a stream that starts successfully counts as used even if it dies mid-stream (keeps it simple; the client shows an error and the guest keeps their history). Mid-stream failure does **not** refund.
-   - Failure (Groq non-OK / empty / timeout): **no cookie** — freebie/count preserved (refund on failure).
+   - Non-streaming: after `geminiChatCompletion` returns a non-empty content → `jsonResponse(...)` then `response.headers.append('Set-Cookie', aiUsageCookie(...))` (same pattern as `authResponse`).
+   - Streaming: after the upstream Gemini response is `ok` (stream accepted) → `Set-Cookie` on the returned `Response` headers. **Decision:** a stream that starts successfully counts as used even if it dies mid-stream (keeps it simple; the client shows an error and the guest keeps their history). Mid-stream failure does **not** refund.
+   - Failure (Gemini non-OK / empty / timeout): **no cookie** — freebie/count preserved (refund on failure).
 7. **Blocked streaming requests:** return the `429` JSON response directly (not SSE) — the client's `chatStream` handles `!response.ok` and surfaces `code`.
 
 Status code choice: `429 Too Many Requests` with `code: 'AI_LIMIT_REACHED'` distinguishes the limit from generic `AI_PROVIDER_ERROR` (which returns `200` with `success: false` today). Keep the existing `200 + success:false` convention for provider errors untouched.
@@ -189,10 +189,10 @@ Status code choice: `429 Too Many Requests` with `code: 'AI_LIMIT_REACHED'` dist
 
 ### API (`workers/api/test/ai.test.ts`, bun:test, following `auth.test.ts` conventions)
 
-- Mock `globalThis.fetch` for `GROQ_CHAT_URL`: canned completion JSON for non-stream; `ReadableStream` SSE body for stream. Restore in `afterEach`.
+- Mock `globalThis.fetch` for Gemini generate URLs: canned completion JSON for non-stream; `ReadableStream` SSE body for stream. Restore in `afterEach`.
 - Guest gets a successful response **and** a `Set-Cookie: ai_usage` (guest) header.
-- Guest 2nd request (with cookie) → `429`, `code: 'AI_LIMIT_REACHED'`, `limit.scope === 'guest'`; assert Groq was **not** called.
-- Refund on failure: Groq returns 500 → response `success: false`, **no** `Set-Cookie`; retry succeeds and then sets the cookie.
+- Guest 2nd request (with cookie) → `429`, `code: 'AI_LIMIT_REACHED'`, `limit.scope === 'guest'`; assert Gemini was **not** called.
+- Refund on failure: Gemini returns 500 → response `success: false`, **no** `Set-Cookie`; retry succeeds and then sets the cookie.
 - Streaming: 2nd streaming request → `429` JSON (not SSE).
 - Authenticated boarder: 10 successes increment the cookie; 11th → `429`, `limit.scope === 'user'`; a cookie with `date` ≠ today (PH) resets the count.
 - Admin: 11+ requests all succeed (no cap).

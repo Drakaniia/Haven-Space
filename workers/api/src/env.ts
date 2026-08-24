@@ -11,7 +11,7 @@ export interface Env {
   GOOGLE_CLIENT_SECRET?: string;
   GOOGLE_REDIRECT_URI?: string;
   UPLOADTHING_TOKEN?: string;
-  GROQ_API_KEY?: string;
+  GEMINI_API_KEY?: string;
   DB?: D1Database;
   UPLOADTHING_UPLOAD_FILES?: UploadThingUploadFiles;
   UPLOADTHING_DELETE_FILES?: UploadThingDeleteFiles;
