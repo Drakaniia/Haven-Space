@@ -10,8 +10,10 @@ import {
   getAdminApplications,
   getAdminSettings,
   getAdminSummary,
+  insertAdminAuditLog,
   listAdminProperties,
   listAdminUsers,
+  updateAdminApplicationStatus,
   updateAdminPropertyModeration,
   updateAdminUserStatus,
   upsertAdminSetting,
@@ -164,28 +166,78 @@ async function handleUpdateAdminUser(c: Context<{ Bindings: Env }>) {
   }
 
   const body = await readJsonObject(c.req.raw);
-  const userId = Number.parseInt(String(body.userId ?? ''), 10);
-  const accountStatus = String(body.account_status ?? '');
+  const accountStatus = String(body.account_status ?? body.status ?? '');
 
-  if (!Number.isFinite(userId) || userId <= 0 || !accountStatus) {
-    return errorResponse(400, 'Missing required fields: userId, account_status');
-  }
-
-  if (!['active', 'suspended', 'banned'].includes(accountStatus)) {
+  if (!accountStatus || !['active', 'suspended', 'banned'].includes(accountStatus)) {
     return errorResponse(400, 'Invalid account status. Allowed: active, suspended, banned');
   }
 
-  const changes = await updateAdminUserStatus(db, userId, accountStatus);
+  let rawIds: unknown = body.userIds ?? body.ids ?? body.userId ?? null;
+  let ids: number[] = [];
+  if (Array.isArray(rawIds)) {
+    ids = rawIds.map(v => Number.parseInt(String(v), 10)).filter(n => Number.isFinite(n) && n > 0);
+  } else if (rawIds != null) {
+    const single = Number.parseInt(String(rawIds), 10);
+    if (Number.isFinite(single) && single > 0) ids = [single];
+  }
 
-  if (changes === 0) {
+  if (ids.length === 0) {
+    return errorResponse(400, 'Missing required fields: userId or userIds, account_status');
+  }
+
+  if (ids.length > 100) {
+    return errorResponse(413, 'Too many targets. Max 100 per bulk operation.');
+  }
+
+  ids = [...new Set(ids)];
+  const actorVal = user as unknown as { user_id: number; id?: number };
+  const actorId = actorVal.user_id ?? actorVal.id ?? 0;
+  const beforeCount = ids.length;
+  ids = ids.filter(id => id !== actorId);
+  const skippedSelf = beforeCount !== ids.length;
+
+  if (ids.length === 0) {
+    return errorResponse(400, 'Cannot modify your own account via bulk operation.');
+  }
+
+  const updated: number[] = [];
+  const failed: Array<{ id: number; reason: string }> = [];
+
+  for (const targetId of ids) {
+    try {
+      const changes = await updateAdminUserStatus(db, targetId, accountStatus);
+      if (changes === 0) {
+        failed.push({ id: targetId, reason: 'User not found' });
+      } else {
+        updated.push(targetId);
+        if (accountStatus === 'suspended' || accountStatus === 'banned') {
+          await revokeAllForLandlord(db, targetId, actorId);
+        }
+      }
+    } catch (err) {
+      failed.push({ id: targetId, reason: err instanceof Error ? err.message : 'Update failed' });
+    }
+  }
+
+  if (updated.length > 0) {
+    await insertAdminAuditLog(db, actorId, 'users', updated, accountStatus);
+  }
+
+  if (ids.length === 1 && updated.length === 0 && failed.length === 1) {
     return errorResponse(404, 'User not found');
   }
 
-  if (accountStatus === 'suspended' || accountStatus === 'banned') {
-    await revokeAllForLandlord(db, userId, user.user_id);
-  }
+  const message =
+    failed.length === 0
+      ? skippedSelf
+        ? `User status updated successfully (${updated.length} updated, skipped your own account)`
+        : `User status updated successfully`
+      : `Updated ${updated.length}, ${failed.length} failed${skippedSelf ? ' (skipped your own account)' : ''}`;
 
-  return jsonResponse({ message: 'User status updated successfully' });
+  return jsonResponse({
+    message,
+    data: { updated, failed, skippedSelf },
+  });
 }
 
 async function handleAdminProperties(c: Context<{ Bindings: Env }>) {
@@ -211,32 +263,68 @@ async function handleUpdateAdminProperty(c: Context<{ Bindings: Env }>) {
   }
 
   const body = await readJsonObject(c.req.raw);
-  const propertyId = Number.parseInt(String(body.propertyId ?? ''), 10);
   const action = String(body.action ?? '');
   const newStatus =
     action === 'publish'
       ? 'published'
       : action === 'reject'
-      ? 'rejected'
-      : action === 'flag'
-      ? 'flagged'
-      : '';
+        ? 'rejected'
+        : action === 'flag'
+          ? 'flagged'
+          : '';
 
-  if (!Number.isFinite(propertyId) || propertyId <= 0 || !action) {
-    return errorResponse(400, 'Missing required fields: propertyId, action');
-  }
-
-  if (!newStatus) {
+  if (!action || !newStatus) {
     return errorResponse(400, 'Invalid action. Use publish, reject, or flag');
   }
 
-  const changes = await updateAdminPropertyModeration(db, propertyId, newStatus);
+  let rawIds: unknown = body.propertyIds ?? body.ids ?? body.propertyId ?? null;
+  let ids: number[] = [];
+  if (Array.isArray(rawIds)) {
+    ids = rawIds.map(v => Number.parseInt(String(v), 10)).filter(n => Number.isFinite(n) && n > 0);
+  } else if (rawIds != null) {
+    const single = Number.parseInt(String(rawIds), 10);
+    if (Number.isFinite(single) && single > 0) ids = [single];
+  }
 
-  if (changes === 0) {
+  if (ids.length === 0) {
+    return errorResponse(400, 'Missing required fields: propertyId or propertyIds, action');
+  }
+
+  if (ids.length > 100) {
+    return errorResponse(413, 'Too many targets. Max 100 per bulk operation.');
+  }
+
+  ids = [...new Set(ids)];
+
+  const updated: number[] = [];
+  const failed: Array<{ id: number; reason: string }> = [];
+
+  for (const targetId of ids) {
+    try {
+      const changes = await updateAdminPropertyModeration(db, targetId, newStatus);
+      if (changes === 0) failed.push({ id: targetId, reason: 'Property not found' });
+      else updated.push(targetId);
+    } catch (err) {
+      failed.push({ id: targetId, reason: err instanceof Error ? err.message : 'Update failed' });
+    }
+  }
+
+  if (updated.length > 0) {
+    const actorVal = user as unknown as { user_id: number; id?: number };
+    const actorId = actorVal.user_id ?? actorVal.id ?? 0;
+    await insertAdminAuditLog(db, actorId, 'properties', updated, action);
+  }
+
+  if (ids.length === 1 && updated.length === 0 && failed.length === 1) {
     return errorResponse(404, 'Property not found');
   }
 
-  return jsonResponse({ message: 'Property moderation status updated successfully' });
+  const message =
+    failed.length === 0
+      ? 'Property moderation status updated successfully'
+      : `Updated ${updated.length}, ${failed.length} failed`;
+
+  return jsonResponse({ message, data: { updated, failed } });
 }
 
 async function handleAdminApplications(c: Context<{ Bindings: Env }>) {
@@ -248,6 +336,79 @@ async function handleAdminApplications(c: Context<{ Bindings: Env }>) {
   }
 
   return jsonResponse({ data: await getAdminApplications(db) });
+}
+
+async function handleUpdateAdminApplications(c: Context<{ Bindings: Env }>) {
+  const db = requireD1(c.env);
+  const user = await requireAdmin(c);
+
+  if (!user) {
+    return errorResponse(403, 'Access denied. Admins only.');
+  }
+
+  const body = await readJsonObject(c.req.raw);
+  const rawAction = String(body.action ?? body.status ?? '');
+  const normalizedAction =
+    rawAction === 'approved' || rawAction === 'approve'
+      ? 'approved'
+      : rawAction === 'rejected' || rawAction === 'reject'
+        ? 'rejected'
+        : rawAction === 'pending'
+          ? 'pending'
+          : '';
+
+  if (!normalizedAction) {
+    return errorResponse(400, 'Invalid action. Use approve, reject, or pending');
+  }
+
+  let rawIds: unknown = body.applicationIds ?? body.ids ?? body.applicationId ?? body.id ?? null;
+  let ids: number[] = [];
+  if (Array.isArray(rawIds)) {
+    ids = rawIds.map(v => Number.parseInt(String(v), 10)).filter(n => Number.isFinite(n) && n > 0);
+  } else if (rawIds != null) {
+    const single = Number.parseInt(String(rawIds), 10);
+    if (Number.isFinite(single) && single > 0) ids = [single];
+  }
+
+  if (ids.length === 0) {
+    return errorResponse(400, 'Missing required fields: applicationId or applicationIds, action');
+  }
+
+  if (ids.length > 100) {
+    return errorResponse(413, 'Too many targets. Max 100 per bulk operation.');
+  }
+
+  ids = [...new Set(ids)];
+
+  const updated: number[] = [];
+  const failed: Array<{ id: number; reason: string }> = [];
+
+  for (const targetId of ids) {
+    try {
+      const changes = await updateAdminApplicationStatus(db, targetId, normalizedAction);
+      if (changes === 0) failed.push({ id: targetId, reason: 'Application not found' });
+      else updated.push(targetId);
+    } catch (err) {
+      failed.push({ id: targetId, reason: err instanceof Error ? err.message : 'Update failed' });
+    }
+  }
+
+  if (updated.length > 0) {
+    const actorVal = user as unknown as { user_id: number; id?: number };
+    const actorId = actorVal.user_id ?? actorVal.id ?? 0;
+    await insertAdminAuditLog(db, actorId, 'applications', updated, normalizedAction);
+  }
+
+  if (ids.length === 1 && updated.length === 0 && failed.length === 1) {
+    return errorResponse(404, 'Application not found');
+  }
+
+  const message =
+    failed.length === 0
+      ? 'Application status updated successfully'
+      : `Updated ${updated.length}, ${failed.length} failed`;
+
+  return jsonResponse({ message, data: { updated, failed } });
 }
 
 async function handleAdminSettings(c: Context<{ Bindings: Env }>) {
@@ -627,6 +788,7 @@ adminRoutes.patch('/api/admin/users', handleUpdateAdminUser);
 adminRoutes.get('/api/admin/properties', handleAdminProperties);
 adminRoutes.post('/api/admin/properties', handleUpdateAdminProperty);
 adminRoutes.get('/api/admin/applications', handleAdminApplications);
+adminRoutes.patch('/api/admin/applications', handleUpdateAdminApplications);
 adminRoutes.get('/api/admin/settings', handleAdminSettings);
 adminRoutes.patch('/api/admin/settings', handleUpdateAdminSettings);
 

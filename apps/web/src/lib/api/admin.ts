@@ -30,13 +30,28 @@ export function patchUserStatus(
   token: string,
   userId: number,
   accountStatus: string
-): Promise<{ message: string }> {
+): Promise<{ message: string; data?: { updated: number[]; failed: Array<{ id: number; reason: string }>; skippedSelf?: boolean } }> {
   return apiFetch(
     base(),
     '/api/admin/users',
     jsonOptions(token, {
       method: 'PATCH',
       body: JSON.stringify({ userId, account_status: accountStatus }),
+    })
+  );
+}
+
+export function bulkPatchUserStatus(
+  token: string,
+  userIds: number[],
+  accountStatus: string
+): Promise<{ message: string; data: { updated: number[]; failed: Array<{ id: number; reason: string }>; skippedSelf?: boolean } }> {
+  return apiFetch(
+    base(),
+    '/api/admin/users',
+    jsonOptions(token, {
+      method: 'PATCH',
+      body: JSON.stringify({ userIds, account_status: accountStatus }),
     })
   );
 }
@@ -51,7 +66,7 @@ export function patchPropertyStatus(
   token: string,
   propertyId: number,
   action: string
-): Promise<{ message: string }> {
+): Promise<{ message: string; data?: { updated: number[]; failed: Array<{ id: number; reason: string }> } }> {
   return apiFetch(
     base(),
     '/api/admin/properties',
@@ -62,10 +77,40 @@ export function patchPropertyStatus(
   );
 }
 
+export function bulkPatchPropertyStatus(
+  token: string,
+  propertyIds: number[],
+  action: string
+): Promise<{ message: string; data: { updated: number[]; failed: Array<{ id: number; reason: string }> } }> {
+  return apiFetch(
+    base(),
+    '/api/admin/properties',
+    jsonOptions(token, {
+      method: 'POST',
+      body: JSON.stringify({ propertyIds, action }),
+    })
+  );
+}
+
 export function getApplications(token: string): Promise<AdminApplicationsResponse> {
   return apiFetch<AdminApplicationsResponse>(base(), '/api/admin/applications', {
     headers: { Authorization: `Bearer ${token}` },
   });
+}
+
+export function bulkPatchApplicationStatus(
+  token: string,
+  applicationIds: number[],
+  action: 'approve' | 'reject' | 'pending'
+): Promise<{ message: string; data: { updated: number[]; failed: Array<{ id: number; reason: string }> } }> {
+  return apiFetch(
+    base(),
+    '/api/admin/applications',
+    jsonOptions(token, {
+      method: 'PATCH',
+      body: JSON.stringify({ applicationIds, action }),
+    })
+  );
 }
 
 export function getSettings(token: string): Promise<AdminSettingsResponse> {

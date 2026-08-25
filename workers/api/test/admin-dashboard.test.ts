@@ -200,7 +200,10 @@ describe('admin dashboard routes', () => {
     );
 
     expect(update.status).toBe(200);
-    expect(await update.json()).toEqual({ message: 'User status updated successfully' });
+    expect(await update.json()).toEqual({
+      message: 'User status updated successfully',
+      data: { updated: [3], failed: [], skippedSelf: false },
+    });
     expect(
       sqlite.prepare('SELECT account_status FROM users WHERE id = 3').get() as {
         account_status: string;
@@ -245,6 +248,7 @@ describe('admin dashboard routes', () => {
     expect(update.status).toBe(200);
     expect(await update.json()).toEqual({
       message: 'Property moderation status updated successfully',
+      data: { updated: [10], failed: [] },
     });
     expect(
       sqlite.prepare('SELECT listing_moderation_status FROM properties WHERE id = 10').get() as {

@@ -419,3 +419,43 @@ export async function upsertAdminSetting(
     .bind(key, value)
     .run();
 }
+export async function updateAdminApplicationStatus(
+  db: D1Database,
+  applicationId: number,
+  status: string,
+): Promise<number> {
+  const result = await db
+    .prepare(
+      `
+        UPDATE applications
+        SET status = ?, updated_at = CURRENT_TIMESTAMP
+        WHERE id = ? AND deleted_at IS NULL
+      `,
+    )
+    .bind(status, applicationId)
+    .run();
+
+  return result.meta.changes ?? 0;
+}
+
+export async function insertAdminAuditLog(
+  db: D1Database,
+  actorId: number,
+  entity: string,
+  ids: number[],
+  action: string,
+): Promise<void> {
+  try {
+    await db
+      .prepare(
+        `
+          INSERT INTO admin_audit_log (actor_id, entity, ids_json, action)
+          VALUES (?, ?, ?, ?)
+        `,
+      )
+      .bind(actorId, entity, JSON.stringify(ids), action)
+      .run();
+  } catch {
+    // audit table may not exist in older test dbs without migration - best effort
+  }
+}
