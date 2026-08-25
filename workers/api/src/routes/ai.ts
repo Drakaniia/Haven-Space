@@ -419,7 +419,8 @@ function streamGeminiChat(
   apiKey: string,
   messages: ChatMessage[],
   propertyCount: number,
-  usageCookie: string | null
+  usageCookie: string | null,
+  fallbackMessage?: string
 ): Promise<Response> {
   return fetch(GEMINI_STREAM_URL, {
     method: 'POST',
@@ -433,6 +434,9 @@ function streamGeminiChat(
     .then(async upstream => {
       if (!upstream.ok) {
         const detail = await upstream.text();
+        if (isRegionBlocked(detail) && fallbackMessage) {
+          return fallbackSseResponse(fallbackMessage, propertyCount, usageCookie);
+        }
         return jsonResponse(
           {
             success: false,
@@ -512,10 +516,14 @@ function streamGeminiChat(
       return new Response(readable, { headers });
     })
     .catch(error => {
+      const msg = error instanceof Error ? error.message : 'AI provider request failed';
+      if (fallbackMessage && isRegionBlocked(msg)) {
+        return fallbackSseResponse(fallbackMessage, propertyCount, usageCookie);
+      }
       return jsonResponse(
         {
           success: false,
-          error: error instanceof Error ? error.message : 'AI provider request failed',
+          error: msg,
           code: 'AI_PROVIDER_ERROR',
         },
         200
@@ -646,7 +654,7 @@ aiRoutes.post('/api/ai/chat', async c => {
   const fallbackMessage = buildFallbackResponse(message, roomContext);
 
   if (body.stream === true) {
-    return streamGeminiChat(apiKey, messages, propertyCount, usageCookie);
+    return streamGeminiChat(apiKey, messages, propertyCount, usageCookie, fallbackMessage);
   }
 
   try {
