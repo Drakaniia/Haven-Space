@@ -64,3 +64,4 @@ bun.lock
 # TanStack router generator cache
 .tanstack/
 .omp/extensions/emdash-hook.ts
+.kiro/agents/emdash.json
