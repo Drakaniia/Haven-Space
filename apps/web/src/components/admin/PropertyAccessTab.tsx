@@ -24,7 +24,7 @@ import { EmptyState } from '../ui/EmptyState';
 import { ErrorState } from '../ui/ErrorState';
 import { Field, SelectInput } from '../ui/Field';
 import { Icon } from '../ui/Icon';
-import { Spinner } from '../ui/Spinner';
+import { TableSkeleton } from './AdminSkeletons';
 
 function formatWhen(value: string | null | undefined): string {
   if (!value) return '—';
@@ -269,7 +269,9 @@ export function PropertyAccessTab({ token }: { token: string }) {
       {showHistory ? (
         <Card>
           {history.isLoading ? (
-            <Spinner />
+            <div aria-busy="true" aria-live="polite">
+              <TableSkeleton rows={4} columns={3} />
+            </div>
           ) : history.error ? (
             <ErrorState message={history.error.message} />
           ) : history.data && history.data.data.events.length > 0 ? (
@@ -285,7 +287,9 @@ export function PropertyAccessTab({ token }: { token: string }) {
       ) : null}
 
       {access.isLoading ? (
-        <Spinner />
+        <div aria-busy="true" aria-live="polite">
+          <TableSkeleton rows={4} columns={3} />
+        </div>
       ) : access.error ? (
         <ErrorState message={access.error.message} />
       ) : access.data && access.data.data.properties.length > 0 ? (
