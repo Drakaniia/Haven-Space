@@ -339,14 +339,23 @@ function isRegionBlocked(detail: string): boolean {
   );
 }
 
-function buildFallbackResponse(userMessage: string, roomContext: { listings: RoomListing[]; searched: boolean }): string {
+function buildFallbackResponse(
+  userMessage: string,
+  roomContext: { listings: RoomListing[]; searched: boolean }
+): string {
   if (roomContext.listings.length > 0) {
-    return `Haven AI is temporarily running in offline mode due to a regional AI limitation, but I can still help!\n\n${formatRoomContext(roomContext.listings)}\n\nYou asked: "${userMessage}" — you can view these listings on the Find a Room page. If you need help with payments, maintenance, or tenancy, let me know and I'll point you to the right place in the app.`;
+    return `Haven AI is temporarily running in offline mode due to a regional AI limitation, but I can still help!\n\n${formatRoomContext(
+      roomContext.listings
+    )}\n\nYou asked: "${userMessage}" — you can view these listings on the Find a Room page. If you need help with payments, maintenance, or tenancy, let me know and I'll point you to the right place in the app.`;
   }
   return `Haven AI is temporarily running in offline mode due to a regional AI limitation, but I'm still here to help! You asked: "${userMessage}"\n\nTry browsing Find a Room for listings, or ask about payments, maintenance requests, or tenancy — I can guide you to the right page in the app.`;
 }
 
-function fallbackSseResponse(message: string, propertyCount: number, usageCookie: string | null): Response {
+function fallbackSseResponse(
+  message: string,
+  propertyCount: number,
+  usageCookie: string | null
+): Response {
   const encoder = new TextEncoder();
   const { readable, writable } = new TransformStream();
   const writer = writable.getWriter();
@@ -357,7 +366,9 @@ function fallbackSseResponse(message: string, propertyCount: number, usageCookie
       await writer.write(encoder.encode(`data: ${JSON.stringify({ delta })}\n\n`));
       await new Promise(r => setTimeout(r, 12));
     }
-    await writer.write(encoder.encode(`data: ${JSON.stringify({ done: true, property_count: propertyCount })}\n\n`));
+    await writer.write(
+      encoder.encode(`data: ${JSON.stringify({ done: true, property_count: propertyCount })}\n\n`)
+    );
     await writer.close().catch(() => {});
   })();
   const headers = new Headers({
@@ -374,7 +385,11 @@ function toGeminiPayload(messages: ChatMessage[]): Record<string, unknown> {
   const contents: Array<{ role: string; parts: Array<{ text: string }> }> = [];
   for (const m of messages) {
     if (m.role === 'system') systemTexts.push(m.content);
-    else contents.push({ role: m.role === 'assistant' ? 'model' : 'user', parts: [{ text: m.content }] });
+    else
+      contents.push({
+        role: m.role === 'assistant' ? 'model' : 'user',
+        parts: [{ text: m.content }],
+      });
   }
   const body: Record<string, unknown> = {
     contents,
@@ -479,7 +494,9 @@ function streamGeminiChat(
                 const parsed = JSON.parse(payload) as {
                   candidates?: Array<{ content?: { parts?: Array<{ text?: string }> } }>;
                 };
-                const delta = parsed.candidates?.[0]?.content?.parts?.map(p => p.text ?? '').join('');
+                const delta = parsed.candidates?.[0]?.content?.parts
+                  ?.map(p => p.text ?? '')
+                  .join('');
                 if (delta) {
                   await writer.write(encoder.encode(`data: ${JSON.stringify({ delta })}\n\n`));
                 }

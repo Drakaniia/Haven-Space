@@ -42,7 +42,9 @@ function AppleCheckbox({
       >
         <svg
           viewBox="0 0 12 12"
-          className={`h-3 w-3 transition-all duration-150 ${checked ? 'opacity-100 scale-100' : 'opacity-0 scale-75'} motion-reduce:transition-none`}
+          className={`h-3 w-3 transition-all duration-150 ${
+            checked ? 'opacity-100 scale-100' : 'opacity-0 scale-75'
+          } motion-reduce:transition-none`}
           fill="none"
           stroke="currentColor"
           strokeWidth={1.7}
@@ -120,7 +122,11 @@ export function DataTable<T>({
             const isSelected = selectable ? Boolean(selectedIds?.has(rawId)) : false;
             return (
               <Fragment key={key}>
-                <tr className={`border-b border-gray-100 transition-colors ${isSelected ? 'bg-[#E8F0FF]/60' : 'hover:bg-gray-50/60'}`}>
+                <tr
+                  className={`border-b border-gray-100 transition-colors ${
+                    isSelected ? 'bg-[#E8F0FF]/60' : 'hover:bg-gray-50/60'
+                  }`}
+                >
                   {selectable ? (
                     <td className="px-3 py-2">
                       <AppleCheckbox

@@ -1,5 +1,5 @@
-import { Card } from "../ui/Card";
-import { Skeleton } from "../ui/Skeleton";
+import { Card } from '../ui/Card';
+import { Skeleton } from '../ui/Skeleton';
 
 export function StatCardSkeleton() {
   return (
@@ -46,8 +46,7 @@ export function TableSkeleton({
         {Array.from({ length: rows }).map((_, rowIndex) => (
           <div key={rowIndex} className="flex gap-4 px-4 py-3">
             {Array.from({ length: columns }).map((_, colIndex) => {
-              const width =
-                colIndex % 3 === 0 ? "w-24" : colIndex % 3 === 1 ? "w-32" : "w-20";
+              const width = colIndex % 3 === 0 ? 'w-24' : colIndex % 3 === 1 ? 'w-32' : 'w-20';
               return <Skeleton key={colIndex} className={`h-4 ${width}`} />;
             })}
           </div>

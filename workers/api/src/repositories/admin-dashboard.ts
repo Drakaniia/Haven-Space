@@ -422,7 +422,7 @@ export async function upsertAdminSetting(
 export async function updateAdminApplicationStatus(
   db: D1Database,
   applicationId: number,
-  status: string,
+  status: string
 ): Promise<number> {
   const result = await db
     .prepare(
@@ -430,7 +430,7 @@ export async function updateAdminApplicationStatus(
         UPDATE applications
         SET status = ?, updated_at = CURRENT_TIMESTAMP
         WHERE id = ? AND deleted_at IS NULL
-      `,
+      `
     )
     .bind(status, applicationId)
     .run();
@@ -443,7 +443,7 @@ export async function insertAdminAuditLog(
   actorId: number,
   entity: string,
   ids: number[],
-  action: string,
+  action: string
 ): Promise<void> {
   try {
     await db
@@ -451,7 +451,7 @@ export async function insertAdminAuditLog(
         `
           INSERT INTO admin_audit_log (actor_id, entity, ids_json, action)
           VALUES (?, ?, ?, ?)
-        `,
+        `
       )
       .bind(actorId, entity, JSON.stringify(ids), action)
       .run();
