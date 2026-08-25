@@ -331,6 +331,44 @@ async function aiUsageCookieValue(
   return aiUsageCookie(c.req.url, value, maxAgeSeconds);
 }
 
+function isRegionBlocked(detail: string): boolean {
+  const lower = detail.toLowerCase();
+  return (
+    lower.includes('user location is not supported') ||
+    (lower.includes('failed_precondition') && lower.includes('location'))
+  );
+}
+
+function buildFallbackResponse(userMessage: string, roomContext: { listings: RoomListing[]; searched: boolean }): string {
+  if (roomContext.listings.length > 0) {
+    return `Haven AI is temporarily running in offline mode due to a regional AI limitation, but I can still help!\n\n${formatRoomContext(roomContext.listings)}\n\nYou asked: "${userMessage}" — you can view these listings on the Find a Room page. If you need help with payments, maintenance, or tenancy, let me know and I'll point you to the right place in the app.`;
+  }
+  return `Haven AI is temporarily running in offline mode due to a regional AI limitation, but I'm still here to help! You asked: "${userMessage}"\n\nTry browsing Find a Room for listings, or ask about payments, maintenance requests, or tenancy — I can guide you to the right page in the app.`;
+}
+
+function fallbackSseResponse(message: string, propertyCount: number, usageCookie: string | null): Response {
+  const encoder = new TextEncoder();
+  const { readable, writable } = new TransformStream();
+  const writer = writable.getWriter();
+  void (async () => {
+    const chunkSize = 24;
+    for (let i = 0; i < message.length; i += chunkSize) {
+      const delta = message.slice(i, i + chunkSize);
+      await writer.write(encoder.encode(`data: ${JSON.stringify({ delta })}\n\n`));
+      await new Promise(r => setTimeout(r, 12));
+    }
+    await writer.write(encoder.encode(`data: ${JSON.stringify({ done: true, property_count: propertyCount })}\n\n`));
+    await writer.close().catch(() => {});
+  })();
+  const headers = new Headers({
+    'Content-Type': 'text/event-stream; charset=utf-8',
+    'Cache-Control': 'no-cache',
+    Connection: 'keep-alive',
+  });
+  if (usageCookie) headers.append('Set-Cookie', usageCookie);
+  return new Response(readable, { headers });
+}
+
 function toGeminiPayload(messages: ChatMessage[]): Record<string, unknown> {
   const systemTexts: string[] = [];
   const contents: Array<{ role: string; parts: Array<{ text: string }> }> = [];
@@ -605,21 +643,35 @@ aiRoutes.post('/api/ai/chat', async c => {
   messages.push({ role: 'user', content: message });
 
   const propertyCount = roomContext.searched ? roomContext.listings.length : 0;
+  const fallbackMessage = buildFallbackResponse(message, roomContext);
 
   if (body.stream === true) {
     return streamGeminiChat(apiKey, messages, propertyCount, usageCookie);
   }
 
-  const response = await geminiChatCompletion(apiKey, messages);
-  const result = jsonResponse({
-    success: true,
-    response,
-    ...(roomContext.searched ? { property_count: roomContext.listings.length } : {}),
-  });
-  if (usageCookie) {
-    result.headers.append('Set-Cookie', usageCookie);
+  try {
+    const response = await geminiChatCompletion(apiKey, messages);
+    const result = jsonResponse({
+      success: true,
+      response,
+      ...(roomContext.searched ? { property_count: roomContext.listings.length } : {}),
+    });
+    if (usageCookie) {
+      result.headers.append('Set-Cookie', usageCookie);
+    }
+    return result;
+  } catch (error) {
+    if (error instanceof HttpError && isRegionBlocked(String(error.details ?? error.message))) {
+      const result = jsonResponse({
+        success: true,
+        response: fallbackMessage,
+        ...(roomContext.searched ? { property_count: roomContext.listings.length } : {}),
+      });
+      if (usageCookie) result.headers.append('Set-Cookie', usageCookie);
+      return result;
+    }
+    throw error;
   }
-  return result;
 });
 
 export default aiRoutes;
