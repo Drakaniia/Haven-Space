@@ -232,7 +232,9 @@ async function handleUpdateAdminUser(c: Context<{ Bindings: Env }>) {
       ? skippedSelf
         ? `User status updated successfully (${updated.length} updated, skipped your own account)`
         : `User status updated successfully`
-      : `Updated ${updated.length}, ${failed.length} failed${skippedSelf ? ' (skipped your own account)' : ''}`;
+      : `Updated ${updated.length}, ${failed.length} failed${
+          skippedSelf ? ' (skipped your own account)' : ''
+        }`;
 
   return jsonResponse({
     message,
@@ -268,10 +270,10 @@ async function handleUpdateAdminProperty(c: Context<{ Bindings: Env }>) {
     action === 'publish'
       ? 'published'
       : action === 'reject'
-        ? 'rejected'
-        : action === 'flag'
-          ? 'flagged'
-          : '';
+      ? 'rejected'
+      : action === 'flag'
+      ? 'flagged'
+      : '';
 
   if (!action || !newStatus) {
     return errorResponse(400, 'Invalid action. Use publish, reject, or flag');
@@ -352,10 +354,10 @@ async function handleUpdateAdminApplications(c: Context<{ Bindings: Env }>) {
     rawAction === 'approved' || rawAction === 'approve'
       ? 'approved'
       : rawAction === 'rejected' || rawAction === 'reject'
-        ? 'rejected'
-        : rawAction === 'pending'
-          ? 'pending'
-          : '';
+      ? 'rejected'
+      : rawAction === 'pending'
+      ? 'pending'
+      : '';
 
   if (!normalizedAction) {
     return errorResponse(400, 'Invalid action. Use approve, reject, or pending');

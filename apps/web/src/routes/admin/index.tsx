@@ -125,7 +125,12 @@ function AdminOverview() {
   const [userBulkStatus, setUserBulkStatus] = useState('suspended');
   const [propBulkAction, setPropBulkAction] = useState('reject');
   const [appBulkAction, setAppBulkAction] = useState<'approve' | 'reject'>('reject');
-  const [confirm, setConfirm] = useState<null | { title: string; message: string; confirmLabel: string; onConfirm: () => void }>(null);
+  const [confirm, setConfirm] = useState<null | {
+    title: string;
+    message: string;
+    confirmLabel: string;
+    onConfirm: () => void;
+  }>(null);
 
   const invalidate = () => {
     void queryClient.invalidateQueries({ queryKey: ['admin'] });
@@ -390,7 +395,9 @@ function AdminOverview() {
     <RoleShell title="Admin overview">
       <div className="mb-6">
         <h2 className="text-2xl font-bold text-ink">Command Center</h2>
-        <p className="mt-1 text-sm text-gray-ink">Platform overview — accounts, listings, and applications.</p>
+        <p className="mt-1 text-sm text-gray-ink">
+          Platform overview — accounts, listings, and applications.
+        </p>
       </div>
 
       <ToastStack toasts={toasts} onDismiss={dismiss} />
@@ -403,10 +410,29 @@ function AdminOverview() {
         <ErrorState message={summary.error.message} />
       ) : counts ? (
         <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-4">
-          <StatCard label="Users" value={String(counts.users_total)} sub={`${counts.users_boarder} boarders · ${counts.users_landlord} landlords`} icon="users" />
-          <StatCard label="Properties" value={String(counts.properties_total)} sub={`${counts.properties_pending_moderation} pending review`} icon="list" />
-          <StatCard label="Applications" value={String(counts.applications_total)} icon="application" />
-          <StatCard label="Landlord verification" value={String(counts.landlords_pending_verification)} sub="awaiting approval" icon="shieldCheck" />
+          <StatCard
+            label="Users"
+            value={String(counts.users_total)}
+            sub={`${counts.users_boarder} boarders · ${counts.users_landlord} landlords`}
+            icon="users"
+          />
+          <StatCard
+            label="Properties"
+            value={String(counts.properties_total)}
+            sub={`${counts.properties_pending_moderation} pending review`}
+            icon="list"
+          />
+          <StatCard
+            label="Applications"
+            value={String(counts.applications_total)}
+            icon="application"
+          />
+          <StatCard
+            label="Landlord verification"
+            value={String(counts.landlords_pending_verification)}
+            sub="awaiting approval"
+            icon="shieldCheck"
+          />
         </div>
       ) : null}
 
@@ -417,7 +443,11 @@ function AdminOverview() {
               key={item.key}
               type="button"
               onClick={() => handleTabChange(item.key)}
-              className={`-mb-px flex items-center gap-2 border-b-2 px-3 py-2 text-sm font-medium ${tab === item.key ? 'border-primary text-primary' : 'border-transparent text-gray-ink hover:text-gray-700'}`}
+              className={`-mb-px flex items-center gap-2 border-b-2 px-3 py-2 text-sm font-medium ${
+                tab === item.key
+                  ? 'border-primary text-primary'
+                  : 'border-transparent text-gray-ink hover:text-gray-700'
+              }`}
             >
               <Icon name={item.icon} size={16} className="shrink-0" />
               {item.label}
@@ -474,7 +504,11 @@ function AdminOverview() {
                 onToggleAll={checked => {
                   if (checked) {
                     const ids = users.data.data.slice(0, 100).map(r => r.id);
-                    if (users.data.data.length > 100) push({ tone: 'info', message: 'Selected first 100 — max 100 per bulk operation' });
+                    if (users.data.data.length > 100)
+                      push({
+                        tone: 'info',
+                        message: 'Selected first 100 — max 100 per bulk operation',
+                      });
                     setUsersSelected(new Set(ids));
                   } else setUsersSelected(new Set());
                 }}
@@ -531,7 +565,11 @@ function AdminOverview() {
                 onToggleAll={checked => {
                   if (checked) {
                     const ids = properties.data.data.slice(0, 100).map(r => r.id);
-                    if (properties.data.data.length > 100) push({ tone: 'info', message: 'Selected first 100 — max 100 per bulk operation' });
+                    if (properties.data.data.length > 100)
+                      push({
+                        tone: 'info',
+                        message: 'Selected first 100 — max 100 per bulk operation',
+                      });
                     setPropsSelected(new Set(ids));
                   } else setPropsSelected(new Set());
                 }}
@@ -556,7 +594,9 @@ function AdminOverview() {
             toolbar={
               applications.data?.data.applications.length ? (
                 <div className="mb-3 flex items-center justify-between">
-                  <p className="text-xs text-gray-ink">{applications.data.data.applications.length} applications</p>
+                  <p className="text-xs text-gray-ink">
+                    {applications.data.data.applications.length} applications
+                  </p>
                   <Button
                     variant={appsSelectMode ? 'secondary' : 'outline'}
                     size="sm"
@@ -576,10 +616,27 @@ function AdminOverview() {
             {applications.data ? (
               <>
                 <div className="mb-4 grid grid-cols-2 gap-4 lg:grid-cols-4">
-                  <StatCard label="Total" value={String(applications.data.data.stats.total)} icon="application" />
-                  <StatCard label="Pending" value={String(applications.data.data.stats.pending)} icon="clock" />
-                  <StatCard label="Approved" value={String(applications.data.data.stats.approved)} icon="check" />
-                  <StatCard label="Processed rate" value={`${applications.data.data.stats.processed_rate_percent}%`} sub={`${applications.data.data.stats.rejected} rejected`} icon="analytics" />
+                  <StatCard
+                    label="Total"
+                    value={String(applications.data.data.stats.total)}
+                    icon="application"
+                  />
+                  <StatCard
+                    label="Pending"
+                    value={String(applications.data.data.stats.pending)}
+                    icon="clock"
+                  />
+                  <StatCard
+                    label="Approved"
+                    value={String(applications.data.data.stats.approved)}
+                    icon="check"
+                  />
+                  <StatCard
+                    label="Processed rate"
+                    value={`${applications.data.data.stats.processed_rate_percent}%`}
+                    sub={`${applications.data.data.stats.rejected} rejected`}
+                    icon="analytics"
+                  />
                 </div>
                 <DataTable
                   rows={applications.data.data.applications}
@@ -602,7 +659,11 @@ function AdminOverview() {
                   onToggleAll={checked => {
                     if (checked) {
                       const ids = applications.data.data.applications.slice(0, 100).map(r => r.id);
-                      if (applications.data.data.applications.length > 100) push({ tone: 'info', message: 'Selected first 100 — max 100 per bulk operation' });
+                      if (applications.data.data.applications.length > 100)
+                        push({
+                          tone: 'info',
+                          message: 'Selected first 100 — max 100 per bulk operation',
+                        });
                       setAppsSelected(new Set(ids));
                     } else setAppsSelected(new Set());
                   }}
@@ -620,15 +681,32 @@ function AdminOverview() {
             emptyTitle="No landlords found"
             skeleton={<TableSkeleton rows={5} columns={6} />}
           >
-            {landlords.data ? <DataTable rows={landlords.data.data} columns={landlordColumns} keyFor={row => row.id} /> : null}
+            {landlords.data ? (
+              <DataTable
+                rows={landlords.data.data}
+                columns={landlordColumns}
+                keyFor={row => row.id}
+              />
+            ) : null}
           </AdminTab>
         )}
 
         {tab === 'propertyAccess' && <PropertyAccessTab token={token!} />}
 
         {tab === 'settings' && (
-          <AdminTab isLoading={settings.isLoading} error={settings.error} empty={false} skeleton={<SettingsSkeleton />}>
-            {settings.data ? <SettingsForm settings={settings.data.data} busy={saveSettings.isPending} onSave={values => saveSettings.mutate(values)} /> : null}
+          <AdminTab
+            isLoading={settings.isLoading}
+            error={settings.error}
+            empty={false}
+            skeleton={<SettingsSkeleton />}
+          >
+            {settings.data ? (
+              <SettingsForm
+                settings={settings.data.data}
+                busy={saveSettings.isPending}
+                onSave={values => saveSettings.mutate(values)}
+              />
+            ) : null}
           </AdminTab>
         )}
       </div>
@@ -655,9 +733,22 @@ function AdminOverview() {
                 disabled={isBulkBusy || usersOverCap}
                 onClick={() =>
                   setConfirm({
-                    title: `${userBulkStatus === 'active' ? 'Activate' : userBulkStatus === 'suspended' ? 'Suspend' : 'Ban'} ${usersSelected.size} user${usersSelected.size > 1 ? 's' : ''}?`,
-                    message: `This will set account_status to "${userBulkStatus}" for ${usersSelected.size} selected user${usersSelected.size > 1 ? 's' : ''}. This is a soft update and can be reversed.`,
-                    confirmLabel: userBulkStatus === 'banned' || userBulkStatus === 'suspended' ? userBulkStatus.charAt(0).toUpperCase() + userBulkStatus.slice(1) : 'Apply',
+                    title: `${
+                      userBulkStatus === 'active'
+                        ? 'Activate'
+                        : userBulkStatus === 'suspended'
+                        ? 'Suspend'
+                        : 'Ban'
+                    } ${usersSelected.size} user${usersSelected.size > 1 ? 's' : ''}?`,
+                    message: `This will set account_status to "${userBulkStatus}" for ${
+                      usersSelected.size
+                    } selected user${
+                      usersSelected.size > 1 ? 's' : ''
+                    }. This is a soft update and can be reversed.`,
+                    confirmLabel:
+                      userBulkStatus === 'banned' || userBulkStatus === 'suspended'
+                        ? userBulkStatus.charAt(0).toUpperCase() + userBulkStatus.slice(1)
+                        : 'Apply',
                     onConfirm: () => {
                       bulkUsers.mutate({ ids: Array.from(usersSelected), status: userBulkStatus });
                       setConfirm(null);
@@ -679,7 +770,9 @@ function AdminOverview() {
               </Button>
             </div>
           </div>
-          {usersOverCap && <p className="mt-2 text-center text-xs text-red-600">Max 100 per bulk operation</p>}
+          {usersOverCap && (
+            <p className="mt-2 text-center text-xs text-red-600">Max 100 per bulk operation</p>
+          )}
         </div>
       )}
       {tab === 'properties' && propsSelectMode && propsSelected.size > 0 && (
@@ -703,11 +796,16 @@ function AdminOverview() {
                 disabled={isBulkBusy || propsOverCap}
                 onClick={() =>
                   setConfirm({
-                    title: `${propBulkAction.charAt(0).toUpperCase() + propBulkAction.slice(1)} ${propsSelected.size} propert${propsSelected.size > 1 ? 'ies' : 'y'}?`,
+                    title: `${propBulkAction.charAt(0).toUpperCase() + propBulkAction.slice(1)} ${
+                      propsSelected.size
+                    } propert${propsSelected.size > 1 ? 'ies' : 'y'}?`,
                     message: `This will set moderation status to "${propBulkAction}" for ${propsSelected.size} selected properties.`,
                     confirmLabel: propBulkAction.charAt(0).toUpperCase() + propBulkAction.slice(1),
                     onConfirm: () => {
-                      bulkProperties.mutate({ ids: Array.from(propsSelected), action: propBulkAction });
+                      bulkProperties.mutate({
+                        ids: Array.from(propsSelected),
+                        action: propBulkAction,
+                      });
                       setConfirm(null);
                     },
                   })
@@ -715,12 +813,21 @@ function AdminOverview() {
               >
                 Apply
               </Button>
-              <Button variant="ghost" size="sm" onClick={() => { setPropsSelectMode(false); setPropsSelected(new Set()); }}>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => {
+                  setPropsSelectMode(false);
+                  setPropsSelected(new Set());
+                }}
+              >
                 Cancel
               </Button>
             </div>
           </div>
-          {propsOverCap && <p className="mt-2 text-center text-xs text-red-600">Max 100 per bulk operation</p>}
+          {propsOverCap && (
+            <p className="mt-2 text-center text-xs text-red-600">Max 100 per bulk operation</p>
+          )}
         </div>
       )}
       {tab === 'applications' && appsSelectMode && appsSelected.size > 0 && (
@@ -743,11 +850,18 @@ function AdminOverview() {
                 disabled={isBulkBusy || appsOverCap}
                 onClick={() =>
                   setConfirm({
-                    title: `${appBulkAction === 'approve' ? 'Approve' : 'Reject'} ${appsSelected.size} application${appsSelected.size > 1 ? 's' : ''}?`,
-                    message: `This will set status to "${appBulkAction === 'approve' ? 'approved' : 'rejected'}" for ${appsSelected.size} selected applications.`,
+                    title: `${appBulkAction === 'approve' ? 'Approve' : 'Reject'} ${
+                      appsSelected.size
+                    } application${appsSelected.size > 1 ? 's' : ''}?`,
+                    message: `This will set status to "${
+                      appBulkAction === 'approve' ? 'approved' : 'rejected'
+                    }" for ${appsSelected.size} selected applications.`,
                     confirmLabel: appBulkAction === 'approve' ? 'Approve' : 'Reject',
                     onConfirm: () => {
-                      bulkApplications.mutate({ ids: Array.from(appsSelected), action: appBulkAction });
+                      bulkApplications.mutate({
+                        ids: Array.from(appsSelected),
+                        action: appBulkAction,
+                      });
                       setConfirm(null);
                     },
                   })
@@ -755,12 +869,21 @@ function AdminOverview() {
               >
                 Apply
               </Button>
-              <Button variant="ghost" size="sm" onClick={() => { setAppsSelectMode(false); setAppsSelected(new Set()); }}>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => {
+                  setAppsSelectMode(false);
+                  setAppsSelected(new Set());
+                }}
+              >
                 Cancel
               </Button>
             </div>
           </div>
-          {appsOverCap && <p className="mt-2 text-center text-xs text-red-600">Max 100 per bulk operation</p>}
+          {appsOverCap && (
+            <p className="mt-2 text-center text-xs text-red-600">Max 100 per bulk operation</p>
+          )}
         </div>
       )}
 
@@ -773,7 +896,17 @@ function AdminOverview() {
               <Button variant="ghost" onClick={() => setConfirm(null)} disabled={isBulkBusy}>
                 Cancel
               </Button>
-              <Button variant="primary" onClick={confirm.onConfirm} disabled={isBulkBusy} className={confirm.confirmLabel.toLowerCase() === 'ban' || confirm.confirmLabel.toLowerCase() === 'reject' ? '!bg-red-600 hover:!bg-red-700' : ''}>
+              <Button
+                variant="primary"
+                onClick={confirm.onConfirm}
+                disabled={isBulkBusy}
+                className={
+                  confirm.confirmLabel.toLowerCase() === 'ban' ||
+                  confirm.confirmLabel.toLowerCase() === 'reject'
+                    ? '!bg-red-600 hover:!bg-red-700'
+                    : ''
+                }
+              >
                 {confirm.confirmLabel}
               </Button>
             </div>

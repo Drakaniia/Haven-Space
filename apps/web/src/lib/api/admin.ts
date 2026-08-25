@@ -30,7 +30,14 @@ export function patchUserStatus(
   token: string,
   userId: number,
   accountStatus: string
-): Promise<{ message: string; data?: { updated: number[]; failed: Array<{ id: number; reason: string }>; skippedSelf?: boolean } }> {
+): Promise<{
+  message: string;
+  data?: {
+    updated: number[];
+    failed: Array<{ id: number; reason: string }>;
+    skippedSelf?: boolean;
+  };
+}> {
   return apiFetch(
     base(),
     '/api/admin/users',
@@ -45,7 +52,10 @@ export function bulkPatchUserStatus(
   token: string,
   userIds: number[],
   accountStatus: string
-): Promise<{ message: string; data: { updated: number[]; failed: Array<{ id: number; reason: string }>; skippedSelf?: boolean } }> {
+): Promise<{
+  message: string;
+  data: { updated: number[]; failed: Array<{ id: number; reason: string }>; skippedSelf?: boolean };
+}> {
   return apiFetch(
     base(),
     '/api/admin/users',
@@ -66,7 +76,10 @@ export function patchPropertyStatus(
   token: string,
   propertyId: number,
   action: string
-): Promise<{ message: string; data?: { updated: number[]; failed: Array<{ id: number; reason: string }> } }> {
+): Promise<{
+  message: string;
+  data?: { updated: number[]; failed: Array<{ id: number; reason: string }> };
+}> {
   return apiFetch(
     base(),
     '/api/admin/properties',
@@ -81,7 +94,10 @@ export function bulkPatchPropertyStatus(
   token: string,
   propertyIds: number[],
   action: string
-): Promise<{ message: string; data: { updated: number[]; failed: Array<{ id: number; reason: string }> } }> {
+): Promise<{
+  message: string;
+  data: { updated: number[]; failed: Array<{ id: number; reason: string }> };
+}> {
   return apiFetch(
     base(),
     '/api/admin/properties',
@@ -102,7 +118,10 @@ export function bulkPatchApplicationStatus(
   token: string,
   applicationIds: number[],
   action: 'approve' | 'reject' | 'pending'
-): Promise<{ message: string; data: { updated: number[]; failed: Array<{ id: number; reason: string }> } }> {
+): Promise<{
+  message: string;
+  data: { updated: number[]; failed: Array<{ id: number; reason: string }> };
+}> {
   return apiFetch(
     base(),
     '/api/admin/applications',
