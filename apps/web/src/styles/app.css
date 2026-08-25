@@ -143,6 +143,12 @@ body {
   }
 }
 
+@media (prefers-reduced-motion: reduce) {
+  .animate-pulse {
+    animation: none;
+  }
+}
+
 /* Logo cloud marquee (legacy logo-cloud.css) */
 @keyframes logo-marquee {
   from {
