@@ -8,9 +8,12 @@ import { HttpError, jsonResponse } from '../lib/http';
 
 const aiRoutes = new Hono<{ Bindings: Env }>();
 
-const DEFAULT_MODEL = 'gemini-3.6-flash';
+const DEFAULT_MODEL = 'gemini-2.0-flash';
+const FALLBACK_MODEL = 'gemini-1.5-flash';
 const GEMINI_GENERATE_URL = `https://generativelanguage.googleapis.com/v1beta/models/${DEFAULT_MODEL}:generateContent`;
 const GEMINI_STREAM_URL = `https://generativelanguage.googleapis.com/v1beta/models/${DEFAULT_MODEL}:streamGenerateContent?alt=sse`;
+const GEMINI_GENERATE_FALLBACK_URL = `https://generativelanguage.googleapis.com/v1beta/models/${FALLBACK_MODEL}:generateContent`;
+const GEMINI_STREAM_FALLBACK_URL = `https://generativelanguage.googleapis.com/v1beta/models/${FALLBACK_MODEL}:streamGenerateContent?alt=sse`;
 const MAX_HISTORY_MESSAGES = 10;
 const MAX_LISTINGS = 6;
 
@@ -339,6 +342,11 @@ function isRegionBlocked(detail: string): boolean {
   );
 }
 
+function isModelNotFound(detail: string): boolean {
+  const lower = detail.toLowerCase();
+  return lower.includes('not found') || lower.includes('404') || lower.includes('model_not_found');
+}
+
 function buildFallbackResponse(
   userMessage: string,
   roomContext: { listings: RoomListing[]; searched: boolean }
@@ -375,6 +383,7 @@ function fallbackSseResponse(
     'Content-Type': 'text/event-stream; charset=utf-8',
     'Cache-Control': 'no-cache',
     Connection: 'keep-alive',
+    'X-Haven-Fallback': '1',
   });
   if (usageCookie) headers.append('Set-Cookie', usageCookie);
   return new Response(readable, { headers });
@@ -400,22 +409,42 @@ function toGeminiPayload(messages: ChatMessage[]): Record<string, unknown> {
 }
 
 async function geminiChatCompletion(apiKey: string, messages: ChatMessage[]): Promise<string> {
-  const response = await fetch(GEMINI_GENERATE_URL, {
+  const payload = JSON.stringify(toGeminiPayload(messages));
+  const headers = {
+    'x-goog-api-key': apiKey,
+    'Content-Type': 'application/json',
+  };
+
+  let response = await fetch(GEMINI_GENERATE_URL, {
     method: 'POST',
-    headers: {
-      'x-goog-api-key': apiKey,
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify(toGeminiPayload(messages)),
+    headers,
+    body: payload,
     signal: AbortSignal.timeout(30_000),
   });
 
   if (!response.ok) {
     const detail = await response.text();
-    throw new HttpError(502, 'AI provider request failed', {
-      code: 'AI_PROVIDER_ERROR',
-      details: detail.slice(0, 500),
-    });
+    if (isModelNotFound(detail)) {
+      // Fallback to stable 1.5-flash if primary model is not found (e.g. 404 model_not_found)
+      response = await fetch(GEMINI_GENERATE_FALLBACK_URL, {
+        method: 'POST',
+        headers,
+        body: payload,
+        signal: AbortSignal.timeout(30_000),
+      });
+      if (!response.ok) {
+        const fallbackDetail = await response.text();
+        throw new HttpError(502, 'AI provider request failed', {
+          code: 'AI_PROVIDER_ERROR',
+          details: fallbackDetail.slice(0, 500),
+        });
+      }
+    } else {
+      throw new HttpError(502, 'AI provider request failed', {
+        code: 'AI_PROVIDER_ERROR',
+        details: detail.slice(0, 500),
+      });
+    }
   }
 
   const data = (await response.json()) as {
@@ -437,32 +466,72 @@ function streamGeminiChat(
   usageCookie: string | null,
   fallbackMessage?: string
 ): Promise<Response> {
-  return fetch(GEMINI_STREAM_URL, {
-    method: 'POST',
-    headers: {
-      'x-goog-api-key': apiKey,
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify(toGeminiPayload(messages)),
-    signal: AbortSignal.timeout(60_000),
-  })
-    .then(async upstream => {
-      if (!upstream.ok) {
-        const detail = await upstream.text();
-        if (isRegionBlocked(detail) && fallbackMessage) {
-          return fallbackSseResponse(fallbackMessage, propertyCount, usageCookie);
-        }
-        return jsonResponse(
-          {
-            success: false,
-            error: 'AI provider request failed',
-            code: 'AI_PROVIDER_ERROR',
-            details: detail.slice(0, 500),
-          },
-          200
-        );
-      }
+  const payload = JSON.stringify(toGeminiPayload(messages));
+  const headers = {
+    'x-goog-api-key': apiKey,
+    'Content-Type': 'application/json',
+  };
 
+  const fetchWithFallback = async (url: string): Promise<Response> => {
+    let upstream = await fetch(url, {
+      method: 'POST',
+      headers,
+      body: payload,
+      signal: AbortSignal.timeout(60_000),
+    });
+    if (!upstream.ok) {
+      const detail = await upstream.text();
+      if (isRegionBlocked(detail) && fallbackMessage) {
+        return fallbackSseResponse(fallbackMessage, propertyCount, usageCookie);
+      }
+      if (isModelNotFound(detail) && url === GEMINI_STREAM_URL) {
+        // Retry with fallback model once
+        upstream = await fetch(GEMINI_STREAM_FALLBACK_URL, {
+          method: 'POST',
+          headers,
+          body: payload,
+          signal: AbortSignal.timeout(60_000),
+        });
+        if (!upstream.ok) {
+          const fallbackDetail = await upstream.text();
+          if (isRegionBlocked(fallbackDetail) && fallbackMessage) {
+            return fallbackSseResponse(fallbackMessage, propertyCount, usageCookie);
+          }
+          return jsonResponse(
+            {
+              success: false,
+              error: 'AI provider request failed',
+              code: 'AI_PROVIDER_ERROR',
+              details: fallbackDetail.slice(0, 500),
+            },
+            200
+          );
+        }
+        // fallback succeeded — fall through to stream piping
+        return upstream;
+      }
+      return jsonResponse(
+        {
+          success: false,
+          error: 'AI provider request failed',
+          code: 'AI_PROVIDER_ERROR',
+          details: detail.slice(0, 500),
+        },
+        200
+      );
+    }
+    return upstream;
+  };
+
+  return fetchWithFallback(GEMINI_STREAM_URL)
+    .then(async upstream => {
+      // JSON errors or our own fallback SSE should be returned directly (fallback has X-Haven-Fallback header)
+      if (
+        upstream.headers.get('Content-Type')?.includes('application/json') ||
+        upstream.headers.get('X-Haven-Fallback') === '1'
+      ) {
+        return upstream;
+      }
       if (!upstream.body) {
         return jsonResponse(
           { success: false, error: 'AI provider returned no stream', code: 'AI_EMPTY_RESPONSE' },

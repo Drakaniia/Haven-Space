@@ -349,3 +349,154 @@ describe('ai chat response limits', () => {
     expect(geminiCalls).toBe(1);
   });
 });
+
+describe('gemini model validity (regression for AI_PROVIDER_ERROR)', () => {
+  it('routes non-stream chat to a valid Gemini model (not gemini-3.6-flash)', async () => {
+    const sqlite = new Database(':memory:');
+    runMigrations(sqlite);
+    const env = createEnv(sqlite);
+
+    let requestedUrl = '';
+    const savedFetch = globalThis.fetch;
+    globalThis.fetch = (async (input: RequestInfo | URL, init?: RequestInit) => {
+      const url = typeof input === 'string' ? input : input instanceof URL ? input.href : (input as Request).url;
+      if (url.startsWith('https://generativelanguage.googleapis.com/v1beta/models/')) {
+        requestedUrl = url;
+        return new Response(JSON.stringify({ candidates: [{ content: { parts: [{ text: 'Mock answer' }] } }] }), {
+          status: 200,
+          headers: { 'Content-Type': 'application/json' },
+        });
+      }
+      return savedFetch(input as RequestInfo, init);
+    }) as typeof fetch;
+
+    try {
+      const response = await postChat(env, { message: 'Hello' });
+      expect(response.status).toBe(200);
+      expect(requestedUrl).toContain('gemini-2.0-flash');
+      expect(requestedUrl).not.toContain('gemini-3.6-flash');
+      expect(requestedUrl).toContain(':generateContent');
+    } finally {
+      globalThis.fetch = savedFetch;
+    }
+  });
+
+  it('routes streaming chat to a valid Gemini model (not gemini-3.6-flash)', async () => {
+    const sqlite = new Database(':memory:');
+    runMigrations(sqlite);
+    const env = createEnv(sqlite);
+
+    let requestedUrl = '';
+    const savedFetch = globalThis.fetch;
+    globalThis.fetch = (async (input: RequestInfo | URL, init?: RequestInit) => {
+      const url = typeof input === 'string' ? input : input instanceof URL ? input.href : (input as Request).url;
+      if (url.startsWith('https://generativelanguage.googleapis.com/v1beta/models/')) {
+        requestedUrl = url;
+        const encoder = new TextEncoder();
+        const stream = new ReadableStream({
+          start(controller) {
+            controller.enqueue(encoder.encode('data: {"candidates":[{"content":{"parts":[{"text":"Mock stream"}]}}]}\n\n'));
+            controller.close();
+          },
+        });
+        return new Response(stream, { status: 200, headers: { 'Content-Type': 'text/event-stream' } });
+      }
+      return savedFetch(input as RequestInfo, init);
+    }) as typeof fetch;
+
+    try {
+      const response = await postChat(env, { message: 'Hello stream', stream: true });
+      expect(response.status).toBe(200);
+      expect(requestedUrl).toContain('gemini-2.0-flash');
+      expect(requestedUrl).not.toContain('gemini-3.6-flash');
+      expect(requestedUrl).toContain(':streamGenerateContent');
+    } finally {
+      globalThis.fetch = savedFetch;
+    }
+  });
+
+  it('fails explicitly if still pointing at the nonexistent gemini-3.6-flash', async () => {
+    const source = await Bun.file(join(import.meta.dir, '..', 'src/routes/ai.ts')).text();
+    expect(source).not.toContain('gemini-3.6-flash');
+    expect(source).toContain('gemini-2.0-flash');
+  });
+
+  it('retries with fallback model when primary returns model_not_found (non-stream)', async () => {
+    const sqlite = new Database(':memory:');
+    runMigrations(sqlite);
+    const env = createEnv(sqlite);
+
+    const calls: string[] = [];
+    const savedFetch = globalThis.fetch;
+    globalThis.fetch = (async (input: RequestInfo | URL) => {
+      const url = typeof input === 'string' ? input : input instanceof URL ? input.href : (input as Request).url;
+      if (url.startsWith('https://generativelanguage.googleapis.com/v1beta/models/')) {
+        calls.push(url);
+        if (url.includes('gemini-2.0-flash')) {
+          return new Response(JSON.stringify({ error: { message: 'models/gemini-2.0-flash is not found', code: 404 } }), {
+            status: 404,
+            headers: { 'Content-Type': 'application/json' },
+          });
+        }
+        if (url.includes('gemini-1.5-flash')) {
+          return new Response(JSON.stringify({ candidates: [{ content: { parts: [{ text: 'Fallback answer' }] } }] }), {
+            status: 200,
+            headers: { 'Content-Type': 'application/json' },
+          });
+        }
+      }
+      return savedFetch(input as RequestInfo);
+    }) as typeof fetch;
+
+    try {
+      const response = await postChat(env, { message: 'Hello fallback' });
+      expect(response.status).toBe(200);
+      const body = (await response.json()) as { success: boolean; response: string };
+      expect(body.success).toBe(true);
+      expect(body.response).toBe('Fallback answer');
+      expect(calls.some(u => u.includes('gemini-2.0-flash'))).toBe(true);
+      expect(calls.some(u => u.includes('gemini-1.5-flash'))).toBe(true);
+    } finally {
+      globalThis.fetch = savedFetch;
+    }
+  });
+
+  it('retries with fallback model when primary returns model_not_found (stream)', async () => {
+    const sqlite = new Database(':memory:');
+    runMigrations(sqlite);
+    const env = createEnv(sqlite);
+
+    const calls: string[] = [];
+    const savedFetch = globalThis.fetch;
+    globalThis.fetch = (async (input: RequestInfo | URL) => {
+      const url = typeof input === 'string' ? input : input instanceof URL ? input.href : (input as Request).url;
+      if (url.startsWith('https://generativelanguage.googleapis.com/v1beta/models/')) {
+        calls.push(url);
+        if (url.includes('gemini-2.0-flash')) {
+          return new Response('models/gemini-2.0-flash is not found', { status: 404 });
+        }
+        if (url.includes('gemini-1.5-flash')) {
+          const encoder = new TextEncoder();
+          const stream = new ReadableStream({
+            start(controller) {
+              controller.enqueue(encoder.encode('data: {"candidates":[{"content":{"parts":[{"text":"Fallback stream"}]}}]}\n\n'));
+              controller.close();
+            },
+          });
+          return new Response(stream, { status: 200, headers: { 'Content-Type': 'text/event-stream' } });
+        }
+      }
+      return savedFetch(input as RequestInfo);
+    }) as typeof fetch;
+
+    try {
+      const response = await postChat(env, { message: 'Hello fallback stream', stream: true });
+      expect(response.status).toBe(200);
+      expect(response.headers.get('content-type')).toContain('text/event-stream');
+      expect(calls.some(u => u.includes('gemini-2.0-flash'))).toBe(true);
+      expect(calls.some(u => u.includes('gemini-1.5-flash'))).toBe(true);
+    } finally {
+      globalThis.fetch = savedFetch;
+    }
+  });
+});
