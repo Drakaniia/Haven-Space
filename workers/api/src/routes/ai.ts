@@ -8,8 +8,8 @@ import { HttpError, jsonResponse } from '../lib/http';
 
 const aiRoutes = new Hono<{ Bindings: Env }>();
 
-const DEFAULT_MODEL = 'gemini-2.0-flash';
-const FALLBACK_MODEL = 'gemini-1.5-flash';
+const DEFAULT_MODEL = 'gemini-3.6-flash';
+const FALLBACK_MODEL = 'gemini-3.5-flash';
 const GEMINI_GENERATE_URL = `https://generativelanguage.googleapis.com/v1beta/models/${DEFAULT_MODEL}:generateContent`;
 const GEMINI_STREAM_URL = `https://generativelanguage.googleapis.com/v1beta/models/${DEFAULT_MODEL}:streamGenerateContent?alt=sse`;
 const GEMINI_GENERATE_FALLBACK_URL = `https://generativelanguage.googleapis.com/v1beta/models/${FALLBACK_MODEL}:generateContent`;
@@ -347,6 +347,11 @@ function isModelNotFound(detail: string): boolean {
   return lower.includes('not found') || lower.includes('404') || lower.includes('model_not_found');
 }
 
+function isHighDemand(detail: string): boolean {
+  const lower = detail.toLowerCase();
+  return lower.includes('high demand') || lower.includes('503') || lower.includes('unavailable');
+}
+
 function buildFallbackResponse(
   userMessage: string,
   roomContext: { listings: RoomListing[]; searched: boolean }
@@ -424,8 +429,8 @@ async function geminiChatCompletion(apiKey: string, messages: ChatMessage[]): Pr
 
   if (!response.ok) {
     const detail = await response.text();
-    if (isModelNotFound(detail)) {
-      // Fallback to stable 1.5-flash if primary model is not found (e.g. 404 model_not_found)
+    if (isModelNotFound(detail) || isHighDemand(detail)) {
+      // Fallback if primary model is not found or high demand (e.g. 404/503)
       response = await fetch(GEMINI_GENERATE_FALLBACK_URL, {
         method: 'POST',
         headers,
@@ -484,8 +489,8 @@ function streamGeminiChat(
       if (isRegionBlocked(detail) && fallbackMessage) {
         return fallbackSseResponse(fallbackMessage, propertyCount, usageCookie);
       }
-      if (isModelNotFound(detail) && url === GEMINI_STREAM_URL) {
-        // Retry with fallback model once
+      if ((isModelNotFound(detail) || isHighDemand(detail)) && url === GEMINI_STREAM_URL) {
+        // Retry with fallback model once on 404 or 503 high demand
         upstream = await fetch(GEMINI_STREAM_FALLBACK_URL, {
           method: 'POST',
           headers,

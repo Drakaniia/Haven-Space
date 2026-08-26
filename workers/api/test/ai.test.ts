@@ -351,7 +351,7 @@ describe('ai chat response limits', () => {
 });
 
 describe('gemini model validity (regression for AI_PROVIDER_ERROR)', () => {
-  it('routes non-stream chat to a valid Gemini model (not gemini-3.6-flash)', async () => {
+  it('routes non-stream chat to gemini-3.6-flash (not retired 2.0/1.5)', async () => {
     const sqlite = new Database(':memory:');
     runMigrations(sqlite);
     const env = createEnv(sqlite);
@@ -373,15 +373,16 @@ describe('gemini model validity (regression for AI_PROVIDER_ERROR)', () => {
     try {
       const response = await postChat(env, { message: 'Hello' });
       expect(response.status).toBe(200);
-      expect(requestedUrl).toContain('gemini-2.0-flash');
-      expect(requestedUrl).not.toContain('gemini-3.6-flash');
+      expect(requestedUrl).toContain('gemini-3.6-flash');
+      expect(requestedUrl).not.toContain('gemini-2.0-flash');
+      expect(requestedUrl).not.toContain('gemini-1.5-flash');
       expect(requestedUrl).toContain(':generateContent');
     } finally {
       globalThis.fetch = savedFetch;
     }
   });
 
-  it('routes streaming chat to a valid Gemini model (not gemini-3.6-flash)', async () => {
+  it('routes streaming chat to gemini-3.6-flash (not retired 2.0/1.5)', async () => {
     const sqlite = new Database(':memory:');
     runMigrations(sqlite);
     const env = createEnv(sqlite);
@@ -407,18 +408,22 @@ describe('gemini model validity (regression for AI_PROVIDER_ERROR)', () => {
     try {
       const response = await postChat(env, { message: 'Hello stream', stream: true });
       expect(response.status).toBe(200);
-      expect(requestedUrl).toContain('gemini-2.0-flash');
-      expect(requestedUrl).not.toContain('gemini-3.6-flash');
+      expect(requestedUrl).toContain('gemini-3.6-flash');
+      expect(requestedUrl).not.toContain('gemini-2.0-flash');
+      expect(requestedUrl).not.toContain('gemini-1.5-flash');
       expect(requestedUrl).toContain(':streamGenerateContent');
     } finally {
       globalThis.fetch = savedFetch;
     }
   });
 
-  it('fails explicitly if still pointing at the nonexistent gemini-3.6-flash', async () => {
+  it('fails if pointed at retired gemini-2.0-flash or 1.5-flash', async () => {
     const source = await Bun.file(join(import.meta.dir, '..', 'src/routes/ai.ts')).text();
-    expect(source).not.toContain('gemini-3.6-flash');
-    expect(source).toContain('gemini-2.0-flash');
+    expect(source).toContain('gemini-3.6-flash');
+    expect(source).toContain('gemini-3.5-flash');
+    // retired models should not be primary/fallback
+    expect(source).not.toContain("DEFAULT_MODEL = 'gemini-2.0-flash'");
+    expect(source).not.toContain("FALLBACK_MODEL = 'gemini-1.5-flash'");
   });
 
   it('retries with fallback model when primary returns model_not_found (non-stream)', async () => {
@@ -432,13 +437,13 @@ describe('gemini model validity (regression for AI_PROVIDER_ERROR)', () => {
       const url = typeof input === 'string' ? input : input instanceof URL ? input.href : (input as Request).url;
       if (url.startsWith('https://generativelanguage.googleapis.com/v1beta/models/')) {
         calls.push(url);
-        if (url.includes('gemini-2.0-flash')) {
-          return new Response(JSON.stringify({ error: { message: 'models/gemini-2.0-flash is not found', code: 404 } }), {
+        if (url.includes('gemini-3.6-flash')) {
+          return new Response(JSON.stringify({ error: { message: 'models/gemini-3.6-flash is not found', code: 404 } }), {
             status: 404,
             headers: { 'Content-Type': 'application/json' },
           });
         }
-        if (url.includes('gemini-1.5-flash')) {
+        if (url.includes('gemini-3.5-flash')) {
           return new Response(JSON.stringify({ candidates: [{ content: { parts: [{ text: 'Fallback answer' }] } }] }), {
             status: 200,
             headers: { 'Content-Type': 'application/json' },
@@ -454,8 +459,8 @@ describe('gemini model validity (regression for AI_PROVIDER_ERROR)', () => {
       const body = (await response.json()) as { success: boolean; response: string };
       expect(body.success).toBe(true);
       expect(body.response).toBe('Fallback answer');
-      expect(calls.some(u => u.includes('gemini-2.0-flash'))).toBe(true);
-      expect(calls.some(u => u.includes('gemini-1.5-flash'))).toBe(true);
+      expect(calls.some(u => u.includes('gemini-3.6-flash'))).toBe(true);
+      expect(calls.some(u => u.includes('gemini-3.5-flash'))).toBe(true);
     } finally {
       globalThis.fetch = savedFetch;
     }
@@ -472,10 +477,10 @@ describe('gemini model validity (regression for AI_PROVIDER_ERROR)', () => {
       const url = typeof input === 'string' ? input : input instanceof URL ? input.href : (input as Request).url;
       if (url.startsWith('https://generativelanguage.googleapis.com/v1beta/models/')) {
         calls.push(url);
-        if (url.includes('gemini-2.0-flash')) {
-          return new Response('models/gemini-2.0-flash is not found', { status: 404 });
+        if (url.includes('gemini-3.6-flash')) {
+          return new Response('models/gemini-3.6-flash is not found', { status: 404 });
         }
-        if (url.includes('gemini-1.5-flash')) {
+        if (url.includes('gemini-3.5-flash')) {
           const encoder = new TextEncoder();
           const stream = new ReadableStream({
             start(controller) {
@@ -493,8 +498,8 @@ describe('gemini model validity (regression for AI_PROVIDER_ERROR)', () => {
       const response = await postChat(env, { message: 'Hello fallback stream', stream: true });
       expect(response.status).toBe(200);
       expect(response.headers.get('content-type')).toContain('text/event-stream');
-      expect(calls.some(u => u.includes('gemini-2.0-flash'))).toBe(true);
-      expect(calls.some(u => u.includes('gemini-1.5-flash'))).toBe(true);
+      expect(calls.some(u => u.includes('gemini-3.6-flash'))).toBe(true);
+      expect(calls.some(u => u.includes('gemini-3.5-flash'))).toBe(true);
     } finally {
       globalThis.fetch = savedFetch;
     }
