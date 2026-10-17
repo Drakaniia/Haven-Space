@@ -18,6 +18,8 @@ export interface LandlordRoomRow {
   deposit: number | null;
   status: string | null;
   capacity: number | null;
+  /** Occupants currently in the room; free slots = MAX(capacity - occupied, 0). */
+  occupied: number | null;
   size: number | null;
   created_at: string | null;
   updated_at: string | null;
@@ -53,6 +55,7 @@ export interface CreateLandlordManagedRoomInput {
   capacity: number;
   description: string;
   size: number;
+  occupied?: number;
 }
 
 export interface UpdateLandlordManagedRoomInput {
@@ -62,6 +65,7 @@ export interface UpdateLandlordManagedRoomInput {
   deposit?: number;
   status?: string;
   capacity?: number;
+  occupied?: number;
   description?: string;
   size?: number;
 }
@@ -328,12 +332,13 @@ export async function createLandlordManagedRoom(
           deposit,
           status,
           capacity,
+          occupied,
           description,
           size,
           created_at,
           updated_at
         )
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
       `
     )
     .bind(
@@ -346,6 +351,7 @@ export async function createLandlordManagedRoom(
       input.deposit,
       input.status,
       input.capacity,
+      input.occupied ?? 0,
       input.description,
       input.size
     )
@@ -390,6 +396,7 @@ export async function updateLandlordManagedRoom(
     'deposit',
     'status',
     'capacity',
+    'occupied',
     'description',
     'size',
   ] as const;

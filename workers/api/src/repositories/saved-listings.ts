@@ -75,7 +75,9 @@ export async function listSavedListingsForBoarder(
         WHERE sl.boarder_id = ?
           AND sl.deleted_at IS NULL
           AND p.deleted_at IS NULL
-          AND p.status != 'hidden'
+          -- Available only (edit-listing-property-info D17/R13): a saved listing
+          -- the landlord has since unpublished or left as a draft must disappear.
+          AND p.status IN ('available', 'active')
           AND p.listing_moderation_status = 'published'
         ORDER BY sl.saved_at DESC
       `

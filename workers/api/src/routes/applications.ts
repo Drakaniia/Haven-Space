@@ -24,6 +24,7 @@ import {
   verifyBoarderEmail,
 } from '../repositories/applications';
 import { findActiveAccess } from '../repositories/property-access';
+import { generateScheduleForApplication } from '../repositories/payments';
 
 const applicationRoutes = new Hono<{ Bindings: Env }>();
 // Landlords may only move an application forward to accepted or rejected; every
@@ -160,8 +161,19 @@ applicationRoutes.post('/api/boarder/applications', async c => {
     return errorResponse(400, 'Invalid room_id: Room does not exist');
   }
 
-  if (String(room.status ?? '').toLowerCase() === 'occupied') {
-    return errorResponse(400, 'This room is already occupied and can no longer be applied to');
+  // Capacity-aware guard (spec `create-listing-room-details` R9): shared rooms
+  // accept applications until every slot is taken, instead of stopping at the
+  // first confirmed booking.
+  const roomStatus = String(room.status ?? '').toLowerCase();
+  const capacity = Math.max(Number(room.capacity ?? 1), 1);
+  const occupied = Math.max(Number(room.occupied ?? 0), 0);
+
+  if (roomStatus === 'maintenance') {
+    return errorResponse(400, 'This room is under maintenance and can no longer be applied to');
+  }
+
+  if (capacity - occupied <= 0) {
+    return errorResponse(400, 'This room is already full and can no longer be applied to');
   }
 
   const existingApplication = await findExistingApplicationForRoom(db, user.user_id, roomId);
@@ -272,6 +284,10 @@ applicationRoutes.post('/api/boarder/applications/:id/confirm', async c => {
   }
 
   await confirmApplicationBooking(db, applicationId, paymentMethod);
+  // A confirmed booking is what creates the tenancy, so this is where its rent,
+  // deposit and advance charges come from (spec `payments-feature` §6.1). The
+  // generator is idempotent (`generation_key`), so a replayed confirm is safe.
+  await generateScheduleForApplication(db, applicationId);
   await occupyRoom(db, Number(application.room_id));
   await updateBoarderStatus(db, user.user_id, 'accepted');
   await cancelOtherBoarderApplications(db, user.user_id, applicationId);

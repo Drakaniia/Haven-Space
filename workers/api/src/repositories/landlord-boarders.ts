@@ -1,3 +1,4 @@
+import { paymentSummariesForApplications, type BoarderPaymentSnapshot } from './payments';
 import { accessiblePropertyClause } from './property-access';
 
 export interface LandlordBoarderRow {
@@ -88,7 +89,15 @@ function boarderStatus(row: LandlordBoarderRow): string {
   return 'active';
 }
 
-export function formatLandlordBoarder(row: LandlordBoarderRow): LandlordBoarderListItem {
+/**
+ * `payment` comes from the real ledger (spec `payments-feature` F5). Without a
+ * snapshot — a tenancy that never generated charges — the row reports `none`
+ * rather than claiming the rent is paid.
+ */
+export function formatLandlordBoarder(
+  row: LandlordBoarderRow,
+  payment?: BoarderPaymentSnapshot
+): LandlordBoarderListItem {
   return {
     id: Number(row.id),
     application_id: Number(row.application_id),
@@ -107,9 +116,9 @@ export function formatLandlordBoarder(row: LandlordBoarderRow): LandlordBoarderL
     leave_request_status: row.leave_request_status ?? 'none',
     intended_leave_date: row.intended_leave_date ?? null,
     leave_request_reason: row.leave_request_reason ?? null,
-    payment_status: 'paid',
-    payment_due_day: 15,
-    last_payment_date: null,
+    payment_status: payment?.payment_status ?? 'none',
+    payment_due_day: payment?.payment_due_day ?? 0,
+    last_payment_date: payment?.last_payment_date ?? null,
   };
 }
 
@@ -152,7 +161,13 @@ export async function listLandlordBoarders(
     .bind(propertyId)
     .all<LandlordBoarderRow>();
 
-  return (result.results ?? []).map(formatLandlordBoarder);
+  const rows = result.results ?? [];
+  const summaries = await paymentSummariesForApplications(
+    db,
+    rows.map(row => Number(row.application_id))
+  );
+
+  return rows.map(row => formatLandlordBoarder(row, summaries.get(Number(row.application_id))));
 }
 
 function insertedId(result: D1Result, label: string): number {

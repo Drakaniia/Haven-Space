@@ -73,6 +73,44 @@ export async function listLandlordPhotos(
   );
 }
 
+/**
+ * One cover URL per property — the `is_cover` row when present, else the first
+ * photo by display order (the same rule `routes/rooms.ts` and
+ * `routes/landlord/rooms.ts` already apply). Batched by property ids so list
+ * surfaces pay one query, not one per row (`landlord-properties-card-layout` D21).
+ */
+export async function listPropertyCoverPhotos(
+  db: D1Database,
+  propertyIds: number[]
+): Promise<Map<number, string>> {
+  if (propertyIds.length === 0) {
+    return new Map();
+  }
+
+  const result = await db
+    .prepare(
+      `
+        SELECT property_id, photo_url, is_cover
+        FROM property_photos
+        WHERE property_id IN (${placeholders(propertyIds.length)})
+        ORDER BY property_id ASC, is_cover DESC, display_order ASC, id ASC
+      `
+    )
+    .bind(...propertyIds)
+    .all<LandlordPhotoRow>();
+  const covers = new Map<number, string>();
+
+  for (const row of result.results ?? []) {
+    const propertyId = Number(row.property_id);
+
+    if (!covers.has(propertyId)) {
+      covers.set(propertyId, normalizePropertyPhoto(propertyId, row.photo_url));
+    }
+  }
+
+  return covers;
+}
+
 export async function createLandlordAmenity(
   db: D1Database,
   propertyId: number,

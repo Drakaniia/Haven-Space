@@ -22,9 +22,11 @@ export async function createLandlordRoom(
           status,
           room_number,
           room_type,
-          capacity
+          capacity,
+          size,
+          occupied
         )
-        VALUES (?, ?, ?, ?, ?, ?, 'available', ?, ?, ?)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
       `
     )
     .bind(
@@ -34,9 +36,12 @@ export async function createLandlordRoom(
       input.price,
       input.description,
       input.deposit,
+      input.status ?? 'available',
       input.roomNumber,
       input.roomType,
-      input.capacity
+      input.capacity,
+      input.size ?? 0,
+      input.occupied ?? 0
     )
     .run();
 

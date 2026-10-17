@@ -1,3 +1,4 @@
+import { buildPaymentAlerts, listChargesForLandlord } from './payments';
 import { accessiblePropertyClause } from './property-access';
 
 export interface LandlordDashboardStats {
@@ -18,6 +19,9 @@ export interface LandlordDashboardStats {
   };
   payment_alerts: {
     due_soon: number;
+    /** The tracker's vocabulary, so the dashboard and the payments page agree (D32). */
+    due_today: number;
+    in_grace: number;
     overdue: number;
   };
 }
@@ -87,6 +91,12 @@ export async function getLandlordDashboardStats(
   const totalRooms = numeric(roomStats?.total_rooms);
   const occupiedRooms = numeric(roomStats?.occupied_rooms);
 
+  // Real money movement replaces two literals: `payment_alerts` was hard-coded
+  // to zero, and `revenue.monthly` was the sum of occupied room prices rather
+  // than anything actually collected (spec `payments-feature` F6/D15).
+  const charges = await listChargesForLandlord(db, landlordId, {});
+  const alerts = buildPaymentAlerts(charges);
+
   return {
     occupancy: {
       rate: occupancyRate(totalRooms, occupiedRooms),
@@ -95,7 +105,7 @@ export async function getLandlordDashboardStats(
       trend: 0,
     },
     revenue: {
-      monthly: numeric(roomStats?.monthly_revenue),
+      monthly: alerts.collected_this_month,
       currency: 'PHP',
       trend: 0,
     },
@@ -104,8 +114,10 @@ export async function getLandlordDashboardStats(
       period: 'This month',
     },
     payment_alerts: {
-      due_soon: 0,
-      overdue: 0,
+      due_soon: alerts.due_soon,
+      due_today: alerts.due_today,
+      in_grace: alerts.in_grace,
+      overdue: alerts.overdue,
     },
   };
 }

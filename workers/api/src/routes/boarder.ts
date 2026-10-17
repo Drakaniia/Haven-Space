@@ -109,7 +109,12 @@ boarderRoutes.post('/api/boarder/saved-listings', async c => {
     return errorResponse(404, 'Property not found');
   }
 
-  if (property.status === 'hidden' || property.listing_moderation_status !== 'published') {
+  // Both axes (`edit-listing-property-info` D17/R13): a draft or an unpublished
+  // listing is not saveable, and `active` is tolerated for legacy rows.
+  const listingIsLive =
+    property.status === 'available' || property.status === 'active';
+
+  if (!listingIsLive || property.listing_moderation_status !== 'published') {
     return errorResponse(400, 'Property is not available for saving');
   }
 

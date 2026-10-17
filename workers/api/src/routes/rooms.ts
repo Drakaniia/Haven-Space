@@ -97,19 +97,30 @@ function isNewListing(createdAt: string | null): boolean {
   return ageMs >= 0 && ageMs <= 7 * 24 * 60 * 60 * 1000;
 }
 
+/** Free slots are what tenants can still book in the room (spec D2/R10). */
+function roomOccupancy(room: RoomRow): { capacity: number; occupied: number; freeSlots: number } {
+  const capacity = Math.max(Number(room.capacity ?? 1), 1);
+  const occupied = Math.max(Number(room.occupied ?? 0), 0);
+
+  return { capacity, occupied, freeSlots: Math.max(capacity - occupied, 0) };
+}
+
 function formatRoom(room: RoomRow, property: PublicPropertyRow, photos: string[]) {
   const roomPrice = Number(room.room_price);
   const price = Number.isFinite(roomPrice) && roomPrice > 0 ? roomPrice : Number(property.price);
   const roomNumber = room.room_number || `Room ${room.id}`;
   const roomType = room.room_type || 'Standard Room';
   const status = room.status || 'available';
+  const occupancy = roomOccupancy(room);
 
   return {
     id: Number(room.id),
     room_number: roomNumber,
     room_name: room.room_type || room.room_number || `Room ${room.id}`,
     type: roomType,
-    capacity: Number(room.capacity ?? 1),
+    capacity: occupancy.capacity,
+    occupied: occupancy.occupied,
+    free_slots: occupancy.freeSlots,
     status,
     availability: status === 'available' ? 'Available' : 'Occupied',
     description: room.title || 'Comfortable room with all basic amenities.',
@@ -120,6 +131,8 @@ function formatRoom(room: RoomRow, property: PublicPropertyRow, photos: string[]
 }
 
 function formatDetailRoom(room: RoomRow, photos: string[]) {
+  const occupancy = roomOccupancy(room);
+
   return {
     id: Number(room.id),
     roomNumber: escapeHtml(room.room_number ?? 'N/A'),
@@ -127,7 +140,9 @@ function formatDetailRoom(room: RoomRow, photos: string[]) {
     price: Number(room.room_price),
     deposit: Number(room.deposit ?? 0),
     status: escapeHtml(room.status ?? ''),
-    capacity: Number(room.capacity ?? 1),
+    capacity: occupancy.capacity,
+    occupied: occupancy.occupied,
+    freeSlots: occupancy.freeSlots,
     description: escapeHtml(room.description ?? ''),
     size: room.size === null || room.size === undefined ? null : Number(room.size),
     images: photos,
@@ -171,7 +186,9 @@ function formatPublicProperty(
     address: escapeHtml(property.address),
     city: property.city ?? '',
     province: property.province ?? '',
-    price: Number(property.price),
+    // Headline price is the cheapest bookable room, falling back to the
+    // property price when no priced rooms exist (spec D10).
+    price: cheapestRoomPrice(formattedRooms) ?? Number(property.price),
     latitude: property.latitude === null ? null : Number(property.latitude),
     longitude: property.longitude === null ? null : Number(property.longitude),
     rating: 4.5,
@@ -261,6 +278,9 @@ function formatListingDetail(
 
   const availableRooms = rooms.filter(room => room.status === 'available').length;
   const images = detailImages(photos);
+  const formattedRooms = rooms.map(room =>
+    formatDetailRoom(room, roomPhotos.get(Number(room.id)) ?? [])
+  );
 
   return {
     id: Number(property.id),
@@ -269,7 +289,8 @@ function formatListingDetail(
     address: escapeHtml(property.address),
     city: escapeHtml(property.city),
     province: escapeHtml(property.province),
-    price: Number(property.price),
+    // Same headline rule as the browse cards (spec D10).
+    price: cheapestRoomPrice(formattedRooms) ?? Number(property.price),
     latitude: property.latitude === null ? null : Number(property.latitude),
     longitude: property.longitude === null ? null : Number(property.longitude),
     propertyType: escapeHtml(property.property_type ?? 'boarding-house'),
@@ -291,7 +312,7 @@ function formatListingDetail(
     images: images.images,
     coverImage: images.coverImage,
     badges,
-    rooms: rooms.map(room => formatDetailRoom(room, roomPhotos.get(Number(room.id)) ?? [])),
+    rooms: formattedRooms,
     landlord: {
       id: Number(property.landlord_id),
       name: escapeHtml(
@@ -302,6 +323,17 @@ function formatListingDetail(
     },
     createdAt: property.created_at,
   };
+}
+
+/** Lowest positive room price, or null when the property has none. */
+function cheapestRoomPrice(rooms: Array<{ price: number }>): number | null {
+  return rooms.reduce<number | null>((lowest, room) => {
+    if (!Number.isFinite(room.price) || room.price <= 0) {
+      return lowest;
+    }
+
+    return lowest === null || room.price < lowest ? room.price : lowest;
+  }, null);
 }
 
 function formatSimilarProperty(property: SimilarPropertyRow) {

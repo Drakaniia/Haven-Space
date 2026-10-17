@@ -49,6 +49,9 @@ export async function createLandlordProperty(
   db: D1Database,
   input: CreateLandlordPropertyInput
 ): Promise<number> {
+  // A new listing is a **draft** awaiting review (`edit-listing-property-info`
+  // D4/R14): the landlord publishes it deliberately from the edit page, and an
+  // admin still has to approve it before boarders can see it.
   const result = await db
     .prepare(
       `
@@ -68,7 +71,7 @@ export async function createLandlordProperty(
           status,
           listing_moderation_status
         )
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'available', 'published')
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'draft', 'pending_review')
       `
     )
     .bind(
@@ -189,6 +192,32 @@ export async function updateLandlordProperty(
       input.landlordId,
       input.landlordId
     )
+    .run();
+}
+
+/**
+ * A rejected listing asks for another review by being published again
+ * (`edit-listing-property-info` D11/R8). The `rejected` guard lives in SQL, so
+ * this can be called on every save without disturbing an approval that is already
+ * in place — the one transition that resets moderation, and nothing else.
+ */
+export async function resetListingModerationForReview(
+  db: D1Database,
+  input: { propertyId: number; landlordId: number }
+): Promise<void> {
+  await db
+    .prepare(
+      `
+        UPDATE properties
+        SET listing_moderation_status = 'pending_review',
+            updated_at = CURRENT_TIMESTAMP
+        WHERE id = ?
+          AND deleted_at IS NULL
+          AND listing_moderation_status = 'rejected'
+          AND ${accessiblePropertyClause()}
+      `
+    )
+    .bind(input.propertyId, input.landlordId, input.landlordId)
     .run();
 }
 

@@ -61,6 +61,9 @@ export interface LandlordPropertyUpdateRow {
   property_rules: string | null;
   property_type: string | null;
   gender_preference: string | null;
+  /** Read so a save only asks for another review when the listing was rejected
+      (`edit-listing-property-info` D11/R8). */
+  listing_moderation_status: string | null;
 }
 
 export interface LandlordAddressRow {
@@ -145,6 +148,10 @@ export interface CreateLandlordRoomInput {
   roomType: string;
   capacity: number;
   deposit: number;
+  /** Optional per-room extras (spec `create-listing-room-details` R6). */
+  size?: number;
+  status?: string;
+  occupied?: number;
 }
 
 export interface UpdateLandlordAddressInput {

@@ -54,7 +54,11 @@ async function fetchRoomContext(db: D1Database): Promise<RoomListing[]> {
            ) AS available_rooms
     FROM properties p
     LEFT JOIN addresses a ON a.id = p.address_id
-    WHERE p.deleted_at IS NULL AND p.listing_moderation_status = 'published'
+    WHERE p.deleted_at IS NULL
+      AND p.listing_moderation_status = 'published'
+      -- Both axes (edit-listing-property-info D17/R13): answers must never mention
+      -- a listing the landlord has unpublished or left as a draft.
+      AND p.status IN ('available', 'active')
     ORDER BY p.price ASC
     LIMIT ${MAX_LISTINGS}
   `;

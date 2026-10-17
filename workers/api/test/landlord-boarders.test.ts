@@ -102,6 +102,17 @@ const boarderRow: LandlordBoarderRow = {
   leave_request_reason: null,
 };
 
+/** A settled June rent charge for the tenancy above. */
+const paidPaymentRow = {
+  application_id: 20,
+  status: 'paid',
+  amount: 4500,
+  late_fee: 0,
+  due_date: '2026-06-20',
+  paid_date: '2026-06-19 08:00:00',
+  grace_days: 3,
+};
+
 describe('landlord boarder routes', () => {
   it('returns landlord boarders with the PHP response shape and  alias', async () => {
     const capturedBinds: unknown[][] = [];
@@ -113,7 +124,13 @@ describe('landlord boarder routes', () => {
         },
       },
       createSequenceEnv(
-        [{ first: landlordUser }, { first: propertyRow }, { all: [boarderRow] }],
+        [
+          { first: landlordUser },
+          { first: propertyRow },
+          { all: [boarderRow] },
+          // Real ledger snapshot for the tenancy (spec `payments-feature` F5).
+          { all: [paidPaymentRow] },
+        ],
         capturedBinds
       )
     );
@@ -142,14 +159,14 @@ describe('landlord boarder routes', () => {
             intended_leave_date: null,
             leave_request_reason: null,
             payment_status: 'paid',
-            payment_due_day: 15,
-            last_payment_date: null,
+            payment_due_day: 20,
+            last_payment_date: '2026-06-19',
           },
         ],
         total_count: 1,
       },
     });
-    expect(capturedBinds).toEqual([[3], [10, 3, 3], [10]]);
+    expect(capturedBinds).toEqual([[3], [10, 3, 3], [10], [20]]);
   });
 
   it('maps pending and approved leave requests to leaving statuses', async () => {
@@ -167,6 +184,7 @@ describe('landlord boarder routes', () => {
         { first: landlordUser },
         { first: propertyRow },
         { all: [pendingRow, approvedRow] },
+        { all: [] },
       ])
     );
 

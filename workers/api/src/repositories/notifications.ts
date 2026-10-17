@@ -73,11 +73,28 @@ function roleVisibleTypes(role: string): string[] | null {
       'landlord_verification_approved',
       'landlord_verification_rejected',
       'landlord_verification_documents_requested',
+      // One row per received message, title only — bodies never enter the bell
+      // (spec `messages-feature-review` R9/R10).
+      'message',
+      // A boarder's payment claim needs the landlord's decision (spec
+      // `payments-feature` §8.1).
+      'payment_submitted',
     ];
   }
 
   if (role === 'boarder') {
-    return ['application_accepted', 'announcement'];
+    return [
+      'application_accepted',
+      'announcement',
+      'message',
+      // Payment reminders and decisions (spec `payments-feature` §8.1).
+      'payment_due_soon',
+      'payment_overdue',
+      'payment_late_fee',
+      'payment_verified',
+      'payment_rejected',
+      'payment_recorded',
+    ];
   }
 
   return null;

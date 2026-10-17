@@ -232,6 +232,15 @@ describe('admin dashboard routes', () => {
         id: 10,
         title: 'Pending House',
         listing_moderation_status: 'pending_review',
+        // Card facts ride along with the queue (`landlord-properties-card-layout` D21).
+        created_at: '2026-05-04 08:00:00',
+        address: null,
+        city: null,
+        province: null,
+        rooms_count: 1,
+        occupied_rooms: 0,
+        monthly_revenue: 0,
+        cover_photo: null,
       }),
     ]);
 
@@ -255,6 +264,100 @@ describe('admin dashboard routes', () => {
         listing_moderation_status: string;
       }
     ).toEqual({ listing_moderation_status: 'published' });
+  });
+
+  it('enriches the moderation queue with occupancy, revenue, address and cover photo', async () => {
+    const sqlite = new Database(':memory:');
+    runMigrations(sqlite);
+    seedAdminDashboardData(sqlite);
+    const env = createEnv(sqlite);
+
+    sqlite.exec(`
+      UPDATE rooms SET status = 'occupied' WHERE id = 100;
+
+      INSERT INTO addresses (id, address_line_1, city, province)
+      VALUES (5, '4140 Parker Rd', 'Allentown', 'New Mexico');
+
+      UPDATE properties SET address_id = 5 WHERE id = 10;
+
+      INSERT INTO property_photos (property_id, photo_url, is_cover, display_order)
+      VALUES
+        (10, '/storage/properties/10/side.jpg', 0, 1),
+        (10, '/storage/properties/10/cover.jpg', 1, 0);
+    `);
+
+    // `moderation=all` is the queue the admin console itself requests; a bare
+    // request defaults to `pending_review`.
+    const response = await app.request(
+      'http://localhost/api/admin/properties?moderation=all',
+      { headers: { 'X-User-ID': '1' } },
+      env
+    );
+    const body = (await response.json()) as { data: Array<Record<string, unknown>> };
+
+    expect(response.status).toBe(200);
+    expect(
+      body.data.find(row => row.id === 10)
+    ).toEqual(
+      expect.objectContaining({
+        created_at: '2026-05-04 08:00:00',
+        address: '4140 Parker Rd',
+        city: 'Allentown',
+        province: 'New Mexico',
+        rooms_count: 1,
+        occupied_rooms: 1,
+        monthly_revenue: 4500,
+        // `is_cover` wins over display order, the same rule the room endpoints use.
+        cover_photo: '/storage/properties/10/cover.jpg',
+      })
+    );
+
+    // A property with no photos still resolves, with a null cover.
+    expect(body.data.find(row => row.id === 11)?.cover_photo).toBeNull();
+  });
+
+  it('returns a read-only per-room view with capacity and occupancy', async () => {
+    const sqlite = new Database(':memory:');
+    runMigrations(sqlite);
+    seedAdminDashboardData(sqlite);
+    const env = createEnv(sqlite);
+
+    sqlite.exec("UPDATE rooms SET capacity = 4, occupied = 2, room_type = 'shared' WHERE id = 100");
+
+    const response = await app.request(
+      'http://localhost/api/admin/properties/rooms?id=10',
+      { headers: { 'X-User-ID': '1' } },
+      env
+    );
+    const body = (await response.json()) as { data: unknown[] };
+
+    expect(response.status).toBe(200);
+    expect(body.data).toEqual([
+      expect.objectContaining({
+        id: 100,
+        room_number: '',
+        room_type: 'shared',
+        capacity: 4,
+        occupied: 2,
+        free_slots: 2,
+        status: 'available',
+        photo_count: 0,
+      }),
+    ]);
+
+    const missingId = await app.request(
+      'http://localhost/api/admin/properties/rooms',
+      { headers: { 'X-User-ID': '1' } },
+      env
+    );
+    expect(missingId.status).toBe(400);
+
+    const denied = await app.request(
+      'http://localhost/api/admin/properties/rooms?id=10',
+      { headers: { 'X-User-ID': '2' } },
+      env
+    );
+    expect(denied.status).toBe(403);
   });
 
   it('returns and updates platform settings', async () => {

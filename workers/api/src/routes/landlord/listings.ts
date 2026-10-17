@@ -22,6 +22,7 @@ import {
   getMaxPropertyPhotoDisplayOrder,
   listLandlordPropertyPhotoUrls,
   listLandlordRoomIdsForRemoval,
+  resetListingModerationForReview,
   softDeleteLandlordRoomsById,
   updateLandlordActiveRooms,
   updateLandlordAddress,
@@ -73,6 +74,15 @@ const minStayMap: Record<string, string> = {
 
 const allowedPhotoExtensions = new Set(['jpg', 'jpeg', 'png', 'webp', 'gif']);
 
+/** Room vocabulary and per-listing guard rails (spec `create-listing-room-details` R6/R7/R13). */
+const validRoomTypes = new Set(['private', 'shared', 'dorm']);
+
+const validRoomStatuses = new Set(['available', 'occupied', 'maintenance']);
+
+const maxRoomsPerListing = 30;
+
+const maxRoomCapacity = 10;
+
 function requiredFieldErrors(body: JsonRecord): Record<string, string> {
   const errors: Record<string, string> = {};
 
@@ -86,6 +96,12 @@ function requiredFieldErrors(body: JsonRecord): Record<string, string> {
   return errors;
 }
 
+/**
+ * The three values a listing may hold (`edit-listing-property-info` D3):
+ * `draft`, `available` (Published) and `hidden` (Unpublished).
+ */
+const listingStatuses = new Set(['draft', 'available', 'hidden']);
+
 function normalizeListingStatus(status: string): string {
   if (status === 'active') {
     return 'available';
@@ -95,7 +111,13 @@ function normalizeListingStatus(status: string): string {
     return 'hidden';
   }
 
-  return status || 'available';
+  if (!status) {
+    return 'available';
+  }
+
+  // Anything unrecognised is stored as Unpublished rather than passed through:
+  // an unreadable value must never be the one that keeps a listing live (D3, §6.7).
+  return listingStatuses.has(status) ? status : 'hidden';
 }
 
 function minStayFromBody(body: JsonRecord, fallback: string): string {
@@ -110,42 +132,162 @@ function minStayFromBody(body: JsonRecord, fallback: string): string {
   return minStayMap[minStay] ?? minStay;
 }
 
-function listingRooms(body: JsonRecord) {
-  const customRooms = Array.isArray(body.rooms) ? body.rooms : [];
+interface ListingRoomDraft {
+  title: string;
+  roomNumber: string;
+  roomType: string;
+  capacity: number;
+  price: number;
+  deposit: number;
+  size: number;
+  description: string;
+  status: string;
+  occupied: number;
+}
 
-  if (customRooms.length > 0) {
-    return customRooms.map((room, index) => {
-      const roomRecord =
-        room && typeof room === 'object' && !Array.isArray(room) ? (room as JsonRecord) : {};
-      const roomName = String(roomRecord.name ?? '').trim() || `Room ${index + 1}`;
-      const capacity = intValue(roomRecord.capacity, 1);
-      const roomTypeValue = String(roomRecord.roomType ?? '').trim();
-      const roomType = roomTypeValue || (capacity === 1 ? 'single' : 'shared');
+/** Single-occupancy rooms are `private`; the legacy `single` value maps onto it. */
+function roomTypeForCapacity(capacity: number): string {
+  return capacity === 1 ? 'private' : 'shared';
+}
 
-      return {
-        title: roomName,
-        roomNumber: roomName,
-        roomType,
-        capacity,
-      };
-    });
+function normalizeRoomType(value: unknown, capacity: number): string | null {
+  const roomType = String(value ?? '')
+    .trim()
+    .toLowerCase();
+
+  if (!roomType) {
+    return roomTypeForCapacity(capacity);
   }
 
-  const roomsCount = intValue(body.propertyRooms);
-  const capacity = intValue(body.propertyCapacity, 1);
-  const roomType = capacity === 1 ? 'single' : 'shared';
-  const roomTypeDisplay = capacity === 1 ? 'Single Room' : `Shared Room (${capacity} persons)`;
+  if (roomType === 'single') {
+    return 'private';
+  }
 
-  return Array.from({ length: Math.max(roomsCount, 0) }, (_, index) => {
-    const roomNumber = `Room ${index + 1}`;
+  return validRoomTypes.has(roomType) ? roomType : null;
+}
 
-    return {
-      title: `${roomTypeDisplay} - ${roomNumber}`,
-      roomNumber,
-      roomType,
-      capacity,
-    };
-  });
+function normalizeRoomStatus(value: unknown): string {
+  const status = String(value ?? '')
+    .trim()
+    .toLowerCase();
+
+  return validRoomStatuses.has(status) ? status : 'available';
+}
+
+function roomTitle(roomType: string, capacity: number, roomNumber: string): string {
+  if (roomType === 'dorm') {
+    return `Dorm Room (${capacity} persons) - ${roomNumber}`;
+  }
+
+  if (capacity === 1) {
+    return `Private Room - ${roomNumber}`;
+  }
+
+  return `Shared Room (${capacity} persons) - ${roomNumber}`;
+}
+
+/**
+ * Builds the rooms to create from a create-listing payload.
+ *
+ * The per-room `rooms` array is the primary contract now (spec R6) and carries
+ * rent/deposit/size/description/status/occupancy; the property-level
+ * count/capacity path stays for older clients and is what the property defaults
+ * seed from. `errors` is non-empty only for payloads the API refuses to create.
+ */
+function listingRooms(body: JsonRecord): { rooms: ListingRoomDraft[]; errors: string[] } {
+  const customRooms = Array.isArray(body.rooms) ? body.rooms : [];
+  const propertyPrice = numberValue(body, 'propertyPrice');
+  const propertyDeposit = numberValue(body, 'propertyDeposit');
+
+  if (customRooms.length > 0) {
+    if (customRooms.length > maxRoomsPerListing) {
+      return {
+        rooms: [],
+        errors: [`A listing can have at most ${maxRoomsPerListing} rooms at a time.`],
+      };
+    }
+
+    const errors: string[] = [];
+    const seenNames = new Set<string>();
+    const rooms = customRooms.map((room, index) => {
+      const roomRecord =
+        room && typeof room === 'object' && !Array.isArray(room) ? (room as JsonRecord) : {};
+      const roomNumber =
+        String(roomRecord.name ?? roomRecord.room_number ?? '').trim() || `Room ${index + 1}`;
+      const capacity = intValue(roomRecord.capacity, 1);
+      const roomType = normalizeRoomType(roomRecord.room_type ?? roomRecord.roomType, capacity);
+      const occupied = intValue(roomRecord.occupied, 0);
+      const normalizedName = roomNumber.toLowerCase();
+
+      if (capacity < 1 || capacity > maxRoomCapacity) {
+        errors.push(`${roomNumber}: capacity must be between 1 and ${maxRoomCapacity}.`);
+      }
+
+      if (roomType === null) {
+        errors.push(`${roomNumber}: room type must be one of private, shared, dorm.`);
+      }
+
+      if (seenNames.has(normalizedName)) {
+        errors.push(`${roomNumber}: room names must be unique within a listing.`);
+      }
+
+      if (occupied < 0 || occupied > capacity) {
+        errors.push(`${roomNumber}: occupied must be between 0 and capacity.`);
+      }
+
+      seenNames.add(normalizedName);
+
+      return {
+        title: roomNumber,
+        roomNumber,
+        roomType: roomType ?? roomTypeForCapacity(capacity),
+        capacity,
+        price:
+          roomRecord.price === undefined
+            ? propertyPrice
+            : numberValue(roomRecord, 'price', propertyPrice),
+        deposit:
+          roomRecord.deposit === undefined
+            ? propertyDeposit
+            : numberValue(roomRecord, 'deposit', propertyDeposit),
+        size: isPhpEmpty(roomRecord.size) ? 0 : numberValue(roomRecord, 'size'),
+        description: String(roomRecord.description ?? '').trim(),
+        status: normalizeRoomStatus(roomRecord.status),
+        occupied,
+      };
+    });
+
+    return { rooms, errors };
+  }
+
+  const roomsCount = Math.min(Math.max(intValue(body.propertyRooms, 0), 0), maxRoomsPerListing);
+
+  if (roomsCount <= 0) {
+    return { rooms: [], errors: ['At least one room is required.'] };
+  }
+
+  const capacity = Math.min(Math.max(intValue(body.propertyCapacity, 1), 1), maxRoomCapacity);
+  const roomType = roomTypeForCapacity(capacity);
+
+  return {
+    rooms: Array.from({ length: roomsCount }, (_, index) => {
+      const roomNumber = `Room ${index + 1}`;
+
+      return {
+        title: roomTitle(roomType, capacity, roomNumber),
+        roomNumber,
+        roomType,
+        capacity,
+        price: propertyPrice,
+        deposit: propertyDeposit,
+        size: 0,
+        description: '',
+        status: 'available',
+        occupied: 0,
+      };
+    }),
+    errors: [],
+  };
 }
 
 function updateRoomTitle(roomNumber: string, roomCapacity: number | null): string {
@@ -179,6 +321,14 @@ async function handleCreateListing(c: Context<{ Bindings: Env }>) {
     return jsonResponse({ errors }, 400);
   }
 
+  // Rooms are validated before anything is written so a bad room payload cannot
+  // leave an orphan property behind.
+  const listingRoomDrafts = listingRooms(body);
+
+  if (listingRoomDrafts.errors.length > 0) {
+    return jsonResponse({ errors: listingRoomDrafts.errors }, 400);
+  }
+
   const latitude = isPhpEmpty(body.propertyLatitude) ? null : numberValue(body, 'propertyLatitude');
   const longitude = isPhpEmpty(body.propertyLongitude)
     ? null
@@ -202,24 +352,32 @@ async function handleCreateListing(c: Context<{ Bindings: Env }>) {
     price: propertyPrice,
     deposit: numberValue(body, 'propertyDeposit'),
     advance: stringValue(body, 'propertyAdvance', '1 month') || '1 month',
-    minStay: stringValue(body, 'propertyMinStay', '1 month') || '1 month',
+    // Spec `create-listing-room-details` D4/D19: the create form no longer asks
+    // for a minimum stay, so new listings are written without one (the column
+    // default applies). The edit page still sets it via `minStayFromBody`.
+    minStay: '',
     houseRules: JSON.stringify([]),
     genderPreference: stringValue(body, 'genderPreference', 'any') || 'any',
     propertyRules: stringValue(body, 'propertyRules'),
   });
   const roomIds: number[] = [];
 
-  for (const room of listingRooms(body)) {
+  for (const room of listingRoomDrafts.rooms) {
+    // `room_ids` is returned in creation order, which is also the order the
+    // client sends `rooms` in — the create page attaches photos with it.
     const roomId = await createLandlordRoom(db, {
       propertyId,
       landlordId: user.user_id,
       title: room.title,
-      price: propertyPrice,
-      description: '',
+      price: room.price,
+      description: room.description,
       roomNumber: room.roomNumber,
       roomType: room.roomType,
       capacity: room.capacity,
-      deposit: numberValue(body, 'propertyDeposit'),
+      deposit: room.deposit,
+      size: room.size,
+      status: room.status,
+      occupied: room.occupied,
     });
 
     roomIds.push(roomId);
@@ -241,7 +399,9 @@ async function handleCreateListing(c: Context<{ Bindings: Env }>) {
       data: {
         id: propertyId,
         title: propertyName,
-        status: 'available',
+        // Created as a draft (`edit-listing-property-info` R14) — the landlord
+        // publishes it from the edit page, and an admin still approves it.
+        status: 'draft',
         room_ids: roomIds,
       },
     },
@@ -415,7 +575,7 @@ async function updateListingRoomsIfNeeded(
     roomCountValue === undefined ? currentRoomCount : Math.max(0, intValue(roomCountValue));
   const roomCapacity =
     roomCapacityValue === undefined ? null : Math.max(0, intValue(roomCapacityValue));
-  const roomType = roomCapacity === 1 ? 'single' : 'shared';
+  const roomType = roomCapacity === 1 ? 'private' : 'shared';
   const roomPrice = numberFromFields(
     body,
     ['price', 'propertyPrice', 'monthlyPayment'],
@@ -565,6 +725,14 @@ async function handleUpdateListing(c: Context<{ Bindings: Env }>) {
     ),
     status,
   });
+
+  // Publishing a rejected listing is the landlord asking for another review; every
+  // other save leaves moderation exactly where the admin left it (D11/R8). The
+  // repository query guards on `rejected` too, so this is belt and braces.
+  if (status === 'available' && property.listing_moderation_status === 'rejected') {
+    await resetListingModerationForReview(db, { propertyId, landlordId: user.user_id });
+  }
+
   await updateListingAmenitiesIfNeeded(db, body, propertyId);
   await updateListingRoomsIfNeeded(db, body, property, user.user_id);
   await updateListingPhotosIfNeeded(c.env, db, body, propertyId);

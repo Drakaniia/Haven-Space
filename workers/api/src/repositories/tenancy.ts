@@ -25,6 +25,9 @@ export interface TenancyRow {
   landlord_email: string | null;
   landlord_phone: string | null;
   landlord_is_verified: number;
+  property_electricity_cost: number | null;
+  property_water_cost: number | null;
+  property_internet_cost: number | null;
 }
 
 export interface TenancyData {
@@ -179,9 +182,11 @@ export function formatTenancy(row: TenancyRow, now = new Date()): TenancyData {
     leave_request_date: row.leave_request_date ?? null,
     leave_request_reason: row.leave_request_reason ?? null,
     intended_leave_date: row.intended_leave_date ?? null,
-    property_electricity_cost: 0,
-    property_water_cost: 0,
-    property_internet_cost: 0,
+    // Real rates from the property's billing settings — these were hard-coded
+    // zeros until the payments feature gave them a home (spec `payments-feature` I8).
+    property_electricity_cost: numeric(row.property_electricity_cost),
+    property_water_cost: numeric(row.property_water_cost),
+    property_internet_cost: numeric(row.property_internet_cost),
     landlord: {
       id: Number(row.landlord_id),
       name: landlordName,
@@ -222,7 +227,10 @@ export async function findCurrentTenancy(
           u.last_name as landlord_last_name,
           u.email as landlord_email,
           u.phone_number as landlord_phone,
-          u.is_verified as landlord_is_verified
+          u.is_verified as landlord_is_verified,
+          p.electricity_cost as property_electricity_cost,
+          p.water_cost as property_water_cost,
+          p.internet_cost as property_internet_cost
         FROM applications app
         JOIN rooms r ON app.room_id = r.id
         JOIN properties p ON r.property_id = p.id

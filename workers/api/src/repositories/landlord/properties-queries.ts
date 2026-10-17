@@ -126,7 +126,8 @@ export async function findLandlordPropertyForUpdate(
           min_stay,
           property_rules,
           property_type,
-          gender_preference
+          gender_preference,
+          listing_moderation_status
         FROM properties
         WHERE id = ?
           AND deleted_at IS NULL

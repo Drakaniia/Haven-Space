@@ -44,6 +44,7 @@ export interface RoomRow {
   room_type: string | null;
   deposit?: number | null;
   capacity: number | null;
+  occupied?: number | null;
   status: string | null;
   room_price: number | null;
   title: string | null;
@@ -135,7 +136,15 @@ function publicListingsWhere(filters: PublicListingFilters): {
   clause: string;
   params: Array<string | number>;
 } {
-  const conditions = ['p.deleted_at IS NULL', "p.listing_moderation_status = 'published'"];
+  // Both axes, not just moderation (`edit-listing-property-info` D17/R13): a
+  // publicly approved listing the landlord has since unpublished (or left as a
+  // draft) must not be browsable. `active` is tolerated for legacy rows, matching
+  // the map query.
+  const conditions = [
+    'p.deleted_at IS NULL',
+    "p.listing_moderation_status = 'published'",
+    "p.status IN ('available', 'active')",
+  ];
   const params: Array<string | number> = [];
 
   if (filters.search) {
@@ -268,6 +277,7 @@ async function listRooms(db: D1Database, propertyIds: number[]): Promise<RoomRow
           room_number,
           room_type,
           capacity,
+          occupied,
           deposit,
           description,
           size,
@@ -413,6 +423,7 @@ export async function getPublicListingDetail(
         WHERE p.id = ?
           AND p.deleted_at IS NULL
           AND p.listing_moderation_status = 'published'
+          AND p.status IN ('available', 'active')
         LIMIT 1
       `
     )
@@ -543,6 +554,7 @@ export async function listSimilarPublicListings(
         WHERE p.id = ?
           AND p.deleted_at IS NULL
           AND p.listing_moderation_status = 'published'
+          AND p.status IN ('available', 'active')
         LIMIT 1
       `
     )
@@ -582,6 +594,7 @@ export async function listSimilarPublicListings(
         WHERE p.id != ?
           AND p.deleted_at IS NULL
           AND p.listing_moderation_status = 'published'
+          AND p.status IN ('available', 'active')
           AND p.price BETWEEN ? AND ?
           AND (
             a.city = ? OR

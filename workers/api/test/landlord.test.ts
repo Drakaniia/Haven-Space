@@ -123,6 +123,7 @@ const updateRow: LandlordPropertyUpdateRow = {
   property_rules: 'No smoking',
   property_type: 'boarding-house',
   gender_preference: 'any',
+  listing_moderation_status: 'published',
 };
 
 const amenities: LandlordAmenityRow[] = [
@@ -191,7 +192,8 @@ describe('landlord property routes', () => {
       data: {
         id: 10,
         title: 'Pine House',
-        status: 'available',
+        // A new listing is a draft (`edit-listing-property-info` D4/R14).
+        status: 'draft',
         room_ids: [201, 202],
       },
     });
@@ -207,13 +209,17 @@ describe('landlord property routes', () => {
         4500,
         1000,
         '1 month',
-        '1 month',
+        // Spec D19: create no longer writes a minimum stay, so the column
+        // default ('') applies.
+        '',
         '[]',
         'any',
         'No smoking',
       ],
-      [10, 3, 'Room A', 4500, '', 1000, 'Room A', 'single', 1],
-      [10, 3, 'Room B', 4500, '', 1000, 'Room B', 'shared', 2],
+      // Legacy 'single' is normalized on write; every room also carries size and
+      // the new occupied count now.
+      [10, 3, 'Room A', 4500, '', 1000, 'available', 'Room A', 'private', 1, 0, 0],
+      [10, 3, 'Room B', 4500, '', 1000, 'available', 'Room B', 'shared', 2, 0, 0],
       [10, 'WiFi'],
       [10, 'Laundry'],
     ]);
@@ -303,7 +309,8 @@ describe('landlord property routes', () => {
       data: {
         id: 10,
         title: 'Pine House',
-        status: 'available',
+        // A new listing is a draft (`edit-listing-property-info` D4/R14).
+        status: 'draft',
         room_ids: [201, 202],
       },
     });
@@ -314,9 +321,12 @@ describe('landlord property routes', () => {
       4500,
       '',
       1000,
+      'available',
       'Room 1',
       'shared',
       2,
+      0,
+      0,
     ]);
     expect(capturedBinds[4]).toEqual([
       10,
@@ -325,10 +335,154 @@ describe('landlord property routes', () => {
       4500,
       '',
       1000,
+      'available',
       'Room 2',
       'shared',
       2,
+      0,
+      0,
     ]);
+  });
+
+  it('creates a listing with full per-room details and no minimum stay', async () => {
+    const capturedBinds: unknown[][] = [];
+    const response = await app.request(
+      'http://localhost/api/landlord/listings',
+      {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-User-ID': '3',
+        },
+        body: JSON.stringify({
+          ...createListingPayload,
+          amenities: [],
+          rooms: [
+            {
+              name: 'Private A',
+              room_type: 'private',
+              capacity: 1,
+              price: 3200,
+              deposit: 1200,
+              size: 12,
+              description: 'Sunny corner room',
+              status: 'available',
+            },
+            {
+              name: 'Dorm B',
+              room_type: 'dorm',
+              capacity: 6,
+              price: 1500,
+              deposit: 500,
+            },
+          ],
+        }),
+      },
+      createSequenceEnv(
+        [
+          { first: landlordUser },
+          { run: { success: true, meta: { last_row_id: 100, changes: 1 }, results: [] } },
+          { run: { success: true, meta: { last_row_id: 10, changes: 1 }, results: [] } },
+          { run: { success: true, meta: { last_row_id: 201, changes: 1 }, results: [] } },
+          { run: { success: true, meta: { last_row_id: 202, changes: 1 }, results: [] } },
+        ],
+        capturedBinds
+      )
+    );
+
+    expect(response.status).toBe(201);
+    expect(await response.json()).toEqual({
+      message: 'Listing created successfully',
+      data: {
+        id: 10,
+        title: 'Pine House',
+        status: 'draft',
+        // Creation order is the contract the create page maps photos with.
+        room_ids: [201, 202],
+      },
+    });
+
+    // Property insert binds end with houseRules/genderPreference/propertyRules;
+    // index 8 is min_stay, which create no longer sets (spec D19).
+    expect(capturedBinds[2][8]).toBe('');
+    expect(capturedBinds[3]).toEqual([
+      10,
+      3,
+      'Private A',
+      3200,
+      'Sunny corner room',
+      1200,
+      'available',
+      'Private A',
+      'private',
+      1,
+      12,
+      0,
+    ]);
+    expect(capturedBinds[4]).toEqual([
+      10,
+      3,
+      'Dorm B',
+      1500,
+      '',
+      500,
+      'available',
+      'Dorm B',
+      'dorm',
+      6,
+      0,
+      0,
+    ]);
+  });
+
+  it('rejects invalid room payloads before writing anything', async () => {
+    const tooManyRooms = Array.from({ length: 31 }, (_, index) => ({
+      name: `Room ${index + 1}`,
+      room_type: 'shared',
+      capacity: 2,
+      price: 3000,
+    }));
+
+    const tooManyResponse = await app.request(
+      'http://localhost/api/landlord/listings',
+      {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'X-User-ID': '3' },
+        body: JSON.stringify({ ...createListingPayload, rooms: tooManyRooms }),
+      },
+      // Only the auth lookup runs: validation happens before any insert.
+      createSequenceEnv([{ first: landlordUser }])
+    );
+
+    expect(tooManyResponse.status).toBe(400);
+    expect(await tooManyResponse.json()).toEqual({
+      errors: ['A listing can have at most 30 rooms at a time.'],
+    });
+
+    const invalidResponse = await app.request(
+      'http://localhost/api/landlord/listings',
+      {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'X-User-ID': '3' },
+        body: JSON.stringify({
+          ...createListingPayload,
+          rooms: [
+            { name: 'Room 1', room_type: 'penthouse', capacity: 2, price: 3000 },
+            { name: 'Room 1', room_type: 'shared', capacity: 11, price: 3000 },
+          ],
+        }),
+      },
+      createSequenceEnv([{ first: landlordUser }])
+    );
+
+    expect(invalidResponse.status).toBe(400);
+    expect(await invalidResponse.json()).toEqual({
+      errors: [
+        'Room 1: room type must be one of private, shared, dorm.',
+        'Room 1: capacity must be between 1 and 10.',
+        'Room 1: room names must be unique within a listing.',
+      ],
+    });
   });
 
   it('returns PHP-compatible listing validation errors', async () => {
@@ -371,6 +525,63 @@ describe('landlord property routes', () => {
     expect(await response.json()).toEqual({
       error: 'Missing required fields: propertyName, propertyAddress, propertyPrice',
     });
+  });
+
+  it('publishing a rejected listing asks for another review (D11/R8)', async () => {
+    const capturedBinds: unknown[][] = [];
+    const response = await app.request(
+      'http://localhost/api/landlord/listings/10',
+      {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-User-ID': '3',
+        },
+        body: JSON.stringify({ status: 'available' }),
+      },
+      createSequenceEnv(
+        [
+          { first: landlordUser },
+          { first: { ...updateRow, listing_moderation_status: 'rejected' } },
+          { run: { success: true, meta: { last_row_id: 0, changes: 1 }, results: [] } },
+          { run: { success: true, meta: { last_row_id: 0, changes: 1 }, results: [] } },
+        ],
+        capturedBinds
+      )
+    );
+
+    expect(response.status).toBe(200);
+    // The property update, then the moderation reset: rejected is the one state a
+    // Published choice moves back to pending review.
+    expect(capturedBinds).toHaveLength(4);
+    expect(capturedBinds[3]).toEqual([10, 3, 3]);
+  });
+
+  it('a save on an approved listing never touches moderation (D11)', async () => {
+    const capturedBinds: unknown[][] = [];
+    const response = await app.request(
+      'http://localhost/api/landlord/listings/10',
+      {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-User-ID': '3',
+        },
+        body: JSON.stringify({ status: 'available' }),
+      },
+      createSequenceEnv(
+        [
+          { first: landlordUser },
+          { first: updateRow },
+          { run: { success: true, meta: { last_row_id: 0, changes: 1 }, results: [] } },
+        ],
+        capturedBinds
+      )
+    );
+
+    expect(response.status).toBe(200);
+    // Three queries: auth, the property lookup, the update. No moderation write.
+    expect(capturedBinds).toHaveLength(3);
   });
 
   it('requires a landlord role for listing creation', async () => {
@@ -480,8 +691,34 @@ describe('landlord property routes', () => {
       [10, 'WiFi'],
       [10, 'Kitchen'],
       [10],
-      [10, 3, 'Shared Room (2 persons) - Room 2', 5200, '', 1000, 'Room 2', 'shared', 2],
-      [10, 3, 'Shared Room (2 persons) - Room 3', 5200, '', 1000, 'Room 3', 'shared', 2],
+      [
+        10,
+        3,
+        'Shared Room (2 persons) - Room 2',
+        5200,
+        '',
+        1000,
+        'available',
+        'Room 2',
+        'shared',
+        2,
+        0,
+        0,
+      ],
+      [
+        10,
+        3,
+        'Shared Room (2 persons) - Room 3',
+        5200,
+        '',
+        1000,
+        'available',
+        'Room 3',
+        'shared',
+        2,
+        0,
+        0,
+      ],
       [2, 'shared', 5200, 10],
     ]);
   });
@@ -542,7 +779,7 @@ describe('landlord property routes', () => {
       [10],
       [10, 2],
       [33, 32],
-      [1, 'single', 4500, 10],
+      [1, 'private', 4500, 10],
     ]);
   });
 
@@ -689,7 +926,10 @@ describe('landlord property routes', () => {
             city: 'Manila',
             province: 'Metro Manila',
             price: 4500,
-            status: 'active',
+            // Raw stored status; the web owns the landlord wording
+            // (`edit-listing-property-info` D15).
+            status: 'available',
+            listing_moderation_status: 'published',
             role: 'owner',
             total_rooms: 2,
             occupied_rooms: 1,
@@ -757,7 +997,10 @@ describe('landlord property routes', () => {
         capacity: '',
         min_stay: '6 months',
         availability: 'available-now',
-        status: 'active',
+        status: 'available',
+        // Surfaced for the landlord detail page's publish pill
+        // (`landlord-property-detail-page` D15/R16).
+        listing_moderation_status: 'published',
         role: 'owner',
         total_rooms: 2,
         rooms: 2,

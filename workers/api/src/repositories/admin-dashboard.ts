@@ -1,3 +1,5 @@
+import { listPropertyCoverPhotos } from './landlord/properties-photos.js';
+
 export interface AdminSummary {
   counts: {
     users_total: number;
@@ -35,6 +37,15 @@ export interface AdminPropertyRow {
   landlord_first: string;
   landlord_last: string;
   landlord_email: string;
+  /** Card facts for `landlord-properties-card-layout` D21 (additive keys). */
+  created_at: string;
+  address: string | null;
+  city: string | null;
+  province: string | null;
+  rooms_count: number;
+  occupied_rooms: number;
+  monthly_revenue: number;
+  cover_photo: string | null;
 }
 
 export interface AdminApplicationRow {
@@ -242,49 +253,54 @@ export async function listAdminProperties(
   db: D1Database,
   moderationStatus: string | null
 ): Promise<AdminPropertyRow[]> {
-  const rows = moderationStatus
-    ? await db
-        .prepare(
-          `
-        SELECT
-          p.id,
-          p.title,
-          p.price,
-          p.listing_moderation_status,
-          u.first_name AS landlord_first,
-          u.last_name AS landlord_last,
-          u.email AS landlord_email
-        FROM properties p
-        JOIN users u ON p.landlord_id = u.id
-        WHERE p.listing_moderation_status = ?
-          AND p.deleted_at IS NULL
-        ORDER BY p.created_at DESC
-        LIMIT 100
+  // One statement for both queues — the moderation filter is the only difference.
+  // `? IS NULL OR` keeps the unfiltered branch without duplicating the SELECT.
+  //
+  // The card facts (rooms, occupancy, revenue, address, created date) and the
+  // batched cover-photo lookup are `landlord-properties-card-layout` D21; the
+  // added keys are purely additive for existing consumers.
+  const rows = await db
+    .prepare(
       `
-        )
-        .bind(moderationStatus)
-        .all<AdminPropertyRow>()
-    : await db
-        .prepare(
-          `
         SELECT
           p.id,
           p.title,
           p.price,
           p.listing_moderation_status,
+          p.created_at,
+          a.address_line_1 AS address,
+          a.city,
+          a.province,
           u.first_name AS landlord_first,
           u.last_name AS landlord_last,
-          u.email AS landlord_email
+          u.email AS landlord_email,
+          COUNT(DISTINCT r.id) AS rooms_count,
+          COALESCE(SUM(CASE WHEN r.status = 'occupied' THEN 1 ELSE 0 END), 0) AS occupied_rooms,
+          COALESCE(SUM(CASE WHEN r.status = 'occupied' THEN r.price ELSE 0 END), 0) AS monthly_revenue
         FROM properties p
         JOIN users u ON p.landlord_id = u.id
+        LEFT JOIN addresses a ON p.address_id = a.id
+        LEFT JOIN rooms r ON p.id = r.property_id
+          AND r.deleted_at IS NULL
         WHERE p.deleted_at IS NULL
+          AND (? IS NULL OR p.listing_moderation_status = ?)
+        GROUP BY p.id
         ORDER BY p.created_at DESC
         LIMIT 100
       `
-        )
-        .all<AdminPropertyRow>();
+    )
+    .bind(moderationStatus, moderationStatus)
+    .all<AdminPropertyRow>();
+  const properties = rows.results ?? [];
+  const covers = await listPropertyCoverPhotos(
+    db,
+    properties.map(property => Number(property.id))
+  );
 
-  return rows.results;
+  return properties.map(property => ({
+    ...property,
+    cover_photo: covers.get(Number(property.id)) ?? null,
+  }));
 }
 
 export async function updateAdminPropertyModeration(

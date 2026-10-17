@@ -11,10 +11,13 @@ import applicationRoutes from './routes/applications';
 import authRoutes from './routes/auth';
 import boarderRoutes from './routes/boarder';
 import landlordRoutes from './routes/landlord';
+import messageRoutes from './routes/messages';
 import notificationRoutes from './routes/notifications';
+import paymentsRoutes from './routes/payments';
 import propertiesRoutes from './routes/properties';
 import roomsRoutes from './routes/rooms';
 import systemRoutes from './routes/system';
+import { runBillingJob } from './repositories/payments';
 import tenancyRoutes from './routes/tenancy';
 
 const app = new Hono<{ Bindings: Env }>();
@@ -101,7 +104,9 @@ app.route('/', applicationRoutes);
 app.route('/', landlordRoutes);
 app.route('/', adminRoutes);
 app.route('/', notificationRoutes);
+app.route('/', messageRoutes);
 app.route('/', tenancyRoutes);
+app.route('/', paymentsRoutes);
 app.route('/', announcementRoutes);
 app.route('/', aiRoutes);
 
@@ -117,4 +122,30 @@ app.onError((error, c) => {
   return responseFromError(error);
 });
 
-export default app;
+/**
+ * Nightly billing run (spec `payments-feature` §8.2): extends schedules, sends
+ * the due-soon and overdue reminders, marks charges overdue, and applies late
+ * fees. Every step is idempotent, so a cron retry cannot double-charge.
+ *
+ * The trigger is declared in `wrangler.jsonc` (`triggers.crons`).
+ */
+async function handleScheduled(env: Env): Promise<void> {
+  if (!env.DB) {
+    return;
+  }
+
+  const result = await runBillingJob(env.DB);
+
+  console.log('payments billing run', JSON.stringify(result));
+}
+
+/**
+ * The default export stays the Hono app itself — the test suite drives it with
+ * `app.request(...)` — with `scheduled` attached so the same object satisfies
+ * the Workers module contract for both `fetch` and `scheduled`.
+ */
+export default Object.assign(app, {
+  scheduled: async (_controller: unknown, env: Env): Promise<void> => {
+    await handleScheduled(env);
+  },
+});

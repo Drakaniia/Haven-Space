@@ -29,6 +29,7 @@ import {
   setVerificationNote,
   setVerificationStatus,
 } from '../repositories/landlord-verification';
+import { listLandlordManagedRooms, listLandlordRoomPhotos } from '../repositories/landlord-rooms';
 import {
   countLandlordCreatedData,
   createPropertyInvitation,
@@ -332,6 +333,52 @@ async function handleAdminProperties(c: Context<{ Bindings: Env }>) {
   const moderationStatus = moderation === 'all' ? null : moderation;
 
   return jsonResponse({ data: await listAdminProperties(db, moderationStatus) });
+}
+
+/**
+ * Read-only per-room view for a property (spec `create-listing-room-details`
+ * R10): capacity, live occupancy and status, so an admin inspecting a property
+ * sees exactly what boarders see.
+ */
+async function handleAdminPropertyRooms(c: Context<{ Bindings: Env }>) {
+  const db = requireD1(c.env);
+  const user = await requireAdmin(c);
+
+  if (!user) {
+    return errorResponse(403, 'Access denied. Admins only.');
+  }
+
+  const propertyId = Number.parseInt(c.req.query('id') ?? '', 10);
+
+  if (!Number.isFinite(propertyId)) {
+    return errorResponse(400, 'Property ID is required');
+  }
+
+  // Rooms are property-scoped, so the landlord id is irrelevant here.
+  const rooms = await listLandlordManagedRooms(db, propertyId, user.user_id);
+  const photos = await listLandlordRoomPhotos(
+    db,
+    rooms.map(room => Number(room.id))
+  );
+
+  return jsonResponse({
+    data: rooms.map(room => {
+      const capacity = Math.max(Number(room.capacity ?? 1), 1);
+      const occupied = Math.max(Number(room.occupied ?? 0), 0);
+
+      return {
+        id: Number(room.id),
+        room_number: room.room_number ?? '',
+        room_type: room.room_type ?? null,
+        price: Number(room.price),
+        capacity,
+        occupied,
+        free_slots: Math.max(capacity - occupied, 0),
+        status: room.status ?? 'available',
+        photo_count: (photos.get(Number(room.id)) ?? []).length,
+      };
+    }),
+  });
 }
 
 async function handleUpdateAdminProperty(c: Context<{ Bindings: Env }>) {
@@ -867,6 +914,7 @@ adminRoutes.get('/api/admin/audit-log', handleAdminAuditLog);
 adminRoutes.get('/api/admin/users', handleAdminUsers);
 adminRoutes.patch('/api/admin/users', handleUpdateAdminUser);
 adminRoutes.get('/api/admin/properties', handleAdminProperties);
+adminRoutes.get('/api/admin/properties/rooms', handleAdminPropertyRooms);
 adminRoutes.post('/api/admin/properties', handleUpdateAdminProperty);
 adminRoutes.get('/api/admin/applications', handleAdminApplications);
 adminRoutes.patch('/api/admin/applications', handleUpdateAdminApplications);

@@ -2,6 +2,7 @@ import { describe, expect, it } from 'bun:test';
 
 import type { Env } from '../src/env';
 import app from '../src/index';
+import { addDays, manilaToday } from '../src/repositories/payments/helpers';
 
 interface D1Response {
   first?: unknown;
@@ -74,6 +75,27 @@ describe('landlord dashboard stats routes', () => {
           { first: landlordUser },
           { first: { total_rooms: 4, occupied_rooms: 3, monthly_revenue: 13500 } },
           { first: { upcoming_renewals: 2 } },
+          // Revenue is now *collected* money, so the ledger decides it (spec F6).
+          {
+            all: [
+              {
+                id: 501,
+                application_id: 20,
+                boarder_id: 7,
+                landlord_id: 3,
+                room_id: 11,
+                property_id: 10,
+                amount: 4500,
+                late_fee: 0,
+                due_date: '2026-06-20',
+                paid_date: new Date().toISOString().slice(0, 10),
+                status: 'paid',
+                charge_type: 'rent',
+                grace_days: 3,
+                created_at: '2026-06-01 08:00:00',
+              },
+            ],
+          },
         ],
         capturedBinds
       )
@@ -89,7 +111,7 @@ describe('landlord dashboard stats routes', () => {
           trend: 0,
         },
         revenue: {
-          monthly: 13500,
+          monthly: 4500,
           currency: 'PHP',
           trend: 0,
         },
@@ -99,11 +121,13 @@ describe('landlord dashboard stats routes', () => {
         },
         payment_alerts: {
           due_soon: 0,
+          due_today: 0,
+          in_grace: 0,
           overdue: 0,
         },
       },
     });
-    expect(capturedBinds).toEqual([[3], [3, 3], [3, 3]]);
+    expect(capturedBinds).toEqual([[3], [3, 3], [3, 3], [3, 3], [501]]);
   });
 
   it('returns zeroed dashboard stats when the landlord has no rooms', async () => {
@@ -118,6 +142,7 @@ describe('landlord dashboard stats routes', () => {
         { first: landlordUser },
         { first: { total_rooms: 0, occupied_rooms: null, monthly_revenue: null } },
         { first: { upcoming_renewals: 0 } },
+        { all: [] },
       ])
     );
 
@@ -141,6 +166,8 @@ describe('landlord dashboard stats routes', () => {
         },
         payment_alerts: {
           due_soon: 0,
+          due_today: 0,
+          in_grace: 0,
           overdue: 0,
         },
       },
@@ -159,12 +186,71 @@ describe('landlord dashboard stats routes', () => {
         { first: landlordUser },
         { first: { total_rooms: 3, occupied_rooms: 1, monthly_revenue: 4500 } },
         { first: { upcoming_renewals: 1 } },
+        { all: [] },
       ])
     );
 
     expect(response.status).toBe(200);
     const body = (await response.json()) as { data: { occupancy: { rate: number } } };
     expect(body.data.occupancy.rate).toBe(33.3);
+  });
+
+  it('counts the payment alerts in the tracker vocabulary (D32)', async () => {
+    const today = manilaToday();
+    const charge = (id: number, dueDate: string) => ({
+      id,
+      application_id: 20,
+      boarder_id: 7,
+      landlord_id: 3,
+      room_id: 11,
+      property_id: 10,
+      amount: 1000,
+      late_fee: 0,
+      due_date: dueDate,
+      paid_date: null,
+      status: 'pending',
+      charge_type: 'rent',
+      grace_days: 3,
+      created_at: '2026-06-01 08:00:00',
+    });
+
+    const response = await app.request(
+      'http://localhost/api/landlord/dashboard-stats',
+      {
+        headers: {
+          'X-User-ID': '3',
+        },
+      },
+      createSequenceEnv([
+        { first: landlordUser },
+        { first: { total_rooms: 2, occupied_rooms: 1, monthly_revenue: 4500 } },
+        { first: { upcoming_renewals: 1 } },
+        {
+          all: [
+            charge(601, today),
+            charge(602, addDays(today, -1)),
+            charge(603, addDays(today, -10)),
+            charge(604, addDays(today, 2)),
+          ],
+        },
+      ])
+    );
+
+    expect(response.status).toBe(200);
+
+    const body = (await response.json()) as {
+      data: { payment_alerts: Record<string, number>; revenue: { monthly: number } };
+    };
+
+    // Due today, past due but inside the 3-day grace, past grace, and due soon —
+    // the same buckets the tracker's summary cards show.
+    expect(body.data.payment_alerts).toEqual({
+      due_soon: 1,
+      due_today: 1,
+      in_grace: 1,
+      overdue: 1,
+    });
+    expect(body.data.revenue.monthly).toBe(0);
   });
 
   it('requires a landlord role for dashboard stats', async () => {
