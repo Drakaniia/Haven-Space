@@ -121,9 +121,6 @@ function HouseRulesPage() {
             <h1 className="text-2xl font-bold tracking-tight text-ink">
               House Rules &amp; Handbook
             </h1>
-            <p className="text-sm text-gray-ink">
-              Everything you need to know about living at your boarding house.
-            </p>
           </div>
         </div>
         <div className="flex flex-col gap-6">

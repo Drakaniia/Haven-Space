@@ -57,8 +57,15 @@ function titleCase(segment: string): string {
  *
  * A `?tab=` value adds one trailing crumb naming the open section, so a
  * deep-linkable section is visible to wayfinding and the trail agrees with the
- * sidebar (`admin-apple-ui-restructure` R11). The lookup is inert for every
- * other route, since none of them declare a `tab` param (R12).
+ * sidebar (`admin-apple-ui-restructure` R11).
+ *
+ * That lookup is scoped to the admin console, which is the only route whose
+ * `?tab=` values *are* admin section keys. It used to run on every route on the
+ * assumption that no other route declared a `tab` param — no longer true: the
+ * landlord property detail page uses `?tab=` too
+ * (`landlord-property-detail-page` R6), and its `applications` key collided with
+ * the admin section of the same name, adding a bogus "Applications" crumb to a
+ * landlord page.
  */
 export function buildTrail(pathname: string, search?: Record<string, unknown>): Crumb[] {
   const segments = pathname.split('/').filter(Boolean);
@@ -72,7 +79,7 @@ export function buildTrail(pathname: string, search?: Record<string, unknown>): 
   }
 
   const tab = typeof search?.tab === 'string' ? search.tab : undefined;
-  const sectionLabel = tab ? ADMIN_SECTION_LABELS[tab] : undefined;
+  const sectionLabel = tab && pathname === '/admin' ? ADMIN_SECTION_LABELS[tab] : undefined;
   if (sectionLabel) crumbs.push({ label: sectionLabel });
 
   return crumbs;

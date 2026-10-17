@@ -81,11 +81,7 @@ function InvitationsPage() {
 
   return (
     <RoleShell nav={LANDLORD_NAV}>
-      <PageHeader
-        icon="document"
-        title="Invitations"
-        subtitle="Property access invitations sent to you by the Haven Space Admin."
-      />
+      <PageHeader icon="document" title="Invitations" />
 
       {notice ? (
         <div className="mb-4 rounded-xl border border-mint bg-mint/40 px-4 py-3 text-sm">

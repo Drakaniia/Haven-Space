@@ -55,9 +55,16 @@ export function getBoarderNav(status: string | undefined): NavItem[] {
   return status === 'confirmed' ? BOARDER_NAV : BOARDER_LIMITED_NAV;
 }
 
+/**
+ * The landlord sidebar.
+ *
+ * There is no `My Listings` entry any more: `/landlord/listings` was the same
+ * card list as `/landlord/properties` and was removed
+ * (`landlord-property-detail-page` D2/R3), leaving Properties as the single
+ * list. The listing create/edit routes still live under `/landlord/listings`.
+ */
 export const LANDLORD_NAV: NavItem[] = [
   { to: '/landlord', label: 'Dashboard', icon: 'home', group: 'Main' },
-  { to: '/landlord/listings', label: 'My Listings', icon: 'list', group: 'Main' },
   { to: '/landlord/properties', label: 'Properties', icon: 'buildingOffice', group: 'Main' },
   { to: '/landlord/maps', label: 'Map View', icon: 'map', group: 'Main' },
   { to: '/landlord/invitations', label: 'Invitations', icon: 'document', group: 'Main' },

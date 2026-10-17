@@ -11,7 +11,6 @@ export const Route = createFileRoute('/landlord/activity')({
         <PlaceholderPage
           icon="analytics"
           title="Activity"
-          subtitle="Track all activity from your boarders and properties."
           message="An activity feed will appear here once the landlord activity endpoint is finalized."
         />
       </RoleShell>

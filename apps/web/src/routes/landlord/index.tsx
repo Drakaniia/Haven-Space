@@ -25,11 +25,16 @@ function StatCard({
   value,
   sub,
   icon,
+  to,
+  action,
 }: {
   label: string;
   value: string;
   sub?: string;
   icon: string;
+  /** Optional link out of the card — a destination, not a change to the number. */
+  to?: string;
+  action?: string;
 }) {
   return (
     <Card className="flex items-start gap-4">
@@ -40,6 +45,11 @@ function StatCard({
         <p className="text-[11px] font-medium uppercase tracking-wider text-gray-ink">{label}</p>
         <p className="mt-1 text-2xl font-bold tracking-tight text-ink">{value}</p>
         {sub ? <p className="mt-1 text-sm text-gray-ink">{sub}</p> : null}
+        {to && action ? (
+          <Link to={to} className="mt-2 inline-flex text-sm font-semibold text-primary underline">
+            {action}
+          </Link>
+        ) : null}
       </div>
     </Card>
   );
@@ -52,7 +62,7 @@ function QuickLinkCard({
   action,
 }: {
   title: string;
-  description: string;
+  description?: string;
   to: string;
   action: string;
 }) {
@@ -60,7 +70,7 @@ function QuickLinkCard({
     <Card className="flex flex-wrap items-center justify-between gap-4">
       <div className="min-w-0">
         <p className="font-semibold text-ink">{title}</p>
-        <p className="mt-0.5 text-sm text-gray-ink">{description}</p>
+        {description ? <p className="mt-0.5 text-sm text-gray-ink">{description}</p> : null}
       </div>
       <Link to={to} className={buttonClasses({ variant: 'outline', size: 'sm' })}>
         {action}
@@ -96,7 +106,6 @@ function LandlordDashboard() {
 
       <PageHeader
         title={user?.first_name ? `Welcome back, ${user.first_name}` : 'Welcome back'}
-        subtitle="Manage your properties, boarders, and applications."
         actions={
           <Link to="/landlord/listings/create" className={buttonClasses()}>
             + Create listing
@@ -124,42 +133,40 @@ function LandlordDashboard() {
             }% vs last month`}
             icon="payment"
           />
+          {/* The calendar is where "what's coming up" actually lives, so the card
+              links to it — the count keeps counting exactly what it always did
+              (spec `landlord-calendar` D28). */}
           <StatCard
             label="Upcoming renewals"
             value={String(stats.data.data.renewals.upcoming_count)}
             sub={stats.data.data.renewals.period}
             icon="calendar"
+            to="/landlord/calendar"
+            action="Open calendar"
           />
           <StatCard
             label="Payment alerts"
             value={String(
-              stats.data.data.payment_alerts.due_soon + stats.data.data.payment_alerts.overdue
+              stats.data.data.payment_alerts.due_today +
+                stats.data.data.payment_alerts.in_grace +
+                stats.data.data.payment_alerts.overdue
             )}
-            sub={`${stats.data.data.payment_alerts.due_soon} due soon · ${stats.data.data.payment_alerts.overdue} overdue`}
+            // The tracker's own vocabulary (spec `payments-tracker-redesign` D32),
+            // so the dashboard and the payments page never disagree.
+            sub={`${stats.data.data.payment_alerts.due_today} due today · ${stats.data.data.payment_alerts.in_grace} in grace · ${stats.data.data.payment_alerts.overdue} overdue`}
             icon="flag"
+            // The count is a union of three states, so the card opens the tracker
+            // itself rather than a filter that would hide two of them (§8).
+            to="/landlord/payments"
+            action="Open tracker"
           />
         </div>
       ) : null}
 
       <div className="mt-6 grid grid-cols-1 gap-5 md:grid-cols-3">
-        <QuickLinkCard
-          title="My listings"
-          description="Edit your properties and rooms"
-          to="/landlord/listings"
-          action="Manage"
-        />
-        <QuickLinkCard
-          title="Applications"
-          description="Review boarder applications"
-          to="/landlord/applications"
-          action="Review"
-        />
-        <QuickLinkCard
-          title="Boarders"
-          description="Manage your tenants"
-          to="/landlord/boarders"
-          action="Manage"
-        />
+        <QuickLinkCard title="My properties" to="/landlord/properties" action="Manage" />
+        <QuickLinkCard title="Applications" to="/landlord/applications" action="Review" />
+        <QuickLinkCard title="Boarders" to="/landlord/boarders" action="Manage" />
       </div>
     </RoleShell>
   );

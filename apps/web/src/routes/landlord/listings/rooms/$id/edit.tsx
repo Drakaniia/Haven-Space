@@ -16,6 +16,8 @@ import { ToastStack, useToasts } from '../../../../../components/ui/Toast';
 
 interface RoomEditSearch {
   propertyId?: string;
+  /** Which surface opened this editor, so saving returns to it (defaults to listing). */
+  from?: 'rooms' | 'listing';
 }
 
 export const Route = createFileRoute('/landlord/listings/rooms/$id/edit')({
@@ -24,13 +26,14 @@ export const Route = createFileRoute('/landlord/listings/rooms/$id/edit')({
       typeof search.propertyId === 'string' || typeof search.propertyId === 'number'
         ? String(search.propertyId)
         : undefined,
+    from: search.from === 'rooms' || search.from === 'listing' ? search.from : undefined,
   }),
   component: EditRoomPage,
 });
 
 function EditRoomPage() {
   const { id } = Route.useParams();
-  const { propertyId } = useSearch({ from: '/landlord/listings/rooms/$id/edit' });
+  const { propertyId, from } = useSearch({ from: '/landlord/listings/rooms/$id/edit' });
   const { token, user } = useAuth();
   // Unverified landlords cannot save room edits (API returns 403) — see BUG-09.
   const needsVerification = !user?.is_verified;
@@ -43,6 +46,10 @@ function EditRoomPage() {
 
   const roomId = Number(id);
   const propertyIdNumber = propertyId ? Number(propertyId) : null;
+  // Reached from the property rooms page, this editor lives under the listing
+  // path only because that is where its file-based route sits; saving must send
+  // the landlord back to the property's rooms, not the listing edit form.
+  const openedFromRooms = from === 'rooms';
 
   const rooms = useQuery({
     queryKey: ['landlord-rooms', propertyIdNumber],
@@ -59,6 +66,7 @@ function EditRoomPage() {
     deposit: '',
     status: 'available',
     capacity: '1',
+    occupied: '0',
     description: '',
     size: '',
   });
@@ -72,6 +80,7 @@ function EditRoomPage() {
       deposit: String(room.deposit ?? 0),
       status: room.status ?? 'available',
       capacity: String(room.capacity ?? 1),
+      occupied: String(room.occupied ?? 0),
       description: room.description ?? '',
       size: room.size == null ? '' : String(room.size),
     });
@@ -85,15 +94,21 @@ function EditRoomPage() {
         price: Number(form.price),
         deposit: Number(form.deposit),
         capacity: Number(form.capacity),
+        occupied: Number(form.occupied),
         size: form.size === '' ? undefined : Number(form.size),
       }),
     onSuccess: () => {
       void queryClient.invalidateQueries({ queryKey: ['landlord-rooms', propertyIdNumber] });
       setPendingToast('success', 'Room updated.');
-      void navigate({
-        to: '/landlord/listings/$id/edit',
-        params: { id: String(propertyIdNumber) },
-      });
+      void (openedFromRooms
+        ? navigate({
+            to: '/landlord/properties/$id/rooms',
+            params: { id: String(propertyIdNumber) },
+          })
+        : navigate({
+            to: '/landlord/listings/$id/edit',
+            params: { id: String(propertyIdNumber) },
+          }));
     },
     onError: err =>
       setError(err instanceof ApiRequestError ? err.message : 'Failed to update room.'),
@@ -151,16 +166,17 @@ function EditRoomPage() {
       ) : (
         <div>
           <Link
-            to="/landlord/listings/$id/edit"
+            to={
+              openedFromRooms ? '/landlord/properties/$id/rooms' : '/landlord/listings/$id/edit'
+            }
             params={{ id: String(propertyIdNumber) }}
             className="mb-4 inline-block text-sm text-primary hover:underline"
           >
-            ← Back to listing
+            {openedFromRooms ? '← Back to rooms' : '← Back to listing'}
           </Link>
           <PageHeader
             icon="book"
             title={`Edit room ${room.room_number}`}
-            subtitle="Update this room's details and photos."
           />
 
           {needsVerification ? <VerificationNotice /> : null}
@@ -189,8 +205,9 @@ function EditRoomPage() {
                     onChange={e => set('room_type', e.target.value)}
                   >
                     <option value="">Select type</option>
-                    <option value="single">Single</option>
+                    <option value="private">Private</option>
                     <option value="shared">Shared</option>
+                    <option value="dorm">Dorm</option>
                   </SelectInput>
                 </Field>
               </div>
@@ -217,15 +234,28 @@ function EditRoomPage() {
                 </Field>
               </div>
 
-              <div className="grid grid-cols-3 gap-4">
+              <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
                 <Field label="Capacity" htmlFor="capacity">
                   <TextInput
                     id="capacity"
                     type="number"
                     min={1}
+                    max={10}
                     required
                     value={form.capacity}
                     onChange={e => set('capacity', e.target.value)}
+                  />
+                </Field>
+                {/* Occupancy is a booking-driven count (confirmed booking +1,
+                    approved leave -1) that the landlord can correct here. */}
+                <Field label="Occupied now" htmlFor="occupied">
+                  <TextInput
+                    id="occupied"
+                    type="number"
+                    min={0}
+                    max={Number(form.capacity) || 10}
+                    value={form.occupied}
+                    onChange={e => set('occupied', e.target.value)}
                   />
                 </Field>
                 <Field label="Size (m²)" htmlFor="size">
@@ -249,6 +279,11 @@ function EditRoomPage() {
                   </SelectInput>
                 </Field>
               </div>
+
+              <p className="text-xs text-gray-ink">
+                {Math.max(Number(form.capacity) - Number(form.occupied), 0)} of {form.capacity || 1}{' '}
+                slots free for boarders.
+              </p>
 
               <Field label="Description" htmlFor="description">
                 <TextArea

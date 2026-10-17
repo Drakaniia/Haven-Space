@@ -4,6 +4,8 @@ export interface RoomSummary {
   room_name: string;
   type: string;
   capacity: number;
+  occupied: number;
+  free_slots: number;
   status: string;
   availability: string;
   description: string;
@@ -56,6 +58,8 @@ export interface RoomDetail {
   deposit: number;
   status: string;
   capacity: number;
+  occupied: number;
+  freeSlots: number;
   description: string;
   size: number | null;
   images: string[];
@@ -331,7 +335,8 @@ export interface DashboardStatsResponse {
     occupancy: { rate: number; total_rooms: number; occupied_rooms: number; trend: number };
     revenue: { monthly: number; currency: 'PHP'; trend: number };
     renewals: { upcoming_count: number; period: string };
-    payment_alerts: { due_soon: number; overdue: number };
+    /** Counted in the tracker's vocabulary (spec `payments-tracker-redesign` D32). */
+    payment_alerts: { due_soon: number; due_today: number; in_grace: number; overdue: number };
   };
 }
 
@@ -344,7 +349,11 @@ export interface LandlordProperty {
   city: string;
   province: string;
   price: number;
+  /** Raw stored listing status — `draft` / `available` / `hidden`
+      (`edit-listing-property-info` D15). The web owns the landlord wording. */
   status: string;
+  /** The admin axis, returned so a rejected listing reads as Unpublished (D12). */
+  listing_moderation_status: string;
   role?: 'owner' | 'shared';
   total_rooms: number;
   occupied_rooms: number;
@@ -383,8 +392,60 @@ export interface AcceptInvitationResponse {
   };
 }
 
+/**
+ * One authorized landlord on the property detail payload. Only the **primary
+ * owner** receives this list; a shared-access landlord's payload omits it
+ * entirely (`landlord-property-detail-page` D19).
+ */
+export interface AuthorizedLandlord {
+  id: number;
+  first_name: string;
+  last_name: string;
+  email: string;
+  granted_at: string;
+}
+
+/**
+ * `GET /api/landlord/properties?id=N` — the property detail payload.
+ *
+ * `listing_moderation_status` is what the detail page's publish pill reads
+ * (`landlord-property-detail-page` R16); `status` remains the listing's own
+ * active/hidden state, which is a different axis.
+ */
+export interface LandlordPropertyDetail {
+  id: number;
+  name: string;
+  type: string;
+  gender_preference: string;
+  description: string;
+  address: string;
+  latitude: number | '';
+  longitude: number | '';
+  city: string;
+  province: string;
+  price: number;
+  deposit: number;
+  capacity: string;
+  min_stay: string;
+  availability: string;
+  status: string;
+  listing_moderation_status: string;
+  role: string;
+  total_rooms: number;
+  rooms: number;
+  occupied_rooms: number;
+  created_at: string;
+  amenities: string[];
+  photos: string[];
+  rules: string;
+  monthlyPayment: number;
+  monthlyDeposit: number;
+  advancePayment: string;
+  authorized_landlords?: AuthorizedLandlord[];
+}
+
 export interface LandlordPropertyDetailResponse {
-  data: Record<string, unknown>;
+  data: LandlordPropertyDetail;
 }
 
 export interface LandlordRoom {
@@ -397,6 +458,8 @@ export interface LandlordRoom {
   deposit: number;
   status: string;
   capacity: number;
+  occupied: number;
+  free_slots: number;
   size: number | null;
   cover_photo: string | null;
   photos: Array<{ id: number; photo_url: string; is_cover: boolean; display_order: number }>;
@@ -564,10 +627,36 @@ export interface AdminPropertyRow {
   landlord_first: string;
   landlord_last: string;
   landlord_email: string;
+  /** Card facts added in `landlord-properties-card-layout` D21 (additive). */
+  created_at: string;
+  address: string | null;
+  city: string | null;
+  province: string | null;
+  rooms_count: number;
+  occupied_rooms: number;
+  monthly_revenue: number;
+  cover_photo: string | null;
 }
 
 export interface AdminPropertiesResponse {
   data: AdminPropertyRow[];
+}
+
+/** Read-only per-room view of a property (spec `create-listing-room-details` R10). */
+export interface AdminPropertyRoom {
+  id: number;
+  room_number: string;
+  room_type: string | null;
+  price: number;
+  capacity: number;
+  occupied: number;
+  free_slots: number;
+  status: string;
+  photo_count: number;
+}
+
+export interface AdminPropertyRoomsResponse {
+  data: AdminPropertyRoom[];
 }
 
 export interface AdminApplicationRow {
@@ -760,4 +849,374 @@ export interface LandlordVerificationResponse {
 export interface LandlordVerificationDocumentUploadResponse {
   message: string;
   data: LandlordVerificationData & { document_type?: string; file_url?: string };
+}
+
+export interface MessageAttachment {
+  url: string;
+  key?: string | null;
+}
+
+/** One inbox row / thread header (spec `messages-feature-review` R2/R15). */
+export interface MessageThread {
+  id: number;
+  property_id: number | null;
+  property_title: string | null;
+  counterpart_id: number;
+  counterpart_first_name: string;
+  counterpart_last_name: string;
+  counterpart_avatar_url: string | null;
+  last_message_at: string;
+  created_at: string;
+  last_body: string | null;
+  last_sender_id: number | null;
+  /** Attachments on the newest visible message — an image-only row still previews. */
+  last_attachment_count: number;
+  unread_count: number;
+  blocked_by_me: number;
+  blocked_me: number;
+}
+
+export interface MessageThreadsResponse {
+  data: MessageThread[];
+  unread_count: number;
+}
+
+export interface ThreadMessage {
+  id: number;
+  sender_id: number;
+  body: string;
+  property_id: number | null;
+  read_at: string | null;
+  created_at: string;
+  attachments: MessageAttachment[];
+}
+
+export interface MessageThreadResponse {
+  data: {
+    thread: MessageThread;
+    side: 'landlord' | 'boarder';
+    messages: ThreadMessage[];
+    has_more: boolean;
+    next_before: number | null;
+    /** `'you'` when the caller blocked the counterpart, `'them'` for the reverse. */
+    blocked_by: 'you' | 'them' | null;
+    /** `property_id` → listing title, for the origin header and message chips (R15). */
+    properties: Record<string, string>;
+  };
+}
+
+export interface MessageThreadOpenResponse {
+  data: { thread: MessageThread };
+}
+
+export interface SendMessageResponse {
+  data: { message: ThreadMessage };
+}
+
+export interface MessageUnreadCountResponse {
+  data: { unread_count: number };
+}
+
+export interface MessageAttachmentsResponse {
+  data: MessageAttachment[];
+}
+
+/* ------------------------------------------------------------------ payments */
+
+export type PaymentChargeType = 'rent' | 'deposit' | 'advance' | 'utility' | 'late_fee' | 'other';
+
+export type PaymentStatus = 'pending' | 'awaiting_verification' | 'overdue' | 'paid' | 'cancelled';
+
+export interface PaymentSubmission {
+  id: number;
+  payment_id: number;
+  submitted_by: number;
+  submitted_by_name: string | null;
+  amount: number;
+  payment_method: string;
+  reference_number: string;
+  proof_url: string | null;
+  notes: string | null;
+  status: string;
+  verified_by: number | null;
+  verified_at: string | null;
+  rejection_reason: string | null;
+  created_at: string;
+}
+
+export interface PaymentCharge {
+  id: number;
+  application_id: number | null;
+  boarder_id: number;
+  landlord_id: number;
+  room_id: number;
+  property_id: number;
+  property_title: string | null;
+  room_title: string | null;
+  boarder_name: string | null;
+  charge_type: PaymentChargeType | string;
+  description: string | null;
+  amount: number;
+  late_fee: number;
+  total_due: number;
+  due_date: string;
+  paid_date: string | null;
+  status: PaymentStatus;
+  stored_status: string;
+  is_overdue: boolean;
+  is_due_soon: boolean;
+  days_overdue: number;
+  payment_method: string | null;
+  /** Free-text label for a custom `other` method (spec `payments-tracker-redesign` D12). */
+  payment_method_label: string | null;
+  reference_number: string | null;
+  notes: string | null;
+  period_start: string | null;
+  period_end: string | null;
+  /** Set once the landlord has sent this cycle's manual reminder (D14). */
+  reminder_sent_at: string | null;
+  deposit_resolution: string | null;
+  deposit_resolution_amount: number | null;
+  deposit_resolution_reason: string | null;
+  created_at: string;
+  submissions: PaymentSubmission[];
+}
+
+export interface PaymentLedgerSummary {
+  total_due: number;
+  overdue_total: number;
+  overdue_count: number;
+  pending_count: number;
+  awaiting_verification_count: number;
+  paid_count: number;
+  collected_total: number;
+  next_due_date: string | null;
+  next_due_amount: number | null;
+}
+
+export interface PaymentAgingBuckets {
+  current: number;
+  days_1_30: number;
+  days_31_60: number;
+  days_61_90: number;
+  days_over_90: number;
+  total_outstanding: number;
+}
+
+export interface PaymentCollectionSummary {
+  month: string;
+  expected: number;
+  collected: number;
+  outstanding: number;
+  paid_count: number;
+  unpaid_count: number;
+}
+
+export interface BoarderPaymentsResponse {
+  success: true;
+  data: { charges: PaymentCharge[]; summary: PaymentLedgerSummary };
+}
+
+export interface BoarderChargeResponse {
+  success: true;
+  data: PaymentCharge;
+}
+
+export interface PaymentSubmissionResponse {
+  success: true;
+  message: string;
+  data: { submission_id: number; status: string; amount: number };
+}
+
+export interface PaymentProofResponse {
+  success: true;
+  data: { proof_url: string };
+}
+
+export interface LandlordPaymentsResponse {
+  success: true;
+  data: {
+    charges: PaymentCharge[];
+    summary: PaymentLedgerSummary;
+    aging: PaymentAgingBuckets;
+    collection: PaymentCollectionSummary;
+  };
+}
+
+export interface PropertyBillingSettings {
+  property_id: number;
+  late_fee_amount: number;
+  /** The single grace period (R6/D31): the `in_grace` state and the fee timing. */
+  late_fee_grace_days: number;
+  late_fee_enabled: number;
+  late_fee_type: 'fixed' | 'percent' | string;
+  late_fee_percent: number;
+  electricity_cost: number;
+  water_cost: number;
+  internet_cost: number;
+}
+
+/** The tracker's display vocabulary (spec `payments-tracker-redesign` §3.4). */
+export type TrackerStatus =
+  | 'paid'
+  | 'due_today'
+  | 'due_soon'
+  | 'in_grace'
+  | 'overdue'
+  | 'upcoming'
+  | 'no_charge';
+
+export interface TrackerLastPayment {
+  date: string;
+  amount: number;
+  method: string;
+  method_label: string | null;
+}
+
+export interface TrackerRow {
+  application_id: number;
+  boarder_id: number;
+  boarder_name: string;
+  room_id: number;
+  room_number: string;
+  room_occupied: number;
+  room_capacity: number;
+  move_in_date: string;
+  monthly_rent: number;
+  next_due_date: string | null;
+  days_remaining: number | null;
+  days_overdue: number | null;
+  status: TrackerStatus;
+  status_label: string;
+  current_charge_id: number | null;
+  amount_due: number;
+  last_payment: TrackerLastPayment | null;
+  has_pending_claim: boolean;
+  other_open_charges: number;
+  can_remind: boolean;
+}
+
+export interface TrackerSummary {
+  expected: number;
+  paid: number;
+  due_today: number;
+  in_grace: number;
+  overdue: number;
+}
+
+export interface PaymentTrackerResponse {
+  success: true;
+  data: {
+    rows: TrackerRow[];
+    summary: TrackerSummary;
+    counts: { rows: number; needs_review: number };
+  };
+}
+
+export interface TenancyPaymentHistory {
+  tenancy: {
+    application_id: number;
+    boarder_id: number;
+    boarder_name: string;
+    room_number: string;
+    property_title: string;
+    move_in_date: string;
+    next_due_date: string | null;
+    monthly_rent: number;
+  };
+  charges: PaymentCharge[];
+}
+
+export interface PaymentHistoryResponse {
+  success: true;
+  data: TenancyPaymentHistory;
+}
+
+export interface BillingSettingsResponse {
+  success: true;
+  data: PropertyBillingSettings;
+}
+
+/* ------------------------------------------------------------------ calendar */
+
+/**
+ * The landlord calendar's event union (spec `landlord-calendar` §3/§5.2).
+ *
+ * Every event is an **all-day date** derived server-side from rows the ledger,
+ * the applications page and the announcements page already own — the client
+ * renders tones and labels, and never re-derives a status.
+ */
+export type CalendarEventType =
+  | 'charge_due'
+  | 'payment_received'
+  | 'application_received'
+  | 'application_accepted'
+  | 'application_confirmed'
+  | 'tenancy_move_in'
+  | 'tenancy_move_out'
+  | 'leave_requested'
+  | 'announcement_publish';
+
+export type CalendarFamily = 'money' | 'tenancy' | 'applications' | 'content';
+
+export interface CalendarParty {
+  id: number;
+  name: string;
+}
+
+export interface CalendarEvent {
+  /** `<source>:<row id>:<type>` — stable across refetches, so it keys the chips. */
+  id: string;
+  type: CalendarEventType;
+  family: CalendarFamily;
+  /** `YYYY-MM-DD`, interpreted in Asia/Manila. */
+  date: string;
+  /** The person (or announcement title) the event is about, unlabelled. */
+  subject: string;
+  /** `StatusBadge` tone key, derived by the API. */
+  status: string;
+  /** True when the date is a proxy rather than a dedicated timestamp (spec L2). */
+  approximate: boolean;
+  amount: number | null;
+  late_fee: number | null;
+  charge_type: string | null;
+  description: string | null;
+  period_start: string | null;
+  period_end: string | null;
+  reference_number: string | null;
+  boarder: CalendarParty | null;
+  room: CalendarParty | null;
+  property: CalendarParty | null;
+  link: { to: string; label: string };
+}
+
+export interface CalendarCounts {
+  money: number;
+  tenancy: number;
+  applications: number;
+  content: number;
+}
+
+export interface CalendarSummary {
+  due_amount: number;
+  collected_amount: number;
+  overdue_count: number;
+  overdue_amount: number;
+}
+
+export interface CalendarPayload {
+  window: { from: string; to: string };
+  /** Manila "today" from the server, so the client never guesses (D20). */
+  today: string;
+  property_id: number | null;
+  counts: CalendarCounts;
+  total: number;
+  truncated: boolean;
+  summary: CalendarSummary;
+  events: CalendarEvent[];
+}
+
+export interface CalendarResponse {
+  success: true;
+  data: CalendarPayload;
 }

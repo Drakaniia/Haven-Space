@@ -126,9 +126,6 @@ function ApplyPage() {
                 <h1 className="bg-gradient-to-r from-primary to-primary-dark bg-clip-text text-3xl font-extrabold tracking-tight text-transparent">
                   Confirm Your Application
                 </h1>
-                <p className="mt-1.5 text-gray-ink">
-                  Review your application details before submitting to the landlord
-                </p>
               </div>
 
               {/* Property summary */}

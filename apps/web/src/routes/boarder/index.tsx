@@ -56,7 +56,6 @@ function BoarderDashboard() {
           <h1 className="text-2xl font-bold tracking-tight text-ink">
             Welcome home{user?.first_name ? `, ${user.first_name}` : ''}
           </h1>
-          <p className="mt-1 text-sm text-gray-ink">Manage your tenancy and utilities.</p>
         </div>
         <Link
           to="/boarder/payments/pay"

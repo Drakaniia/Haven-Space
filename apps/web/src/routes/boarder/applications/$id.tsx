@@ -1,6 +1,7 @@
 import { createFileRoute, Link, useNavigate } from '@tanstack/react-router';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useState } from 'react';
+import { MessageButton } from '../../../components/messages/MessageButton';
 import { Button } from '../../../components/ui/Button';
 import { Card } from '../../../components/ui/Card';
 import { ErrorState } from '../../../components/ui/ErrorState';
@@ -89,6 +90,16 @@ function ApplicationDetailPage() {
         </p>
         <p className="text-sm text-gray-ink">{app.property_address}</p>
         {app.message ? <p className="mt-3 rounded-md bg-cream p-3 text-sm">{app.message}</p> : null}
+        {/* One thread per pair, whatever the application's status: this is the
+            boarder's way to talk about it without e-mail (spec D17/R17). */}
+        <div className="mt-4">
+          <MessageButton
+            role="boarder"
+            counterpartId={app.landlord_id}
+            propertyId={app.property_id}
+            label="Message landlord"
+          />
+        </div>
       </Card>
 
       {isAccepted ? (

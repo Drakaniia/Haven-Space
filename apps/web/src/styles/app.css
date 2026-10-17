@@ -46,14 +46,19 @@
   --color-error-tint: #fef2f2;
   --color-error-ink: #b91c1c;
   --color-error-border: #fecaca;
+  /* The darker red the payments tracker uses for "overdue, past the grace
+     period" — deliberately heavier than `error-ink` so it reads as a different
+     state from "due today" (`payments-tracker-redesign` §3.4). */
+  --color-critical-tint: #fee2e2;
+  --color-critical-ink: #7f1d1d;
+  --color-critical-border: #fca5a5;
   --color-info-tint: #dbeafe;
   --color-info-ink: #1d4ed8;
   --color-info-border: #bfdbfe;
   --color-accent-tint: #f3e8ff;
   --color-accent-ink: #7e22ce;
-  --font-sans:
-    'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue',
-    Arial, sans-serif;
+  --font-sans: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto,
+    'Helvetica Neue', Arial, sans-serif;
   --shadow-card: 0 1px 3px rgba(0, 0, 0, 0.1);
   --shadow-pop: 0 10px 15px rgba(0, 0, 0, 0.1);
   /* Critically damped settle — the web approximation of Apple's damping 1.0
@@ -136,19 +141,26 @@ body {
   position: absolute;
   inset: 0;
   z-index: 0;
-  background-image:
-    linear-gradient(to right, #e7e5e4 1px, transparent 1px),
+  background-image: linear-gradient(to right, #e7e5e4 1px, transparent 1px),
     linear-gradient(to bottom, #e7e5e4 1px, transparent 1px);
   background-size: 20px 20px;
-  background-position:
-    0 0,
-    0 0;
-  mask-image:
-    repeating-linear-gradient(to right, black 0px, black 3px, transparent 3px, transparent 8px),
+  background-position: 0 0, 0 0;
+  mask-image: repeating-linear-gradient(
+      to right,
+      black 0px,
+      black 3px,
+      transparent 3px,
+      transparent 8px
+    ),
     repeating-linear-gradient(to bottom, black 0px, black 3px, transparent 3px, transparent 8px),
     radial-gradient(ellipse 70% 60% at 50% 0%, #000 60%, transparent 100%);
-  -webkit-mask-image:
-    repeating-linear-gradient(to right, black 0px, black 3px, transparent 3px, transparent 8px),
+  -webkit-mask-image: repeating-linear-gradient(
+      to right,
+      black 0px,
+      black 3px,
+      transparent 3px,
+      transparent 8px
+    ),
     repeating-linear-gradient(to bottom, black 0px, black 3px, transparent 3px, transparent 8px),
     radial-gradient(ellipse 70% 60% at 50% 0%, #000 60%, transparent 100%);
   mask-composite: intersect;
@@ -160,8 +172,7 @@ body {
 
 /* Warm brand glow behind the landing hero. */
 .hero-glow {
-  background-image:
-    radial-gradient(at 25% -12%, rgb(255 226 178 / 0.8) 0%, transparent 50%),
+  background-image: radial-gradient(at 25% -12%, rgb(255 226 178 / 0.8) 0%, transparent 50%),
     radial-gradient(at 75% -1%, rgb(78 237 80 / 0.39) 0%, transparent 50%);
 }
 

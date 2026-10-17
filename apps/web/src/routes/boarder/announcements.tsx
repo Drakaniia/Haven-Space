@@ -56,7 +56,6 @@ function AnnouncementsPage() {
           <Icon name="announcement" size={28} />
           <div>
             <h1 className="text-2xl font-bold tracking-tight text-ink">Announcements</h1>
-            <p className="text-sm text-gray-ink">Updates from your landlord and property.</p>
           </div>
         </div>
         {announcements.isLoading ? (

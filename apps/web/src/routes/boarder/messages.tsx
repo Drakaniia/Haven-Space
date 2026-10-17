@@ -1,28 +1,27 @@
-import { createFileRoute } from '@tanstack/react-router';
-import { RequireTenancy } from '../../components/boarder/FeatureGate';
+import { createFileRoute, Outlet } from '@tanstack/react-router';
 import { Protected } from '../../components/auth/Protected';
 import { RoleShell } from '../../components/layout/RoleShell';
-import { PlaceholderPage } from '../../components/ui/PlaceholderPage';
 import { useBoarderNav } from '../../lib/useBoarderNav';
 
+/**
+ * Layout for the `/boarder/messages` subtree (spec `messages-feature-review`
+ * D12/D14).
+ *
+ * No `RequireTenancy`: the listing's *Contact Landlord* CTA is reachable by a
+ * boarder who has never applied, so a confirmed tenancy cannot be the gate (F4).
+ * Everyone else on the surface keeps their existing gates.
+ */
 export const Route = createFileRoute('/boarder/messages')({
-  component: MessagesPage,
+  component: BoarderMessagesLayout,
 });
 
-function MessagesPage() {
+function BoarderMessagesLayout() {
   const nav = useBoarderNav();
+
   return (
     <Protected role="boarder">
       <RoleShell nav={nav}>
-        <RequireTenancy>
-          <PlaceholderPage
-            icon="chat"
-            title="Messages"
-            subtitle="Chat with your landlord."
-            notice="Messages coming soon"
-            message="In-app messaging with landlords is on the roadmap."
-          />
-        </RequireTenancy>
+        <Outlet />
       </RoleShell>
     </Protected>
   );

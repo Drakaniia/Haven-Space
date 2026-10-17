@@ -3,6 +3,7 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useState } from 'react';
 import { Protected } from '../../components/auth/Protected';
 import { RoleShell } from '../../components/layout/RoleShell';
+import { MessageButton } from '../../components/messages/MessageButton';
 import { Button } from '../../components/ui/Button';
 import { DataTable } from '../../components/ui/DataTable';
 import { EmptyState } from '../../components/ui/EmptyState';
@@ -62,7 +63,6 @@ function ApplicationsPage() {
       <PageHeader
         icon="application"
         title="Applications"
-        subtitle="Review and respond to boarder applications."
       />
 
       {error ? (
@@ -104,26 +104,37 @@ function ApplicationsPage() {
             },
             {
               header: 'Actions',
-              cell: row =>
-                row.status === 'pending' ? (
-                  <div className="flex gap-2">
-                    <Button
-                      size="sm"
-                      onClick={() => patchStatus.mutate({ id: row.id, status: 'accepted' })}
-                      disabled={patchStatus.isPending}
-                    >
-                      Accept
-                    </Button>
-                    <Button
-                      size="sm"
-                      variant="danger"
-                      onClick={() => patchStatus.mutate({ id: row.id, status: 'rejected' })}
-                      disabled={patchStatus.isPending}
-                    >
-                      Reject
-                    </Button>
-                  </div>
-                ) : null,
+              // Every application can be discussed, whatever its status — the
+              // thread is independent of the application's outcome (D17/D19),
+              // and the landlord's counterpart is the boarder's user id (R17).
+              cell: row => (
+                <div className="flex flex-wrap gap-2">
+                  {row.status === 'pending' ? (
+                    <>
+                      <Button
+                        size="sm"
+                        onClick={() => patchStatus.mutate({ id: row.id, status: 'accepted' })}
+                        disabled={patchStatus.isPending}
+                      >
+                        Accept
+                      </Button>
+                      <Button
+                        size="sm"
+                        variant="danger"
+                        onClick={() => patchStatus.mutate({ id: row.id, status: 'rejected' })}
+                        disabled={patchStatus.isPending}
+                      >
+                        Reject
+                      </Button>
+                    </>
+                  ) : null}
+                  <MessageButton
+                    role="landlord"
+                    counterpartId={row.boarder_id}
+                    propertyId={row.property_id}
+                  />
+                </div>
+              ),
             },
           ]}
         />

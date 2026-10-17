@@ -54,7 +54,6 @@ function ApplicationsPage() {
         <Icon name="application" size={28} />
         <div>
           <h1 className="text-2xl font-bold tracking-tight text-ink">My applications</h1>
-          <p className="text-sm text-gray-ink">Track the rooms you&apos;ve applied to.</p>
         </div>
       </div>
       {applications.isLoading ? (

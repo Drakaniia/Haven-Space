@@ -125,7 +125,6 @@ function SettingsPage() {
       <PageHeader
         icon="settings"
         title="Settings"
-        subtitle="Manage your account details and password."
       />
 
       <div className="flex max-w-2xl flex-col gap-6">

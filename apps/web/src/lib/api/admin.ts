@@ -6,6 +6,7 @@ import type {
   AdminLandlordsResponse,
   AdminPropertiesResponse,
   AdminPropertyAccessResponse,
+  AdminPropertyRoomsResponse,
   AdminSettingsResponse,
   AdminSummaryResponse,
   AdminUsersResponse,
@@ -78,6 +79,18 @@ export function getProperties(token: string): Promise<AdminPropertiesResponse> {
   return apiFetch<AdminPropertiesResponse>(base(), '/api/admin/properties?moderation=all', {
     headers: { Authorization: `Bearer ${token}` },
   });
+}
+
+/** Per-room capacity/occupancy for one property (`create-listing-room-details` R10). */
+export function getPropertyRooms(
+  token: string,
+  propertyId: number
+): Promise<AdminPropertyRoomsResponse> {
+  return apiFetch<AdminPropertyRoomsResponse>(
+    base(),
+    `/api/admin/properties/rooms?id=${encodeURIComponent(propertyId)}`,
+    { headers: { Authorization: `Bearer ${token}` } }
+  );
 }
 
 export function patchPropertyStatus(

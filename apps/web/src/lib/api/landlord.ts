@@ -357,6 +357,29 @@ export function declineLeaveRequest(
   );
 }
 
+/**
+ * Photo uploads must reject on a non-2xx response — the create-listing flow
+ * depends on knowing which room's upload failed so it can name it in a toast
+ * instead of reporting a false success (spec `create-listing-room-details` R8).
+ */
+async function parsePhotoUpload(
+  response: Response,
+  fallback: string
+): Promise<UploadPhotosResponse> {
+  const body = (await response.json().catch(() => ({}))) as UploadPhotosResponse &
+    Record<string, unknown>;
+
+  if (!response.ok) {
+    throw new ApiRequestError(
+      response.status,
+      String(body.error ?? body.message ?? `${fallback} (${response.status})`),
+      body
+    );
+  }
+
+  return body;
+}
+
 export async function uploadPropertyPhotos(
   token: string,
   propertyId: number,
@@ -369,7 +392,7 @@ export async function uploadPropertyPhotos(
     headers: { Authorization: `Bearer ${token}` },
     body: form,
   });
-  return (await response.json()) as UploadPhotosResponse;
+  return parsePhotoUpload(response, 'Failed to upload photos');
 }
 
 export async function uploadRoomPhotos(
@@ -384,7 +407,7 @@ export async function uploadRoomPhotos(
     headers: { Authorization: `Bearer ${token}` },
     body: form,
   });
-  return (await response.json()) as UploadPhotosResponse;
+  return parsePhotoUpload(response, 'Failed to upload photos');
 }
 
 export async function uploadTemporaryPhotos(

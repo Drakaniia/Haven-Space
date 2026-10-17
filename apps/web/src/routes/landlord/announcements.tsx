@@ -141,7 +141,6 @@ function AnnouncementsPage() {
       <PageHeader
         icon="announcement"
         title="Announcements"
-        subtitle="Reach your boarders with updates."
         actions={<Button onClick={openCreate}>+ New announcement</Button>}
       />
 

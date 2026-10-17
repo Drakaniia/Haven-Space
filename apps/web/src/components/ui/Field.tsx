@@ -30,11 +30,18 @@ export function Field({
 // `text-base` pins the controls at 16px, the size that keeps mobile browsers from zooming the page
 // when a field is focused. They already inherit 16px, so this is insurance against a future
 // `text-sm` utility re-introducing the zoom.
+//
+// Focus is signalled by a border *and* a ring, so a keyboard user can see the
+// focused control without relying on the (removed) default outline. `user-invalid`
+// gives a rejected field a red border once the user has actually interacted with
+// it (unlike `:invalid`, which fires on untouched `required` fields at load).
 const inputClasses =
-  'w-full rounded-xl border border-border-strong bg-surface px-3 py-2 text-base text-ink focus:border-primary focus:outline-none';
+  'w-full rounded-xl border border-border-strong bg-surface px-3 py-2 text-base text-ink transition-colors focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 user-invalid:border-error-ink user-invalid:ring-2 user-invalid:ring-error-tint';
 
-export function TextInput(props: InputHTMLAttributes<HTMLInputElement>) {
-  return <input className={inputClasses} {...props} />;
+// `className` is *appended* so a caller can add to the shared look instead of
+// silently replacing it (the pre-existing spread order dropped every base class).
+export function TextInput({ className = '', ...props }: InputHTMLAttributes<HTMLInputElement>) {
+  return <input className={`${inputClasses} ${className}`} {...props} />;
 }
 
 export function PasswordInput(props: InputHTMLAttributes<HTMLInputElement>) {
@@ -60,10 +67,13 @@ export function PasswordInput(props: InputHTMLAttributes<HTMLInputElement>) {
   );
 }
 
-export function SelectInput(props: SelectHTMLAttributes<HTMLSelectElement>) {
-  return <select className={inputClasses} {...props} />;
+export function SelectInput({ className = '', ...props }: SelectHTMLAttributes<HTMLSelectElement>) {
+  return <select className={`${inputClasses} ${className}`} {...props} />;
 }
 
-export function TextArea(props: TextareaHTMLAttributes<HTMLTextAreaElement>) {
-  return <textarea className={inputClasses} {...props} />;
+export function TextArea({
+  className = '',
+  ...props
+}: TextareaHTMLAttributes<HTMLTextAreaElement>) {
+  return <textarea className={`${inputClasses} ${className}`} {...props} />;
 }

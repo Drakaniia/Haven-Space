@@ -165,9 +165,6 @@ function TourPage() {
           </Link>
 
           <h1 className="text-2xl font-bold text-ink">Schedule a Tour</h1>
-          <p className="mt-1 text-gray-ink">
-            Pick a time that works for you and {listing.landlord.name} will confirm your visit.
-          </p>
 
           <div className="mt-5 flex flex-col gap-4 rounded-2xl bg-surface p-5 shadow-card sm:flex-row">
             <div className="h-36 w-full shrink-0 overflow-hidden rounded-xl bg-mint/40 sm:h-[120px] sm:w-[160px]">

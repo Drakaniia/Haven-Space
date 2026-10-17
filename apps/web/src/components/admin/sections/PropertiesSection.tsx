@@ -3,12 +3,15 @@ import { useState, type ReactNode } from 'react';
 import {
   bulkPatchPropertyStatus,
   getProperties,
+  getPropertyRooms,
   patchPropertyStatus,
 } from '../../../lib/api/admin';
 import type { AdminPropertyRow } from '../../../lib/types';
+import { roomTypeLabel } from '../../../lib/room-drafts';
+import { PropertyCard, PropertyCardList, adminFacts, moderationPill, propertyAddress } from '../../properties/PropertyCard';
 import { Button } from '../../ui/Button';
 import { ConfirmDialog } from '../../ui/ConfirmDialog';
-import { DataTable, type Column } from '../../ui/DataTable';
+import { Spinner } from '../../ui/Spinner';
 import { StatusBadge } from '../../ui/StatusBadge';
 import { AdminSection } from '../AdminSection';
 import { BULK_SELECT_CLASSES, BulkActionBar } from '../BulkActionBar';
@@ -25,10 +28,12 @@ type PendingConfirm = {
 /**
  * Listings submitted for moderation.
  *
- * Row actions are real `Button` variants now — same labels, same positions —
- * so they have hit padding and press feedback instead of being ~20px-tall
- * underlined text (R24). `Publish` stays one click; `Reject` and `Flag` are
- * negative outcomes and confirm first (D12/R26).
+ * The moderation queue is a card list now (`landlord-properties-card-layout`
+ * R18/R20): each card carries its moderation status as the photo pill, the same
+ * fact chips as the landlord surfaces, and the read-only per-room view inline
+ * instead of behind a modal. `Select` reveals a checkbox per card and the bulk
+ * bar plus the 100-item cap are unchanged — only the table header checkbox
+ * became an explicit `Select all (first 100)` control.
  */
 export function PropertiesSection({ token, push }: { token: string; push: PushToast }) {
   const queryClient = useQueryClient();
@@ -36,6 +41,7 @@ export function PropertiesSection({ token, push }: { token: string; push: PushTo
   const [selected, setSelected] = useState<Set<number>>(new Set());
   const [bulkAction, setBulkAction] = useState('reject');
   const [confirm, setConfirm] = useState<PendingConfirm | null>(null);
+  const [openRooms, setOpenRooms] = useState<number[]>([]);
 
   const invalidate = () => {
     void queryClient.invalidateQueries({ queryKey: ['admin'] });
@@ -82,6 +88,37 @@ export function PropertiesSection({ token, push }: { token: string; push: PushTo
   const overCap = selected.size > 100;
   const rows = properties.data?.data ?? [];
 
+  function toggleRow(id: number) {
+    const next = new Set(selected);
+
+    if (next.has(id)) {
+      next.delete(id);
+    } else {
+      if (next.size >= 100) {
+        push({ tone: 'error', message: 'Max 100 per bulk operation' });
+        return;
+      }
+      next.add(id);
+    }
+
+    setSelected(next);
+  }
+
+  function selectAll() {
+    if (rows.length > 100) {
+      push({ tone: 'info', message: 'Selected first 100 — max 100 per bulk operation' });
+    }
+    setSelected(new Set(rows.slice(0, 100).map(row => row.id)));
+  }
+
+  function toggleRooms(propertyId: number) {
+    setOpenRooms(current =>
+      current.includes(propertyId)
+        ? current.filter(id => id !== propertyId)
+        : [...current, propertyId]
+    );
+  }
+
   function requestAction(row: AdminPropertyRow, action: string) {
     if (action === 'publish') {
       patchProperty.mutate({ propertyId: row.id, action });
@@ -108,29 +145,6 @@ export function PropertiesSection({ token, push }: { token: string; push: PushTo
     });
   }
 
-  const columns: Column<AdminPropertyRow>[] = [
-    { header: 'Title', cell: row => row.title },
-    { header: 'Price', cell: row => `₱${Number(row.price).toLocaleString()}` },
-    { header: 'Status', cell: row => <StatusBadge status={row.listing_moderation_status} /> },
-    { header: 'Landlord', cell: row => `${row.landlord_first} ${row.landlord_last}` },
-    {
-      header: 'Actions',
-      cell: row => (
-        <div className="flex flex-wrap items-center gap-1">
-          <Button variant="ghost" size="sm" onClick={() => requestAction(row, 'publish')}>
-            Publish
-          </Button>
-          <Button variant="dangerGhost" size="sm" onClick={() => requestAction(row, 'reject')}>
-            Reject
-          </Button>
-          <Button variant="warningGhost" size="sm" onClick={() => requestAction(row, 'flag')}>
-            Flag
-          </Button>
-        </div>
-      ),
-    },
-  ];
-
   return (
     <AdminSection
       section="properties"
@@ -155,35 +169,59 @@ export function PropertiesSection({ token, push }: { token: string; push: PushTo
         ) : null
       }
       toolbar={
-        rows.length ? <p className="mb-3 text-xs text-gray-ink">{rows.length} properties</p> : null
+        rows.length ? (
+          <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
+            <p className="text-xs text-gray-ink">{rows.length} properties</p>
+            {selectMode ? (
+              <Button variant="outline" size="sm" onClick={selectAll}>
+                Select all (first 100)
+              </Button>
+            ) : null}
+          </div>
+        ) : null
       }
     >
-      <DataTable
-        rows={rows}
-        columns={columns}
-        keyFor={row => row.id}
-        selectable={selectMode}
-        selectedIds={selected as Set<string | number>}
-        onToggle={id => {
-          const next = new Set(selected);
-          if (next.has(id as number)) next.delete(id as number);
-          else {
-            if (next.size >= 100) {
-              push({ tone: 'error', message: 'Max 100 per bulk operation' });
-              return;
+      <PropertyCardList>
+        {rows.map(row => (
+          <PropertyCard
+            key={row.id}
+            title={row.title}
+            imageUrl={row.cover_photo}
+            pill={moderationPill(row.listing_moderation_status)}
+            address={propertyAddress(row)}
+            facts={adminFacts(row)}
+            note={[row.landlord_first, row.landlord_last].filter(Boolean).join(' ')}
+            selection={
+              selectMode
+                ? {
+                    checked: selected.has(row.id),
+                    onChange: () => toggleRow(row.id),
+                    label: `Select ${row.title}`,
+                  }
+                : undefined
             }
-            next.add(id as number);
-          }
-          setSelected(next);
-        }}
-        onToggleAll={checked => {
-          if (checked) {
-            if (rows.length > 100)
-              push({ tone: 'info', message: 'Selected first 100 — max 100 per bulk operation' });
-            setSelected(new Set(rows.slice(0, 100).map(r => r.id)));
-          } else setSelected(new Set());
-        }}
-      />
+            actions={
+              <>
+                <Button variant="ghost" size="sm" onClick={() => requestAction(row, 'publish')}>
+                  Publish
+                </Button>
+                <Button variant="dangerGhost" size="sm" onClick={() => requestAction(row, 'reject')}>
+                  Reject
+                </Button>
+                <Button variant="warningGhost" size="sm" onClick={() => requestAction(row, 'flag')}>
+                  Flag
+                </Button>
+              </>
+            }
+            rooms={{
+              id: `admin-property-rooms-${row.id}`,
+              open: openRooms.includes(row.id),
+              onToggle: () => toggleRooms(row.id),
+              content: <AdminPropertyRooms token={token} propertyId={row.id} />,
+            }}
+          />
+        ))}
+      </PropertyCardList>
 
       {selectMode && selected.size > 0 && (
         <BulkActionBar
@@ -220,5 +258,53 @@ export function PropertiesSection({ token, push }: { token: string; push: PushTo
         onCancel={() => setConfirm(null)}
       />
     </AdminSection>
+  );
+}
+
+/**
+ * Read-only per-room view for one property (`create-listing-room-details`
+ * R10) — the same rows the modal used to show, inline under the card.
+ */
+function AdminPropertyRooms({ token, propertyId }: { token: string; propertyId: number }) {
+  const rooms = useQuery({
+    queryKey: ['admin', 'property-rooms', propertyId],
+    queryFn: () => getPropertyRooms(token, propertyId),
+    enabled: Boolean(token && propertyId),
+  });
+
+  if (rooms.isLoading) {
+    return <Spinner />;
+  }
+
+  if (rooms.error) {
+    return <p className="text-sm text-error-ink">{rooms.error.message}</p>;
+  }
+
+  if ((rooms.data?.data.length ?? 0) === 0) {
+    return <p className="text-sm text-gray-ink">This property has no rooms.</p>;
+  }
+
+  return (
+    <ul className="flex flex-col divide-y divide-border">
+      {rooms.data!.data.map(room => (
+        <li
+          key={room.id}
+          className="flex flex-wrap items-center justify-between gap-2 py-2 text-sm"
+        >
+          <span className="font-medium text-ink">{room.room_number || `Room ${room.id}`}</span>
+          <span className="text-gray-ink">
+            {roomTypeLabel(room.room_type)} · ₱{Number(room.price).toLocaleString()}
+          </span>
+          <span className="text-gray-ink">
+            {room.occupied} of {room.capacity} occupied · {room.free_slots}{' '}
+            {room.free_slots === 1 ? 'slot' : 'slots'} free
+          </span>
+          <span className="text-gray-ink">
+            {room.photo_count} {room.photo_count === 1 ? 'photo' : 'photos'}
+          </span>
+          <StatusBadge status={room.status} />
+        </li>
+      ))}
+    </ul>
   );
 }

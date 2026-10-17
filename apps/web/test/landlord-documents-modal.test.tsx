@@ -147,7 +147,9 @@ test('sends a reject decision with the typed reason', async () => {
   });
   fireEvent.click(screen.getByText('Reject verification'));
 
-  await waitFor(() => expect(notifications).toEqual(['Landlord verification updated successfully']));
+  await waitFor(() =>
+    expect(notifications).toEqual(['Landlord verification updated successfully'])
+  );
   // The success path refetches the detail, so look at the last request that carried a body.
   expect(requests.filter(request => request.body).at(-1)?.body).toEqual({
     landlordId: 3,

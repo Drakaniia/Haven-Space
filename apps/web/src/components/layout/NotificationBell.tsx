@@ -1,5 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { Link } from '@tanstack/react-router';
 import { useState } from 'react';
+import { notificationThreadId } from '../../lib/messages';
 import {
   deleteNotification,
   getNotifications,
@@ -38,7 +40,7 @@ function formatWhen(value: string): string {
 }
 
 export function NotificationBell() {
-  const { token } = useAuth();
+  const { token, user } = useAuth();
   const [open, setOpen] = useState(false);
   const queryClient = useQueryClient();
 
@@ -143,17 +145,46 @@ export function NotificationBell() {
                   notification.type === 'property_invitation'
                     ? invitationIdFromMetadata(notification.metadata)
                     : null;
+                // A message row carries no body — just the thread it belongs to,
+                // which is where tapping it goes (spec `messages-feature-review`
+                // R9/R16).
+                const threadId =
+                  notification.type === 'message'
+                    ? notificationThreadId(notification.metadata)
+                    : null;
 
                 return (
                   <li key={notification.id} className="flex items-start gap-3 px-4 py-3">
                     <div className="min-w-0 flex-1">
-                      <p
-                        className={`text-sm ${
-                          notification.is_read ? 'text-gray-ink' : 'font-semibold'
-                        }`}
-                      >
-                        {notification.title}
-                      </p>
+                      {threadId !== null ? (
+                        <Link
+                          to={
+                            user?.role === 'landlord'
+                              ? '/landlord/messages/$threadId'
+                              : '/boarder/messages/$threadId'
+                          }
+                          params={{ threadId: String(threadId) }}
+                          onClick={() => {
+                            setOpen(false);
+                            if (!notification.is_read) markOne.mutate(notification.id);
+                          }}
+                          className={`block text-sm ${
+                            notification.is_read
+                              ? 'text-primary hover:underline'
+                              : 'font-semibold text-primary hover:underline'
+                          }`}
+                        >
+                          {notification.title}
+                        </Link>
+                      ) : (
+                        <p
+                          className={`text-sm ${
+                            notification.is_read ? 'text-gray-ink' : 'font-semibold'
+                          }`}
+                        >
+                          {notification.title}
+                        </p>
+                      )}
                       {notification.message ? (
                         <p className="mt-0.5 text-sm text-gray-ink">{notification.message}</p>
                       ) : null}

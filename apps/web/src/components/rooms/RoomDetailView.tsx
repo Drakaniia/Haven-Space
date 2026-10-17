@@ -20,6 +20,7 @@ import {
   cleanRoomType,
   formatAmount,
   formatPrice,
+  freeSlotsLabel,
   genderInfo,
   isRoomAvailable,
   roomStatusLabel,
@@ -130,7 +131,11 @@ export function RoomDetailView({
   const inBoarderFlow = Boolean(applyTo) || isBoarder;
   const tourPath = boarderTourPath(listing.id);
   const secondaryHref = inBoarderFlow ? tourPath : authRedirect;
+  // Messaging lives in the boarder shell and is gated on a session, never on a
+  // tenancy (spec `messages-feature-review` D12/R14). Guests still authenticate
+  // first, and the inbox then opens the thread for *this* listing.
   const contactHref = inBoarderFlow ? BOARDER_MESSAGES_PATH : authRedirect;
+  const contactSearch = inBoarderFlow ? { compose: listing.id } : undefined;
   const browseHref = BROWSE_LISTINGS_PATH;
 
   function prevImage() {
@@ -520,13 +525,16 @@ export function RoomDetailView({
                           : 'border-border bg-cream/50 hover:border-primary/60'
                       }`}
                     >
-                      <span className="flex min-w-0 items-center gap-2 text-sm font-medium text-ink">
-                        <Icon
-                          name={room.capacity > 1 ? 'users' : 'user'}
-                          size={16}
-                          className="shrink-0 text-primary"
-                        />
-                        <span className="truncate">{cleanRoomType(room)}</span>
+                      <span className="flex min-w-0 flex-col">
+                        <span className="flex min-w-0 items-center gap-2 text-sm font-medium text-ink">
+                          <Icon
+                            name={room.capacity > 1 ? 'users' : 'user'}
+                            size={16}
+                            className="shrink-0 text-primary"
+                          />
+                          <span className="truncate">{cleanRoomType(room)}</span>
+                        </span>
+                        <span className="mt-0.5 text-xs text-gray-ink">{freeSlotsLabel(room)}</span>
                       </span>
                       <span className="flex shrink-0 items-center gap-1.5">
                         <span className="text-sm font-bold text-primary">
@@ -585,6 +593,7 @@ export function RoomDetailView({
               <p className="text-sm text-gray-ink">Questions about this property?</p>
               <Link
                 to={contactHref}
+                search={contactSearch}
                 className="mt-1 inline-flex items-center gap-1.5 text-sm font-semibold text-primary hover:underline"
               >
                 <Icon name="chat" size={16} />
@@ -683,6 +692,10 @@ export function RoomDetailView({
                       <span className="flex items-center gap-1.5">
                         <Icon name="users" size={14} className="text-primary" />
                         {room.capacity} {room.capacity === 1 ? 'person' : 'persons'}
+                      </span>
+                      <span className="flex items-center gap-1.5">
+                        <Icon name="calendarDays" size={14} className="text-primary" />
+                        {freeSlotsLabel(room)}
                       </span>
                       {room.size ? (
                         <span className="flex items-center gap-1.5">

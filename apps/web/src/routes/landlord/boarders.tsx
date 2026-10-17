@@ -3,6 +3,7 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useState, type FormEvent } from 'react';
 import { Protected } from '../../components/auth/Protected';
 import { RoleShell } from '../../components/layout/RoleShell';
+import { MessageButton } from '../../components/messages/MessageButton';
 import { Button } from '../../components/ui/Button';
 import { ConfirmDialog } from '../../components/ui/ConfirmDialog';
 import { DataTable } from '../../components/ui/DataTable';
@@ -188,7 +189,7 @@ function BoardersPage() {
         </div>
       ) : null}
 
-      <PageHeader icon="users" title="Boarders" subtitle="Manage the tenants in your properties." />
+      <PageHeader icon="users" title="Boarders" />
 
       <div className="mb-5 flex flex-wrap items-end justify-between gap-4">
         <div className="w-72">
@@ -283,6 +284,10 @@ function BoardersPage() {
                         </Button>
                       </>
                     ) : null}
+                    {/* `row.id` is the boarder's user id (the application's own id
+                        is `application_id`), which is exactly what a thread needs
+                        (F7 correction, R17). */}
+                    <MessageButton role="landlord" counterpartId={row.id} />
                     <Button variant="ghost" size="sm" onClick={() => openEdit(row)}>
                       Edit
                     </Button>
