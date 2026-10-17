@@ -12,6 +12,11 @@ plan; no code has been changed.
 > longer a "duplicate UI" pair. The boarder browse surface is the public page; the in-shell
 > apply/tour routes are unchanged.
 
+> **Amended 2026-10-11 (`landlord-calendar-spec.md`).** A spec now exists for a unified
+> read-only operations calendar: charge due dates, tenancy dates, application milestones and
+> announcement publish dates. The page itself is still the placeholder this row describes, so its
+> "widget or graceful fallback" expectation stands until that spec ships.
+
 ---
 
 Run the full-site navigability audit (public → auth → boarder → landlord → admin) with the preview browser
@@ -29,7 +34,7 @@ Run the full-site navigability audit (public → auth → boarder → landlord �
 | Admin account                         | **Create one locally** via direct SQL insert (there is no admin signup/seed script)                                                                                                                                                                                                                                                                           |
 | Scope                                 | **Full-site audit** — every route (public, auth, boarder, landlord, admin), every button/link on every page, missing-UI checks, duplicate-UI checks, flow edge cases                                                                                                                                                                                          |
 | Test data                             | **Fresh accounts each run** (timestamped emails) so runs are repeatable and don't collide                                                                                                                                                                                                                                                                     |
-| Deferred features (payments/messages) | **Include as expected-failure** tests (they return `501 FEATURE_DEFERRED`) — pages must render a graceful error, never crash                                                                                                                                                                                                                                  |
+| Deferred features (payments)          | Payments **ship** as a manual ledger (spec `payments-feature`); there is still **no gateway** and no `501 FEATURE_DEFERRED` path anywhere (F2). Messages **ship** (see A22)                                                                                                                                                                                                                                  |
 | Deliverable                           | **Spec = audit plan + bug log template** (no separate issue drafting)                                                                                                                                                                                                                                                                                         |
 | QA method                             | **Freebuff preview browser tool** — the `/browser-use` builtin (direct browser control via CDP: automation, scraping, testing, screenshots, and site/app work). Preview: `browser-use/browser-use@browser-use` (91.2K installs) — direct CDP control, no cloud key needed. Fallback: native Python Playwright (system Chrome) — same scenarios, same logging. |
 | Navigability mandate                  | **Every page must be reachable** — from nav, from links, and by direct URL. Any non-navigable page, broken link, dead-end, or 404 is a logged bug (S1/S2).                                                                                                                                                                                                    |
@@ -71,7 +76,8 @@ Run the full-site navigability audit (public → auth → boarder → landlord �
 
 - `JWT_SECRET` must be present in `workers/api/.dev.vars` (copy from `.dev.vars.example`) or auth routes fail.
 - Google OAuth and UploadThing are **not required** for this pass (photo uploads and OAuth are out of scope unless credentials exist).
-- Payments/messages are expected to return `501 FEATURE_DEFERRED` — verified below.
+- Payments **ship** as a manual ledger — `/api/boarder/payments` and `/api/landlord/payments*` are mounted from `workers/api/src/routes/payments.ts` (migration `0021_payments.sql`). No `501 FEATURE_DEFERRED` code path exists anywhere (verified: zero matches under `workers/api`) — the old claim was a phantom (F2).
+- Messages are **not** deferred any more (`messages-feature-review`): inbox, threads, images, unread state, report/block all ship, so A22 checks shipped behaviour for messages.
 
 ---
 
@@ -184,9 +190,9 @@ For each boarder page below, as a seeded boarder (has an accepted/confirmed appl
 | Applications          | `/boarder/applications` + `/boarder/applications/<id>` | Status badges; detail page; **withdraw/delete affordance for accepted applications (S22)**; empty state |
 | Confirm Booking       | `/boarder/confirm-booking`                             | Payment-method selector (GCash/bank/cash); Confirm button; **no decline/back affordance missing (S22)** |
 | Tenancy               | `/boarder/tenancy`                                     | Full tenancy details; "Request to leave" opens modal, form validates, submits; refresh after submit     |
-| Payments              | `/boarder/payments`                                    | Graceful `501 FEATURE_DEFERRED` state, no crash                                                         |
+| Payments              | `/boarder/payments` + `/boarder/payments/pay`          | Summary (balance / next due / overdue) + the tenancy's charges; submit flow requires a reference number; empty state without a tenancy |
 | Announcements         | `/boarder/announcements`                               | List renders; empty state                                                                               |
-| Messages              | `/boarder/messages`                                    | Graceful `501 FEATURE_DEFERRED` state, no crash                                                         |
+| Messages              | `/boarder/messages` + `/boarder/messages/<id>`         | Inbox list → thread; composer (text + ≤4 images); unread pill; no `RequireTenancy`; no "coming soon"  |
 | House Rules           | `/boarder/house-rules`                                 | Renders real content or graceful empty state                                                            |
 | Maps                  | `/boarder/maps`                                        | Renders (map widget or graceful fallback); no crash                                                     |
 | Settings              | `/boarder/settings`                                    | Form loads user data; save gives feedback; back link                                                    |
@@ -212,7 +218,7 @@ Same discipline as 4.3 (nav reachability + direct URL + every button + missing/d
 | Boarders       | `/landlord/boarders`                               | List renders; row actions; empty state                                                                                  |
 | Calendar       | `/landlord/calendar`                               | Renders (widget or graceful fallback); no crash                                                                         |
 | Announcements  | `/landlord/announcements`                          | Create/list flow; submit feedback; empty state                                                                          |
-| Messages       | `/landlord/messages`                               | Graceful `501 FEATURE_DEFERRED`, no crash                                                                               |
+| Messages       | `/landlord/messages` + `/landlord/messages/<id>`   | Inbox list → thread; unread badge in the sidebar; block/report in the ⋯ menu; bell row deep-links the thread            |
 | Payments       | `/landlord/payments` + `/landlord/payments/record` | Graceful `501` (or partial) — no crash                                                                                  |
 | Maps           | `/landlord/maps`                                   | Renders or graceful fallback                                                                                            |
 | Activity       | `/landlord/activity`                               | Log/list renders; empty state                                                                                           |
@@ -320,9 +326,10 @@ For every flow, verify the affordances exist — flag any that don't as a bug:
 
 - Flag → listing hidden from public; Reject → inactive; Publish → visible again (S26). Each admin action is reflected in both admin and landlord views.
 
-**A22. Deferred features**
+**A22. Deferred features (payments no longer qualify — see below)**
 
-- Payments (boarder + landlord) and Messages (all roles) → graceful `501 FEATURE_DEFERRED`, never a crash (S30/S31).
+- Payments (boarder + landlord) **ship** as a manual ledger: generated rent/deposit/advance schedules, boarder submission with a reference, landlord verify/reject/record, aging + CSV export, and automatic overdue/late-fee handling. There is still no `501 FEATURE_DEFERRED` route (F2) and no gateway.
+- Messages (boarder + landlord) → the shipped inbox: list, thread, composer, unread state, block/report. Admins still see nothing (no admin messages surface, by design).
 
 **A23. Empty/absent data states**
 
@@ -353,7 +360,7 @@ For every flow, verify the affordances exist — flag any that don't as a bug:
 3. **Email verification is not real** — no verification email is sent on email/password signup; landlords become `email_verified = 1` only via admin approval.
 4. **Landlord verification page upload is local-only** — the "Submit documents" button on `/landlord/verification` stores nothing to the API ("Upload to the API will be wired once the verification endpoint is finalized"). Verify the button gives feedback or logs it as missing-UI.
 5. **Listings auto-publish** — `createLandlordProperty` inserts `listing_moderation_status = 'published'`, so admin moderation only bites after the fact.
-6. **Payments/messages 501** — flows that touch them (Pay rent, messaging) will fail by design (**A22**).
+6. **Payments and messaging both ship** — payments run as a manual ledger with boarder submission + landlord verification, and messaging runs end-to-end: a boarder's *Contact Landlord* opens a real thread (**A22**). The old "`501` for both" claim was never true (F2).
 7. **Duplicate-UI risk areas** — pages with legacy + new route trees (e.g. `/find-a-room` vs `/boarder/find-a-room`, `/maps` vs `/public-maps`, `auth/signup` vs `auth/signup/index`, `applications` vs `applications/index`) may double-render or serve near-identical pages — verify each pair during the run.
 
 ---

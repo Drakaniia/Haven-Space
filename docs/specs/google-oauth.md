@@ -322,5 +322,5 @@ Google Cloud Console.
 
 - Email/password signup role chooser redesign (the `/auth/choose` page stays as-is).
 - Email verification emails for Google-created accounts (trusting Google per decision).
-- Payments/messages (deferred platform-wide).
+- Messages and payments ship (payments as a manual ledger with no gateway — spec `payments-feature`); earlier "deferred platform-wide" wording is stale.
 - Changes to the accepted-boarder `confirm-booking` landing logic (already status-aware).

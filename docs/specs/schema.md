@@ -50,7 +50,7 @@ The `rooms` table manages individual room listings within properties on the Have
 
 ### Property Table
 
-The `property` table manages property listings owned by landlords on the Haven Space platform. It stores the landlord's user ID as a foreign key to establish ownership, along with comprehensive property details including title, description, full address, and city location. Each property has a status field with three possible states: available, occupied, or hidden, defaulting to 'available' to indicate the property is actively listed. The table also includes a gender preference field with options for male, female, or any, defaulting to 'any' to accommodate diverse tenant preferences. Standard timestamp fields track when properties are created and last updated. This table serves as the foundation for the property management system, linking landlords to their listings and providing the organizational structure for associated rooms, enabling the platform to facilitate property discovery and rental management.
+The `property` table manages property listings owned by landlords on the Haven Space platform. It stores the landlord's user ID as a foreign key to establish ownership, along with comprehensive property details including title, description, full address, and city location. A listing's visibility is controlled by **two independent axes** (spec `edit-listing-property-info` D3): the landlord-controlled `status` and the admin-controlled `listing_moderation_status`. `status` holds the landlord's own choice with three live values — `draft` (private, never published), `available` (published), and `hidden` (unpublished) — defaulting to `available`; the legacy `occupied` value appears only in old documentation and nothing writes it. A newly created listing starts as `draft`. `listing_moderation_status` (`pending` / `pending_review` / `published` / `rejected` / `flagged`) is written only by admin moderation, never by a landlord form — except that publishing a previously *rejected* listing requests a fresh review. A listing is boarder-visible only when `status = 'available'` **and** `listing_moderation_status = 'published'`; every public query (browse, detail, similar listings, saved listings, AI context) enforces both, so a Draft or Unpublished listing is invisible even if an admin once approved it. The table also includes a gender preference field with options for male, female, or any, defaulting to 'any' to accommodate diverse tenant preferences. Standard timestamp fields track when properties are created and last updated. This table serves as the foundation for the property management system, linking landlords to their listings and providing the organizational structure for associated rooms, enabling the platform to facilitate property discovery and rental management.
 
 **Key Fields:**
 
@@ -60,7 +60,8 @@ The `property` table manages property listings owned by landlords on the Haven S
 - `description` (text, NOT NULL)
 - `address` (varchar 500, NOT NULL)
 - `city` (varchar 100, NOT NULL)
-- `status` (enum: 'available', 'occupied', 'hidden', DEFAULT 'available')
+- `status` (TEXT, NOT NULL, DEFAULT 'available') — landlord listing status: `draft` | `available` | `hidden`
+- `listing_moderation_status` (TEXT, NOT NULL, DEFAULT 'pending') — admin moderation: `pending` | `pending_review` | `published` | `rejected` | `flagged`
 - `gender_pref` (enum: 'male', 'female', 'any', DEFAULT 'any')
 - `created_at` (timestamp, DEFAULT current_timestamp)
 - `updated_at` (timestamp, ON UPDATE current_timestamp)
@@ -69,7 +70,7 @@ The `property` table manages property listings owned by landlords on the Haven S
 
 ### Payments Table
 
-The `payments` table tracks all financial transactions between boarders and landlords within the Haven Space platform. It maintains comprehensive payment records by storing foreign key references to the boarder, landlord, room, and property involved in each transaction, along with the payment amount stored as a decimal value with two decimal places. The table includes a due date field to track when payments are expected and an optional paid date field that is populated when payment is received. Payment status is managed through an enum field with four possible states: pending, paid, overdue, or cancelled, defaulting to 'pending' for new payment records. Additional fields capture the payment method used (varchar 50), a reference number for transaction tracking (varchar 100), and optional notes (text) for any additional payment-related information. Standard timestamp fields record when payment records are created and last updated. This table plays a crucial role in the system by providing a complete audit trail of all financial transactions, enabling landlords to track rental income and boarders to manage their payment obligations.
+The `payments` table holds one row per **charge** (not per transaction) — rent, security deposit, advance payment, a utility or ad-hoc fee, or an automatically applied late fee. As shipped (spec `payments-feature`, migration `0021_payments.sql`) each row references the boarder, landlord, room, property **and the tenancy (`application_id`)** that generated it, with the amount stored as a SQLite `REAL` (rounded to centavos on write). `due_date` is a calendar date and `paid_date` is populated by the landlord's verification (or their own recording of money in hand). `status` is free text with **five** values — `pending`, `awaiting_verification`, `overdue`, `paid`, `cancelled` — and `overdue` is **derived at read time** from `due_date` plus the property's grace period rather than trusted from the column. Additional fields capture the method used, a reference number for tracking, optional notes, the billing `period_start`/`period_end`, a `generation_key` that makes schedule generation and late fees idempotent, the two reminder timestamps, and the deposit resolution recorded at move-out. Standard timestamp fields record when charge rows are created and last updated. Payment methods (GCash, bank transfer, cash) are **recorded, not processed** — there is no gateway in this feature. This table plays a crucial role in the system by providing a complete audit trail of all financial obligations, enabling landlords to track rental income and boarders to manage their payment obligations.
 
 **Key Fields:**
 
@@ -83,25 +84,62 @@ The `payments` table tracks all financial transactions between boarders and land
 - `paid_date` (date, NULL)
 - `status` (enum: 'pending', 'paid', 'overdue', 'cancelled', DEFAULT 'pending')
 - `payment_method` (varchar 50, NOT NULL)
-- `reference_number` (varchar 100, NOT NULL)
+- `reference_number` (varchar 100, NULL) — copied from the verified submission
 - `notes` (text, DEFAULT '')
+- `late_fee` (real, DEFAULT 0) — flat fee added automatically after the grace period
+- `application_id` (int, NULL) — the tenancy that generated the charge
+- `charge_type` ('rent' | 'deposit' | 'advance' | 'utility' | 'late_fee' | 'other', DEFAULT 'rent')
+- `description` (text, NULL)
+- `period_start` / `period_end` (date, NULL) — the billing month the charge covers
+- `generation_key` (text, NULL, UNIQUE when not null) — idempotency key for the schedule generator and late fees
+- `reminder_sent_at` / `due_soon_reminded_at` (timestamp, NULL) — one overdue nudge, one "due in 3 days" nudge
+- `created_by` (int, NULL) — the landlord, when the charge was posted by hand
+- `deposit_resolution` ('refund' | 'forfeit' | 'partial', NULL), `deposit_resolution_amount` (real, NULL), `deposit_resolution_reason` (text, NULL)
 - `created_at` (timestamp, DEFAULT current_timestamp)
 - `updated_at` (timestamp, ON UPDATE current_timestamp)
 
----
+#### Payment Submissions Table
 
-### Messages Table
-
-The `messages` table facilitates direct communication between users on the Haven Space platform. It stores message records with sender and receiver user IDs as foreign keys to establish the communication channel, along with the message body stored as text to accommodate messages of varying lengths. The table includes a read status indicator using a tinyint field (defaulting to 0 for unread) to help users track which messages they have viewed. A single timestamp field records when each message was created, providing a chronological record of conversations. This table serves as the backbone of the platform's messaging system, enabling landlords and boarders to communicate directly about property inquiries, application details, payment arrangements, and other rental-related matters, fostering transparent and efficient interactions between users.
+The `payment_submissions` table is the audit trail for a boarder's claim that they paid: who submitted it, how much, the payment method, the **required reference number**, an optional receipt image URL, and the landlord's decision. A submission never moves money — it parks the charge in `awaiting_verification` until the landlord verifies or rejects it. A landlord recording cash in hand writes a submission that is **already `verified`**, so the boarder still sees who recorded it and when.
 
 **Key Fields:**
 
 - `id` (int, AUTO_INCREMENT, PRIMARY KEY)
+- `payment_id` (int, NOT NULL, FOREIGN KEY to payments)
+- `submitted_by` (int, NOT NULL, FOREIGN KEY to users) — the boarder, or the landlord for a recording
+- `amount` (real, NOT NULL) — always derived server-side from the charge
+- `payment_method` ('gcash' | 'bank_transfer' | 'cash', NOT NULL)
+- `reference_number` (text, NOT NULL)
+- `proof_url` (text, NULL) — optional receipt image (UploadThing)
+- `notes` (text, NULL)
+- `status` ('pending' | 'verified' | 'rejected', DEFAULT 'pending')
+- `verified_by` (int, NULL, FOREIGN KEY to users), `verified_at` (timestamp, NULL), `rejection_reason` (text, NULL)
+- `created_at` / `updated_at` (timestamp)
+
+---
+
+### Messaging Tables
+
+Messaging ships as five D1 tables (migration `0020_messages.sql`, spec `messages-feature-review`) rather than the single legacy `messages` table this document used to describe — no migration ever created that one. `message_threads` holds one row per (landlord, boarder) pair, enforced by a unique index; it remembers the listing that started the conversation (`property_id`, display-only origin), who opened it (`created_by`) and a per-side soft-delete column for each participant. `thread_messages` holds the bodies (2,000-character cap enforced in the schema as well), the sender, an optional per-message property chip and `read_at` — the only unread signal in the platform. It is named `thread_messages` because migration `0011` already created an unrelated `messages` table for the write-only leave-request notice. `message_attachments` stores up to four UploadThing image URLs per message, `message_blocks` records reversible messaging-only blocks, and `message_reports` records metadata-only abuse reports (reason, status, reviewer) — admins never read bodies or images, only the fact that a report exists.
+
+**Key Fields — `message_threads`:**
+
+- `id` (int, AUTO_INCREMENT, PRIMARY KEY)
+- `landlord_id`, `boarder_id` (int, NOT NULL, FOREIGN KEY to users) — unique together
+- `property_id` (int, NULL, FOREIGN KEY to properties) — the thread's origin listing
+- `created_by` (int, NOT NULL) — landlord- vs boarder-initiated
+- `last_message_at` (timestamp, orders the inbox)
+- `landlord_deleted_at`, `boarder_deleted_at` (timestamp, NULL) — per-side delete
+
+**Key Fields — `thread_messages`:**
+
+- `id` (int, AUTO_INCREMENT, PRIMARY KEY)
+- `thread_id` (int, NOT NULL, FOREIGN KEY to message_threads)
 - `sender_id` (int, NOT NULL, FOREIGN KEY to users)
-- `receiver_id` (int, NOT NULL, FOREIGN KEY to users)
-- `body` (text, NOT NULL)
-- `is_read` (tinyint 1, DEFAULT 0)
-- `created_at` (timestamp, DEFAULT current_timestamp)
+- `body` (text, NOT NULL, DEFAULT '', CHECK length <= 2000)
+- `property_id` (int, NULL) — per-message context chip
+- `read_at` (timestamp, NULL) — set when the counterpart opens the thread
+- `deleted_at` (timestamp, NULL)
 
 ---
 
@@ -148,7 +186,7 @@ The `announcement` table enables landlords to broadcast important information an
 - **Users → Property**: One-to-Many (A landlord can own multiple properties)
 - **Users → Application**: One-to-Many (A boarder can submit multiple applications; a landlord receives multiple applications)
 - **Users → Payments**: One-to-Many (A boarder makes multiple payments; a landlord receives multiple payments)
-- **Users → Messages**: One-to-Many (A user can send and receive multiple messages)
+- **Users → Message threads**: One-to-Many (A user takes part in many threads — one per landlord/boarder pair — and sends many messages)
 - **Users → Announcement**: One-to-Many (A landlord can create multiple announcements)
 
 ### Property Relationships

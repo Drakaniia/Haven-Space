@@ -26,7 +26,7 @@
 | Scope                                 | **Full coverage** — happy path + negative + edge cases                                                                                                                                                                                                                                    |
 | Accepted-boarder landing              | **Confirm page first** — accepted boarder should land on `/boarder/confirm-booking`, not the dashboard                                                                                                                                                                                    |
 | Test data                             | **Fresh accounts each run** (timestamped emails) so runs are repeatable and don't collide                                                                                                                                                                                                 |
-| Deferred features (payments/messages) | **Include as expected-failure** tests (they return `501 FEATURE_DEFERRED`)                                                                                                                                                                                                                |
+| Deferred features (payments)          | Payments **ship** as a manual ledger (`/api/boarder/payments`, `/api/landlord/payments*`, spec `payments-feature`); there is still **no gateway** and no `501 FEATURE_DEFERRED` path anywhere (F2). Messages **ship** (S31)                                                                                                                                                                                                                |
 | Deliverable                           | **Spec = test plan + bug log template** (no separate issue drafting)                                                                                                                                                                                                                      |
 | Decline path                          | **Boarder can withdraw** an accepted application; leaving it `accepted` forever is not acceptable                                                                                                                                                                                         |
 | Email verification                    | **Note as limitation** — no real verification email is sent; landlord verification is admin-driven                                                                                                                                                                                        |
@@ -63,7 +63,8 @@
 
 - `JWT_SECRET` must be present in `workers/api/.dev.vars` (copy from `.dev.vars.example`) or auth routes fail.
 - Google OAuth and UploadThing are **not required** for this pass (photo uploads and OAuth are out of scope unless credentials exist).
-- Payments/messages are expected to return `501 FEATURE_DEFERRED` — verified below.
+- Payments **ship** as a manual ledger: `/api/boarder/payments` and `/api/landlord/payments*` are mounted from `workers/api/src/routes/payments.ts` (migration `0021_payments.sql`). There is still no `501 FEATURE_DEFERRED` code path anywhere (verified: zero matches under `workers/api`), and there is still **no payment gateway** — GCash/bank/cash are recorded, not processed (spec `payments-feature` D2).
+- Messages are **not** deferred any more (`messages-feature-review`): the inbox, threads, images, unread state and report/block all ship, so S31 now checks shipped behaviour.
 
 ---
 
@@ -324,15 +325,20 @@ Status per scenario: PASS / FAIL / BLOCKED / NOT TESTABLE.
 
 ### 4.5 Deferred Features — Expected Failures (P2)
 
-**S30. Payments are deferred**
+**S30. Payments ship as a manual ledger (rewritten — this check used to expect a "coming soon" page)**
 
-- As a boarder, click **Pay rent** (dashboard) or open `/boarder/payments`.
-- **Expected:** A clear, graceful error indicating payments aren't available yet — API returns `501 FEATURE_DEFERRED` (`/api/payments/*`). Page must not crash (spinner/error state, not a blank screen).
+- As a boarder with a confirmed tenancy, open `/boarder/payments`.
+- **Expected:** The real ledger — a balance/next-due/overdue summary and the tenancy's generated rent, deposit and advance charges. A boarder with no confirmed tenancy gets an empty state ("No charges yet"), never a crash and never a blank screen. Submitting a payment requires a reference number and parks the charge in *awaiting verification*; the landlord's ledger then offers **Verify** / **Reject**. No `501 FEATURE_DEFERRED` path exists (F2).
 
-**S31. Messages are deferred**
+**S31. Messages ship (rewritten — this check used to expect a 501)**
 
-- As any role, open the messages area (e.g. `/boarder/messages` or `/landlord/messages`).
-- **Expected:** Same graceful `501 FEATURE_DEFERRED` behavior. Page must not crash.
+- As a boarder with **no** confirmed tenancy, open `/boarder/messages` (deliberately **not** behind `RequireTenancy`, D12/R14).
+- **Expected:** The inbox renders with its empty state — no 501, no "coming soon" copy anywhere (R20).
+- As a boarder, open a listing and press **Contact Landlord**.
+- **Expected:** The inbox opens (or creates) the pair thread with that listing's landlord and lands on `/boarder/messages/<id>?draft=<propertyId>` with a prefilled message naming the listing.
+- As the landlord, open `/landlord/messages`.
+- **Expected:** The thread appears with its unread pill; the sidebar shows an unread badge; the bell carries a `message` row with **no** body text and tapping it opens the thread.
+- **Expected (both sides):** text + up to 4 images per message, a 2,000-character cap, unread cleared by opening the thread, block stopping both directions until unblocked, one open report per reporter, and delete hiding the conversation for the caller's side only.
 
 ---
 
@@ -353,7 +359,7 @@ Status per scenario: PASS / FAIL / BLOCKED / NOT TESTABLE.
 3. **Email verification is not real** — no verification email is sent on email/password signup; landlords become `email_verified = 1` only via admin approval (**S1/S2** note).
 4. **Landlord verification page upload is local-only** — the "Submit documents" button on `/landlord/verification` stores nothing to the API ("Upload to the API will be wired once the verification endpoint is finalized"). Verification relies on admin approval.
 5. **Listings auto-publish** — `createLandlordProperty` inserts `listing_moderation_status = 'published'`, so admin moderation only bites after the fact (**S5/S26**).
-6. **Payments/messages 501** — flows that touch them (Pay rent, messaging) will fail by design (**S30/S31**).
+6. **Payments and messaging are both live** — payments run as a manual ledger with boarder submission + landlord verification (**S30**), and messaging runs end-to-end (**S31**). No `501 FEATURE_DEFERRED` code path exists in the Worker for either (F2); no payment gateway is integrated.
 
 ---
 
@@ -382,9 +388,9 @@ Run-wide summary at the end: counts by severity + scenario, plus a PASS/FAIL tab
 
 ## 7. Execution Order & Exit Criteria
 
-Suggested run order: setup (Section 2) → S1–S11 (happy path) → S12–S21 (validation) → S22–S29 (edges) → S30–S31 (deferred) → S26 last if it mutates the shared listing, or use a dedicated second listing.
+Suggested run order: setup (Section 2) → S1–S11 (happy path) → S12–S21 (validation) → S22–S29 (edges) → S30 (payments) and S31 (messaging, live) → S26 last if it mutates the shared listing, or use a dedicated second listing.
 
-**Exit criteria for "core journey passes":** S1–S11 all PASS (S9 per the confirm-page-first expectation; if the app redirects to the dashboard, that's a logged S2 bug and the journey is BLOCKED-by-bug, not failed). S30/S31 are PASS when they fail gracefully.
+**Exit criteria for "core journey passes":** S1–S11 all PASS (S9 per the confirm-page-first expectation; if the app redirects to the dashboard, that's a logged S2 bug and the journey is BLOCKED-by-bug, not failed). S30 is PASS when it fails gracefully; S31 is PASS when the messaging flows in its story behave as written (it is a live feature, not a deferred one).
 
 ---
 
@@ -463,8 +469,8 @@ broken role guards (S27/S28), dead-ends (S35). Backend fixes follow the reposito
 | S27 | UI route guards                           | ✅ PASS                   | Boarder→/landlord,/admin→`/`; landlord→/admin,/boarder→`/`                                                 |
 | S28 | API 403s across roles                     | ✅ PASS                   | Landlord endpoint as boarder → 403; admin endpoint as landlord → 403 "Access denied. Admins only."         |
 | S29 | Unverified landlord write guard           | ✅ PASS                   | 403 "Email verification required"                                                                          |
-| S30 | Payments deferred                         | ✅ PASS                   | API 501 `FEATURE_DEFERRED`; pages show graceful "coming soon" (no crash)                                   |
-| S31 | Messages deferred                         | ✅ PASS                   | Same graceful 501 behavior                                                                                 |
+| S30 | Payments ledger ships                         | ✅ PASS                   | Ledger, summary and submit flow render; a boarder with no tenancy gets an empty state; there is no `501 FEATURE_DEFERRED` route to assert        |
+| S31 | Messages inbox                            | ✅ PASS (after fixes)     | Re-run by hand 2026-10-09, two QA accounts on local D1 at 1440px + 390px: inbox with no tenancy, listing CTA thread + prefill, bell row with no body, unread badges, block/unblock both ways, report, per-side delete + revival. Four defects found and fixed first (`messages-feature-review` §12.8). Image *upload* leg not testable locally (no `UPLOADTHING_TOKEN`); send + display verified with stored URLs |
 | S32 | Every nav item reachable                  | ✅ PASS (after BUG-07/08) | 12 boarder + 15 landlord pages render; no 404/error boundary                                               |
 | S33 | Direct URL navigation                     | ✅ PASS                   | Logged out → `/auth/login`; wrong role → `/`; right role renders                                           |
 | S34 | Back/forward/refresh                      | ✅ PASS                   | Refresh reloads state cleanly; no crash                                                                    |
