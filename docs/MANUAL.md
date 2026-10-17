@@ -113,4 +113,4 @@ cd workers/api
 bunx wrangler deploy --dry-run --env=""
 ```
 
-Payment and message routes are deferred and currently return `501 FEATURE_DEFERRED`.
+Payments ship as a **manual ledger** — no payment gateway, no in-app money movement (spec `payments-feature`). Routes are mounted from `workers/api/src/routes/payments.ts` (migration `0021_payments.sql`): a confirmed booking auto-generates the rent/deposit/advance schedule, the boarder submits a payment with a reference (and optional receipt), and the landlord verifies it. Messaging ships in full — `POST /api/messages/threads` and friends are mounted from `workers/api/src/routes/messages.ts` (migration `0020_messages.sql`).
