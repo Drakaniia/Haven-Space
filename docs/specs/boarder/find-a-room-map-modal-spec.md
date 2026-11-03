@@ -94,7 +94,7 @@ the same surface, and fixing the button once fixes it for boarders. (The boarder
 
 | Piece                                 | File                                      | What it gives the modal                                                                               |
 | ------------------------------------- | ----------------------------------------- | ----------------------------------------------------------------------------------------------------- |
-| `useMapLocation`                      | `lib/useMapLocation.ts`                   | `{ status, coordinates, supported, useMyLocation, reset }`; auto-applies a remembered opt-in on mount |
+| `useMapLocation`                      | `lib/use-map-location.ts`                 | `{ status, coordinates, supported, useMyLocation, reset }`; auto-applies a remembered opt-in on mount |
 | `MapLocationControl`                  | `components/rooms/MapLocationControl.tsx` | The toolbar row: "Use my location" / "Locating…" / reset; renders `null` when unsupported             |
 | `MapEmbed`                            | `components/rooms/MapEmbed.tsx`           | The `<iframe>`, `url ?? DEFAULT_MAP_URL`                                                              |
 | `mapSubtitle()` / `LOCATION_SUBTITLE` | `components/rooms/MapEmbed.tsx`           | The two subtitle strings every map surface shares                                                     |
@@ -153,8 +153,8 @@ and the X. It does **not** lock body scroll, does **not** trap focus, and does *
 | `apps/web/src/routeTree.gen.ts`                                                                      | regenerate (`bun run web:build`) — 10 references today                     |
 | `apps/web/test/maps.test.ts`                                                                         | lines 42 and 305: two arrays list `routes/boarder/maps.tsx`                |
 | `apps/web/src/lib/maps.ts`                                                                           | module doc comment names the route — stale prose, update                   |
-| `report.md`, `docs/qa/qa-spec-audit.md`, `qa-full-system-review-spec.md`, `docs/superpowers/plans/…` | **historical, leave alone**                                                |
-| `lib/nav.ts` / `lib/useBoarderNav.ts`                                                                | already have **no** boarder map entry — nothing to remove                  |
+| `report.md`, `docs/qa/specs/qa-spec-audit.md`, `qa-full-system-review-spec.md`, `docs/plans/…` | **historical, leave alone**                                                |
+| `lib/nav.ts` / `lib/use-boarder-nav.ts`                                                              | already have **no** boarder map entry — nothing to remove                  |
 | `components/layout/Topbar.tsx`                                                                       | `maps: 'Map view'` breadcrumb label — keep (still serves `/landlord/maps`) |
 
 ---
@@ -364,7 +364,7 @@ bun run web:test          # bun test --preload ./test/setup.ts
 - Adding a focus-trap or portal dependency.
 - Distance/radius features, reverse geocoding, or sending coordinates anywhere — all still excluded by
   the earlier `map-use-location` spec.
-- Updating historical docs (`report.md`, `docs/qa/*`, `docs/superpowers/plans/*`) that name
+- Updating historical docs (`report.md`, `docs/qa/*`, `docs/plans/*`) that name
   `/boarder/maps`.
 - Any commit (D23).
 

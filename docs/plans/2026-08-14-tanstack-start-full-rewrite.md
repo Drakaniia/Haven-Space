@@ -8,7 +8,7 @@
 
 **Tech Stack:** TanStack Start (`@tanstack/react-start`), TanStack Router, TanStack Query, React 19, Vite, Tailwind CSS v4 (`@tailwindcss/vite`), `@cloudflare/vite-plugin`, Wrangler, TypeScript, Bun (package manager + test runner), `@testing-library/react` + `happy-dom` for component tests.
 
-**Spec:** This plan implements the user request "full rewrite of the 57-view frontend in TanStack, phased, no more .js/.css/.html files." It argues from the live backend contract in `workers/api/src/routes/*.ts` (and their D1 repositories), the reference plan `docs/superpowers/plans/2026-05-28-cloudflare-api-migration.md`, and conventions in `AGENTS.md`.
+**Spec:** This plan implements the user request "full rewrite of the 57-view frontend in TanStack, phased, no more .js/.css/.html files." It argues from the live backend contract in `workers/api/src/routes/*.ts` (and their D1 repositories), the reference plan `docs/plans/2026-05-28-cloudflare-api-migration.md`, and conventions in `AGENTS.md`.
 
 ## Starting State (already built)
 

@@ -30,7 +30,7 @@ Haven Space data.
   `PropertiesSection.tsx` contains `getPropertyRooms`, `Slots free` and `roomTypeLabel` — is the one
   existing test this change must update (§10).
 - Supersedes the table treatment of properties introduced by
-  `docs/superpowers/plans/2026-08-14-tanstack-start-full-rewrite.md` for these three surfaces only. The
+  `docs/plans/2026-08-14-tanstack-start-full-rewrite.md` for these three surfaces only. The
   `DataTable` primitive itself stays; it is still the right surface for every other table in the app.
 - Does **not** touch the tenant-facing browse cards (`FindARoomContent`) — the requestor explicitly
   excluded them (D2), and `create-listing-room-details-spec.md` D18 owns that layout.

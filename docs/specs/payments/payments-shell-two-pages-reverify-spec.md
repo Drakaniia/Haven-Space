@@ -26,7 +26,7 @@ superseded the first.
 | `payments-shell-reverification-spec.md` | Second pass. Re-proved both defects, executed its fix plan (leaves stripped, `0021` applied locally, 503 schema-stale mapping, guards). **This pass supersedes it** (D5) and must add a superseded note to its header (D16). |
 | `payments-feature-spec.md` | The feature that introduced both defects. Not touched by this pass. |
 | `admin-apple-ui-restructure-spec.md` | Owns the single-shell convention and the `.chrome-sidebar` / `.chrome-topbar` materials. |
-| `docs/qa/qa-spec-audit.md` §10.6 | Claims the payments pages were spot-checked “single shell, no duplicates” — the claim this report falsifies. Recorded in §5, not corrected (D19). |
+| `docs/qa/specs/qa-spec-audit.md` §10.6 | Claims the payments pages were spot-checked “single shell, no duplicates” — the claim this report falsifies. Recorded in §5, not corrected (D19). |
 | `AGENTS.md` §Frontend | Line 86 tells contributors to “Wrap role pages in `<Protected role="...">` + `<RoleShell>`” — the guidance that produced the regression. **Corrected by this pass** (D7). |
 
 **Decisions inherited unchanged** from the two predecessors: the layout owns `Protected` + `RoleShell`
@@ -60,7 +60,7 @@ explicitly in the final round (D15, D17) and the resolution is recorded here.
 | D16 | Final deliverable list | Superseded note · re-run the four project checks · generalize the render guard · rewrite the `AGENTS.md` guideline · dev-hygiene pre-check steps. |
 | D17 | Committing the guards *(conflict)* | An earlier answer said “track/commit the two guard tests”; the final deliverable list omitted it. **Resolved as out of scope: no commits in this pass** (D9), and the untracked state is recorded as a risk (§7) and a known issue (§5). |
 | D18 | Spec file name | **`payments-shell-two-pages-reverify-spec.md`.** |
-| D19 | Stale-document claims to record | **`docs/qa/qa-spec-audit.md` §10.6 only.** The other three stale claims (`payments-feature-spec.md` §14, `docs/MANUAL.md`’s missing `migrate:local` step, `docs/specs/google-oauth.md` §8 / `docs/qa/qa-spec.md` S30) are recorded as *seen but not owned* in §5. |
+| D19 | Stale-document claims to record | **`docs/qa/specs/qa-spec-audit.md` §10.6 only.** The other three stale claims (`payments-feature-spec.md` §14, `docs/guides/MANUAL.md`’s missing `migrate:local` step, `docs/reference/google-oauth.md` §8 / `docs/qa/specs/qa-spec.md` S30) are recorded as *seen but not owned* in §5. |
 
 ---
 
@@ -150,7 +150,7 @@ addresses, and it is the reason a *deployed* payments page still cannot work:
 | The two earlier passes changed code but nothing was committed | The shell fix lives in the working tree, the guard tests are untracked, and `origin/main` still has no payments routes. Anything measuring “what is deployed” sees none of it. |
 | The guards are not under version control | `apps/web/test/payments-shell.test.tsx` and `apps/web/test/route-shell-ownership.test.ts` are `??` — a `git clean`, a fresh clone, or a CI run on another branch has no regression guard at all. |
 | A green build was never the same as the browser | The screenshot came from a dev server whose bundle was built before the fix; the second predecessor planned a browser check (its D5/D12) and this pass replaces that bar with the automated guards (D6). |
-| The claim in `docs/qa/qa-spec-audit.md` §10.6 was never corrected | It still lists the payments pages as verified single-shell. |
+| The claim in `docs/qa/specs/qa-spec-audit.md` §10.6 was never corrected | It still lists the payments pages as verified single-shell. |
 
 ---
 
@@ -299,13 +299,13 @@ recorded here so the difference is not read as an omission.
 
 | # | Issue | Evidence |
 | - | ----- | -------- |
-| K1 | `docs/qa/qa-spec-audit.md` §10.6 still claims the payments pages are “single shell, no duplicates”. | §10.6 lists “landlord … payments, boarders, applications — **single shell, no duplicates**” as a passed spot-check. Selected for recording in D19; **correction is out of scope for this pass.** |
+| K1 | `docs/qa/specs/qa-spec-audit.md` §10.6 still claims the payments pages are “single shell, no duplicates”. | §10.6 lists “landlord … payments, boarders, applications — **single shell, no duplicates**” as a passed spot-check. Selected for recording in D19; **correction is out of scope for this pass.** |
 | K2 | The **shared** D1 `haven-space` is 7 feature-migrations behind. | `d1_migrations` ends at `0014_seed_sample_listings.sql`; no `payment_submissions`; `payments` lacks `charge_type`. |
 | K3 | The shared database’s migration ledger **diverges in numbering** from the repo. | Shared has `0014_seed_sample_listings.sql`; repo has `0014_property_access.sql` + `0015_seed_sample_listings.sql`. A blind remote apply would also re-run the (`NOT EXISTS`-guarded) seed. |
 | K4 | The **deployed API has no payments routes**: `GET /api/landlord/payments` → **501 `FEATURE_DEFERRED`**. | `curl` probe, §2.3. |
 | K5 | The **deployed Pages app** (built from `main`) contains no payments routes at all, and this branch is 476 commits ahead of `origin/main`. | `git ls-tree origin/main`, §2.3. |
 | K6 | The two shell guards are **untracked**, so nothing guards this regression in version control. | `git status --short apps/web/test` → `?? …/payments-shell.test.tsx`, `?? …/route-shell-ownership.test.ts`. Out of scope per D9/D17. |
-| K7 | Other stale claims seen but not owned: `payments-feature-spec.md` §14 “as shipped” reads clean; `docs/MANUAL.md` has no `migrate:local` step; `docs/specs/google-oauth.md` §8 and `docs/qa/qa-spec.md` S30 still describe payments as deferred. | Recorded for a future docs pass (D19). |
+| K7 | Other stale claims seen but not owned: `payments-feature-spec.md` §14 “as shipped” reads clean; `docs/guides/MANUAL.md` has no `migrate:local` step; `docs/reference/google-oauth.md` §8 and `docs/qa/specs/qa-spec.md` S30 still describe payments as deferred. | Recorded for a future docs pass (D19). |
 
 ---
 

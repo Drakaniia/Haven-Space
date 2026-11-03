@@ -74,7 +74,7 @@ supersedes an earlier one, the row says so.
 | D20 | Property photos                | **Keep the separate Photos card below the form**, unchanged: immediate upload, thumbnails, ✕ = will delete. No cover-photo picker, no reordering in this pass.                                                                                                                                                                                                                     |
 | D21 | Old PUT room fields            | Keep the server path (D8); no deprecation warning, no guard — the UI just stops using it.                                                                                                                                                                                                                                                                                         |
 | D22 | Persistence of status changes  | **Status saves with the form's Save button** (one submit, like every other field). It does not auto-save on select.                                                                                                                                                                                                                                                               |
-| D23 | Migration                      | **None required.** `properties.status` is `TEXT NOT NULL DEFAULT 'available'` with no CHECK constraint (`0002_public_listings.sql:27`), so `draft` needs no schema change. The value set is documented in `docs/specs/schema.md` instead.                                                                                                                                          |
+| D23 | Migration                      | **None required.** `properties.status` is `TEXT NOT NULL DEFAULT 'available'` with no CHECK constraint (`0002_public_listings.sql:27`), so `draft` needs no schema change. The value set is documented in `docs/reference/schema.md` instead.                                                                                                                                          |
 | D24 | Verification bar               | `web:typecheck` + `web:build` + the full `web:test` suite, `cf:api:typecheck` + `cf:api:test`, **plus a browser walkthrough at 1440px and 390px** covering draft → publish → unpublish and all three hint states.                                                                                                                                                              |
 | D25 | Deliverable                    | **This spec only.** No code changes, no migrations, no dependency changes in this pass.                                                                                                                                                                                                                                                                                          |
 | D27 | Remove the inline Rooms section | **(added 2026-10-10, on request)** The edit form's `LandlordRoomList` block and its `#rooms` anchor are removed. The Pricing section's `Manage rooms →` link now routes to `/landlord/properties/$id/rooms`. The rooms query stays (the shared-pricing state and the R9 publish check still need it), but the form no longer lists or edits rooms. |
@@ -329,12 +329,12 @@ publish precondition.
 the disabled Save; the page stays single-column at 390px with no horizontal overflow (existing shell caveat
 noted in `messages-feature-review` §12.10 applies).
 
-**R17.** The stored status value set (`draft`, `available`, `hidden`) is documented in `docs/specs/schema.md`;
+**R17.** The stored status value set (`draft`, `available`, `hidden`) is documented in `docs/reference/schema.md`;
 no migration is written (D23).
 
 **R18.** The stale references are cleaned up in the same pass: `apps/web/src/lib/room-drafts.ts`'s comment
 about the edit page carrying property-level defaults, `landlord-property-detail-page-spec.md` §3.4/D16 wording
-about the card's Unpublish button, and `docs/MANUAL.md` if it lists the edit form's fields.
+about the card's Unpublish button, and `docs/guides/MANUAL.md` if it lists the edit form's fields.
 
 ---
 
@@ -362,7 +362,7 @@ about the card's Unpublish button, and `docs/MANUAL.md` if it lists the edit for
 | `workers/api/src/repositories/saved-listings.ts`                  | Tighten `status != 'hidden'` to `status = 'available'` so drafts can't be saved (R13).                                        |
 | `workers/api/src/routes/ai.ts`                                    | Same status condition in the AI context query (R13).                                                                          |
 | `workers/api/src/repositories/landlord/properties-mutations.ts`   | Create path inserts `status = 'draft'` (R14).                                                                                 |
-| `docs/specs/schema.md`                                            | Document the three status values (R17).                                                                                        |
+| `docs/reference/schema.md`                                            | Document the three status values (R17).                                                                                        |
 
 ### 5.3 Tests
 
@@ -577,9 +577,9 @@ fail** ✓ after the change (`edit-listing-property-info` source contract update
    console errors originate from this page.
 
 **Doc cleanups done in the same pass (R17/R18):** the status vocabulary is documented in
-`docs/specs/schema.md`; the superseded `Unpublish` button is struck through with a supersession note in
+`docs/reference/schema.md`; the superseded `Unpublish` button is struck through with a supersession note in
 `landlord-property-detail-page-spec.md` (D16/R13). The `room-drafts.ts` comment no longer references
-edit-page defaults, and neither `docs/MANUAL.md` nor the QA ledgers enumerate the removed fields, so they
+edit-page defaults, and neither `docs/guides/MANUAL.md` nor the QA ledgers enumerate the removed fields, so they
 needed no edit (Q10).
 
 **Deliberately not changed:** the PHP-compat `POST /api/landlord/listings/properties` alias keeps its explicit

@@ -22,7 +22,7 @@ error"** panel under the property/month filters.
 
 - This is a **regression introduced by `payments-feature-spec.md`** (shipped minutes earlier in the same
   session). Both defects are in that work, not pre-existing.
-- `docs/qa/qa-spec-audit.md` §10.6 lists the payments pages as previously verified "**single shell, no
+- `docs/qa/specs/qa-spec-audit.md` §10.6 lists the payments pages as previously verified "**single shell, no
   duplicates**" — the claim is currently false, which is what makes this a regression of a checked
   property rather than a never-noticed rough edge.
 - `admin-apple-ui-restructure-spec.md` owns the single-shell convention (`Protected` + `RoleShell` once
@@ -50,7 +50,7 @@ Four rounds of `ask_user`, 16 questions.
 | D9  | Test breadth | **The four payments routes only.** |
 | D10 | Error-state construction | **Extend the shared `ErrorState`** with an optional action (so a Retry button and a hint are possible without a bespoke panel). |
 | D11 | `/boarder/payments/pay` gating | **Keep `RequireTenancy` where it is** (pre-existing behaviour: no confirmed tenancy → no payments UI). Document it; do not move the gate. |
-| D12 | Docs to reconcile | **All four:** `qa-spec-audit.md` §10.6, `payments-feature-spec.md` §14, `AGENTS.md`, `docs/MANUAL.md`. |
+| D12 | Docs to reconcile | **All four:** `qa-spec-audit.md` §10.6, `payments-feature-spec.md` §14, `AGENTS.md`, `docs/guides/MANUAL.md`. |
 | D13 | Route audit | **Sweep every route once, fix only payments** (sweep done — §2.3). |
 | D14 | Acceptance | **Single shell + no error, then:** confirm a booking → the generated rent/deposit/advance charges must appear in the ledger. |
 | D15 | Remote auth fallback | If the remote apply fails on auth, attempt it, report the failure, and leave the exact commands. |
@@ -266,10 +266,10 @@ Acceptance criteria (D14):
 
 | File | Claim today | Change |
 | ---- | ----------- | ------ |
-| `docs/qa/qa-spec-audit.md` §10.6 | "…payments, payments/pay — **single shell, no duplicates**" (listed as verified) | Note the regression and its date, and add a line to §10.6 recording that the single-shell claim is now guarded by a test rather than by spot-checking. |
+| `docs/qa/specs/qa-spec-audit.md` §10.6 | "…payments, payments/pay — **single shell, no duplicates**" (listed as verified) | Note the regression and its date, and add a line to §10.6 recording that the single-shell claim is now guarded by a test rather than by spot-checking. |
 | `payments-feature-spec.md` §14 | "As shipped" reads as clean | Add the two regressions to §14 with their causes (nested shell; unapplied migration) and the fix, so that spec stops implying the work shipped defect-free. |
 | `AGENTS.md` | No shell rule | Add to the Frontend conventions: **"a route that lives under a layout route (`X.tsx` with an `<Outlet />`) must not render `Protected` or `RoleShell` itself — the layout owns them"**, plus the `migrate:local` requirement for local payments work. |
-| `docs/MANUAL.md` | Migration step exists but is not part of the local start | Make `bun run --cwd workers/api migrate:local` an explicit step in the local setup, with a one-line note that a stale database surfaces as a bare `Internal server error` on the API. |
+| `docs/guides/MANUAL.md` | Migration step exists but is not part of the local start | Make `bun run --cwd workers/api migrate:local` an explicit step in the local setup, with a one-line note that a stale database surfaces as a bare `Internal server error` on the API. |
 
 ---
 

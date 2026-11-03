@@ -62,7 +62,7 @@ left open and this spec fixes; they are restated in §14 so review can overturn 
 | D16 | Fetch strategy | **Per month, with adjacent-month prefetch**, cached per window (`['landlord-calendar', from, to, propertyId]`), previous data kept while loading. |
 | D17 | Verification bar | New **API test** + one new **web test** + `web:typecheck` / `web:build` / `cf:api:typecheck` + both suites clean + a **manual 1440px / 390px browser walkthrough**. |
 | D18 | Header copy | **Title only** (`PageHeader title="Calendar"`) — no subtitle, matching the repo's redundant-copy sweep. |
-| D19 | Spec placement | This file at the repo root (`landlord-calendar-spec.md`, matching the other root specs) **plus an amended note on the Calendar row of `docs/qa/qa-spec-audit.md`**, which still describes the page as "widget or graceful fallback". |
+| D19 | Spec placement | This file at the repo root (`landlord-calendar-spec.md`, matching the other root specs) **plus an amended note on the Calendar row of `docs/qa/specs/qa-spec-audit.md`**, which still describes the page as "widget or graceful fallback". |
 | D20 | What "today" is | **Server-side Asia/Manila**, using the existing `manilaToday()` helper — a landlord abroad sees the same billing day their boarders do. |
 | D21 | Excluded records | Soft-deleted rows (`deleted_at`), `cancelled` charges, `rejected`/`cancelled` applications, and deleted announcements are **never rendered**. |
 | D22 | Empty states | A full-page `EmptyState` when the landlord has **no accessible properties** (with a link toward listing creation) **and** a per-month inline "nothing scheduled this month" line, **plus** a loading skeleton for the grid. |
@@ -92,7 +92,7 @@ Everything the calendar shows already exists. No new column, no new table, no ba
 
 | Source | Date field(s) | Notes |
 | ------ | ------------- | ----- |
-| `payments` (charges, migration `0021_payments.sql`) | `due_date`, `paid_date`, `period_start`, `period_end`, `late_fee`, `charge_type`, `status` | `overdue` is **derived**, never trusted from the column (`docs/specs/schema.md` §Payments). `due_date` is a calendar date. The grace period is `property_billing_settings.late_fee_grace_days` (fallback `DEFAULT_GRACE_DAYS`). |
+| `payments` (charges, migration `0021_payments.sql`) | `due_date`, `paid_date`, `period_start`, `period_end`, `late_fee`, `charge_type`, `status` | `overdue` is **derived**, never trusted from the column (`docs/reference/schema.md` §Payments). `due_date` is a calendar date. The grace period is `property_billing_settings.late_fee_grace_days` (fallback `DEFAULT_GRACE_DAYS`). |
 | `applications` (migration `0006`, `0011`) | `created_at`, `confirmed_at`, `updated_at`, `leave_request_date`, `intended_leave_date` | Status machine (`workers/api/src/lib/application-status.ts`): `pending → accepted | rejected | cancelled`, `accepted → confirmed | cancelled`, `confirmed → ended`. Only `confirmed_at` and `leave_request_date` are dedicated timestamps. |
 | `announcements` (migration `0012`) | `publish_date` | `deleted_at` exists; `announcement_properties` links an announcement to properties. The landlord list already sorts by `publish_date DESC`; the boarder feed filters `publish_date <= date('now')`. |
 | `properties` / `rooms` | `late_fee_grace_days`, `room_number`, `title`, `price` | Used only to label events and to compute overdue. |
@@ -439,7 +439,7 @@ room label, property title, amount (with `late_fee` and period when it is a rent
    `RoleShell`.
 7. `apps/web/test/landlord-calendar.test.tsx`.
 8. Dashboard `Upcoming renewals` card gains a link to the calendar (D28) — a link only, no data change.
-9. `docs/qa/qa-spec-audit.md` — amend the Calendar row (D19).
+9. `docs/qa/specs/qa-spec-audit.md` — amend the Calendar row (D19).
 10. Run the D17 verification bar; append an "Implemented" block to this spec's header like the other
     root specs do.
 
@@ -497,7 +497,7 @@ room label, property title, amount (with `late_fee` and period when it is a rent
 
 ## 17. What the interview turn did
 
-The spec file and the amendment in `docs/qa/qa-spec-audit.md` (D19) — no code, per the original
+The spec file and the amendment in `docs/qa/specs/qa-spec-audit.md` (D19) — no code, per the original
 request. The implementation followed in a later turn: see §18.
 
 ---

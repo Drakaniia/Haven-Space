@@ -15,12 +15,12 @@ implies.
 
 **Relationship to existing work:**
 
-- `docs/qa/qa-spec.md` (S30/S31) and `docs/qa/qa-spec-audit.md` assert that payments and messages return a
+- `docs/qa/specs/qa-spec.md` (S30/S31) and `docs/qa/specs/qa-spec-audit.md` assert that payments and messages return a
   graceful `501 FEATURE_DEFERRED`. **No such code path exists in the Worker** (verified: zero matches for
   `FEATURE_DEFERRED` under `workers/api`). Finding **F2**.
-- `docs/specs/schema.md` documents a legacy `messages` table (`sender_id`, `receiver_id`, `body`,
+- `docs/reference/schema.md` documents a legacy `messages` table (`sender_id`, `receiver_id`, `body`,
   `is_read`, `created_at`) from the PHP-era design. No D1 migration ever created it. Finding **F3**.
-- `docs/superpowers/plans/2026-05-28-cloudflare-api-migration.md` lists messages as a deferred TODO route
+- `docs/plans/2026-05-28-cloudflare-api-migration.md` lists messages as a deferred TODO route
   group ("Phase 6"), which is where the placeholder copy came from.
 - `pre-tenancy-boarder-nav-spec.md` defines the limited boarder nav, which deliberately excludes Messages;
   that decision is what makes the listing CTA's destination unreachable for a brand-new boarder. Finding
@@ -60,7 +60,7 @@ interview left open; they are restated in §11.
 | D17 | Application note vs thread | **Leave applications exactly as they are**; the application page just gains a Message link. No backfill, no seeding, no replacement. |
 | D18 | Block semantics | **Messaging only, both directions, reversible.** Applications, listings and search are untouched. |
 | D19 | After a tenancy ends | **Nothing changes.** The thread stays readable and writable (deposits, references, follow-ups). |
-| D20 | Verification bar | All five project checks green; **new API tests** for the messaging rules; **new web tests** for the inbox; a **two-account manual walkthrough** at 390px and 1440px; **fix the stale `501 FEATURE_DEFERRED` claims** in `docs/qa/`; **reconcile `docs/specs/schema.md`** with what ships. |
+| D20 | Verification bar | All five project checks green; **new API tests** for the messaging rules; **new web tests** for the inbox; a **two-account manual walkthrough** at 390px and 1440px; **fix the stale `501 FEATURE_DEFERRED` claims** in `docs/qa/`; **reconcile `docs/reference/schema.md`** with what ships. |
 | D21 | Thread ownership of context | **(agent default)** A thread may hold several properties' context over time; the *first* listing is remembered as the thread's origin and shown in the thread header. |
 | D22 | Polling cadence | **(agent default)** Thread list 15s, open thread 5s, plus `refetchOnWindowFocus`; sending is optimistic. |
 | D23 | Send rate inside a thread | **(agent default)** 30 messages per minute per thread, rejected with a 429 and a clear message; the daily cap (D13) governs only *new* threads. |
@@ -121,11 +121,11 @@ The nearest existing machinery:
 
 ### 2.3 Docs
 
-- `docs/qa/qa-spec.md` S31 "Messages are deferred" (✅ PASS recorded) and `docs/qa/qa-spec-audit.md` lines
+- `docs/qa/specs/qa-spec.md` S31 "Messages are deferred" (✅ PASS recorded) and `docs/qa/specs/qa-spec-audit.md` lines
   189/215/325/356 describe opening `/boarder/messages` or `/landlord/messages` and expecting a graceful
   `501 FEATURE_DEFERRED`. **Nothing in the current Worker can return that.**
-- `docs/specs/schema.md` (~line 93) documents the legacy `messages` table as if it existed.
-- `docs/superpowers/plans/2026-05-28-cloudflare-api-migration.md` marks messages as an unported Phase 6
+- `docs/reference/schema.md` (~line 93) documents the legacy `messages` table as if it existed.
+- `docs/plans/2026-05-28-cloudflare-api-migration.md` marks messages as an unported Phase 6
   group.
 
 ### 2.4 Test surface
@@ -144,8 +144,8 @@ Severity is "what breaks if this ships as-is", not effort.
 | # | Finding | Severity | Evidence |
 | - | ------- | -------- | -------- |
 | F1 | **The product's "Contact Landlord" button is a dead end.** `RoomDetailView` links to `BOARDER_MESSAGES_PATH`, which is a "coming soon" placeholder — a prospective boarder tapping *Contact Landlord* lands on a page that tells them the feature does not exist. | **High** | `RoomDetailView.tsx:134`, `boarder/messages.tsx:11-19` |
-| F2 | **QA documentation describes behaviour that does not exist.** Two QA docs assert a graceful `501 FEATURE_DEFERRED` for messages, and the audit records it as PASS. No such code path exists anywhere in the Worker, so those checks cannot have run against the current API. | **High (trust)** | `docs/qa/qa-spec.md:332-334,467`, `qa-spec-audit.md:32,74,189,215,325`; zero `FEATURE_DEFERRED` matches |
-| F3 | **The documented schema is fiction.** `docs/specs/schema.md` describes a `messages` table as the backbone of the platform's messaging; no migration creates it. Useful side effect: this is a **greenfield build with no legacy rows to migrate**. | Medium (doc) | `docs/specs/schema.md:93-105`; `workers/api/migrations/` |
+| F2 | **QA documentation describes behaviour that does not exist.** Two QA docs assert a graceful `501 FEATURE_DEFERRED` for messages, and the audit records it as PASS. No such code path exists anywhere in the Worker, so those checks cannot have run against the current API. | **High (trust)** | `docs/qa/specs/qa-spec.md:332-334,467`, `qa-spec-audit.md:32,74,189,215,325`; zero `FEATURE_DEFERRED` matches |
+| F3 | **The documented schema is fiction.** `docs/reference/schema.md` describes a `messages` table as the backbone of the platform's messaging; no migration creates it. Useful side effect: this is a **greenfield build with no legacy rows to migrate**. | Medium (doc) | `docs/reference/schema.md:93-105`; `workers/api/migrations/` |
 | F4 | **The gate and the CTA contradict each other.** `/boarder/messages` is wrapped in `RequireTenancy` (confirmed tenancy only), while the listing CTA is reachable by a brand-new boarder who has never applied — and the limited nav hides the Messages item, so even the nav cannot get them back to a reply. | **High** | `boarder/messages.tsx:15`, `nav.ts` `BOARDER_LIMITED_NAV`, `RoomDetailView.tsx:131-134` |
 | F5 | **No unread concept and no notification type.** `roleVisibleTypes` has no message type for either role, and nothing tracks read state for anything messaging-shaped; `is_read` exists only on the legacy design. | **High** | `repositories/notifications.ts:60-83` |
 | F6 | **No abuse controls of any kind.** No report, no block, no send/rate cap. The only quota machinery in the codebase is the AI cookie counter, which is per-browser and unsuitable for inquiry limits. | **High** | `routes/ai.ts:470-504`; no matches for rate-limit helpers |
@@ -428,8 +428,8 @@ a listing (thread created with context) → landlord sees it in the bell + inbox
 badge → send images → block → unblock → report → per-side delete → confirmed-tenancy boarder repeats the
 flow. At 390px and 1440px.
 
-**Doc fixes:** remove or rewrite the `501 FEATURE_DEFERRED` claims in `docs/qa/qa-spec.md` and
-`docs/qa/qa-spec-audit.md` (F2), and update `docs/specs/schema.md` to the tables in §4.1 (F3).
+**Doc fixes:** remove or rewrite the `501 FEATURE_DEFERRED` claims in `docs/qa/specs/qa-spec.md` and
+`docs/qa/specs/qa-spec-audit.md` (F2), and update `docs/reference/schema.md` to the tables in §4.1 (F3).
 
 ---
 
@@ -466,9 +466,9 @@ Everything in §4–§9 landed. These are the differences a reader of this spec 
 5. **The thread payload carries `properties: { [id]: title }`** (origin listing + every listing a message
    references) and inbox rows carry `last_attachment_count`, so per-message property chips and image-only
    previews render with real labels instead of bare ids or an empty row.
-6. **Doc corrections landed with the feature** (D20/F2/F3): `docs/qa/qa-spec.md` S30/S31 rewritten,
-   `docs/qa/qa-spec-audit.md` rows + A22 + the API-surface list updated, `docs/specs/schema.md` now
-   documents the five messaging tables, and `docs/MANUAL.md`'s "payment and message routes are deferred"
+6. **Doc corrections landed with the feature** (D20/F2/F3): `docs/qa/specs/qa-spec.md` S30/S31 rewritten,
+   `docs/qa/specs/qa-spec-audit.md` rows + A22 + the API-surface list updated, `docs/reference/schema.md` now
+   documents the five messaging tables, and `docs/guides/MANUAL.md`'s "payment and message routes are deferred"
    line is corrected. **S31 is recorded PASS (after fixes)** in the QA spec, citing the walkthrough below:
    its old "501 PASS" was not a verifiable result, so the check was rewritten and then actually run.
 7. **The §8 manual walkthrough ran** (2026-10-09, local D1, two QA accounts — `qa.messages.landlord@haven.demo`

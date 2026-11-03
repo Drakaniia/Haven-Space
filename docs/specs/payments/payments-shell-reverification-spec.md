@@ -20,7 +20,7 @@ filter row.
 | -------- | ------------ |
 | `payments-page-regressions-spec.md` | **Predecessor, now superseded** (D7). It diagnosed the same two defects and its fix plan was executed; this file re-proves the defects, records what is actually in the tree today, and adds a decision it did not make (D6: a migration-aware API error). A superseded note is added to its header. |
 | `payments-feature-spec.md` | The feature that introduced both regressions. Its §14 “As shipped” still reads as defect-free. |
-| `docs/qa/qa-spec-audit.md` §10.6 | Asserts the payments pages are “single shell, no duplicates” — the claim the screenshot falsifies. |
+| `docs/qa/specs/qa-spec-audit.md` §10.6 | Asserts the payments pages are “single shell, no duplicates” — the claim the screenshot falsifies. |
 | `admin-apple-ui-restructure-spec.md` | Owns the single-shell convention + the `.chrome-sidebar` / `.chrome-topbar` materials. |
 | `landlord-property-detail-page-spec.md` R5 | Documents the layout-owns-the-shell rule this fix restores. |
 | `messages-feature-review-spec.md` | Built the sibling `/landlord/messages` + `/boarder/messages` subtrees correctly — the in-repo precedent. |
@@ -113,7 +113,7 @@ is why only payments broke.
 | API tests always migrate | `workers/api/test/*.test.ts` runs **every** migration from disk into a fresh `bun:sqlite` database, so the suite can never observe a stale database. A green suite says nothing about the dev server’s schema. |
 | No shell assertion | Until this session no web test rendered a route inside its layout or counted `aside.chrome-sidebar` instances; `auth-layout.test.tsx` and `messages-inbox.test.tsx` render components, not route trees. |
 | The convention was undocumented | “A leaf under a layout must not render `Protected`/`RoleShell`” lived only in the shapes of existing files; §6 writes it down. |
-| A verified claim went stale | `docs/qa/qa-spec-audit.md` §10.6 still lists the payments pages as verified single-shell. |
+| A verified claim went stale | `docs/qa/specs/qa-spec-audit.md` §10.6 still lists the payments pages as verified single-shell. |
 
 ---
 
@@ -309,11 +309,11 @@ With `bun run web:dev` and `bun run cf:api:dev` running against the migrated loc
 | File | Claim today | Change |
 | ---- | ----------- | ------ |
 | `payments-page-regressions-spec.md` | Status “spec, then fix in this session” | Add a **superseded** note at the top pointing at this file, and note where this one differs (D6). |
-| `docs/qa/qa-spec-audit.md` §10.6 | Payments pages listed as verified “single shell, no duplicates” | Record the regression, its date, and that the claim is now **guarded by a test** rather than by spot-checking. |
+| `docs/qa/specs/qa-spec-audit.md` §10.6 | Payments pages listed as verified “single shell, no duplicates” | Record the regression, its date, and that the claim is now **guarded by a test** rather than by spot-checking. |
 | `payments-feature-spec.md` §14 | “As shipped” reads as clean | Add both regressions (§14) with causes (nested shell; unapplied migration) and the fix, so the spec stops implying defect-free delivery. |
 | `AGENTS.md` | No shell rule | Frontend conventions: **“a route under a layout route (`X.tsx` with `<Outlet />`) must not render `Protected` or `RoleShell` itself — the layout owns them”**, plus the `migrate:local` requirement for local payments work. |
-| `docs/MANUAL.md` | Migration step exists but is not part of the local start | Make `bun run --cwd workers/api migrate:local` an explicit local-setup step, noting that a stale DB now surfaces as a 503 `database_schema_stale` (and previously as a bare 500). |
-| `docs/specs/google-oauth.md` §8 / `docs/qa/qa-spec.md` S30 | Payments “deferred / coming soon” | Note that payments now ships, so the deferred-feature expectations are historical. |
+| `docs/guides/MANUAL.md` | Migration step exists but is not part of the local start | Make `bun run --cwd workers/api migrate:local` an explicit local-setup step, noting that a stale DB now surfaces as a 503 `database_schema_stale` (and previously as a bare 500). |
+| `docs/reference/google-oauth.md` §8 / `docs/qa/specs/qa-spec.md` S30 | Payments “deferred / coming soon” | Note that payments now ships, so the deferred-feature expectations are historical. |
 
 ---
 

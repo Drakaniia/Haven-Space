@@ -18,16 +18,16 @@ selected subset in implementation detail.
 
 **Relationship to existing work:**
 
-- `docs/qa/qa-spec.md` (S30) and `docs/qa/qa-spec-audit.md` assert payments return a graceful "coming
+- `docs/qa/specs/qa-spec.md` (S30) and `docs/qa/specs/qa-spec-audit.md` assert payments return a graceful "coming
   soon" because no `/api/payments/*` route is mounted, and explicitly note that **no `501
 FEATURE_DEFERRED` path exists anywhere in the Worker** (their finding F2). That is accurate today and
   this spec is what falsifies it.
 - `messages-feature-review-spec.md` is the template for this document (decision table → verified current
   state → build plan → verification bar). It also set the precedent that a "deferred" flag in
   `docs/` is a claim to re-verify, not a fact.
-- `docs/MANUAL.md` line 116 and `docs/specs/google-oauth.md` line 325 both state payments are
+- `docs/guides/MANUAL.md` line 116 and `docs/reference/google-oauth.md` line 325 both state payments are
   unimplemented platform-wide — both need updating when this ships (D31).
-- `docs/specs/schema.md` §Payments describes a PHP-era `payments` design; migration
+- `docs/reference/schema.md` §Payments describes a PHP-era `payments` design; migration
   `0011_tenancy_leave_requests.sql` is the real one. The two have drifted and must be reconciled.
 - `admin-apple-ui-restructure-spec.md` shipped the shared `PlaceholderPage`/`EmptyState` primitives the
   four payment stubs currently use.
@@ -150,7 +150,7 @@ pending ──(boarder submits)──► awaiting_verification ──(landlord v
 | **F9**  | There is no tenancy "move-in date" the user picked — the app treats `applications.created_at` as the tenancy start (`move_in_date` in boarders, `tenancy_start_date` in tenancy).                          | D16's due day derives from a field that also carries the original _application_ timestamp; `confirmed_at` is the more honest anchor. Flagged as §12 Q2.                                                                                                            |
 | **F10** | `payment_method` at booking is free-form server-side.                                                                                                                                                      | The ledger should adopt one shared method vocabulary (`gcash`, `bank_transfer`, `cash`) rather than repeating the booking route's weaker check.                                                                                                                    |
 | **F11** | `apps/web/src/lib/room-drafts.ts` enforces only a **photo count** (`MAX_ROOM_PHOTOS`), and message images mirror it; the avatar route is the only place with size + MIME checks.                           | The receipt upload must copy the **avatar** limits (≤2 MB, image MIME allow-list), not the photo-count precedent.                                                                                                                                                  |
-| **F12** | Stale docs: `docs/MANUAL.md:116`, `docs/qa/qa-spec.md` (S30 + §"Deferred features"), `docs/qa/qa-spec-audit.md`, `docs/specs/schema.md` §Payments, `docs/specs/google-oauth.md:325`.                       | D24 requires reconciling all of them after the build.                                                                                                                                                                                                              |
+| **F12** | Stale docs: `docs/guides/MANUAL.md:116`, `docs/qa/specs/qa-spec.md` (S30 + §"Deferred features"), `docs/qa/specs/qa-spec-audit.md`, `docs/reference/schema.md` §Payments, `docs/reference/google-oauth.md:325`.                       | D24 requires reconciling all of them after the build.                                                                                                                                                                                                              |
 
 ---
 
@@ -448,7 +448,7 @@ not UTC, or charges flip to overdue 8 hours late. State this explicitly in the i
 | R10 | Late fee applied, then the boarder pays the base rent                    | The late fee is its own charge and stays due; the ledger shows both.                                                                                                                  |
 | R11 | Cron runs twice (retry)                                                  | All job steps idempotent; no duplicate notifications, no duplicate fees.                                                                                                              |
 | R12 | Tenancy ends with an unpaid balance                                      | Leave approval is **not** blocked by an unpaid balance in v1 (no new gate on `approvePendingLeaveRequest`) — flagged as §12 Q4. Deposit resolution surfaces the balance instead.      |
-| R13 | Boarder with no confirmed tenancy opens `/boarder/payments`              | `EmptyState` ("No charges yet — they appear once your booking is confirmed"), never an error. Matches the harnesses in `docs/qa/qa-spec.md`.                                          |
+| R13 | Boarder with no confirmed tenancy opens `/boarder/payments`              | `EmptyState` ("No charges yet — they appear once your booking is confirmed"), never an error. Matches the harnesses in `docs/qa/specs/qa-spec.md`.                                          |
 | R14 | Landlord with no properties                                              | `EmptyState` with a "Create listing" CTA.                                                                                                                                             |
 | R15 | Deep-linked `/boarder/payments/pay?chargeId=X` for someone else's charge | 404 (not 403) to avoid enumerating charge ids.                                                                                                                                        |
 | R16 | Property shared with a co-landlord                                       | Ledger reads follow `accessiblePropertyClause` (consistent with rooms/boarders).                                                                                                      |
@@ -488,9 +488,9 @@ blocks submission while pending; the ledger scope filters property/boarder corre
 first charge appears → submit with reference + receipt → landlord sees pending → verify → boarder sees
 paid → landlord records cash → dashboard alerts and aging update → CSV export and print statement.
 
-**Docs reconciliation** (F12): update `docs/MANUAL.md:116`, `docs/qa/qa-spec.md` (S30 + the "Deferred
-features" table rows), `docs/qa/qa-spec-audit.md`, `docs/specs/schema.md` §Payments, and
-`docs/specs/google-oauth.md:325`.
+**Docs reconciliation** (F12): update `docs/guides/MANUAL.md:116`, `docs/qa/specs/qa-spec.md` (S30 + the "Deferred
+features" table rows), `docs/qa/specs/qa-spec-audit.md`, `docs/reference/schema.md` §Payments, and
+`docs/reference/google-oauth.md:325`.
 
 ---
 
@@ -527,7 +527,7 @@ features" table rows), `docs/qa/qa-spec-audit.md`, `docs/specs/schema.md` §Paym
 
 | Risk                                                                                                                                                      | Mitigation                                                                                                                                                                            |
 | --------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Adding `triggers`/`scheduled` to the Worker touches the deploy path that CI gates (`.github/workflows/deploy.yml`); a broken export breaks the whole API. | Keep `export default { fetch: app.fetch, scheduled }` minimal, verify with `wrangler deploy --dry-run` (the command `docs/MANUAL.md` already documents).                              |
+| Adding `triggers`/`scheduled` to the Worker touches the deploy path that CI gates (`.github/workflows/deploy.yml`); a broken export breaks the whole API. | Keep `export default { fetch: app.fetch, scheduled }` minimal, verify with `wrangler deploy --dry-run` (the command `docs/guides/MANUAL.md` already documents).                              |
 | Money as `REAL` (F8)                                                                                                                                      | R3.                                                                                                                                                                                   |
 | `formatLandlordBoarder()` / dashboard literals (F5, F6) are asserted in existing tests with `'paid'`, `15`, and `{ due_soon: 0, overdue: 0 }`.            | Expect to update `test/landlord-boarders.test.ts` (lines 144-146) and `test/landlord-dashboard.test.ts` (lines 100, 142) as part of D15 — updating them is correct, not a regression. |
 | Scope creep toward a gateway                                                                                                                              | D23 forbids abstraction; revisit only as v2 (I13).                                                                                                                                    |
