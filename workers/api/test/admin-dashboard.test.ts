@@ -296,9 +296,7 @@ describe('admin dashboard routes', () => {
     const body = (await response.json()) as { data: Array<Record<string, unknown>> };
 
     expect(response.status).toBe(200);
-    expect(
-      body.data.find(row => row.id === 10)
-    ).toEqual(
+    expect(body.data.find(row => row.id === 10)).toEqual(
       expect.objectContaining({
         created_at: '2026-05-04 08:00:00',
         address: '4140 Parker Rd',

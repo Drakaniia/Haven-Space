@@ -8,7 +8,11 @@ import { Field, TextArea } from '../ui/Field';
 import { Modal } from '../ui/Modal';
 import { Skeleton } from '../ui/Skeleton';
 import { StatusBadge } from '../ui/StatusBadge';
-import { getLandlordCharge, rejectLandlordSubmission, verifyLandlordSubmission } from '../../lib/api/payments';
+import {
+  getLandlordCharge,
+  rejectLandlordSubmission,
+  verifyLandlordSubmission,
+} from '../../lib/api/payments';
 import { useAuth } from '../../lib/auth-context';
 import {
   REQUEST_NEW_PROOF_MESSAGE,
@@ -73,7 +77,8 @@ export function ReviewPaymentDrawer({
   });
 
   const reject = useMutation({
-    mutationFn: (submissionId: number) => rejectLandlordSubmission(token, submissionId, reason.trim()),
+    mutationFn: (submissionId: number) =>
+      rejectLandlordSubmission(token, submissionId, reason.trim()),
     onSuccess: () => {
       setJustRejected(reason.trim());
       setRejecting(false);
@@ -278,7 +283,9 @@ export function ReviewPaymentDrawer({
                       onCompose({
                         title: 'Message about the payment',
                         body:
-                          `Your ${formatPeso(row.monthly_rent)} rent payment for ${monthName} was ` +
+                          `Your ${formatPeso(
+                            row.monthly_rent
+                          )} rent payment for ${monthName} was ` +
                           `rejected: ${justRejected ?? rejected?.rejection_reason ?? ''}. Please ` +
                           'send a new proof with the correct amount and reference number.',
                       })

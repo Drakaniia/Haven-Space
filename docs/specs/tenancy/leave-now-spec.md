@@ -27,18 +27,18 @@ Add a **Leave now** action on `/boarder/tenancy` that:
 
 ## 2. Current State (verified in the repo)
 
-| Concern | File | Today |
-| --- | --- | --- |
-| Approval | `workers/api/src/routes/tenancy.ts` → `POST /api/landlord/approve-leave-request` | Sets `leave_request_status='approved'`, frees the room, **cancels the boarder's `pending`/`overdue` payments**. Leaves `status='confirmed'` and `deleted_at IS NULL`. |
-| Lazy finalization | `workers/api/src/repositories/tenancy.ts` → `finalizeDueLeaveRequests` | Closes approved leaves whose `intended_leave_date <= date('now')`: `status='ended'`, `deleted_at=CURRENT_TIMESTAMP`, `users.boarder_status='new'`. |
-| Boarder tenancy read | `GET /api/boarder/tenancy` | Runs lazy finalization, then returns `formatTenancy(...)` or `data: null`. The payload has `application_id`, `intended_leave_date`, `property_name`, `room_number`, `landlord.id`, but no payment balance. |
-| Boarder page | `apps/web/src/routes/boarder/tenancy.tsx` | `ApprovedLeaveState` is read-only: banner "Leave approved", "You're moving out on {date}", details, no action. Wrapped in `RequireTenancy`. |
-| Payments | `workers/api/src/repositories/payments/helpers.ts` | Open statuses are `pending`, `awaiting_verification`, `overdue`; `paid` and `cancelled` are settled. `outstandingFor` / `summarizeCharges` already define the money rules. |
-| Landlord boarders | `workers/api/src/repositories/landlord-boarders.ts` | Lists `accepted`/`approved`/`confirmed` applications with `deleted_at IS NULL`, so an ended tenancy disappears. |
-| Landlord calendar | `workers/api/src/repositories/landlord-calendar.ts` | `listApplicationEvents` filters `app.deleted_at IS NULL`, so ended tenancies never reach the calendar. |
-| Landlord activity | `workers/api/src/repositories/landlord-activity.ts` | Reuses `listCalendarEventSources`; `tenancy_move_out` renders as "Tenancy ended". |
-| Notification types | `workers/api/src/repositories/notifications.ts` → `roleVisibleTypes` | The landlord bell uses a fixed allow-list; an unknown type is filtered out. |
-| Tests | `workers/api/test/tenancy.test.ts` | Approval tests currently assert that pending/overdue charges are cancelled. |
+| Concern              | File                                                                             | Today                                                                                                                                                                                                      |
+| -------------------- | -------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Approval             | `workers/api/src/routes/tenancy.ts` → `POST /api/landlord/approve-leave-request` | Sets `leave_request_status='approved'`, frees the room, **cancels the boarder's `pending`/`overdue` payments**. Leaves `status='confirmed'` and `deleted_at IS NULL`.                                      |
+| Lazy finalization    | `workers/api/src/repositories/tenancy.ts` → `finalizeDueLeaveRequests`           | Closes approved leaves whose `intended_leave_date <= date('now')`: `status='ended'`, `deleted_at=CURRENT_TIMESTAMP`, `users.boarder_status='new'`.                                                         |
+| Boarder tenancy read | `GET /api/boarder/tenancy`                                                       | Runs lazy finalization, then returns `formatTenancy(...)` or `data: null`. The payload has `application_id`, `intended_leave_date`, `property_name`, `room_number`, `landlord.id`, but no payment balance. |
+| Boarder page         | `apps/web/src/routes/boarder/tenancy.tsx`                                        | `ApprovedLeaveState` is read-only: banner "Leave approved", "You're moving out on {date}", details, no action. Wrapped in `RequireTenancy`.                                                                |
+| Payments             | `workers/api/src/repositories/payments/helpers.ts`                               | Open statuses are `pending`, `awaiting_verification`, `overdue`; `paid` and `cancelled` are settled. `outstandingFor` / `summarizeCharges` already define the money rules.                                 |
+| Landlord boarders    | `workers/api/src/repositories/landlord-boarders.ts`                              | Lists `accepted`/`approved`/`confirmed` applications with `deleted_at IS NULL`, so an ended tenancy disappears.                                                                                            |
+| Landlord calendar    | `workers/api/src/repositories/landlord-calendar.ts`                              | `listApplicationEvents` filters `app.deleted_at IS NULL`, so ended tenancies never reach the calendar.                                                                                                     |
+| Landlord activity    | `workers/api/src/repositories/landlord-activity.ts`                              | Reuses `listCalendarEventSources`; `tenancy_move_out` renders as "Tenancy ended".                                                                                                                          |
+| Notification types   | `workers/api/src/repositories/notifications.ts` → `roleVisibleTypes`             | The landlord bell uses a fixed allow-list; an unknown type is filtered out.                                                                                                                                |
+| Tests                | `workers/api/test/tenancy.test.ts`                                               | Approval tests currently assert that pending/overdue charges are cancelled.                                                                                                                                |
 
 No schema change is needed. `deleted_at` records the actual move-out moment; `intended_leave_date` stays as the approved plan.
 The outstanding balance is derived from `payments`.
@@ -154,6 +154,7 @@ Registered on the existing `tenancyRoutes` Hono app (`workers/api/src/routes/ten
    ```
 
    `meta.changes === 0` (double click, second tab, concurrent removal) → `409 "This tenancy has already ended."`
+
 9. `UPDATE users SET boarder_status = 'new', updated_at = CURRENT_TIMESTAMP WHERE id = ?`.
 10. Best-effort landlord notification and activity record. Never fail the request because either failed — same
     `try/catch` + `console.error` pattern as approval.
@@ -261,7 +262,7 @@ UI changes:
 - `apps/web/src/components/calendar/calendar-helpers.ts` → `eventTypeLabel`: return **"Left early"** for the same
   condition; the day panel's `StatusBadge` then shows `left early`.
 - `apps/web/src/components/ui/StatusBadge.tsx`: add `left_early: 'bg-subtle text-gray-ink'` (neutral, not alarming).
-- No new event *type* is added, so `CalendarEventType`, `ActivityEventType`, family filters and the activity type
+- No new event _type_ is added, so `CalendarEventType`, `ActivityEventType`, family filters and the activity type
   allow-list stay unchanged.
 
 The original approved-date move-out event remains absent because the wait ended early; only the actual departure is shown.
@@ -343,19 +344,19 @@ This cannot be undone.
 
 ## 6. API Surface Changes
 
-| Change | Detail |
-| --- | --- |
-| Add | `POST /api/boarder/leave-now` (boarder auth, body `{ application_id }`) |
-| Add | `endApprovedLeaveNow(db, applicationId, boarderId)` in `repositories/tenancy.ts` |
-| Add | `notifyLandlordOfEarlyMoveOut(...)` in `repositories/tenancy.ts` |
-| Add | `boarder_left_early` notification type, visible to landlords |
-| Add | `listEarlyDepartureEvents(...)` merged into `listCalendarEventSources` |
-| Add | `outstanding_balance` + `open_charge_count` on the tenancy payload |
-| Add | `leaveNow(token, applicationId)` client helper in `apps/web/src/lib/api/boarder.ts` |
-| Change | `approvePendingLeaveRequest` no longer cancels pending/overdue charges |
-| Change | `ApprovedLeaveState` gains the balance note, Payments link, button and modal |
-| Change | Activity sentence / calendar label / StatusBadge for `left_early` |
-| No change | Room state, conversation messages, admin, activity event types, schema |
+| Change    | Detail                                                                              |
+| --------- | ----------------------------------------------------------------------------------- |
+| Add       | `POST /api/boarder/leave-now` (boarder auth, body `{ application_id }`)             |
+| Add       | `endApprovedLeaveNow(db, applicationId, boarderId)` in `repositories/tenancy.ts`    |
+| Add       | `notifyLandlordOfEarlyMoveOut(...)` in `repositories/tenancy.ts`                    |
+| Add       | `boarder_left_early` notification type, visible to landlords                        |
+| Add       | `listEarlyDepartureEvents(...)` merged into `listCalendarEventSources`              |
+| Add       | `outstanding_balance` + `open_charge_count` on the tenancy payload                  |
+| Add       | `leaveNow(token, applicationId)` client helper in `apps/web/src/lib/api/boarder.ts` |
+| Change    | `approvePendingLeaveRequest` no longer cancels pending/overdue charges              |
+| Change    | `ApprovedLeaveState` gains the balance note, Payments link, button and modal        |
+| Change    | Activity sentence / calendar label / StatusBadge for `left_early`                   |
+| No change | Room state, conversation messages, admin, activity event types, schema              |
 
 No migration.
 
@@ -363,25 +364,25 @@ No migration.
 
 ## 7. Edge Cases
 
-| Case | Expected |
-| --- | --- |
-| Leave still `pending` / `none` | 409 "after your landlord approves"; button never shown. |
-| No current tenancy | 404; button never shown. |
-| `application_id` from a stale page | 404 "Tenancy not found." |
-| Approved date is today or past | Lazy finalization closes it; button hidden; endpoint 404/409. |
-| Approved date is `null` | Button hidden; endpoint 409. |
-| Outstanding balance > 0 | Button disabled with the balance note; endpoint 409 with the amount if forced. |
-| Payment awaiting verification | Counts as outstanding; tenant is told verification pending. |
-| Tenant settles the balance | Returning to `/boarder/tenancy` refetches and enables the button. |
-| Charge generated after approval | It counts and blocks Leave now until settled. Accepted consequence of the "all open charges" rule. |
-| Double click / two tabs | First call ends it; second gets 409. |
-| Landlord removes the boarder at the same time | `changes === 0` / no tenancy → 409/404. |
-| Landlord has the Boarders page open | The row disappears on the next read. |
-| Notification or activity insert fails | Tenancy still ends; error logged; response stays successful. |
-| Room already freed at approval | Left alone. |
-| Unpaid charges after leaving on the approved date | They remain owed; finalization does not cancel them. |
-| Landlord / admin tries the endpoint | 403. |
-| Timezone | Fee and date comparisons use `manilaToday()`; activity event dates use Manila `deleted_at`. |
+| Case                                              | Expected                                                                                           |
+| ------------------------------------------------- | -------------------------------------------------------------------------------------------------- |
+| Leave still `pending` / `none`                    | 409 "after your landlord approves"; button never shown.                                            |
+| No current tenancy                                | 404; button never shown.                                                                           |
+| `application_id` from a stale page                | 404 "Tenancy not found."                                                                           |
+| Approved date is today or past                    | Lazy finalization closes it; button hidden; endpoint 404/409.                                      |
+| Approved date is `null`                           | Button hidden; endpoint 409.                                                                       |
+| Outstanding balance > 0                           | Button disabled with the balance note; endpoint 409 with the amount if forced.                     |
+| Payment awaiting verification                     | Counts as outstanding; tenant is told verification pending.                                        |
+| Tenant settles the balance                        | Returning to `/boarder/tenancy` refetches and enables the button.                                  |
+| Charge generated after approval                   | It counts and blocks Leave now until settled. Accepted consequence of the "all open charges" rule. |
+| Double click / two tabs                           | First call ends it; second gets 409.                                                               |
+| Landlord removes the boarder at the same time     | `changes === 0` / no tenancy → 409/404.                                                            |
+| Landlord has the Boarders page open               | The row disappears on the next read.                                                               |
+| Notification or activity insert fails             | Tenancy still ends; error logged; response stays successful.                                       |
+| Room already freed at approval                    | Left alone.                                                                                        |
+| Unpaid charges after leaving on the approved date | They remain owed; finalization does not cancel them.                                               |
+| Landlord / admin tries the endpoint               | 403.                                                                                               |
+| Timezone                                          | Fee and date comparisons use `manilaToday()`; activity event dates use Manila `deleted_at`.        |
 
 ---
 
@@ -466,12 +467,12 @@ date has already arrived in Manila.
 
 This spec changes one decision from the approval spec:
 
-| Old approval spec | Now |
-| --- | --- |
+| Old approval spec                                                                | Now                                                             |
+| -------------------------------------------------------------------------------- | --------------------------------------------------------------- |
 | §3 decision 8: "Pending payments are cancelled at approval (today's behaviour)." | Open charges are kept and must be settled before **Leave now**. |
-| §4.1 step 4: "cancel the boarder's `pending`/`overdue` payments" | Removed from `approvePendingLeaveRequest`. |
-| §8 test 1: "pending payments cancelled" | Reversed: pending/overdue charges remain open. |
-| §7 edge case: "Pending payments — cancelled at approval" | Open until paid; they also survive finalization. |
+| §4.1 step 4: "cancel the boarder's `pending`/`overdue` payments"                 | Removed from `approvePendingLeaveRequest`.                      |
+| §8 test 1: "pending payments cancelled"                                          | Reversed: pending/overdue charges remain open.                  |
+| §7 edge case: "Pending payments — cancelled at approval"                         | Open until paid; they also survive finalization.                |
 
 Everything else in the approval spec (room freed at approval, lazy finalization, guard, notification, boarder read-only
 state) still applies.

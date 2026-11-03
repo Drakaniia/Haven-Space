@@ -313,11 +313,15 @@ export function reminderMessage(
   const due = row.next_due_date ? ` on ${formatPaymentDate(row.next_due_date)}` : '';
   const past =
     row.days_overdue && row.days_overdue > 0
-      ? ` It's now ${row.days_overdue} ${row.days_overdue === 1 ? 'day' : 'days'} past the due date.`
+      ? ` It's now ${row.days_overdue} ${
+          row.days_overdue === 1 ? 'day' : 'days'
+        } past the due date.`
       : '';
 
   return (
-    `Hi ${firstName(row.boarder_name)}, a gentle reminder that your ${formatPeso(row.monthly_rent)} ` +
+    `Hi ${firstName(row.boarder_name)}, a gentle reminder that your ${formatPeso(
+      row.monthly_rent
+    )} ` +
     `rent for ${month} was due${due}.${past} You can send your payment proof here once you've paid.`
   );
 }
@@ -428,9 +432,7 @@ export function buildTenantTimeline(
           kind: 'proof_rejected',
           at: submission.verified_at ?? submission.created_at,
           title: 'Payment rejected',
-          detail: submission.rejection_reason
-            ? `Reason: ${submission.rejection_reason}`
-            : money,
+          detail: submission.rejection_reason ? `Reason: ${submission.rejection_reason}` : money,
           tone: 'error',
         });
       }

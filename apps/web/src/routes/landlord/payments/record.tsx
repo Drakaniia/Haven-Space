@@ -53,8 +53,8 @@ function LandlordRecordPaymentPage() {
         <h2 className="font-semibold text-ink">Payments are recorded in full</h2>
         <p className="mt-1 text-sm text-gray-ink">
           Pick a boarder, choose which of their open charges were paid, and attach a receipt unless
-          the payment was cash. The tenancy&apos;s next due date moves to one month after the payment
-          date — you can adjust it before saving.
+          the payment was cash. The tenancy&apos;s next due date moves to one month after the
+          payment date — you can adjust it before saving.
         </p>
         <div className="mt-4">
           <Button onClick={() => setOpen(true)}>Record a payment</Button>

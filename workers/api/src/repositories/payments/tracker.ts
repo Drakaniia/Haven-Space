@@ -349,9 +349,8 @@ export async function listTrackerRows(
     const charges = chargesByApplication.get(applicationId) ?? [];
     const rents = charges.filter(charge => charge.charge_type === 'rent');
     const openRent =
-      rents.filter(
-        charge => charge.status !== 'paid' && charge.stored_status !== 'cancelled'
-      )[0] ?? null;
+      rents.filter(charge => charge.status !== 'paid' && charge.stored_status !== 'cancelled')[0] ??
+      null;
     const paidRent = rents
       .filter(charge => charge.stored_status === 'paid' && charge.paid_date)
       .sort((left, right) => String(left.paid_date).localeCompare(String(right.paid_date)));
@@ -390,9 +389,7 @@ export async function listTrackerRows(
     // proof outranks it, which is exactly the promise the label makes (D3).
     const openRentSubmissions = openRent?.submissions ?? [];
     const latestOnOpenRent =
-      openRentSubmissions.length > 0
-        ? openRentSubmissions[openRentSubmissions.length - 1]
-        : null;
+      openRentSubmissions.length > 0 ? openRentSubmissions[openRentSubmissions.length - 1] : null;
     const hasRejectedClaim =
       !openRentSubmissions.some(item => item.status === 'pending') &&
       latestOnOpenRent?.status === 'rejected';
@@ -411,8 +408,7 @@ export async function listTrackerRows(
       ),
       next_due_date: dueDate,
       days_remaining: remaining !== null && remaining >= 0 ? remaining : null,
-      days_overdue:
-        status === 'overdue' || status === 'in_grace' ? Math.abs(remaining ?? 0) : null,
+      days_overdue: status === 'overdue' || status === 'in_grace' ? Math.abs(remaining ?? 0) : null,
       status,
       status_label: trackerStatusLabel(status, remaining ?? 0),
       current_charge_id: openRent ? openRent.id : null,
@@ -486,8 +482,8 @@ export async function listTrackerRows(
       cycle && cycle.stored_status === 'paid'
         ? cycle.total_due
         : filters.month
-          ? 0
-          : entry.lastPaidTotal;
+        ? 0
+        : entry.lastPaidTotal;
 
     if (entry.row.status === 'due_today') {
       summary.due_today += entry.row.amount_due;

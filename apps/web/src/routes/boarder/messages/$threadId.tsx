@@ -18,5 +18,7 @@ function BoarderThreadPage() {
   const { threadId } = Route.useParams();
   const { draft } = Route.useSearch();
 
-  return <MessageInbox role="boarder" threadId={Number(threadId)} draftPropertyId={draft ?? null} />;
+  return (
+    <MessageInbox role="boarder" threadId={Number(threadId)} draftPropertyId={draft ?? null} />
+  );
 }

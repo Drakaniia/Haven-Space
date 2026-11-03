@@ -156,10 +156,7 @@ async function messageWithAttachments(db: D1Database, message: MessageRow) {
   };
 }
 
-async function threadPayload(
-  db: D1Database,
-  input: { thread: MessageThreadRow; userId: number }
-) {
+async function threadPayload(db: D1Database, input: { thread: MessageThreadRow; userId: number }) {
   const summary = await findMessageThreadSummary(db, {
     threadId: input.thread.id,
     userId: input.userId,
@@ -515,7 +512,8 @@ messageRoutes.post('/api/messages/threads/:id/report', async c => {
     });
   }
 
-  const details = typeof body.details === 'string' ? body.details.trim().slice(0, MAX_REPORT_DETAILS) : null;
+  const details =
+    typeof body.details === 'string' ? body.details.trim().slice(0, MAX_REPORT_DETAILS) : null;
   const created = await insertMessageReport(db, {
     threadId,
     reportedBy: user.user_id,

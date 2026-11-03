@@ -30,7 +30,11 @@ mock.module('@tanstack/react-router', () => ({
   ),
   Outlet: () => null,
   useNavigate: () => () => {},
-  useLocation: () => ({ href: '/landlord/payments', searchStr: '', pathname: '/landlord/payments' }),
+  useLocation: () => ({
+    href: '/landlord/payments',
+    searchStr: '',
+    pathname: '/landlord/payments',
+  }),
 }));
 
 afterEach(() => cleanup());
@@ -217,10 +221,15 @@ describe('client filters', () => {
     expect(matchesFilters(at(), { ...base, dueFrom: '2026-10-13' })).toBe(false);
     expect(matchesFilters(at(), { ...base, dueTo: '2026-10-11' })).toBe(false);
     expect(
-      matchesFilters(at({ last_payment: { date: '2026-10-12', amount: 4000, method: 'gcash', method_label: null } }), {
-        ...base,
-        method: 'cash',
-      })
+      matchesFilters(
+        at({
+          last_payment: { date: '2026-10-12', amount: 4000, method: 'gcash', method_label: null },
+        }),
+        {
+          ...base,
+          method: 'cash',
+        }
+      )
     ).toBe(false);
   });
 
@@ -313,7 +322,11 @@ describe('tenant timeline', () => {
       [
         charge({
           submissions: [
-            submission({ status: 'rejected', verified_at: '2026-10-09 03:00:00', rejection_reason: 'Blurry proof' }),
+            submission({
+              status: 'rejected',
+              verified_at: '2026-10-09 03:00:00',
+              rejection_reason: 'Blurry proof',
+            }),
             submission({ id: 901, status: 'pending', created_at: '2026-10-10 04:00:00' }),
           ],
         }),
@@ -371,7 +384,12 @@ describe('table rendering', () => {
         has_pending_claim: true,
         pending_claim_charge_id: 93,
       }),
-      row({ application_id: 4, boarder_name: 'Nina Cruz', status: 'no_charge', current_charge_id: null }),
+      row({
+        application_id: 4,
+        boarder_name: 'Nina Cruz',
+        status: 'no_charge',
+        current_charge_id: null,
+      }),
     ]);
 
     const table = within(screen.getByRole('table', { name: 'Payments for October 2026' }));

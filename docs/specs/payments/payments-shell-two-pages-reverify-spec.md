@@ -20,14 +20,14 @@ column) and a red **“Internal server error”** panel under the property/month
 This is the **third** spec written for this same verbatim request. It supersedes the second, which
 superseded the first.
 
-| Document | Relationship |
-| -------- | ------------ |
-| `payments-page-regressions-spec.md` | First pass. Diagnosed both defects and executed its fix plan; already carries a superseded note. |
+| Document                                | Relationship                                                                                                                                                                                                                 |
+| --------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `payments-page-regressions-spec.md`     | First pass. Diagnosed both defects and executed its fix plan; already carries a superseded note.                                                                                                                             |
 | `payments-shell-reverification-spec.md` | Second pass. Re-proved both defects, executed its fix plan (leaves stripped, `0021` applied locally, 503 schema-stale mapping, guards). **This pass supersedes it** (D5) and must add a superseded note to its header (D16). |
-| `payments-feature-spec.md` | The feature that introduced both defects. Not touched by this pass. |
-| `admin-apple-ui-restructure-spec.md` | Owns the single-shell convention and the `.chrome-sidebar` / `.chrome-topbar` materials. |
-| `docs/qa/specs/qa-spec-audit.md` §10.6 | Claims the payments pages were spot-checked “single shell, no duplicates” — the claim this report falsifies. Recorded in §5, not corrected (D19). |
-| `AGENTS.md` §Frontend | Line 86 tells contributors to “Wrap role pages in `<Protected role="...">` + `<RoleShell>`” — the guidance that produced the regression. **Corrected by this pass** (D7). |
+| `payments-feature-spec.md`              | The feature that introduced both defects. Not touched by this pass.                                                                                                                                                          |
+| `admin-apple-ui-restructure-spec.md`    | Owns the single-shell convention and the `.chrome-sidebar` / `.chrome-topbar` materials.                                                                                                                                     |
+| `docs/qa/specs/qa-spec-audit.md` §10.6  | Claims the payments pages were spot-checked “single shell, no duplicates” — the claim this report falsifies. Recorded in §5, not corrected (D19).                                                                            |
+| `AGENTS.md` §Frontend                   | Line 86 tells contributors to “Wrap role pages in `<Protected role="...">` + `<RoleShell>`” — the guidance that produced the regression. **Corrected by this pass** (D7).                                                    |
 
 **Decisions inherited unchanged** from the two predecessors: the layout owns `Protected` + `RoleShell`
 and leaves never render it; `RequireTenancy` stays in `boarder/payments.tsx`; no seeded or back-filled
@@ -40,27 +40,27 @@ payment rows; the ledger endpoints, payloads, filters and summary shape are unto
 **Five rounds of `ask_user`, 19 questions.** Two answers contradicted earlier ones; both were resolved
 explicitly in the final round (D15, D17) and the resolution is recorded here.
 
-| #   | Topic | Decision |
-| --- | ----- | -------- |
-| D1  | Where the screenshot came from | **The local dev server** (`localhost:3000` with `bun run cf:api:dev` behind it). |
-| D2  | Is it still reproducing? | **No — the screenshot predates the two earlier passes.** The owner confirmed it is not the current state, which is consistent with §2.1: no source in the tree can nest two shells. |
-| D3  | What this pass is | **A fresh, independent re-verification spec.** Not a fix plan for live code, not a delivery/deploy pass. |
-| D4  | The red “Internal server error” half of the report | **Cover it as fixed, verify only.** The local database is now at `0021_payments` (§2.2), so the panel should not be reproducible locally. |
-| D5  | The environment gap | **Do not own it.** Record it as a known issue with evidence (the shared D1 is at `0014`, the deployed API 501s payments — §2.3, §5). |
-| D6  | Evidence bar | **Automated guards only.** No browser session, no screenshots, no headless login script. |
-| D7  | The root-cause guideline | **Rewrite the `AGENTS.md` shell guideline** (line 86) so it stops instructing the pattern that caused this. |
-| D8  | Relationship to the second spec | **Supersede `payments-shell-reverification-spec.md`** — add a superseded note to its header, the way it did to the first. |
-| D9  | The two untracked guard tests | **Out of scope for this pass — no commits.** They are re-verified where they sit. (See the resolution note at D15/D17 for the tension with an earlier answer.) |
-| D10 | Guard coverage | **Generalize the render guard to every layout subtree** (D11 constrains the subject set). |
-| D11 | Which subtrees the generalized guard renders | **Only subtrees whose layout renders `Protected` + `RoleShell`** — the exact class this defect can occur in. |
-| D12 | Spec size | **Minimal close-out.** Supersede note + re-verify the guards + `AGENTS.md` correction. Nothing else — no environment runbook. |
-| D13 | Local dev hygiene | **Documented as step one of re-verification**: route-tree regeneration, dev-server restart, port check, API-base check (§3.1). |
-| D14 | What “closed” means | **Guards green, nothing else.** No planted-violation proof, no screenshot artifact, no docs gate. |
-| D15 | Closure vs. docs *(conflict)* | **Closure = guards green; the docs corrections are separate deliverables.** Both are in the plan (§3.4, §3.5), but only the guard result decides whether the report is closed. |
-| D16 | Final deliverable list | Superseded note · re-run the four project checks · generalize the render guard · rewrite the `AGENTS.md` guideline · dev-hygiene pre-check steps. |
-| D17 | Committing the guards *(conflict)* | An earlier answer said “track/commit the two guard tests”; the final deliverable list omitted it. **Resolved as out of scope: no commits in this pass** (D9), and the untracked state is recorded as a risk (§7) and a known issue (§5). |
-| D18 | Spec file name | **`payments-shell-two-pages-reverify-spec.md`.** |
-| D19 | Stale-document claims to record | **`docs/qa/specs/qa-spec-audit.md` §10.6 only.** The other three stale claims (`payments-feature-spec.md` §14, `docs/guides/MANUAL.md`’s missing `migrate:local` step, `docs/reference/google-oauth.md` §8 / `docs/qa/specs/qa-spec.md` S30) are recorded as *seen but not owned* in §5. |
+| #   | Topic                                              | Decision                                                                                                                                                                                                                                                                                 |
+| --- | -------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| D1  | Where the screenshot came from                     | **The local dev server** (`localhost:3000` with `bun run cf:api:dev` behind it).                                                                                                                                                                                                         |
+| D2  | Is it still reproducing?                           | **No — the screenshot predates the two earlier passes.** The owner confirmed it is not the current state, which is consistent with §2.1: no source in the tree can nest two shells.                                                                                                      |
+| D3  | What this pass is                                  | **A fresh, independent re-verification spec.** Not a fix plan for live code, not a delivery/deploy pass.                                                                                                                                                                                 |
+| D4  | The red “Internal server error” half of the report | **Cover it as fixed, verify only.** The local database is now at `0021_payments` (§2.2), so the panel should not be reproducible locally.                                                                                                                                                |
+| D5  | The environment gap                                | **Do not own it.** Record it as a known issue with evidence (the shared D1 is at `0014`, the deployed API 501s payments — §2.3, §5).                                                                                                                                                     |
+| D6  | Evidence bar                                       | **Automated guards only.** No browser session, no screenshots, no headless login script.                                                                                                                                                                                                 |
+| D7  | The root-cause guideline                           | **Rewrite the `AGENTS.md` shell guideline** (line 86) so it stops instructing the pattern that caused this.                                                                                                                                                                              |
+| D8  | Relationship to the second spec                    | **Supersede `payments-shell-reverification-spec.md`** — add a superseded note to its header, the way it did to the first.                                                                                                                                                                |
+| D9  | The two untracked guard tests                      | **Out of scope for this pass — no commits.** They are re-verified where they sit. (See the resolution note at D15/D17 for the tension with an earlier answer.)                                                                                                                           |
+| D10 | Guard coverage                                     | **Generalize the render guard to every layout subtree** (D11 constrains the subject set).                                                                                                                                                                                                |
+| D11 | Which subtrees the generalized guard renders       | **Only subtrees whose layout renders `Protected` + `RoleShell`** — the exact class this defect can occur in.                                                                                                                                                                             |
+| D12 | Spec size                                          | **Minimal close-out.** Supersede note + re-verify the guards + `AGENTS.md` correction. Nothing else — no environment runbook.                                                                                                                                                            |
+| D13 | Local dev hygiene                                  | **Documented as step one of re-verification**: route-tree regeneration, dev-server restart, port check, API-base check (§3.1).                                                                                                                                                           |
+| D14 | What “closed” means                                | **Guards green, nothing else.** No planted-violation proof, no screenshot artifact, no docs gate.                                                                                                                                                                                        |
+| D15 | Closure vs. docs _(conflict)_                      | **Closure = guards green; the docs corrections are separate deliverables.** Both are in the plan (§3.4, §3.5), but only the guard result decides whether the report is closed.                                                                                                           |
+| D16 | Final deliverable list                             | Superseded note · re-run the four project checks · generalize the render guard · rewrite the `AGENTS.md` guideline · dev-hygiene pre-check steps.                                                                                                                                        |
+| D17 | Committing the guards _(conflict)_                 | An earlier answer said “track/commit the two guard tests”; the final deliverable list omitted it. **Resolved as out of scope: no commits in this pass** (D9), and the untracked state is recorded as a risk (§7) and a known issue (§5).                                                 |
+| D18 | Spec file name                                     | **`payments-shell-two-pages-reverify-spec.md`.**                                                                                                                                                                                                                                         |
+| D19 | Stale-document claims to record                    | **`docs/qa/specs/qa-spec-audit.md` §10.6 only.** The other three stale claims (`payments-feature-spec.md` §14, `docs/guides/MANUAL.md`’s missing `migrate:local` step, `docs/reference/google-oauth.md` §8 / `docs/qa/specs/qa-spec.md` S30) are recorded as _seen but not owned_ in §5. |
 
 ---
 
@@ -75,14 +75,14 @@ deployed API and the deployed Pages app. No file was modified.
 The rule the predecessors established: the payments **layouts** own the shell, the **leaves** render
 content only. The tree obeys it:
 
-| File | Router role | Parent route | `Protected` / `RoleShell` in the file |
-| ---- | ----------- | ------------ | ------------------------------------- |
-| `apps/web/src/routes/landlord/payments.tsx` | layout | `__root` | **yes** — `Protected` → `RoleShell` → `<Outlet />` |
-| `apps/web/src/routes/landlord/payments/index.tsx` | leaf | `/landlord/payments` | **no** — the only matches are a comment naming where the shell lives |
-| `apps/web/src/routes/landlord/payments/record.tsx` | leaf | `/landlord/payments` | **no** — zero references |
-| `apps/web/src/routes/boarder/payments.tsx` | layout | `__root` | **yes** — `Protected` → `RoleShell` → `RequireTenancy` → `<Outlet />` |
-| `apps/web/src/routes/boarder/payments/index.tsx` | leaf | `/boarder/payments` | **no** — comment only |
-| `apps/web/src/routes/boarder/payments/pay.tsx` | leaf | `/boarder/payments` | **no** — zero references |
+| File                                               | Router role | Parent route         | `Protected` / `RoleShell` in the file                                 |
+| -------------------------------------------------- | ----------- | -------------------- | --------------------------------------------------------------------- |
+| `apps/web/src/routes/landlord/payments.tsx`        | layout      | `__root`             | **yes** — `Protected` → `RoleShell` → `<Outlet />`                    |
+| `apps/web/src/routes/landlord/payments/index.tsx`  | leaf        | `/landlord/payments` | **no** — the only matches are a comment naming where the shell lives  |
+| `apps/web/src/routes/landlord/payments/record.tsx` | leaf        | `/landlord/payments` | **no** — zero references                                              |
+| `apps/web/src/routes/boarder/payments.tsx`         | layout      | `__root`             | **yes** — `Protected` → `RoleShell` → `RequireTenancy` → `<Outlet />` |
+| `apps/web/src/routes/boarder/payments/index.tsx`   | leaf        | `/boarder/payments`  | **no** — comment only                                                 |
+| `apps/web/src/routes/boarder/payments/pay.tsx`     | leaf        | `/boarder/payments`  | **no** — zero references                                              |
 
 Supporting checks:
 
@@ -101,10 +101,10 @@ Supporting checks:
 
 **Guards that already exist for this defect** (both **untracked** today):
 
-| File | Kind | What it proves |
-| ---- | ---- | -------------- |
-| `apps/web/test/payments-shell.test.tsx` | render | For each of the four payments leaves: `<RoleShell nav={…}><Leaf /></RoleShell>` yields exactly one `aside.chrome-sidebar` and one `header.chrome-topbar`. |
-| `apps/web/test/route-shell-ownership.test.ts` | static | Reads every route file, works out the layout subtrees, and fails naming any leaf that imports `RoleShell` or renders `<Protected>`. |
+| File                                          | Kind   | What it proves                                                                                                                                            |
+| --------------------------------------------- | ------ | --------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `apps/web/test/payments-shell.test.tsx`       | render | For each of the four payments leaves: `<RoleShell nav={…}><Leaf /></RoleShell>` yields exactly one `aside.chrome-sidebar` and one `header.chrome-topbar`. |
+| `apps/web/test/route-shell-ownership.test.ts` | static | Reads every route file, works out the layout subtrees, and fails naming any leaf that imports `RoleShell` or renders `<Protected>`.                       |
 
 Combined with D1/D2 (screenshot predates the fixes, from local dev), the conclusion for this pass is:
 **Defect A is a historical state, and the job is to re-prove the guards still hold and to widen them.**
@@ -118,7 +118,7 @@ Combined with D1/D2 (screenshot predates the fixes, from local dev), the conclus
   `deposit_resolution*`, the `payment_submissions` table, and the `properties` / `applications`
   columns the ledger queries. The stale-schema cause of the red panel is gone locally.
 - **API error surface:** `workers/api/src/lib/http.ts` exports `SCHEMA_STALE_CODE =
-  'database_schema_stale'`, `SCHEMA_STALE_MESSAGE`, and `isSchemaStaleError()` (matching
+'database_schema_stale'`, `SCHEMA_STALE_MESSAGE`, and `isSchemaStaleError()` (matching
   `/no such column/i`, `/no such table/i`, `/has no column named/i`), and `responseFromError()` maps
   that family to **503** instead of the bare 500.
 - **Client surface:** `apps/web/src/lib/payments.ts` exports `PAYMENTS_ERROR_HINT` naming
@@ -126,31 +126,31 @@ Combined with D1/D2 (screenshot predates the fixes, from local dev), the conclus
   `action`, so the payments screens can explain a stale database instead of printing a bare server
   error.
 
-So Defect B is verified as *implemented*; this pass only confirms it is still in place (§3.2).
+So Defect B is verified as _implemented_; this pass only confirms it is still in place (§3.2).
 
 ### 2.3 The environment gap (recorded, not owned — D5)
 
 The fixes above are local-only. The shared/deployed side is behind in a way that no code change here
-addresses, and it is the reason a *deployed* payments page still cannot work:
+addresses, and it is the reason a _deployed_ payments page still cannot work:
 
-| Probe | Result |
-| ----- | ------ |
-| Shared D1 `haven-space` (`bc45d25b-7e79-4418-9f8c-b53b206ffc44`, the only `haven-space` database in account `fab94f3e8a58d3b3509d01f11a67b843`) — `d1_migrations` | ends at **`0014_seed_sample_listings.sql`**. `0015`–`0021` unapplied, so `payment_submissions`, `payments.charge_type` etc. do not exist there. |
-| Same database — table list | has `payments`, `applications`, `messages`, `notifications`, `conversations`, … but **no `payment_submissions`**. |
-| Migration **numbering divergence** | The repo/local ledger has `0014_property_access.sql` + `0015_seed_sample_listings.sql`; the shared ledger records `0014_seed_sample_listings.sql`. The shared database predates a renumbering, so a blind `wrangler d1 migrations apply --remote` would run `0014_property_access` and re-run the seed (`0015` is `NOT EXISTS`-guarded, so it would not duplicate rows, but it is not a no-op). |
-| `GET https://haven-space-api.floresaybaez574.workers.dev/api/landlord/payments` | **501** `{"error":"payments routes are not implemented in the Cloudflare Worker yet","code":"FEATURE_DEFERRED","feature":"payments"}` — the deployed Worker is an older build than the payments work. |
-| `GET https://haven-space-api.floresaybaez574.workers.dev/api/health` | 200, `"environment":"production"` (the deployed Worker is reachable; it simply has no payments routes). |
-| `GET https://haven-space.pages.dev/landlord/payments` | 200, app HTML (the shell is client-gated, so the SSR HTML contains no `chrome-sidebar`); `origin/main` contains no payments route files, so the deployed Pages app does not serve this page from `main`. |
-| Branch position | `feat/apple-ui-restructure-qa-hardening` is **476 commits ahead of `origin/main`** and in sync with `origin/feat/apple-ui-restructure-qa-hardening`. |
+| Probe                                                                                                                                                             | Result                                                                                                                                                                                                                                                                                                                                                                                          |
+| ----------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Shared D1 `haven-space` (`bc45d25b-7e79-4418-9f8c-b53b206ffc44`, the only `haven-space` database in account `fab94f3e8a58d3b3509d01f11a67b843`) — `d1_migrations` | ends at **`0014_seed_sample_listings.sql`**. `0015`–`0021` unapplied, so `payment_submissions`, `payments.charge_type` etc. do not exist there.                                                                                                                                                                                                                                                 |
+| Same database — table list                                                                                                                                        | has `payments`, `applications`, `messages`, `notifications`, `conversations`, … but **no `payment_submissions`**.                                                                                                                                                                                                                                                                               |
+| Migration **numbering divergence**                                                                                                                                | The repo/local ledger has `0014_property_access.sql` + `0015_seed_sample_listings.sql`; the shared ledger records `0014_seed_sample_listings.sql`. The shared database predates a renumbering, so a blind `wrangler d1 migrations apply --remote` would run `0014_property_access` and re-run the seed (`0015` is `NOT EXISTS`-guarded, so it would not duplicate rows, but it is not a no-op). |
+| `GET https://haven-space-api.floresaybaez574.workers.dev/api/landlord/payments`                                                                                   | **501** `{"error":"payments routes are not implemented in the Cloudflare Worker yet","code":"FEATURE_DEFERRED","feature":"payments"}` — the deployed Worker is an older build than the payments work.                                                                                                                                                                                           |
+| `GET https://haven-space-api.floresaybaez574.workers.dev/api/health`                                                                                              | 200, `"environment":"production"` (the deployed Worker is reachable; it simply has no payments routes).                                                                                                                                                                                                                                                                                         |
+| `GET https://haven-space.pages.dev/landlord/payments`                                                                                                             | 200, app HTML (the shell is client-gated, so the SSR HTML contains no `chrome-sidebar`); `origin/main` contains no payments route files, so the deployed Pages app does not serve this page from `main`.                                                                                                                                                                                        |
+| Branch position                                                                                                                                                   | `feat/apple-ui-restructure-qa-hardening` is **476 commits ahead of `origin/main`** and in sync with `origin/feat/apple-ui-restructure-qa-hardening`.                                                                                                                                                                                                                                            |
 
 ### 2.4 Why the report stayed open
 
-| Gap | Detail |
-| --- | ------ |
-| The two earlier passes changed code but nothing was committed | The shell fix lives in the working tree, the guard tests are untracked, and `origin/main` still has no payments routes. Anything measuring “what is deployed” sees none of it. |
-| The guards are not under version control | `apps/web/test/payments-shell.test.tsx` and `apps/web/test/route-shell-ownership.test.ts` are `??` — a `git clean`, a fresh clone, or a CI run on another branch has no regression guard at all. |
-| A green build was never the same as the browser | The screenshot came from a dev server whose bundle was built before the fix; the second predecessor planned a browser check (its D5/D12) and this pass replaces that bar with the automated guards (D6). |
-| The claim in `docs/qa/specs/qa-spec-audit.md` §10.6 was never corrected | It still lists the payments pages as verified single-shell. |
+| Gap                                                                     | Detail                                                                                                                                                                                                   |
+| ----------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| The two earlier passes changed code but nothing was committed           | The shell fix lives in the working tree, the guard tests are untracked, and `origin/main` still has no payments routes. Anything measuring “what is deployed” sees none of it.                           |
+| The guards are not under version control                                | `apps/web/test/payments-shell.test.tsx` and `apps/web/test/route-shell-ownership.test.ts` are `??` — a `git clean`, a fresh clone, or a CI run on another branch has no regression guard at all.         |
+| A green build was never the same as the browser                         | The screenshot came from a dev server whose bundle was built before the fix; the second predecessor planned a browser check (its D5/D12) and this pass replaces that bar with the automated guards (D6). |
+| The claim in `docs/qa/specs/qa-spec-audit.md` §10.6 was never corrected | It still lists the payments pages as verified single-shell.                                                                                                                                              |
 
 ---
 
@@ -297,15 +297,15 @@ recorded here so the difference is not read as an omission.
 
 ## 5. Known issues recorded, not addressed
 
-| # | Issue | Evidence |
-| - | ----- | -------- |
-| K1 | `docs/qa/specs/qa-spec-audit.md` §10.6 still claims the payments pages are “single shell, no duplicates”. | §10.6 lists “landlord … payments, boarders, applications — **single shell, no duplicates**” as a passed spot-check. Selected for recording in D19; **correction is out of scope for this pass.** |
-| K2 | The **shared** D1 `haven-space` is 7 feature-migrations behind. | `d1_migrations` ends at `0014_seed_sample_listings.sql`; no `payment_submissions`; `payments` lacks `charge_type`. |
-| K3 | The shared database’s migration ledger **diverges in numbering** from the repo. | Shared has `0014_seed_sample_listings.sql`; repo has `0014_property_access.sql` + `0015_seed_sample_listings.sql`. A blind remote apply would also re-run the (`NOT EXISTS`-guarded) seed. |
-| K4 | The **deployed API has no payments routes**: `GET /api/landlord/payments` → **501 `FEATURE_DEFERRED`**. | `curl` probe, §2.3. |
-| K5 | The **deployed Pages app** (built from `main`) contains no payments routes at all, and this branch is 476 commits ahead of `origin/main`. | `git ls-tree origin/main`, §2.3. |
-| K6 | The two shell guards are **untracked**, so nothing guards this regression in version control. | `git status --short apps/web/test` → `?? …/payments-shell.test.tsx`, `?? …/route-shell-ownership.test.ts`. Out of scope per D9/D17. |
-| K7 | Other stale claims seen but not owned: `payments-feature-spec.md` §14 “as shipped” reads clean; `docs/guides/MANUAL.md` has no `migrate:local` step; `docs/reference/google-oauth.md` §8 and `docs/qa/specs/qa-spec.md` S30 still describe payments as deferred. | Recorded for a future docs pass (D19). |
+| #   | Issue                                                                                                                                                                                                                                                            | Evidence                                                                                                                                                                                         |
+| --- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| K1  | `docs/qa/specs/qa-spec-audit.md` §10.6 still claims the payments pages are “single shell, no duplicates”.                                                                                                                                                        | §10.6 lists “landlord … payments, boarders, applications — **single shell, no duplicates**” as a passed spot-check. Selected for recording in D19; **correction is out of scope for this pass.** |
+| K2  | The **shared** D1 `haven-space` is 7 feature-migrations behind.                                                                                                                                                                                                  | `d1_migrations` ends at `0014_seed_sample_listings.sql`; no `payment_submissions`; `payments` lacks `charge_type`.                                                                               |
+| K3  | The shared database’s migration ledger **diverges in numbering** from the repo.                                                                                                                                                                                  | Shared has `0014_seed_sample_listings.sql`; repo has `0014_property_access.sql` + `0015_seed_sample_listings.sql`. A blind remote apply would also re-run the (`NOT EXISTS`-guarded) seed.       |
+| K4  | The **deployed API has no payments routes**: `GET /api/landlord/payments` → **501 `FEATURE_DEFERRED`**.                                                                                                                                                          | `curl` probe, §2.3.                                                                                                                                                                              |
+| K5  | The **deployed Pages app** (built from `main`) contains no payments routes at all, and this branch is 476 commits ahead of `origin/main`.                                                                                                                        | `git ls-tree origin/main`, §2.3.                                                                                                                                                                 |
+| K6  | The two shell guards are **untracked**, so nothing guards this regression in version control.                                                                                                                                                                    | `git status --short apps/web/test` → `?? …/payments-shell.test.tsx`, `?? …/route-shell-ownership.test.ts`. Out of scope per D9/D17.                                                              |
+| K7  | Other stale claims seen but not owned: `payments-feature-spec.md` §14 “as shipped” reads clean; `docs/guides/MANUAL.md` has no `migrate:local` step; `docs/reference/google-oauth.md` §8 and `docs/qa/specs/qa-spec.md` S30 still describe payments as deferred. | Recorded for a future docs pass (D19).                                                                                                                                                           |
 
 ---
 
@@ -329,15 +329,15 @@ recorded here so the difference is not read as an omission.
 
 ## 7. Risks
 
-| Risk | Mitigation |
-| ---- | ---------- |
-| The render guard passes vacuously (a mock renders nothing and “one sidebar” is never true). | Assert `length === 1` for both shell roots **and** that the page’s own heading rendered; the existing payments guard already does this — keep it in the generalized version. |
-| Generalizing pulls in layouts that do not own a shell (`__root`, `auth/signup`, `boarder/find-a-room/$id`) and produces false failures. | Subject set is derived from source (a layout qualifies only if it imports `RoleShell` and renders `<Outlet />`), and the exclusions are listed explicitly in §3.3. |
-| The generalized guard’s subject list silently goes stale as routes are added. | Enumerate from the filesystem at test time; record the observed counts in the implement log each run. |
-| Untracked guards can vanish (`git clean`, fresh clone, CI on another branch). | Recorded as K6 and flagged to the owner; committing them is the identified follow-up, out of scope here. |
-| `localStorage['havenSpaceApiBaseUrl']` or a non-localhost hostname points local dev at the deployed API, which 501s payments — re-creating a false “payments is broken” signal. | Step 3.1.3 clears the override and re-checks before anything is judged. |
-| Someone reads “guards green” as “the deployed app works”. | §2.3 and K2–K5 state plainly that the deployed API 501s payments and the shared database is behind; acceptance §4.3 covers the local tree only. |
-| `0014`–`0021` applied blindly to the shared database later, re-running the seed under its old number. | K3 records the numbering divergence and the `NOT EXISTS` guard so the eventual apply is done deliberately. |
+| Risk                                                                                                                                                                            | Mitigation                                                                                                                                                                   |
+| ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| The render guard passes vacuously (a mock renders nothing and “one sidebar” is never true).                                                                                     | Assert `length === 1` for both shell roots **and** that the page’s own heading rendered; the existing payments guard already does this — keep it in the generalized version. |
+| Generalizing pulls in layouts that do not own a shell (`__root`, `auth/signup`, `boarder/find-a-room/$id`) and produces false failures.                                         | Subject set is derived from source (a layout qualifies only if it imports `RoleShell` and renders `<Outlet />`), and the exclusions are listed explicitly in §3.3.           |
+| The generalized guard’s subject list silently goes stale as routes are added.                                                                                                   | Enumerate from the filesystem at test time; record the observed counts in the implement log each run.                                                                        |
+| Untracked guards can vanish (`git clean`, fresh clone, CI on another branch).                                                                                                   | Recorded as K6 and flagged to the owner; committing them is the identified follow-up, out of scope here.                                                                     |
+| `localStorage['havenSpaceApiBaseUrl']` or a non-localhost hostname points local dev at the deployed API, which 501s payments — re-creating a false “payments is broken” signal. | Step 3.1.3 clears the override and re-checks before anything is judged.                                                                                                      |
+| Someone reads “guards green” as “the deployed app works”.                                                                                                                       | §2.3 and K2–K5 state plainly that the deployed API 501s payments and the shared database is behind; acceptance §4.3 covers the local tree only.                              |
+| `0014`–`0021` applied blindly to the shared database later, re-running the seed under its old number.                                                                           | K3 records the numbering divergence and the `NOT EXISTS` guard so the eventual apply is done deliberately.                                                                   |
 
 ---
 

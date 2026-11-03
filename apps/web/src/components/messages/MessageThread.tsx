@@ -130,8 +130,7 @@ export function MessageThread({
 
     if (!container) return;
 
-    const nearBottom =
-      container.scrollHeight - container.scrollTop - container.clientHeight < 200;
+    const nearBottom = container.scrollHeight - container.scrollTop - container.clientHeight < 200;
 
     if (nearBottom) container.scrollTop = container.scrollHeight;
   }, [messages.length, threadId]);
@@ -139,7 +138,8 @@ export function MessageThread({
   const loadEarlier = useMutation({
     mutationFn: () => {
       const oldest = messages[0]?.id ?? null;
-      const before = olderCursor ?? (olderMessages.length > 0 ? oldest : payload?.next_before ?? null);
+      const before =
+        olderCursor ?? (olderMessages.length > 0 ? oldest : payload?.next_before ?? null);
 
       return getThread(token!, threadId, before);
     },
@@ -163,9 +163,7 @@ export function MessageThread({
 
   const send = useMutation({
     mutationFn: async ({ text, files }: { text: string; files: File[] }) => {
-      const attachments = files.length
-        ? (await uploadMessageAttachments(token!, files)).data
-        : [];
+      const attachments = files.length ? (await uploadMessageAttachments(token!, files)).data : [];
 
       return sendMessage(token!, threadId, { body: text, attachments });
     },
@@ -193,7 +191,8 @@ export function MessageThread({
     onError: failure =>
       push({
         tone: 'error',
-        message: failure instanceof ApiRequestError ? failure.message : 'Message could not be sent.',
+        message:
+          failure instanceof ApiRequestError ? failure.message : 'Message could not be sent.',
       }),
     // The optimistic bubble is dropped once the real row is in the cache, so a
     // failed send never leaves a phantom message behind (R19).
@@ -219,7 +218,8 @@ export function MessageThread({
     onError: failure =>
       push({
         tone: 'error',
-        message: failure instanceof ApiRequestError ? failure.message : 'Could not update the block.',
+        message:
+          failure instanceof ApiRequestError ? failure.message : 'Could not update the block.',
       }),
   });
 
@@ -234,7 +234,9 @@ export function MessageThread({
       push({
         tone: 'error',
         message:
-          failure instanceof ApiRequestError ? failure.message : 'Could not remove the conversation.',
+          failure instanceof ApiRequestError
+            ? failure.message
+            : 'Could not remove the conversation.',
       }),
   });
 
@@ -257,7 +259,8 @@ export function MessageThread({
     onError: failure =>
       push({
         tone: 'error',
-        message: failure instanceof ApiRequestError ? failure.message : 'Could not send the report.',
+        message:
+          failure instanceof ApiRequestError ? failure.message : 'Could not send the report.',
       }),
   });
 
@@ -502,11 +505,7 @@ export function MessageThread({
           <p className="text-xs text-gray-ink">
             Reports are reviewed by our team. Admins see that a report exists — never your messages.
           </p>
-          <Button
-            type="button"
-            disabled={report.isPending}
-            onClick={() => report.mutate()}
-          >
+          <Button type="button" disabled={report.isPending} onClick={() => report.mutate()}>
             {report.isPending ? 'Submitting…' : 'Submit report'}
           </Button>
         </div>

@@ -8,7 +8,13 @@ import {
 } from '../../../lib/api/admin';
 import type { AdminPropertyRow } from '../../../lib/types';
 import { roomTypeLabel } from '../../../lib/room-drafts';
-import { PropertyCard, PropertyCardList, adminFacts, moderationPill, propertyAddress } from '../../properties/PropertyCard';
+import {
+  PropertyCard,
+  PropertyCardList,
+  adminFacts,
+  moderationPill,
+  propertyAddress,
+} from '../../properties/PropertyCard';
 import { Button } from '../../ui/Button';
 import { ConfirmDialog } from '../../ui/ConfirmDialog';
 import { Spinner } from '../../ui/Spinner';
@@ -205,7 +211,11 @@ export function PropertiesSection({ token, push }: { token: string; push: PushTo
                 <Button variant="ghost" size="sm" onClick={() => requestAction(row, 'publish')}>
                   Publish
                 </Button>
-                <Button variant="dangerGhost" size="sm" onClick={() => requestAction(row, 'reject')}>
+                <Button
+                  variant="dangerGhost"
+                  size="sm"
+                  onClick={() => requestAction(row, 'reject')}
+                >
                   Reject
                 </Button>
                 <Button variant="warningGhost" size="sm" onClick={() => requestAction(row, 'flag')}>

@@ -1,11 +1,7 @@
 import { Link } from '@tanstack/react-router';
 import type { ReactNode } from 'react';
 import type { LandlordPropertyDetail } from '../../lib/types';
-import {
-  isFullProperty,
-  listingStatusPill,
-  listingStatusTone,
-} from '../../lib/listing-status';
+import { isFullProperty, listingStatusPill, listingStatusTone } from '../../lib/listing-status';
 import { buttonClasses } from '../ui/Button';
 import { Card } from '../ui/Card';
 import { StatusBadge } from '../ui/StatusBadge';

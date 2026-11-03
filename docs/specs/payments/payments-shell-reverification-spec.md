@@ -16,14 +16,14 @@ filter row.
 
 **Relationship to existing work:**
 
-| Document | Relationship |
-| -------- | ------------ |
-| `payments-page-regressions-spec.md` | **Predecessor, now superseded** (D7). It diagnosed the same two defects and its fix plan was executed; this file re-proves the defects, records what is actually in the tree today, and adds a decision it did not make (D6: a migration-aware API error). A superseded note is added to its header. |
-| `payments-feature-spec.md` | The feature that introduced both regressions. Its §14 “As shipped” still reads as defect-free. |
-| `docs/qa/specs/qa-spec-audit.md` §10.6 | Asserts the payments pages are “single shell, no duplicates” — the claim the screenshot falsifies. |
-| `admin-apple-ui-restructure-spec.md` | Owns the single-shell convention + the `.chrome-sidebar` / `.chrome-topbar` materials. |
-| `landlord-property-detail-page-spec.md` R5 | Documents the layout-owns-the-shell rule this fix restores. |
-| `messages-feature-review-spec.md` | Built the sibling `/landlord/messages` + `/boarder/messages` subtrees correctly — the in-repo precedent. |
+| Document                                   | Relationship                                                                                                                                                                                                                                                                                         |
+| ------------------------------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `payments-page-regressions-spec.md`        | **Predecessor, now superseded** (D7). It diagnosed the same two defects and its fix plan was executed; this file re-proves the defects, records what is actually in the tree today, and adds a decision it did not make (D6: a migration-aware API error). A superseded note is added to its header. |
+| `payments-feature-spec.md`                 | The feature that introduced both regressions. Its §14 “As shipped” still reads as defect-free.                                                                                                                                                                                                       |
+| `docs/qa/specs/qa-spec-audit.md` §10.6     | Asserts the payments pages are “single shell, no duplicates” — the claim the screenshot falsifies.                                                                                                                                                                                                   |
+| `admin-apple-ui-restructure-spec.md`       | Owns the single-shell convention + the `.chrome-sidebar` / `.chrome-topbar` materials.                                                                                                                                                                                                               |
+| `landlord-property-detail-page-spec.md` R5 | Documents the layout-owns-the-shell rule this fix restores.                                                                                                                                                                                                                                          |
+| `messages-feature-review-spec.md`          | Built the sibling `/landlord/messages` + `/boarder/messages` subtrees correctly — the in-repo precedent.                                                                                                                                                                                             |
 
 ---
 
@@ -31,24 +31,24 @@ filter row.
 
 Four rounds of `ask_user`, 16 questions.
 
-| #   | Topic | Decision |
-| --- | ----- | -------- |
-| D1  | Deliverable | **A fresh independent spec file** (`payments-shell-reverification-spec.md`), not an extension of the old one. |
-| D2  | Spec vs. code | **Spec first, then implement it directly in this session** (owner overrode the task’s default “spec only, stop there”). |
-| D3  | Scope | **Both defects** — the doubled shell *and* the red server-error panel. |
-| D4  | Spec depth | **Full implementation plan**: exact files, edits, runbook, test recipe. |
-| D5  | Re-verification evidence | **A browser-level check is required** — a read-only code/DB sweep is not sufficient on its own. |
-| D6  | API error surface | **Add a migration-aware server hint**: detect schema-stale database errors and return **503 + a stable code + a message naming `migrate:local`**, instead of the bare generic 500. |
-| D7  | Supersession | **Add a superseded note to `payments-page-regressions-spec.md`** pointing at this file. |
-| D8  | Ledger data | **Real data only — no seed.** The ledger stays empty until a booking is confirmed. |
-| D9  | Shell ownership | **Strip the four leaves; the layout keeps `Protected` + `RoleShell`.** |
-| D10 | Guards | **All three**: shell-counting render test, static import guard over route files, and a one-off project-wide route sweep. |
-| D11 | Migration reach | **Local + staging + production.** |
-| D12 | Browser check mechanism | **Seeded QA login, manual inspection** in Chrome against the dev servers (not a headless script). |
-| D13 | Boarder gate | **Keep `RequireTenancy` in `boarder/payments.tsx`**, where it already is. |
-| D14 | Docs strip | The stale docs that call payments deferred/verified are reconciled (see §6; the owner answered “reconcile all stale docs” in round 1 and confirmed the file list in round 3). |
-| D15 | Acceptance | Single shell + no error panel on all four routes, plus confirming a real booking makes the generated charges appear. |
-| D16 | Verify bar | The four project checks + the new web tests (D1 of the predecessor: `cf:api:typecheck`, `cf:api:test`, `web:typecheck`, `web:test`). |
+| #   | Topic                    | Decision                                                                                                                                                                           |
+| --- | ------------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| D1  | Deliverable              | **A fresh independent spec file** (`payments-shell-reverification-spec.md`), not an extension of the old one.                                                                      |
+| D2  | Spec vs. code            | **Spec first, then implement it directly in this session** (owner overrode the task’s default “spec only, stop there”).                                                            |
+| D3  | Scope                    | **Both defects** — the doubled shell _and_ the red server-error panel.                                                                                                             |
+| D4  | Spec depth               | **Full implementation plan**: exact files, edits, runbook, test recipe.                                                                                                            |
+| D5  | Re-verification evidence | **A browser-level check is required** — a read-only code/DB sweep is not sufficient on its own.                                                                                    |
+| D6  | API error surface        | **Add a migration-aware server hint**: detect schema-stale database errors and return **503 + a stable code + a message naming `migrate:local`**, instead of the bare generic 500. |
+| D7  | Supersession             | **Add a superseded note to `payments-page-regressions-spec.md`** pointing at this file.                                                                                            |
+| D8  | Ledger data              | **Real data only — no seed.** The ledger stays empty until a booking is confirmed.                                                                                                 |
+| D9  | Shell ownership          | **Strip the four leaves; the layout keeps `Protected` + `RoleShell`.**                                                                                                             |
+| D10 | Guards                   | **All three**: shell-counting render test, static import guard over route files, and a one-off project-wide route sweep.                                                           |
+| D11 | Migration reach          | **Local + staging + production.**                                                                                                                                                  |
+| D12 | Browser check mechanism  | **Seeded QA login, manual inspection** in Chrome against the dev servers (not a headless script).                                                                                  |
+| D13 | Boarder gate             | **Keep `RequireTenancy` in `boarder/payments.tsx`**, where it already is.                                                                                                          |
+| D14 | Docs strip               | The stale docs that call payments deferred/verified are reconciled (see §6; the owner answered “reconcile all stale docs” in round 1 and confirmed the file list in round 3).      |
+| D15 | Acceptance               | Single shell + no error panel on all four routes, plus confirming a real booking makes the generated charges appear.                                                               |
+| D16 | Verify bar               | The four project checks + the new web tests (D1 of the predecessor: `cf:api:typecheck`, `cf:api:test`, `web:typecheck`, `web:test`).                                               |
 
 ---
 
@@ -59,14 +59,14 @@ Four rounds of `ask_user`, 16 questions.
 `RoleShell` renders the sidebar + topbar + the scrolling content column. Both payments layouts already
 render it:
 
-| File | Renders | Verdict |
-| ---- | ------- | ------- |
-| `apps/web/src/routes/landlord/payments.tsx` | `Protected` → `RoleShell` → `<Outlet />` | correct |
-| `apps/web/src/routes/boarder/payments.tsx` | `Protected` → `RoleShell` → `RequireTenancy` → `<Outlet />` | correct |
-| `apps/web/src/routes/landlord/payments/index.tsx` | leaf, content only | fixed in the tree |
-| `apps/web/src/routes/landlord/payments/record.tsx` | leaf, content only | fixed in the tree |
-| `apps/web/src/routes/boarder/payments/index.tsx` | leaf, content only | fixed in the tree |
-| `apps/web/src/routes/boarder/payments/pay.tsx` | leaf, content only | fixed in the tree |
+| File                                               | Renders                                                     | Verdict           |
+| -------------------------------------------------- | ----------------------------------------------------------- | ----------------- |
+| `apps/web/src/routes/landlord/payments.tsx`        | `Protected` → `RoleShell` → `<Outlet />`                    | correct           |
+| `apps/web/src/routes/boarder/payments.tsx`         | `Protected` → `RoleShell` → `RequireTenancy` → `<Outlet />` | correct           |
+| `apps/web/src/routes/landlord/payments/index.tsx`  | leaf, content only                                          | fixed in the tree |
+| `apps/web/src/routes/landlord/payments/record.tsx` | leaf, content only                                          | fixed in the tree |
+| `apps/web/src/routes/boarder/payments/index.tsx`   | leaf, content only                                          | fixed in the tree |
+| `apps/web/src/routes/boarder/payments/pay.tsx`     | leaf, content only                                          | fixed in the tree |
 
 **Current tree state (re-read this session):** none of the four leaf files contains a `RoleShell` or
 `Protected` import (each carries a comment naming this spec), so the doubling visible in the screenshot
@@ -101,19 +101,19 @@ payment rows:       0
 logs it and `responseFromError` (`workers/api/src/lib/http.ts`) returns
 `{"error":"Internal server error"}` with status 500 — exactly the red panel in the screenshot. **The
 API’s current behaviour is correct for a genuinely unexpected error; the database is simply behind the
-code.** D6 changes the *reporting* of that specific class of error, not the query logic.
+code.** D6 changes the _reporting_ of that specific class of error, not the query logic.
 
 **Blast radius:** every payments page, both roles. Nothing else in the app reads the new columns, which
 is why only payments broke.
 
 ### 2.3 Why this was not caught (gaps the guards in §4 close)
 
-| Gap | Detail |
-| --- | ----- |
-| API tests always migrate | `workers/api/test/*.test.ts` runs **every** migration from disk into a fresh `bun:sqlite` database, so the suite can never observe a stale database. A green suite says nothing about the dev server’s schema. |
-| No shell assertion | Until this session no web test rendered a route inside its layout or counted `aside.chrome-sidebar` instances; `auth-layout.test.tsx` and `messages-inbox.test.tsx` render components, not route trees. |
-| The convention was undocumented | “A leaf under a layout must not render `Protected`/`RoleShell`” lived only in the shapes of existing files; §6 writes it down. |
-| A verified claim went stale | `docs/qa/specs/qa-spec-audit.md` §10.6 still lists the payments pages as verified single-shell. |
+| Gap                             | Detail                                                                                                                                                                                                         |
+| ------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| API tests always migrate        | `workers/api/test/*.test.ts` runs **every** migration from disk into a fresh `bun:sqlite` database, so the suite can never observe a stale database. A green suite says nothing about the dev server’s schema. |
+| No shell assertion              | Until this session no web test rendered a route inside its layout or counted `aside.chrome-sidebar` instances; `auth-layout.test.tsx` and `messages-inbox.test.tsx` render components, not route trees.        |
+| The convention was undocumented | “A leaf under a layout must not render `Protected`/`RoleShell`” lived only in the shapes of existing files; §6 writes it down.                                                                                 |
+| A verified claim went stale     | `docs/qa/specs/qa-spec-audit.md` §10.6 still lists the payments pages as verified single-shell.                                                                                                                |
 
 ---
 
@@ -189,8 +189,8 @@ Safety:
 2. In `index.ts`’s `app.onError`, before the generic branch: if the error is not an `HttpError` and the
    detector matches, log it as a schema-stale fault (so the Worker log names the cause) and return
    `errorResponse(503, <message>, { code: 'database_schema_stale' })`. The message names the fix, e.g.
-   *“The database is missing the latest migration. Run `bun run --cwd workers/api migrate:local`, then
-   try again.”*
+   _“The database is missing the latest migration. Run `bun run --cwd workers/api migrate:local`, then
+   try again.”_
 3. Everything else keeps the existing behaviour: `HttpError` → its own status, anything else → the
    generic 500. No schema probing, no query changes, no per-route special-casing.
 
@@ -241,13 +241,13 @@ Notes:
 A test that reads the route source files and fails if a **leaf inside a layout subtree** imports
 `components/layout/RoleShell` or `components/auth/Protected`. Implementation shape:
 
-- Enumerate route files under `apps/web/src/routes`; a file is a *layout* when it renders `<Outlet />`
+- Enumerate route files under `apps/web/src/routes`; a file is a _layout_ when it renders `<Outlet />`
   (or by the co-located directory of the same name).
 - For every non-layout route in that subtree, `readFileSync` and assert the source does not reference
   `RoleShell` or `Protected`.
 - Locate the routes root relative to the test file (`import.meta.dir` → `../src/routes`), never by
   absolute path, so it works on any machine.
-- This is the guard that produces a *named file* in the failure message, which the render test alone
+- This is the guard that produces a _named file_ in the failure message, which the render test alone
   cannot.
 
 ### 4.3 Project-wide route sweep (one-off)
@@ -306,14 +306,14 @@ With `bun run web:dev` and `bun run cf:api:dev` running against the migrated loc
 
 ## 6. Docs reconciliation (D14)
 
-| File | Claim today | Change |
-| ---- | ----------- | ------ |
-| `payments-page-regressions-spec.md` | Status “spec, then fix in this session” | Add a **superseded** note at the top pointing at this file, and note where this one differs (D6). |
-| `docs/qa/specs/qa-spec-audit.md` §10.6 | Payments pages listed as verified “single shell, no duplicates” | Record the regression, its date, and that the claim is now **guarded by a test** rather than by spot-checking. |
-| `payments-feature-spec.md` §14 | “As shipped” reads as clean | Add both regressions (§14) with causes (nested shell; unapplied migration) and the fix, so the spec stops implying defect-free delivery. |
-| `AGENTS.md` | No shell rule | Frontend conventions: **“a route under a layout route (`X.tsx` with `<Outlet />`) must not render `Protected` or `RoleShell` itself — the layout owns them”**, plus the `migrate:local` requirement for local payments work. |
-| `docs/guides/MANUAL.md` | Migration step exists but is not part of the local start | Make `bun run --cwd workers/api migrate:local` an explicit local-setup step, noting that a stale DB now surfaces as a 503 `database_schema_stale` (and previously as a bare 500). |
-| `docs/reference/google-oauth.md` §8 / `docs/qa/specs/qa-spec.md` S30 | Payments “deferred / coming soon” | Note that payments now ships, so the deferred-feature expectations are historical. |
+| File                                                                 | Claim today                                                     | Change                                                                                                                                                                                                                       |
+| -------------------------------------------------------------------- | --------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `payments-page-regressions-spec.md`                                  | Status “spec, then fix in this session”                         | Add a **superseded** note at the top pointing at this file, and note where this one differs (D6).                                                                                                                            |
+| `docs/qa/specs/qa-spec-audit.md` §10.6                               | Payments pages listed as verified “single shell, no duplicates” | Record the regression, its date, and that the claim is now **guarded by a test** rather than by spot-checking.                                                                                                               |
+| `payments-feature-spec.md` §14                                       | “As shipped” reads as clean                                     | Add both regressions (§14) with causes (nested shell; unapplied migration) and the fix, so the spec stops implying defect-free delivery.                                                                                     |
+| `AGENTS.md`                                                          | No shell rule                                                   | Frontend conventions: **“a route under a layout route (`X.tsx` with `<Outlet />`) must not render `Protected` or `RoleShell` itself — the layout owns them”**, plus the `migrate:local` requirement for local payments work. |
+| `docs/guides/MANUAL.md`                                              | Migration step exists but is not part of the local start        | Make `bun run --cwd workers/api migrate:local` an explicit local-setup step, noting that a stale DB now surfaces as a 503 `database_schema_stale` (and previously as a bare 500).                                            |
+| `docs/reference/google-oauth.md` §8 / `docs/qa/specs/qa-spec.md` S30 | Payments “deferred / coming soon”                               | Note that payments now ships, so the deferred-feature expectations are historical.                                                                                                                                           |
 
 ---
 
@@ -330,11 +330,11 @@ With `bun run web:dev` and `bun run cf:api:dev` running against the migrated loc
 
 ## 8. Risks
 
-| Risk | Mitigation |
-| ---- | ---------- |
-| Applying `0021` to production touches live data. | Additive-only statements; dry-run on a copy first; staging before production; verify the schema additions after each apply (D11). |
-| The 503 mapping could mask a genuine bug that happens to mention `no such table`. | Match the narrow, well-known stale-schema message family only, and log the original error — a real bug still lands in the log with its stack. |
-| The render test could pass vacuously if the router mock renders nothing. | Assert `length === 1` for both shell roots **and** assert the page heading is present (§4.1). |
-| The import guard could drift from the real route layout. | Enumerate from the filesystem (layout = file that renders `<Outlet />`, or the directory-parent route), not from a hand-kept list of paths. |
-| The browser check is manual and could be skipped. | It is an explicit acceptance criterion (§5.2) with observed counts recorded in the implement log; a green build is explicitly *not* accepted as evidence. |
-| A remote migration fails on credentials/permissions. | Report verbatim, leave the exact commands, and keep the local verification valid (§3.2). |
+| Risk                                                                              | Mitigation                                                                                                                                                |
+| --------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Applying `0021` to production touches live data.                                  | Additive-only statements; dry-run on a copy first; staging before production; verify the schema additions after each apply (D11).                         |
+| The 503 mapping could mask a genuine bug that happens to mention `no such table`. | Match the narrow, well-known stale-schema message family only, and log the original error — a real bug still lands in the log with its stack.             |
+| The render test could pass vacuously if the router mock renders nothing.          | Assert `length === 1` for both shell roots **and** assert the page heading is present (§4.1).                                                             |
+| The import guard could drift from the real route layout.                          | Enumerate from the filesystem (layout = file that renders `<Outlet />`, or the directory-parent route), not from a hand-kept list of paths.               |
+| The browser check is manual and could be skipped.                                 | It is an explicit acceptance criterion (§5.2) with observed counts recorded in the implement log; a green build is explicitly _not_ accepted as evidence. |
+| A remote migration fails on credentials/permissions.                              | Report verbatim, leave the exact commands, and keep the local verification valid (§3.2).                                                                  |

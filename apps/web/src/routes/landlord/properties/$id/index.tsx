@@ -133,9 +133,7 @@ function PropertyDetailPage() {
             </div>
           ) : null}
 
-          {tab === 'public-listing' ? (
-            <PropertyPublicListing detail={detail} />
-          ) : null}
+          {tab === 'public-listing' ? <PropertyPublicListing detail={detail} /> : null}
 
           {tab === 'applications' ? (
             <PropertyApplications token={token!} propertyId={detail.id} />

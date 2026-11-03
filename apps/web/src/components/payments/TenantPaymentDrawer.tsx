@@ -160,12 +160,12 @@ export function TenantPaymentDrawer({
                   <li key={event.id} className="relative">
                     <span
                       aria-hidden="true"
-                      className={`absolute -left-[21px] top-1.5 h-2 w-2 rounded-full ${DOT_TONES[event.tone]}`}
+                      className={`absolute -left-[21px] top-1.5 h-2 w-2 rounded-full ${
+                        DOT_TONES[event.tone]
+                      }`}
                     />
                     <p className="text-sm font-medium text-ink">{event.title}</p>
-                    {event.detail ? (
-                      <p className="text-sm text-gray-ink">{event.detail}</p>
-                    ) : null}
+                    {event.detail ? <p className="text-sm text-gray-ink">{event.detail}</p> : null}
                     <p className="mt-0.5 text-xs text-gray-ink">{formatDateTime(event.at)}</p>
                     {event.proof_url ? (
                       <a

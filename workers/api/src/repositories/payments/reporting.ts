@@ -259,12 +259,10 @@ export function trackerToCsv(input: {
         row.days_overdue !== null
           ? `${row.days_overdue} overdue`
           : row.days_remaining !== null
-            ? `${row.days_remaining} remaining`
-            : '',
-        row.last_payment?.date ?? '',
-        row.last_payment
-          ? row.last_payment.method_label || row.last_payment.method
+          ? `${row.days_remaining} remaining`
           : '',
+        row.last_payment?.date ?? '',
+        row.last_payment ? row.last_payment.method_label || row.last_payment.method : '',
         row.status,
       ]
         .map(csvEscape)

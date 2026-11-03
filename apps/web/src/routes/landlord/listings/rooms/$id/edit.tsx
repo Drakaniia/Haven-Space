@@ -166,18 +166,13 @@ function EditRoomPage() {
       ) : (
         <div>
           <Link
-            to={
-              openedFromRooms ? '/landlord/properties/$id/rooms' : '/landlord/listings/$id/edit'
-            }
+            to={openedFromRooms ? '/landlord/properties/$id/rooms' : '/landlord/listings/$id/edit'}
             params={{ id: String(propertyIdNumber) }}
             className="mb-4 inline-block text-sm text-primary hover:underline"
           >
             {openedFromRooms ? '← Back to rooms' : '← Back to listing'}
           </Link>
-          <PageHeader
-            icon="book"
-            title={`Edit room ${room.room_number}`}
-          />
+          <PageHeader icon="book" title={`Edit room ${room.room_number}`} />
 
           {needsVerification ? <VerificationNotice /> : null}
 

@@ -63,7 +63,7 @@ function createSqliteD1(db: Database): D1Database {
             },
           };
         },
-      }) as unknown as D1PreparedStatement,
+      } as unknown as D1PreparedStatement),
   } as unknown as D1Database;
 }
 
@@ -337,7 +337,9 @@ describe('GET /api/landlord/calendar', () => {
     const { body } = await getCalendar(setup(), JANUARY);
     const events = body.data!.events;
 
-    const accepted = events.find(event => eventKey(event) === 'application:200:application_accepted')!;
+    const accepted = events.find(
+      event => eventKey(event) === 'application:200:application_accepted'
+    )!;
     const confirmed = events.find(
       event => eventKey(event) === 'application:200:application_confirmed'
     )!;
@@ -362,9 +364,9 @@ describe('GET /api/landlord/calendar', () => {
     // Landlord 8 holds a `property_access` grant on property 10.
     const coLandlord = await getCalendar(env, JANUARY, '8');
     expect(coLandlord.body.data!.events.length).toBeGreaterThan(0);
-    expect(coLandlord.body.data!.events.some(event => eventKey(event) === 'charge:300:charge_due')).toBe(
-      true
-    );
+    expect(
+      coLandlord.body.data!.events.some(event => eventKey(event) === 'charge:300:charge_due')
+    ).toBe(true);
 
     // Landlord 4 owns property 11: their own tenancy, their own announcement,
     // and none of landlord 3's rows.

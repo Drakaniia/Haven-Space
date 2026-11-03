@@ -37,24 +37,24 @@ error"** panel under the property/month filters.
 
 Four rounds of `ask_user`, 16 questions.
 
-| #   | Topic | Decision |
-| --- | ----- | -------- |
-| D1  | Deliverable | **Spec, then fix both defects in this session.** |
-| D2  | Migration reach | **Local + remote + staging.** `wrangler` is authenticated (OAuth token, account `fab94f3e8a58d3b3509d01f11a67b843`), so the remote apply is in scope. |
-| D3  | Empty ledger after migrating | **Leave it — real data only.** No seed, no back-fill, no "generate now" button. Document that the ledger is empty until a booking is confirmed. |
-| D4  | Other symptoms confirmed | Doubled shell on `/landlord/payments/record` and `/boarder/payments/pay` too; the boarder pages fail against the stale DB as well; the ledger's filters/summary render while the request itself 500s. |
-| D5  | Shell ownership | **Keep it in the layout; strip the four leaves.** Matches every other layout subtree. |
-| D6  | Prevention | **A web regression test that counts shells** (no shell-counting test exists today). |
-| D7  | Remote-migration safety | **Dry-run the SQL on a copy first**, then apply. |
-| D8  | API error surface | **Keep the generic 500**; improve only what the page shows. |
-| D9  | Test breadth | **The four payments routes only.** |
-| D10 | Error-state construction | **Extend the shared `ErrorState`** with an optional action (so a Retry button and a hint are possible without a bespoke panel). |
-| D11 | `/boarder/payments/pay` gating | **Keep `RequireTenancy` where it is** (pre-existing behaviour: no confirmed tenancy → no payments UI). Document it; do not move the gate. |
-| D12 | Docs to reconcile | **All four:** `qa-spec-audit.md` §10.6, `payments-feature-spec.md` §14, `AGENTS.md`, `docs/guides/MANUAL.md`. |
-| D13 | Route audit | **Sweep every route once, fix only payments** (sweep done — §2.3). |
-| D14 | Acceptance | **Single shell + no error, then:** confirm a booking → the generated rent/deposit/advance charges must appear in the ledger. |
-| D15 | Remote auth fallback | If the remote apply fails on auth, attempt it, report the failure, and leave the exact commands. |
-| D16 | Verify bar | **The four project checks + the new shell test** (`cf:api:typecheck`, `cf:api:test`, `web:typecheck`, `web:test`). |
+| #   | Topic                          | Decision                                                                                                                                                                                              |
+| --- | ------------------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| D1  | Deliverable                    | **Spec, then fix both defects in this session.**                                                                                                                                                      |
+| D2  | Migration reach                | **Local + remote + staging.** `wrangler` is authenticated (OAuth token, account `fab94f3e8a58d3b3509d01f11a67b843`), so the remote apply is in scope.                                                 |
+| D3  | Empty ledger after migrating   | **Leave it — real data only.** No seed, no back-fill, no "generate now" button. Document that the ledger is empty until a booking is confirmed.                                                       |
+| D4  | Other symptoms confirmed       | Doubled shell on `/landlord/payments/record` and `/boarder/payments/pay` too; the boarder pages fail against the stale DB as well; the ledger's filters/summary render while the request itself 500s. |
+| D5  | Shell ownership                | **Keep it in the layout; strip the four leaves.** Matches every other layout subtree.                                                                                                                 |
+| D6  | Prevention                     | **A web regression test that counts shells** (no shell-counting test exists today).                                                                                                                   |
+| D7  | Remote-migration safety        | **Dry-run the SQL on a copy first**, then apply.                                                                                                                                                      |
+| D8  | API error surface              | **Keep the generic 500**; improve only what the page shows.                                                                                                                                           |
+| D9  | Test breadth                   | **The four payments routes only.**                                                                                                                                                                    |
+| D10 | Error-state construction       | **Extend the shared `ErrorState`** with an optional action (so a Retry button and a hint are possible without a bespoke panel).                                                                       |
+| D11 | `/boarder/payments/pay` gating | **Keep `RequireTenancy` where it is** (pre-existing behaviour: no confirmed tenancy → no payments UI). Document it; do not move the gate.                                                             |
+| D12 | Docs to reconcile              | **All four:** `qa-spec-audit.md` §10.6, `payments-feature-spec.md` §14, `AGENTS.md`, `docs/guides/MANUAL.md`.                                                                                         |
+| D13 | Route audit                    | **Sweep every route once, fix only payments** (sweep done — §2.3).                                                                                                                                    |
+| D14 | Acceptance                     | **Single shell + no error, then:** confirm a booking → the generated rent/deposit/advance charges must appear in the ledger.                                                                          |
+| D15 | Remote auth fallback           | If the remote apply fails on auth, attempt it, report the failure, and leave the exact commands.                                                                                                      |
+| D16 | Verify bar                     | **The four project checks + the new shell test** (`cf:api:typecheck`, `cf:api:test`, `web:typecheck`, `web:test`).                                                                                    |
 
 ---
 
@@ -64,14 +64,14 @@ Four rounds of `ask_user`, 16 questions.
 
 `RoleShell` renders the sidebar + topbar + the content column. Its two layout routes already do that:
 
-| File | Renders | In `HEAD` | Now |
-| ---- | ------- | --------- | --- |
-| `apps/web/src/routes/landlord/payments.tsx` | `Protected` → `RoleShell` → `<Outlet />` | shell | shell |
-| `apps/web/src/routes/boarder/payments.tsx` | `Protected` → `RoleShell` → `RequireTenancy` → `<Outlet />` | shell | shell |
-| `apps/web/src/routes/landlord/payments/index.tsx` | leaf | **0 `RoleShell` references** | **wraps `Protected` + `RoleShell`** |
-| `apps/web/src/routes/landlord/payments/record.tsx` | leaf | **0** | **wraps** |
-| `apps/web/src/routes/boarder/payments/index.tsx` | leaf | **0** | **wraps** |
-| `apps/web/src/routes/boarder/payments/pay.tsx` | leaf | **0** | **wraps** |
+| File                                               | Renders                                                     | In `HEAD`                    | Now                                 |
+| -------------------------------------------------- | ----------------------------------------------------------- | ---------------------------- | ----------------------------------- |
+| `apps/web/src/routes/landlord/payments.tsx`        | `Protected` → `RoleShell` → `<Outlet />`                    | shell                        | shell                               |
+| `apps/web/src/routes/boarder/payments.tsx`         | `Protected` → `RoleShell` → `RequireTenancy` → `<Outlet />` | shell                        | shell                               |
+| `apps/web/src/routes/landlord/payments/index.tsx`  | leaf                                                        | **0 `RoleShell` references** | **wraps `Protected` + `RoleShell`** |
+| `apps/web/src/routes/landlord/payments/record.tsx` | leaf                                                        | **0**                        | **wraps**                           |
+| `apps/web/src/routes/boarder/payments/index.tsx`   | leaf                                                        | **0**                        | **wraps**                           |
+| `apps/web/src/routes/boarder/payments/pay.tsx`     | leaf                                                        | **0**                        | **wraps**                           |
 
 `git show HEAD:<file> | grep -c RoleShell` returns `0` for all four leaves, and the four stub pages that
 shipped before the payments feature contained no shell because the layout provided it. The rewrite added
@@ -121,12 +121,12 @@ is why only payments broke.
 
 ### 2.3 Why neither defect was caught
 
-| Gap | Detail |
-| --- | ----- |
-| Tests always migrate | `workers/api/test/*.test.ts` runs **every** migration from disk into a fresh `bun:sqlite` database (`runMigrations()`), so the suite can never see a stale database. 295 tests pass against a schema the dev server did not have. |
-| No shell assertion | No web test renders a route inside its layout, and nothing counts `aside.chrome-sidebar` / topbar instances. `auth-layout.test.tsx` and `messages-inbox.test.tsx` render components, not route trees. |
-| Convention was undocumented | The layout-owns-the-shell rule lived only in the shapes of the existing files; it is now written down (D12). |
-| A verified claim went stale | `qa-spec-audit.md` §10.6 still asserts the payments pages are single-shell "FIXED"/passed. |
+| Gap                         | Detail                                                                                                                                                                                                                            |
+| --------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Tests always migrate        | `workers/api/test/*.test.ts` runs **every** migration from disk into a fresh `bun:sqlite` database (`runMigrations()`), so the suite can never see a stale database. 295 tests pass against a schema the dev server did not have. |
+| No shell assertion          | No web test renders a route inside its layout, and nothing counts `aside.chrome-sidebar` / topbar instances. `auth-layout.test.tsx` and `messages-inbox.test.tsx` render components, not route trees.                             |
+| Convention was undocumented | The layout-owns-the-shell rule lived only in the shapes of the existing files; it is now written down (D12).                                                                                                                      |
+| A verified claim went stale | `qa-spec-audit.md` §10.6 still asserts the payments pages are single-shell "FIXED"/passed.                                                                                                                                        |
 
 ---
 
@@ -264,12 +264,12 @@ Acceptance criteria (D14):
 
 ## 6. Docs reconciliation (D12)
 
-| File | Claim today | Change |
-| ---- | ----------- | ------ |
-| `docs/qa/specs/qa-spec-audit.md` §10.6 | "…payments, payments/pay — **single shell, no duplicates**" (listed as verified) | Note the regression and its date, and add a line to §10.6 recording that the single-shell claim is now guarded by a test rather than by spot-checking. |
-| `payments-feature-spec.md` §14 | "As shipped" reads as clean | Add the two regressions to §14 with their causes (nested shell; unapplied migration) and the fix, so that spec stops implying the work shipped defect-free. |
-| `AGENTS.md` | No shell rule | Add to the Frontend conventions: **"a route that lives under a layout route (`X.tsx` with an `<Outlet />`) must not render `Protected` or `RoleShell` itself — the layout owns them"**, plus the `migrate:local` requirement for local payments work. |
-| `docs/guides/MANUAL.md` | Migration step exists but is not part of the local start | Make `bun run --cwd workers/api migrate:local` an explicit step in the local setup, with a one-line note that a stale database surfaces as a bare `Internal server error` on the API. |
+| File                                   | Claim today                                                                      | Change                                                                                                                                                                                                                                                |
+| -------------------------------------- | -------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `docs/qa/specs/qa-spec-audit.md` §10.6 | "…payments, payments/pay — **single shell, no duplicates**" (listed as verified) | Note the regression and its date, and add a line to §10.6 recording that the single-shell claim is now guarded by a test rather than by spot-checking.                                                                                                |
+| `payments-feature-spec.md` §14         | "As shipped" reads as clean                                                      | Add the two regressions to §14 with their causes (nested shell; unapplied migration) and the fix, so that spec stops implying the work shipped defect-free.                                                                                           |
+| `AGENTS.md`                            | No shell rule                                                                    | Add to the Frontend conventions: **"a route that lives under a layout route (`X.tsx` with an `<Outlet />`) must not render `Protected` or `RoleShell` itself — the layout owns them"**, plus the `migrate:local` requirement for local payments work. |
+| `docs/guides/MANUAL.md`                | Migration step exists but is not part of the local start                         | Make `bun run --cwd workers/api migrate:local` an explicit step in the local setup, with a one-line note that a stale database surfaces as a bare `Internal server error` on the API.                                                                 |
 
 ---
 
@@ -286,9 +286,9 @@ Acceptance criteria (D14):
 
 ## 8. Risks
 
-| Risk | Mitigation |
-| ---- | ---------- |
-| Applying `0021` remotely touches the production database. | Additive-only statements; dry-run on a copy first (D7); staging before production; verify the five schema additions after each apply. |
-| Stripping the wrappers removes the boarder tenancy gate. | It lives in `boarder/payments.tsx`, not in the leaves — verified by reading the layout; the shell test plus the existing nav tests cover the leaf shape. |
-| The shell test could pass vacuously if the router mock renders nothing. | Assert the sidebar is present (`length === 1`), not merely "not 2", so a broken mock fails loudly. |
-| `ErrorState` gains a prop used by one page only. | It mirrors `EmptyState`'s existing `action` prop, so the shared primitive stays consistent rather than accreting a one-off. |
+| Risk                                                                    | Mitigation                                                                                                                                               |
+| ----------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Applying `0021` remotely touches the production database.               | Additive-only statements; dry-run on a copy first (D7); staging before production; verify the five schema additions after each apply.                    |
+| Stripping the wrappers removes the boarder tenancy gate.                | It lives in `boarder/payments.tsx`, not in the leaves — verified by reading the layout; the shell test plus the existing nav tests cover the leaf shape. |
+| The shell test could pass vacuously if the router mock renders nothing. | Assert the sidebar is present (`length === 1`), not merely "not 2", so a broken mock fails loudly.                                                       |
+| `ErrorState` gains a prop used by one page only.                        | It mirrors `EmptyState`'s existing `action` prop, so the shared primitive stays consistent rather than accreting a one-off.                              |

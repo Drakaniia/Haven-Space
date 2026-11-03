@@ -305,9 +305,7 @@ describe('property detail page', () => {
     // The bar is the valid keys minus the one that is a navigation, not a pane.
     expect(PROPERTY_TAB_BAR_KEYS).toEqual(['overview', 'public-listing', 'applications']);
     expect(
-      PROPERTY_TAB_KEYS.filter(
-        key => !(PROPERTY_TAB_BAR_KEYS as readonly string[]).includes(key)
-      )
+      PROPERTY_TAB_KEYS.filter(key => !(PROPERTY_TAB_BAR_KEYS as readonly string[]).includes(key))
     ).toEqual(['rooms']);
 
     const tabs = read('components', 'properties', 'PropertyTabs.tsx');

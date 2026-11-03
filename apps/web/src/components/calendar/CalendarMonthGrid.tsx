@@ -124,8 +124,8 @@ export function CalendarMonthGrid({
                         isToday
                           ? 'bg-primary-strong text-white'
                           : selected
-                            ? 'bg-mint text-primary-dark'
-                            : 'text-ink hover:bg-subtle'
+                          ? 'bg-mint text-primary-dark'
+                          : 'text-ink hover:bg-subtle'
                       }`}
                     >
                       {day.dayNumber}

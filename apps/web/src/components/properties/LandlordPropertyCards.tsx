@@ -54,9 +54,7 @@ export function LandlordPropertyCards({ token, empty }: { token: string; empty: 
           pill={listingPill(property.status, property.listing_moderation_status)}
           // Occupancy is a fact, not a status: a full property keeps its own
           // Draft/Published/Unpublished pill and gains this beside it (D16).
-          badge={
-            isFullProperty(property.total_rooms, property.occupied_rooms) ? 'Full' : undefined
-          }
+          badge={isFullProperty(property.total_rooms, property.occupied_rooms) ? 'Full' : undefined}
           address={propertyAddress(property)}
           facts={landlordFacts(property)}
           note={property.role === 'shared' ? 'Shared access' : undefined}

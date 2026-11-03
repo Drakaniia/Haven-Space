@@ -1,4 +1,10 @@
-import { useEffect, useId, useRef, type KeyboardEvent as ReactKeyboardEvent, type ReactNode } from 'react';
+import {
+  useEffect,
+  useId,
+  useRef,
+  type KeyboardEvent as ReactKeyboardEvent,
+  type ReactNode,
+} from 'react';
 import { Icon } from './Icon';
 
 /**
@@ -70,7 +76,9 @@ export function Drawer({
     lockedOverflowRef.current = document.body.style.overflow;
     document.body.style.overflow = 'hidden';
 
-    panelRef.current?.querySelector<HTMLElement>(FOCUSABLE_SELECTOR)?.focus({ preventScroll: true });
+    panelRef.current
+      ?.querySelector<HTMLElement>(FOCUSABLE_SELECTOR)
+      ?.focus({ preventScroll: true });
 
     // Same last-line-of-defence as `Modal`: watch where focus lands, not which
     // key was pressed, so nothing behind the drawer can be reached by click

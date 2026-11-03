@@ -39,8 +39,7 @@ const LABELS: Record<ListingStatusValue, string> = {
   hidden: 'Unpublished',
 };
 
-export const AWAITING_REVIEW_HINT =
-  "Awaiting admin review — boarders can't see this listing yet.";
+export const AWAITING_REVIEW_HINT = "Awaiting admin review — boarders can't see this listing yet.";
 
 export const REJECTED_HINT =
   'An admin rejected this listing — fix the details and publish again to request another review.';
@@ -194,9 +193,7 @@ export interface SharedPricingState {
 export function sharedPricingState(
   rooms: ReadonlyArray<{ price?: number | string | null }>
 ): SharedPricingState {
-  const prices = rooms
-    .map(room => Number(room.price ?? 0))
-    .filter(price => Number.isFinite(price));
+  const prices = rooms.map(room => Number(room.price ?? 0)).filter(price => Number.isFinite(price));
   const min = prices.length > 0 ? Math.min(...prices) : 0;
   const max = prices.length > 0 ? Math.max(...prices) : 0;
 

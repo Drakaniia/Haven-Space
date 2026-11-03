@@ -5,7 +5,11 @@ import { Button } from '../ui/Button';
 import { Field, SelectInput, TextArea, TextInput } from '../ui/Field';
 import { Modal } from '../ui/Modal';
 import { Spinner } from '../ui/Spinner';
-import { getPaymentHistory, recordLandlordPayment, uploadLandlordProof } from '../../lib/api/payments';
+import {
+  getPaymentHistory,
+  recordLandlordPayment,
+  uploadLandlordProof,
+} from '../../lib/api/payments';
 import {
   PAYMENT_METHODS,
   formatPeso,
@@ -175,9 +179,7 @@ export function RecordPaymentModal({
                           )
                         }
                       />
-                      <span className="text-ink">
-                        {charge.description || charge.charge_type}
-                      </span>
+                      <span className="text-ink">{charge.description || charge.charge_type}</span>
                     </span>
                     <span className="font-medium text-ink">{formatPeso(charge.total_due)}</span>
                   </label>

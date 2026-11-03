@@ -218,10 +218,7 @@ function CreateListingPage() {
       >
         ← Back to properties
       </Link>
-      <PageHeader
-        icon="list"
-        title="Create listing"
-      />
+      <PageHeader icon="list" title="Create listing" />
 
       {needsVerification ? <VerificationNotice /> : null}
 

@@ -28,7 +28,7 @@ far the visuals should chase the mockup, and where each word goes.
 | `landlord-apple-ui-restructure-spec.md` / `admin-apple-ui-restructure-spec.md`      | Own the single-shell convention (`Protected` + one `RoleShell`), `PageHeader`, `Card`, semantic tokens, and the subtitle-reduction rule. This spec follows them and introduces **no new page shell**.                                                   |
 | `landlord-property-detail-page-spec.md` / `landlord-properties-card-layout-spec.md` | Own `/landlord/properties` and its card list. This spec only links to it and reads the same `GET /api/landlord/properties` payload.                                                                                                                     |
 | `payments-feature-spec.md`                                                          | Owns `collected_this_month`, `manilaToday()`, and charge-derived statuses. The revenue card and the activity feed reuse those helpers.                                                                                                                  |
-| `docs/qa/specs/qa-spec-audit.md`                                                          | Describes `/landlord/activity` as a placeholder. That row is stale after this change and needs a re-check (not owned here).                                                                                                                             |
+| `docs/qa/specs/qa-spec-audit.md`                                                    | Describes `/landlord/activity` as a placeholder. That row is stale after this change and needs a re-check (not owned here).                                                                                                                             |
 
 ---
 

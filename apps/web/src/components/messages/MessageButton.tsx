@@ -61,12 +61,7 @@ export function MessageButton({
   return (
     <>
       <ToastStack toasts={toasts} onDismiss={dismiss} />
-      <Button
-        variant={variant}
-        size={size}
-        disabled={open.isPending}
-        onClick={() => open.mutate()}
-      >
+      <Button variant={variant} size={size} disabled={open.isPending} onClick={() => open.mutate()}>
         {open.isPending ? 'Opening…' : label}
       </Button>
     </>

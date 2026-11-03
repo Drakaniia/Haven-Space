@@ -1,10 +1,6 @@
 import { useEffect, useId, useState, type ChangeEvent, type KeyboardEvent } from 'react';
 import { ApiRequestError } from '../../lib/api/http';
-import {
-  MAX_MESSAGE_CHARS,
-  MAX_MESSAGE_IMAGES,
-  composerError,
-} from '../../lib/messages';
+import { MAX_MESSAGE_CHARS, MAX_MESSAGE_IMAGES, composerError } from '../../lib/messages';
 import { Button, buttonClasses } from '../ui/Button';
 
 /**
@@ -80,9 +76,7 @@ export function MessageComposer({
       setFiles([]);
     } catch (failure) {
       // R19: the draft survives a failed send; the message never appears twice.
-      setError(
-        failure instanceof ApiRequestError ? failure.message : 'Message could not be sent.'
-      );
+      setError(failure instanceof ApiRequestError ? failure.message : 'Message could not be sent.');
     } finally {
       setSending(false);
     }

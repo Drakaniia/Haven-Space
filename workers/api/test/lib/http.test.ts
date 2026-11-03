@@ -63,7 +63,10 @@ describe('http helpers', () => {
     'SQLITE_ERROR: no such table: payment_submissions',
     'table properties has no column named late_fee_amount',
   ]) {
-    it(`maps a stale-schema error to 503 + a migration hint (${message.slice(0, 24)}…)`, async () => {
+    it(`maps a stale-schema error to 503 + a migration hint (${message.slice(
+      0,
+      24
+    )}…)`, async () => {
       expect(isSchemaStaleError(new Error(message))).toBe(true);
 
       const response = responseFromError(new Error(message));

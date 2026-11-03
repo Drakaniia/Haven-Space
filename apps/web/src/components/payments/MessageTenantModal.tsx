@@ -55,8 +55,7 @@ export function MessageTenantModal({
       throw new Error('That conversation could not be opened.');
     }
 
-    const attachments =
-      files.length > 0 ? (await uploadMessageAttachments(token, files)).data : [];
+    const attachments = files.length > 0 ? (await uploadMessageAttachments(token, files)).data : [];
 
     await sendMessage(token, threadId, {
       body: text,

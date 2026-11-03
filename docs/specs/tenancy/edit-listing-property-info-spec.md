@@ -33,7 +33,7 @@ the recommended option. Rename the file if a different short name is wanted.)
 - Follows `landlord-property-detail-page-spec.md` (which created the detail page, the rooms page and the edit
   page's exits, and left the edit form's fields untouched) and `landlord-rooms-grid-spec.md` (the dedicated
   `/landlord/properties/$id/rooms` page).
-- **Supersedes the field scope of** `landlord-property-detail-page` D8/D9/R7 as it applies to the *edit* page:
+- **Supersedes the field scope of** `landlord-property-detail-page` D8/D9/R7 as it applies to the _edit_ page:
   rooms are the rooms page's job; this form stops carrying any room-shaping input. It does **not** touch the
   create page's room model (`create-listing-room-details` D1/D9/D12 stay exactly as built).
 - **Removes a duplication** the same way D26 in `landlord-property-detail-page-spec.md` just removed the Rooms
@@ -50,34 +50,34 @@ the recommended option. Rename the file if a different short name is wanted.)
 Answers were collected in five rounds of `ask_user` (5 + 5 + 5 + 5 + 4 questions). Where a later answer
 supersedes an earlier one, the row says so.
 
-| #   | Topic                          | Decision                                                                                                                                                                                                                                                                                                                                                                            |
-| --- | ------------------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| D1  | Form scope                     | **Property-wide public information only.** Kept: property name, property type, gender preference, description, monthly rent + deposit (as shared pricing, D6), street address, city, province, amenities, property-level photos, listing status. **Removed: Number of rooms and Capacity per room** (D8).                                                                          |
-| D2  | Rooms section below the form   | ~~**Keep the inline `LandlordRoomList` exactly as it is** — compact list, per-room Edit links, ＋ Add room modal, delete.~~ **Superseded on request (2026-10-10, D27):** the inline Rooms section is **removed** — it duplicated `Manage rooms` on the Overview pane. Rooms are managed only on `/landlord/properties/$id/rooms`; this page reads the room rows but renders none. |
-| D3  | Status model                   | **The landlord controls `properties.status`; admin moderation stays a separate fact.** The select writes Draft = new `draft` value, Published = `available`, Unpublished = `hidden`. When `listing_moderation_status` is not `published`, the form shows a non-blocking inline hint (D10).                                                                                           |
-| D4  | New-listing default            | **A listing created from `/landlord/listings/create` starts as Draft** (`status = 'draft'`, moderation still `pending_review` as today). The create page is otherwise untouched (D19).                                                                                                                                                                                               |
-| D5  | Property rent → rooms          | **Never touch existing rooms.** The property-level rent/deposit are the defaults for *newly added* rooms only; editing them here rewrites no room row. (This is a behaviour change: the PUT path that bulk-rewrites room prices/capacity stops being fed.)                                                                                                                       |
-| D6  | Shared-pricing control         | **A “Same rent and deposit for every room” toggle** in the Pricing section. Its initial state is **derived on load** (ON when every live room shares one rent, or there are no rooms; OFF when rents differ). **Not persisted** — no migration, no new column.                                                                                                                     |
-| D7  | Toggle OFF treatment           | **Rent/deposit become read-only** and are replaced by a range line (e.g. “₱4,200 – ₱6,500 across 12 rooms”) plus a short link to the Rooms section. The stored property price/deposit are **left exactly as they are** (never cleared, never auto-synced to the cheapest room).                                                                                                    |
-| D8  | Room-count / capacity fields   | **Both removed from this form.** The API keeps honouring `total_rooms`/`propertyRooms`/`capacity`/`propertyCapacity` on PUT for any older client; the web app simply stops sending them, and the API tests covering that path stay as they are.                                                                                                                                    |
-| D9  | Listing-status placement       | **Its own section at the end of the form**, immediately before the sticky save bar — the last decision before saving. (Not folded into Pricing, not moved to the top.)                                                                                                                                                                                                            |
-| D10 | Moderation hint                | **Inline muted text directly under the select.** Three states: not-yet-approved (“Awaiting admin review — boarders can’t see this listing yet”), rejected (“An admin rejected this listing — fix the details and publish again to request another review”), and approved/live (no hint). Not a badge, not a page banner.                                                         |
-| D11 | Re-publish semantics           | **An approval survives Unpublished → Published.** The only reset is **rejected → Published**, which sets `listing_moderation_status = 'pending_review'` (a landlord-initiated re-review request). Nothing else in this form ever writes moderation.                                                                                                                               |
-| D12 | Rejected listings              | **Read as Unpublished** in the select (rejected is never presented as a landlord choice), with the D10 rejection hint.                                                                                                                                                                                                                                                            |
-| D13 | Publish preconditions          | **Required property fields valid + at least one room.** Photos stay soft-recommended only (the existing two-photo nudge; nothing blocks).                                                                                                                                                                                                                                          |
-| D14 | Required fields                | Property name, description, street address, city and province are **always required**. Monthly rent and deposit are required **only while the shared-pricing toggle is ON** (D6).                                                                                                                                                                                                 |
-| D15 | Vocabulary ownership           | **One mapping in the web app, raw values from the API.** The landlord API returns the stored status (`available` / `hidden` / `draft`) plus `listing_moderation_status`; a single web helper maps it to **Draft / Published / Unpublished** with the hint copy. The same helper feeds the pills everywhere the landlord sees listing status.                                         |
-| D16 | The “Full” pill                | **A derived badge beside the status, never instead of it.** The card's pill always shows the landlord's own choice (Draft/Published/Unpublished); an all-rooms-occupied property additionally shows a `Full` badge (warning tone) alongside.                                                                                                                                    |
-| D17 | Visibility gap (fix it here)   | **Every boarder-visible listing query requires `status = 'available'` AND moderation `published`.** Browse (`/find-a-room`), public detail (`/rooms/$id`), similar listings, saved listings and the boarder save/apply gate all honour Draft and Unpublished; the map already does.                                                                                                 |
-| D18 | Detail-page Unpublish button   | **Remove it.** The Public listing card keeps its pill and `Edit listing`, but its `Unpublish` button (and its confirm dialog) goes; this form owns status (same one-control-per-destination rule as D26 in `landlord-property-detail-page-spec.md`). The Danger zone's Delete property is untouched.                                                                            |
-| D19 | Create page scope              | **Untouched except the Draft default** (D4): its Number-of-rooms → room-boxes flow, capacity default, and rent/deposit defaults all stay as built.                                                                                                                                                                                                                                 |
-| D20 | Property photos                | **Keep the separate Photos card below the form**, unchanged: immediate upload, thumbnails, ✕ = will delete. No cover-photo picker, no reordering in this pass.                                                                                                                                                                                                                     |
-| D21 | Old PUT room fields            | Keep the server path (D8); no deprecation warning, no guard — the UI just stops using it.                                                                                                                                                                                                                                                                                         |
-| D22 | Persistence of status changes  | **Status saves with the form's Save button** (one submit, like every other field). It does not auto-save on select.                                                                                                                                                                                                                                                               |
-| D23 | Migration                      | **None required.** `properties.status` is `TEXT NOT NULL DEFAULT 'available'` with no CHECK constraint (`0002_public_listings.sql:27`), so `draft` needs no schema change. The value set is documented in `docs/reference/schema.md` instead.                                                                                                                                          |
-| D24 | Verification bar               | `web:typecheck` + `web:build` + the full `web:test` suite, `cf:api:typecheck` + `cf:api:test`, **plus a browser walkthrough at 1440px and 390px** covering draft → publish → unpublish and all three hint states.                                                                                                                                                              |
-| D25 | Deliverable                    | **This spec only.** No code changes, no migrations, no dependency changes in this pass.                                                                                                                                                                                                                                                                                          |
-| D27 | Remove the inline Rooms section | **(added 2026-10-10, on request)** The edit form's `LandlordRoomList` block and its `#rooms` anchor are removed. The Pricing section's `Manage rooms →` link now routes to `/landlord/properties/$id/rooms`. The rooms query stays (the shared-pricing state and the R9 publish check still need it), but the form no longer lists or edits rooms. |
+| #   | Topic                           | Decision                                                                                                                                                                                                                                                                                                                                                                          |
+| --- | ------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| D1  | Form scope                      | **Property-wide public information only.** Kept: property name, property type, gender preference, description, monthly rent + deposit (as shared pricing, D6), street address, city, province, amenities, property-level photos, listing status. **Removed: Number of rooms and Capacity per room** (D8).                                                                         |
+| D2  | Rooms section below the form    | ~~**Keep the inline `LandlordRoomList` exactly as it is** — compact list, per-room Edit links, ＋ Add room modal, delete.~~ **Superseded on request (2026-10-10, D27):** the inline Rooms section is **removed** — it duplicated `Manage rooms` on the Overview pane. Rooms are managed only on `/landlord/properties/$id/rooms`; this page reads the room rows but renders none. |
+| D3  | Status model                    | **The landlord controls `properties.status`; admin moderation stays a separate fact.** The select writes Draft = new `draft` value, Published = `available`, Unpublished = `hidden`. When `listing_moderation_status` is not `published`, the form shows a non-blocking inline hint (D10).                                                                                        |
+| D4  | New-listing default             | **A listing created from `/landlord/listings/create` starts as Draft** (`status = 'draft'`, moderation still `pending_review` as today). The create page is otherwise untouched (D19).                                                                                                                                                                                            |
+| D5  | Property rent → rooms           | **Never touch existing rooms.** The property-level rent/deposit are the defaults for _newly added_ rooms only; editing them here rewrites no room row. (This is a behaviour change: the PUT path that bulk-rewrites room prices/capacity stops being fed.)                                                                                                                        |
+| D6  | Shared-pricing control          | **A “Same rent and deposit for every room” toggle** in the Pricing section. Its initial state is **derived on load** (ON when every live room shares one rent, or there are no rooms; OFF when rents differ). **Not persisted** — no migration, no new column.                                                                                                                    |
+| D7  | Toggle OFF treatment            | **Rent/deposit become read-only** and are replaced by a range line (e.g. “₱4,200 – ₱6,500 across 12 rooms”) plus a short link to the Rooms section. The stored property price/deposit are **left exactly as they are** (never cleared, never auto-synced to the cheapest room).                                                                                                   |
+| D8  | Room-count / capacity fields    | **Both removed from this form.** The API keeps honouring `total_rooms`/`propertyRooms`/`capacity`/`propertyCapacity` on PUT for any older client; the web app simply stops sending them, and the API tests covering that path stay as they are.                                                                                                                                   |
+| D9  | Listing-status placement        | **Its own section at the end of the form**, immediately before the sticky save bar — the last decision before saving. (Not folded into Pricing, not moved to the top.)                                                                                                                                                                                                            |
+| D10 | Moderation hint                 | **Inline muted text directly under the select.** Three states: not-yet-approved (“Awaiting admin review — boarders can’t see this listing yet”), rejected (“An admin rejected this listing — fix the details and publish again to request another review”), and approved/live (no hint). Not a badge, not a page banner.                                                          |
+| D11 | Re-publish semantics            | **An approval survives Unpublished → Published.** The only reset is **rejected → Published**, which sets `listing_moderation_status = 'pending_review'` (a landlord-initiated re-review request). Nothing else in this form ever writes moderation.                                                                                                                               |
+| D12 | Rejected listings               | **Read as Unpublished** in the select (rejected is never presented as a landlord choice), with the D10 rejection hint.                                                                                                                                                                                                                                                            |
+| D13 | Publish preconditions           | **Required property fields valid + at least one room.** Photos stay soft-recommended only (the existing two-photo nudge; nothing blocks).                                                                                                                                                                                                                                         |
+| D14 | Required fields                 | Property name, description, street address, city and province are **always required**. Monthly rent and deposit are required **only while the shared-pricing toggle is ON** (D6).                                                                                                                                                                                                 |
+| D15 | Vocabulary ownership            | **One mapping in the web app, raw values from the API.** The landlord API returns the stored status (`available` / `hidden` / `draft`) plus `listing_moderation_status`; a single web helper maps it to **Draft / Published / Unpublished** with the hint copy. The same helper feeds the pills everywhere the landlord sees listing status.                                      |
+| D16 | The “Full” pill                 | **A derived badge beside the status, never instead of it.** The card's pill always shows the landlord's own choice (Draft/Published/Unpublished); an all-rooms-occupied property additionally shows a `Full` badge (warning tone) alongside.                                                                                                                                      |
+| D17 | Visibility gap (fix it here)    | **Every boarder-visible listing query requires `status = 'available'` AND moderation `published`.** Browse (`/find-a-room`), public detail (`/rooms/$id`), similar listings, saved listings and the boarder save/apply gate all honour Draft and Unpublished; the map already does.                                                                                               |
+| D18 | Detail-page Unpublish button    | **Remove it.** The Public listing card keeps its pill and `Edit listing`, but its `Unpublish` button (and its confirm dialog) goes; this form owns status (same one-control-per-destination rule as D26 in `landlord-property-detail-page-spec.md`). The Danger zone's Delete property is untouched.                                                                              |
+| D19 | Create page scope               | **Untouched except the Draft default** (D4): its Number-of-rooms → room-boxes flow, capacity default, and rent/deposit defaults all stay as built.                                                                                                                                                                                                                                |
+| D20 | Property photos                 | **Keep the separate Photos card below the form**, unchanged: immediate upload, thumbnails, ✕ = will delete. No cover-photo picker, no reordering in this pass.                                                                                                                                                                                                                    |
+| D21 | Old PUT room fields             | Keep the server path (D8); no deprecation warning, no guard — the UI just stops using it.                                                                                                                                                                                                                                                                                         |
+| D22 | Persistence of status changes   | **Status saves with the form's Save button** (one submit, like every other field). It does not auto-save on select.                                                                                                                                                                                                                                                               |
+| D23 | Migration                       | **None required.** `properties.status` is `TEXT NOT NULL DEFAULT 'available'` with no CHECK constraint (`0002_public_listings.sql:27`), so `draft` needs no schema change. The value set is documented in `docs/reference/schema.md` instead.                                                                                                                                     |
+| D24 | Verification bar                | `web:typecheck` + `web:build` + the full `web:test` suite, `cf:api:typecheck` + `cf:api:test`, **plus a browser walkthrough at 1440px and 390px** covering draft → publish → unpublish and all three hint states.                                                                                                                                                                 |
+| D25 | Deliverable                     | **This spec only.** No code changes, no migrations, no dependency changes in this pass.                                                                                                                                                                                                                                                                                           |
+| D27 | Remove the inline Rooms section | **(added 2026-10-10, on request)** The edit form's `LandlordRoomList` block and its `#rooms` anchor are removed. The Pricing section's `Manage rooms →` link now routes to `/landlord/properties/$id/rooms`. The rooms query stays (the shared-pricing state and the R9 publish check still need it), but the form no longer lists or edits rooms.                                |
 
 ---
 
@@ -87,16 +87,16 @@ supersedes an earlier one, the row says so.
 
 Sections and controls, in order:
 
-| Section                 | Controls today                                                                 |
-| ----------------------- | ------------------------------------------------------------------------------ |
-| Basic information       | Property name, Property type, Gender preference, Description                    |
-| Pricing and capacity    | Monthly rent (₱), Deposit (₱), **Number of rooms**, **Capacity per room**, Status (Active / Inactive) |
-| Location                | Street address, City, Province                                                  |
-| Amenities               | Eight amenity pills                                                             |
-| (sticky save bar)       | Cancel · Save changes                                                           |
-| Photos (separate card)  | Upload dropzone + thumbnails with ✕ = will delete                                |
-| Rooms (`LandlordRoomList`) | Room list, per-room Edit links, ＋ Add room, delete                         |
-| Authorized landlords    | Read-only list (owner only)                                                     |
+| Section                    | Controls today                                                                                        |
+| -------------------------- | ----------------------------------------------------------------------------------------------------- |
+| Basic information          | Property name, Property type, Gender preference, Description                                          |
+| Pricing and capacity       | Monthly rent (₱), Deposit (₱), **Number of rooms**, **Capacity per room**, Status (Active / Inactive) |
+| Location                   | Street address, City, Province                                                                        |
+| Amenities                  | Eight amenity pills                                                                                   |
+| (sticky save bar)          | Cancel · Save changes                                                                                 |
+| Photos (separate card)     | Upload dropzone + thumbnails with ✕ = will delete                                                     |
+| Rooms (`LandlordRoomList`) | Room list, per-room Edit links, ＋ Add room, delete                                                   |
+| Authorized landlords       | Read-only list (owner only)                                                                           |
 
 - The form **seeds once** from `getProperty()` and **sends `...form`** on submit, which today includes
   `min_stay` (seeded, never rendered) and `total_rooms` / `capacity` — the fields this spec removes.
@@ -123,15 +123,15 @@ Sections and controls, in order:
 
 Boarder-visible queries check **only** the moderation flag, never `properties.status`:
 
-| Surface                          | File / line                                                   | Checks `status`? |
-| -------------------------------- | ------------------------------------------------------------- | ---------------- |
-| Browse `/find-a-room`            | `repositories/listings.ts:139` (`publicListingsWhere`)         | ❌ moderation only |
-| Public detail `/rooms/$id`       | `repositories/listings.ts:417`                                 | ❌ moderation only |
-| Similar listings                 | `repositories/listings.ts:547`, `:586`                         | ❌ moderation only |
-| Map (`/landlord/maps`, `/maps`)  | `repositories/listings.ts:490`                                 | ✅ `status IN ('available','active')` |
-| Saved listings                   | `repositories/saved-listings.ts:78`                            | ✅ `status != 'hidden'` |
-| Boarder save/apply gate          | `routes/boarder.ts:112`                                        | ✅ `status === 'hidden'` blocks |
-| AI answer context                | `routes/ai.ts:57`                                             | ❌ moderation only |
+| Surface                         | File / line                                            | Checks `status`?                      |
+| ------------------------------- | ------------------------------------------------------ | ------------------------------------- |
+| Browse `/find-a-room`           | `repositories/listings.ts:139` (`publicListingsWhere`) | ❌ moderation only                    |
+| Public detail `/rooms/$id`      | `repositories/listings.ts:417`                         | ❌ moderation only                    |
+| Similar listings                | `repositories/listings.ts:547`, `:586`                 | ❌ moderation only                    |
+| Map (`/landlord/maps`, `/maps`) | `repositories/listings.ts:490`                         | ✅ `status IN ('available','active')` |
+| Saved listings                  | `repositories/saved-listings.ts:78`                    | ✅ `status != 'hidden'`               |
+| Boarder save/apply gate         | `routes/boarder.ts:112`                                | ✅ `status === 'hidden'` blocks       |
+| AI answer context               | `routes/ai.ts:57`                                      | ❌ moderation only                    |
 
 **Consequence:** today's `Unpublish` button on the property detail page sets `status = 'hidden'` and the
 landlord's own screens say “Inactive”, but the listing stays fully browsable at `/find-a-room` and `/rooms/$id`
@@ -210,16 +210,16 @@ reaches rooms.)*
 
 ### 3.2 The status control
 
-| Stored `properties.status` | Moderation                       | Landlord sees in the select | Hint under it                                                     |
-| -------------------------- | -------------------------------- | --------------------------- | ------------------------------------------------------------------ |
-| `draft`                    | any                              | **Draft**                   | — (a draft is private by definition)                                |
-| `available`                | `published`                      | **Published**               | —                                                                   |
-| `available`                | `pending_review`                 | **Published**               | “Awaiting admin review — boarders can’t see this listing yet.”       |
-| `available`                | `rejected`                       | **Unpublished**             | “An admin rejected this listing — fix the details and publish again to request another review.” |
-| `hidden`                   | any                              | **Unpublished**             | (the rejection hint when moderation is `rejected`)                   |
-| unknown value              | —                                | its own label, neutral tone | — (defensive: never crash, never mislabel)                          |
+| Stored `properties.status` | Moderation       | Landlord sees in the select | Hint under it                                                                                   |
+| -------------------------- | ---------------- | --------------------------- | ----------------------------------------------------------------------------------------------- |
+| `draft`                    | any              | **Draft**                   | — (a draft is private by definition)                                                            |
+| `available`                | `published`      | **Published**               | —                                                                                               |
+| `available`                | `pending_review` | **Published**               | “Awaiting admin review — boarders can’t see this listing yet.”                                  |
+| `available`                | `rejected`       | **Unpublished**             | “An admin rejected this listing — fix the details and publish again to request another review.” |
+| `hidden`                   | any              | **Unpublished**             | (the rejection hint when moderation is `rejected`)                                              |
+| unknown value              | —                | its own label, neutral tone | — (defensive: never crash, never mislabel)                                                      |
 
-- Choosing **Published** on a listing whose moderation is `rejected` is the *only* write to moderation from
+- Choosing **Published** on a listing whose moderation is `rejected` is the _only_ write to moderation from
   this page: it becomes `pending_review` (D11). Every other save leaves moderation alone.
 - Choosing **Draft** or **Unpublished** never clears an existing approval, so a later **Published** is
   instantly visible again (D11) — unless the listing was rejected.
@@ -245,14 +245,14 @@ One helper (working name `apps/web/src/lib/listing-status.ts`) owns: the three o
 
 Consumers:
 
-| Surface                                             | Today                                             | After                                                                 |
-| --------------------------------------------------- | ------------------------------------------------- | --------------------------------------------------------------------- |
-| Landlord property card pill (`LandlordPropertyCards`) | `listingPill(status)` → Available/Full/Inactive   | `Published` / `Unpublished` / `Draft`, **+ a separate `Full` badge** when every room is occupied (D16) |
-| Property detail → Overview `PropertyDetailsCard`    | `listingPill(detail.status)`                      | same helper                                                           |
-| Property detail → `PublicListingCard`               | pill + `Unpublish` button                         | same helper, **button removed** (D18)                                  |
-| Property detail → Public listing tab                | `listingPill(detail.status)`                      | same helper                                                           |
-| Edit listing → Listing status                       | `Active`/`Inactive` select                        | the three options + hint                                              |
-| Admin console                                        | `moderationPill` (Published/Rejected/…)           | **unchanged**                                                         |
+| Surface                                               | Today                                           | After                                                                                                  |
+| ----------------------------------------------------- | ----------------------------------------------- | ------------------------------------------------------------------------------------------------------ |
+| Landlord property card pill (`LandlordPropertyCards`) | `listingPill(status)` → Available/Full/Inactive | `Published` / `Unpublished` / `Draft`, **+ a separate `Full` badge** when every room is occupied (D16) |
+| Property detail → Overview `PropertyDetailsCard`      | `listingPill(detail.status)`                    | same helper                                                                                            |
+| Property detail → `PublicListingCard`                 | pill + `Unpublish` button                       | same helper, **button removed** (D18)                                                                  |
+| Property detail → Public listing tab                  | `listingPill(detail.status)`                    | same helper                                                                                            |
+| Edit listing → Listing status                         | `Active`/`Inactive` select                      | the three options + hint                                                                               |
+| Admin console                                         | `moderationPill` (Published/Rejected/…)         | **unchanged**                                                                                          |
 
 The API stops translating for the landlord: `mapDetailStatus`/`mapListStatus` return the raw stored status, and
 the web derives both the pill and the `Full` badge from the numbers the payloads already carry — the **list**
@@ -342,38 +342,38 @@ about the card's Unpublish button, and `docs/guides/MANUAL.md` if it lists the e
 
 ### 5.1 Frontend
 
-| File                                                            | Change                                                                                                                   |
-| --------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------ |
-| `apps/web/src/routes/landlord/listings/$id/edit.tsx`            | The redesign: drop the two room fields, add the Pricing toggle, move/rename Status to Listing status with the hint, trim the payload. |
-| `apps/web/src/lib/listing-status.ts` **(new)**                  | The single Draft/Published/Unpublished mapping, hint copy, option list and payload rule (D15).                            |
-| `apps/web/src/components/properties/LandlordPropertyCards.tsx`  | Pull the pill from the new helper; render the derived `Full` badge beside it (D16).                                        |
-| `apps/web/src/components/properties/PropertyCard.tsx`           | Retire `listingPill`'s landlord vocabulary (or re-point it at the new helper); `moderationPill` stays.                     |
-| `apps/web/src/components/properties/PropertyOverview.tsx` / `PropertyPublicListing.tsx` | Use the new helper for the status pill.                                                          |
-| `apps/web/src/routes/landlord/properties/$id/index.tsx`         | Remove the Unpublish button, its ConfirmDialog and the now-unused `updateListing` mutation (D18).                          |
-| `apps/web/src/routes/landlord/listings/create.tsx`              | One-line change: send `propertyStatus: 'draft'` (or let the API default it, see §9 Q1).                                    |
+| File                                                                                    | Change                                                                                                                                |
+| --------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------- |
+| `apps/web/src/routes/landlord/listings/$id/edit.tsx`                                    | The redesign: drop the two room fields, add the Pricing toggle, move/rename Status to Listing status with the hint, trim the payload. |
+| `apps/web/src/lib/listing-status.ts` **(new)**                                          | The single Draft/Published/Unpublished mapping, hint copy, option list and payload rule (D15).                                        |
+| `apps/web/src/components/properties/LandlordPropertyCards.tsx`                          | Pull the pill from the new helper; render the derived `Full` badge beside it (D16).                                                   |
+| `apps/web/src/components/properties/PropertyCard.tsx`                                   | Retire `listingPill`'s landlord vocabulary (or re-point it at the new helper); `moderationPill` stays.                                |
+| `apps/web/src/components/properties/PropertyOverview.tsx` / `PropertyPublicListing.tsx` | Use the new helper for the status pill.                                                                                               |
+| `apps/web/src/routes/landlord/properties/$id/index.tsx`                                 | Remove the Unpublish button, its ConfirmDialog and the now-unused `updateListing` mutation (D18).                                     |
+| `apps/web/src/routes/landlord/listings/create.tsx`                                      | One-line change: send `propertyStatus: 'draft'` (or let the API default it, see §9 Q1).                                               |
 
 ### 5.2 Backend
 
-| File                                                              | Change                                                                                                                       |
-| ----------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------- |
-| `workers/api/src/routes/landlord/listings.ts`                     | `normalizeListingStatus` accepts `draft` (keeping the `active`/`inactive` aliases); rejected → Published resets moderation (R8); create defaults to `draft` (R14). |
-| `workers/api/src/routes/landlord/properties.ts`                   | Stop translating: return the raw `status` + `listing_moderation_status` so the web owns the vocabulary (D15).                  |
-| `workers/api/src/repositories/listings.ts`                        | Add the status condition to `publicListingsWhere`, `getPublicListingDetail`, `listSimilarPublicListings` (R13).                |
-| `workers/api/src/repositories/saved-listings.ts`                  | Tighten `status != 'hidden'` to `status = 'available'` so drafts can't be saved (R13).                                        |
-| `workers/api/src/routes/ai.ts`                                    | Same status condition in the AI context query (R13).                                                                          |
-| `workers/api/src/repositories/landlord/properties-mutations.ts`   | Create path inserts `status = 'draft'` (R14).                                                                                 |
-| `docs/reference/schema.md`                                            | Document the three status values (R17).                                                                                        |
+| File                                                            | Change                                                                                                                                                             |
+| --------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `workers/api/src/routes/landlord/listings.ts`                   | `normalizeListingStatus` accepts `draft` (keeping the `active`/`inactive` aliases); rejected → Published resets moderation (R8); create defaults to `draft` (R14). |
+| `workers/api/src/routes/landlord/properties.ts`                 | Stop translating: return the raw `status` + `listing_moderation_status` so the web owns the vocabulary (D15).                                                      |
+| `workers/api/src/repositories/listings.ts`                      | Add the status condition to `publicListingsWhere`, `getPublicListingDetail`, `listSimilarPublicListings` (R13).                                                    |
+| `workers/api/src/repositories/saved-listings.ts`                | Tighten `status != 'hidden'` to `status = 'available'` so drafts can't be saved (R13).                                                                             |
+| `workers/api/src/routes/ai.ts`                                  | Same status condition in the AI context query (R13).                                                                                                               |
+| `workers/api/src/repositories/landlord/properties-mutations.ts` | Create path inserts `status = 'draft'` (R14).                                                                                                                      |
+| `docs/reference/schema.md`                                      | Document the three status values (R17).                                                                                                                            |
 
 ### 5.3 Tests
 
-| File                                                  | Change                                                                                                     |
-| ----------------------------------------------------- | ---------------------------------------------------------------------------------------------------------- |
-| `apps/web/test/properties-card-layout.test.tsx`       | Pill vocabulary updates (Draft/Published/Unpublished + Full badge) and the detail page's contracts (no Unpublish button). |
+| File                                                          | Change                                                                                                                                                             |
+| ------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `apps/web/test/properties-card-layout.test.tsx`               | Pill vocabulary updates (Draft/Published/Unpublished + Full badge) and the detail page's contracts (no Unpublish button).                                          |
 | `apps/web/test/edit-listing-property-info.test.tsx` **(new)** | The new helper's mapping/hint/payload rules and the form's field-list source contract (no “Number of rooms” / “Capacity per room” strings, toggle markup present). |
-| `workers/api/test/landlord.test.ts`                   | Raw status passthrough, `draft` accepted on PUT, rejected → Published resets moderation, PUT keeps room rows untouched when the room fields are absent. |
-| `workers/api/test/rooms.test.ts`                      | Public browse/detail/similar exclude `draft` and `hidden` (R13).                                            |
-| `workers/api/test/boarder`-adjacent suites             | The save/apply gate still refuses `draft`/`hidden`.                                                         |
-| `workers/api/test/landlord-rooms.test.ts`              | Unchanged — it covers the endpoints that stay the room-management path (D21).                               |
+| `workers/api/test/landlord.test.ts`                           | Raw status passthrough, `draft` accepted on PUT, rejected → Published resets moderation, PUT keeps room rows untouched when the room fields are absent.            |
+| `workers/api/test/rooms.test.ts`                              | Public browse/detail/similar exclude `draft` and `hidden` (R13).                                                                                                   |
+| `workers/api/test/boarder`-adjacent suites                    | The save/apply gate still refuses `draft`/`hidden`.                                                                                                                |
+| `workers/api/test/landlord-rooms.test.ts`                     | Unchanged — it covers the endpoints that stay the room-management path (D21).                                                                                      |
 
 ---
 
@@ -381,7 +381,7 @@ about the card's Unpublish button, and `docs/guides/MANUAL.md` if it lists the e
 
 1. **Zero rooms.** Toggle defaults ON (no rooms to compare), rent/deposit required, **Published blocked** until
    one room exists (R9) with an inline reason and a link to the Rooms section. Draft and Unpublished save fine.
-2. **Rooms with mixed rent while the toggle is ON.** Allowed (the toggle is a claim about *defaults*, not a
+2. **Rooms with mixed rent while the toggle is ON.** Allowed (the toggle is a claim about _defaults_, not a
    validation of rooms); no room is rewritten (R3). The hint under the toggle says the choice affects newly
    added rooms only.
 3. **A property whose rooms all share a rent but the stored property price differs.** Toggle ON; saving leaves
@@ -487,18 +487,18 @@ Two QA accounts on the local D1 (landlord + boarder), at **1440px and 390px**:
 
 Defaults are what the implementer will do unless the requestor says otherwise.
 
-| # | Question | Default |
-| - | -------- | ------- |
-| Q1 | Should the create page send `propertyStatus: 'draft'` explicitly, or should the API's create path insert `draft` (so every client gets it)? | **API default** — the create path inserts `draft`; the web sends nothing, keeping the create page a one-file-non-change (R14). |
-| Q2 | `Preview as boarder` opens the public `/rooms/$id`, which will 404 for a Draft/Unpublished listing (R13). Add a landlord-only preview mode, or leave it? | **Leave it for now**; the button keeps its behaviour, and §9 Q3's hint already tells the landlord why the public page is empty. A landlord-side preview is a separate spec. |
-| Q3 | Should the Edit page show a small inline “not visible to boarders” note whenever status ≠ Published, next to `Preview as boarder`? | **Yes, muted one-liner** — same copy as the D10 hint, so the two never disagree. |
-| Q4 | Does the `Full` badge need its own tone? | **`warning`** — `StatusBadge` already has a `full` tone (`bg-warning-tint`). |
-| Q5 | Should shared-access (`role: 'shared'`) landlords be able to publish/unpublish? | **Yes, unchanged** — the API already authorises co-managers for property writes and the button never forked by role. |
-| Q6 | Is the AI-context query (`routes/ai.ts`) part of R13? | **Yes** — it feeds boarder-facing answers, so a draft must not appear in them. |
-| Q7 | What about `properties.status = 'occupied'`, which the docs mention but nothing writes? | **Leave the value in the docs' history, document the three live values** (R17); no data cleanup. |
-| Q8 | Do we keep sending the whole form object (`...form`) or an explicit allow-list? | **Explicit allow-list** in one place (the new helper), so R2's “never sends `total_rooms`” is enforced by construction, not by remembering to delete a key. |
-| Q9 | Where does the range in the OFF state come from — all live rooms or only available ones? | **All live rooms** (the number a landlord would call “the property's rooms”), with the count in the copy. |
-| Q10 | Should the spec also update `qa-full-system-review-spec.md` / `report.md` rows that describe the old edit form? | **Yes, minimally** — one line each, in the implementation pass, so the QA ledger doesn't describe fields that no longer exist. |
+| #   | Question                                                                                                                                                 | Default                                                                                                                                                                     |
+| --- | -------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Q1  | Should the create page send `propertyStatus: 'draft'` explicitly, or should the API's create path insert `draft` (so every client gets it)?              | **API default** — the create path inserts `draft`; the web sends nothing, keeping the create page a one-file-non-change (R14).                                              |
+| Q2  | `Preview as boarder` opens the public `/rooms/$id`, which will 404 for a Draft/Unpublished listing (R13). Add a landlord-only preview mode, or leave it? | **Leave it for now**; the button keeps its behaviour, and §9 Q3's hint already tells the landlord why the public page is empty. A landlord-side preview is a separate spec. |
+| Q3  | Should the Edit page show a small inline “not visible to boarders” note whenever status ≠ Published, next to `Preview as boarder`?                       | **Yes, muted one-liner** — same copy as the D10 hint, so the two never disagree.                                                                                            |
+| Q4  | Does the `Full` badge need its own tone?                                                                                                                 | **`warning`** — `StatusBadge` already has a `full` tone (`bg-warning-tint`).                                                                                                |
+| Q5  | Should shared-access (`role: 'shared'`) landlords be able to publish/unpublish?                                                                          | **Yes, unchanged** — the API already authorises co-managers for property writes and the button never forked by role.                                                        |
+| Q6  | Is the AI-context query (`routes/ai.ts`) part of R13?                                                                                                    | **Yes** — it feeds boarder-facing answers, so a draft must not appear in them.                                                                                              |
+| Q7  | What about `properties.status = 'occupied'`, which the docs mention but nothing writes?                                                                  | **Leave the value in the docs' history, document the three live values** (R17); no data cleanup.                                                                            |
+| Q8  | Do we keep sending the whole form object (`...form`) or an explicit allow-list?                                                                          | **Explicit allow-list** in one place (the new helper), so R2's “never sends `total_rooms`” is enforced by construction, not by remembering to delete a key.                 |
+| Q9  | Where does the range in the OFF state come from — all live rooms or only available ones?                                                                 | **All live rooms** (the number a landlord would call “the property's rooms”), with the count in the copy.                                                                   |
+| Q10 | Should the spec also update `qa-full-system-review-spec.md` / `report.md` rows that describe the old edit form?                                          | **Yes, minimally** — one line each, in the implementation pass, so the QA ledger doesn't describe fields that no longer exist.                                              |
 
 **Risks worth naming:**
 
@@ -547,9 +547,9 @@ fail** ✓ · `cf:api:typecheck` ✓ · `cf:api:test` **275 pass / 0 fail** ✓.
 
 1. A Published listing's edit page shows **no `Number of rooms` / `Capacity per room`**; the Pricing toggle
    reads OFF for a mixed-rent property with the real range `Rent varies by room: ₱1,500 – ₱3,000 across 4
-   rooms`; Listing status reads **Published** with no hint (R1/D6/D7).
+rooms`; Listing status reads **Published** with no hint (R1/D6/D7).
 2. Set **Unpublished**, save, reload: select reads Unpublished, the §9 Q3 note appears beside `Preview as
-   boarder`, the landlord card flips to **Unpublished**, and the §2.3 hole is closed — `GET /api/rooms/public`
+boarder`, the landlord card flips to **Unpublished**, and the §2.3 hole is closed — `GET /api/rooms/public`
    drops the property and `GET /api/rooms/detail?id=4` returns **404** (R6/R13). Property 1, `hidden` with
    moderation `published`, was already absent from browse — the exact regression the specced API test targets.
 3. Set **Published** again, save: visible again instantly (`/api/rooms/detail?id=4` → 200) with moderation
@@ -570,11 +570,10 @@ Pricing · Location · Amenities · Listing status`, with only the Photos and Au
 the Pricing `Manage rooms →` link routes to `/landlord/properties/$id/rooms`, and the rooms query remains
 only to derive the shared-pricing state and the R9 publish precondition. Verified live at 1440px: no Rooms
 heading, no `Edit room` links, the link lands on the rooms page. `web:typecheck` ✓ and `web:test` **249 pass / 0
-fail** ✓ after the change (`edit-listing-property-info` source contract updated accordingly).
-7. **390px:** the form is single-column with no overflow once the shell's sidebar is collapsed; with it
-   expanded the page inherits the known shell caveat (`messages-feature-review` §12.10 — a fixed 288px rail
-   that squeezes `main`), which every role page shares and which this change does not introduce (R16). No
-   console errors originate from this page.
+fail** ✓ after the change (`edit-listing-property-info` source contract updated accordingly). 7. **390px:** the form is single-column with no overflow once the shell's sidebar is collapsed; with it
+expanded the page inherits the known shell caveat (`messages-feature-review` §12.10 — a fixed 288px rail
+that squeezes `main`), which every role page shares and which this change does not introduce (R16). No
+console errors originate from this page.
 
 **Doc cleanups done in the same pass (R17/R18):** the status vocabulary is documented in
 `docs/reference/schema.md`; the superseded `Unpublish` button is struck through with a supersession note in

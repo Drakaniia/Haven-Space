@@ -40,7 +40,17 @@ const explicitDb = (() => {
 
 /** The miniflare D1 file the local dev Worker uses (largest one wins). */
 function discoverLocalDatabase() {
-  const root = join(import.meta.dir, '..', '..', 'workers', 'api', '.wrangler', 'state', 'v3', 'd1');
+  const root = join(
+    import.meta.dir,
+    '..',
+    '..',
+    'workers',
+    'api',
+    '.wrangler',
+    'state',
+    'v3',
+    'd1'
+  );
   const candidates = [];
 
   for (const entry of safeReaddir(root)) {

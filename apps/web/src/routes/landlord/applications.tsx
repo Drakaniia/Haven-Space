@@ -60,10 +60,7 @@ function ApplicationsPage() {
   return (
     <RoleShell nav={LANDLORD_NAV}>
       <ToastStack toasts={toasts} onDismiss={dismiss} />
-      <PageHeader
-        icon="application"
-        title="Applications"
-      />
+      <PageHeader icon="application" title="Applications" />
 
       {error ? (
         <div className="mb-4">

@@ -60,7 +60,8 @@ export function AddChargeModal({
     onError: error => onError(error.message),
   });
 
-  const canSubmit = Boolean(propertyId) && rows.length > 0 && Number(amount) > 0 && Boolean(dueDate);
+  const canSubmit =
+    Boolean(propertyId) && rows.length > 0 && Number(amount) > 0 && Boolean(dueDate);
 
   return (
     <Modal open={open} title="Add a charge" onClose={onClose}>

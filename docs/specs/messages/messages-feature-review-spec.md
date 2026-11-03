@@ -39,36 +39,36 @@ implies.
 Answers were collected in **five rounds** of `ask_user`. Rows marked **(agent default)** are choices the
 interview left open; they are restated in §11.
 
-| #   | Topic | Decision |
-| --- | ----- | -------- |
-| D1  | What the spec is | **Review + build plan.** The audit findings come first, then the slice that fixes them. |
-| D2  | Who can message whom | **Boarder ↔ their landlord once a tenancy is confirmed**, **prospective boarder → landlord** from a listing, and **boarder ↔ landlord during an application**. Landlord↔landlord, boarder↔boarder and admin↔anyone are **out of scope** for v1. |
-| D3  | Conversation model | **One thread per (landlord, boarder) pair**, unique on that pair. |
-| D4  | Delivery | **Polling through TanStack Query** (refetch interval + refetch on focus). No SSE, no Durable Objects, no WebSockets. |
-| D5  | Who may start a thread | **Signed-in boarders only** (no guest messaging), with **a cap on new threads per day**. |
-| D6  | Property context | **The thread records the listing that started it, and every message can carry a property chip** so a multi-property landlord knows what is being discussed. |
-| D7  | Message payload | **Text + images**, uploaded through the existing UploadThing integration. |
-| D8  | Unread state | **Per-thread unread counts, an unread total in the nav, and a `message` notification type in the existing bell.** No read receipts ("Seen"). |
-| D9  | Admin access to content | **None — metadata only.** Admins never read bodies or images; no new admin console surface. |
-| D10 | Safety controls | **Report a conversation + block the other party**, both in v1. |
-| D11 | Retention | **Per-side delete** (soft delete, each participant hides their own copy) and **FK cascade on account deletion**. |
-| D12 | The tenancy gate | **Drop `RequireTenancy` from the messages route**: any signed-in boarder gets the inbox. The limited nav stays as it is. |
-| D13 | Limits | **2,000 characters · 4 images per message · 5 new threads per boarder per day.** |
-| D14 | Layout | **Two-pane (thread list + open thread) at ≥1024px, list → dedicated thread route below that**, with deep-linkable thread URLs at every size. |
-| D15 | Entry points | **All four:** the property page's existing *Contact Landlord*, the application detail on both sides, the landlord's Tenants page, and `message` notification rows in the bell. |
-| D16 | Out-of-app notification | **In-app only.** No email, no push — the repo has no email sending wired up. |
-| D17 | Application note vs thread | **Leave applications exactly as they are**; the application page just gains a Message link. No backfill, no seeding, no replacement. |
-| D18 | Block semantics | **Messaging only, both directions, reversible.** Applications, listings and search are untouched. |
-| D19 | After a tenancy ends | **Nothing changes.** The thread stays readable and writable (deposits, references, follow-ups). |
-| D20 | Verification bar | All five project checks green; **new API tests** for the messaging rules; **new web tests** for the inbox; a **two-account manual walkthrough** at 390px and 1440px; **fix the stale `501 FEATURE_DEFERRED` claims** in `docs/qa/`; **reconcile `docs/reference/schema.md`** with what ships. |
-| D21 | Thread ownership of context | **(agent default)** A thread may hold several properties' context over time; the *first* listing is remembered as the thread's origin and shown in the thread header. |
-| D22 | Polling cadence | **(agent default)** Thread list 15s, open thread 5s, plus `refetchOnWindowFocus`; sending is optimistic. |
-| D23 | Send rate inside a thread | **(agent default)** 30 messages per minute per thread, rejected with a 429 and a clear message; the daily cap (D13) governs only *new* threads. |
-| D24 | Message ordering & paging | **(agent default)** Newest-last within a thread, 50 messages per page, "Load earlier" paging upward from the top. |
-| D25 | Landlord-initiated threads | **(agent default)** Allowed (the Tenants entry point needs it) but **not** counted against the boarder's daily cap and **not** creatable from a listing the landlord does not own. |
-| D26 | Report triage | **(agent default)** A report writes a row with `status='open'`; triage happens through the existing admin audit-log surface, not a new console section (D9 keeps admins out of content). |
-| D27 | This pass | **Spec only.** No code, no migrations, no dependency changes. |
-| D28 | Photos in messages | **(agent default)** Same UploadThing path as room photos: up to 4 per message with `accept="image/*"`, mirroring `RoomFormFields` + `MAX_ROOM_PHOTOS` (`lib/room-drafts.ts`). Note that precedent enforces **only a count** — it has no file-size or MIME check — so a per-file size ceiling and a server-side image check are new work here, not inherited behaviour (R13). |
+| #   | Topic                       | Decision                                                                                                                                                                                                                                                                                                                                                                     |
+| --- | --------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| D1  | What the spec is            | **Review + build plan.** The audit findings come first, then the slice that fixes them.                                                                                                                                                                                                                                                                                      |
+| D2  | Who can message whom        | **Boarder ↔ their landlord once a tenancy is confirmed**, **prospective boarder → landlord** from a listing, and **boarder ↔ landlord during an application**. Landlord↔landlord, boarder↔boarder and admin↔anyone are **out of scope** for v1.                                                                                                                              |
+| D3  | Conversation model          | **One thread per (landlord, boarder) pair**, unique on that pair.                                                                                                                                                                                                                                                                                                            |
+| D4  | Delivery                    | **Polling through TanStack Query** (refetch interval + refetch on focus). No SSE, no Durable Objects, no WebSockets.                                                                                                                                                                                                                                                         |
+| D5  | Who may start a thread      | **Signed-in boarders only** (no guest messaging), with **a cap on new threads per day**.                                                                                                                                                                                                                                                                                     |
+| D6  | Property context            | **The thread records the listing that started it, and every message can carry a property chip** so a multi-property landlord knows what is being discussed.                                                                                                                                                                                                                  |
+| D7  | Message payload             | **Text + images**, uploaded through the existing UploadThing integration.                                                                                                                                                                                                                                                                                                    |
+| D8  | Unread state                | **Per-thread unread counts, an unread total in the nav, and a `message` notification type in the existing bell.** No read receipts ("Seen").                                                                                                                                                                                                                                 |
+| D9  | Admin access to content     | **None — metadata only.** Admins never read bodies or images; no new admin console surface.                                                                                                                                                                                                                                                                                  |
+| D10 | Safety controls             | **Report a conversation + block the other party**, both in v1.                                                                                                                                                                                                                                                                                                               |
+| D11 | Retention                   | **Per-side delete** (soft delete, each participant hides their own copy) and **FK cascade on account deletion**.                                                                                                                                                                                                                                                             |
+| D12 | The tenancy gate            | **Drop `RequireTenancy` from the messages route**: any signed-in boarder gets the inbox. The limited nav stays as it is.                                                                                                                                                                                                                                                     |
+| D13 | Limits                      | **2,000 characters · 4 images per message · 5 new threads per boarder per day.**                                                                                                                                                                                                                                                                                             |
+| D14 | Layout                      | **Two-pane (thread list + open thread) at ≥1024px, list → dedicated thread route below that**, with deep-linkable thread URLs at every size.                                                                                                                                                                                                                                 |
+| D15 | Entry points                | **All four:** the property page's existing _Contact Landlord_, the application detail on both sides, the landlord's Tenants page, and `message` notification rows in the bell.                                                                                                                                                                                               |
+| D16 | Out-of-app notification     | **In-app only.** No email, no push — the repo has no email sending wired up.                                                                                                                                                                                                                                                                                                 |
+| D17 | Application note vs thread  | **Leave applications exactly as they are**; the application page just gains a Message link. No backfill, no seeding, no replacement.                                                                                                                                                                                                                                         |
+| D18 | Block semantics             | **Messaging only, both directions, reversible.** Applications, listings and search are untouched.                                                                                                                                                                                                                                                                            |
+| D19 | After a tenancy ends        | **Nothing changes.** The thread stays readable and writable (deposits, references, follow-ups).                                                                                                                                                                                                                                                                              |
+| D20 | Verification bar            | All five project checks green; **new API tests** for the messaging rules; **new web tests** for the inbox; a **two-account manual walkthrough** at 390px and 1440px; **fix the stale `501 FEATURE_DEFERRED` claims** in `docs/qa/`; **reconcile `docs/reference/schema.md`** with what ships.                                                                                |
+| D21 | Thread ownership of context | **(agent default)** A thread may hold several properties' context over time; the _first_ listing is remembered as the thread's origin and shown in the thread header.                                                                                                                                                                                                        |
+| D22 | Polling cadence             | **(agent default)** Thread list 15s, open thread 5s, plus `refetchOnWindowFocus`; sending is optimistic.                                                                                                                                                                                                                                                                     |
+| D23 | Send rate inside a thread   | **(agent default)** 30 messages per minute per thread, rejected with a 429 and a clear message; the daily cap (D13) governs only _new_ threads.                                                                                                                                                                                                                              |
+| D24 | Message ordering & paging   | **(agent default)** Newest-last within a thread, 50 messages per page, "Load earlier" paging upward from the top.                                                                                                                                                                                                                                                            |
+| D25 | Landlord-initiated threads  | **(agent default)** Allowed (the Tenants entry point needs it) but **not** counted against the boarder's daily cap and **not** creatable from a listing the landlord does not own.                                                                                                                                                                                           |
+| D26 | Report triage               | **(agent default)** A report writes a row with `status='open'`; triage happens through the existing admin audit-log surface, not a new console section (D9 keeps admins out of content).                                                                                                                                                                                     |
+| D27 | This pass                   | **Spec only.** No code, no migrations, no dependency changes.                                                                                                                                                                                                                                                                                                                |
+| D28 | Photos in messages          | **(agent default)** Same UploadThing path as room photos: up to 4 per message with `accept="image/*"`, mirroring `RoomFormFields` + `MAX_ROOM_PHOTOS` (`lib/room-drafts.ts`). Note that precedent enforces **only a count** — it has no file-size or MIME check — so a per-file size ceiling and a server-side image check are new work here, not inherited behaviour (R13). |
 
 ---
 
@@ -76,11 +76,11 @@ interview left open; they are restated in §11.
 
 ### 2.1 Frontend
 
-| File | Lines | What it is |
-| ---- | ----- | ---------- |
-| `apps/web/src/routes/landlord/messages.tsx` | 21 | `Protected role="landlord"` → `RoleShell` → `PlaceholderPage` (icon `chat`, title "Messages", subtitle "Chat with your boarders.", notice "Messages coming soon", message "In-app messaging with boarders is on the roadmap."). |
-| `apps/web/src/routes/boarder/messages.tsx` | 29 | Same shape with subtitle "Chat with your landlord.", additionally wrapped in `<RequireTenancy>` (`components/boarder/FeatureGate.tsx`), which renders an `EmptyState` + "Go to Applications" for any boarder whose `boarder_status !== 'confirmed'`. |
-| `apps/web/src/components/rooms/RoomDetailView.tsx` | 836 | Line 134: `const contactHref = inBoarderFlow ? BOARDER_MESSAGES_PATH : authRedirect;` — the public/boarder listing page's **"Contact Landlord"** link (line 590-596, `chat` icon) points at the placeholder. |
+| File                                               | Lines | What it is                                                                                                                                                                                                                                           |
+| -------------------------------------------------- | ----- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `apps/web/src/routes/landlord/messages.tsx`        | 21    | `Protected role="landlord"` → `RoleShell` → `PlaceholderPage` (icon `chat`, title "Messages", subtitle "Chat with your boarders.", notice "Messages coming soon", message "In-app messaging with boarders is on the roadmap.").                      |
+| `apps/web/src/routes/boarder/messages.tsx`         | 29    | Same shape with subtitle "Chat with your landlord.", additionally wrapped in `<RequireTenancy>` (`components/boarder/FeatureGate.tsx`), which renders an `EmptyState` + "Go to Applications" for any boarder whose `boarder_status !== 'confirmed'`. |
+| `apps/web/src/components/rooms/RoomDetailView.tsx` | 836   | Line 134: `const contactHref = inBoarderFlow ? BOARDER_MESSAGES_PATH : authRedirect;` — the public/boarder listing page's **"Contact Landlord"** link (line 590-596, `chat` icon) points at the placeholder.                                         |
 
 Nav (`apps/web/src/lib/nav.ts`): `{ to: '/landlord/messages', label: 'Messages', icon: 'chat', group:
 'Communication' }` and the boarder equivalent. `BOARDER_LIMITED_NAV` (pre-tenancy) contains only
@@ -100,7 +100,7 @@ The nearest existing machinery:
   `markNotificationRead`/`markAllNotificationsRead`/`deleteNotification`, plus a **role allow-list**
   `roleVisibleTypes(role)`: landlord sees 9 types, boarder sees `['application_accepted', 'announcement']`,
   **admin sees `[]`**. Rows are inserted inline (`INSERT INTO notifications (user_id, type, title, message,
-  metadata)`) from exactly four places: `repositories/announcements.ts:498`,
+metadata)`) from exactly four places: `repositories/announcements.ts:498`,
   `repositories/landlord-verification.ts:422`, `repositories/property-access/history.ts:172` and `:221`. The
   bell (`components/layout/NotificationBell.tsx`) reads `GET /api/notifications` +
   `/api/notifications/unread-count`.
@@ -141,21 +141,21 @@ by reading `workers/api/migrations/*.sql` (seed files skipped).
 
 Severity is "what breaks if this ships as-is", not effort.
 
-| # | Finding | Severity | Evidence |
-| - | ------- | -------- | -------- |
-| F1 | **The product's "Contact Landlord" button is a dead end.** `RoomDetailView` links to `BOARDER_MESSAGES_PATH`, which is a "coming soon" placeholder — a prospective boarder tapping *Contact Landlord* lands on a page that tells them the feature does not exist. | **High** | `RoomDetailView.tsx:134`, `boarder/messages.tsx:11-19` |
-| F2 | **QA documentation describes behaviour that does not exist.** Two QA docs assert a graceful `501 FEATURE_DEFERRED` for messages, and the audit records it as PASS. No such code path exists anywhere in the Worker, so those checks cannot have run against the current API. | **High (trust)** | `docs/qa/specs/qa-spec.md:332-334,467`, `qa-spec-audit.md:32,74,189,215,325`; zero `FEATURE_DEFERRED` matches |
-| F3 | **The documented schema is fiction.** `docs/reference/schema.md` describes a `messages` table as the backbone of the platform's messaging; no migration creates it. Useful side effect: this is a **greenfield build with no legacy rows to migrate**. | Medium (doc) | `docs/reference/schema.md:93-105`; `workers/api/migrations/` |
-| F4 | **The gate and the CTA contradict each other.** `/boarder/messages` is wrapped in `RequireTenancy` (confirmed tenancy only), while the listing CTA is reachable by a brand-new boarder who has never applied — and the limited nav hides the Messages item, so even the nav cannot get them back to a reply. | **High** | `boarder/messages.tsx:15`, `nav.ts` `BOARDER_LIMITED_NAV`, `RoomDetailView.tsx:131-134` |
-| F5 | **No unread concept and no notification type.** `roleVisibleTypes` has no message type for either role, and nothing tracks read state for anything messaging-shaped; `is_read` exists only on the legacy design. | **High** | `repositories/notifications.ts:60-83` |
-| F6 | **No abuse controls of any kind.** No report, no block, no send/rate cap. The only quota machinery in the codebase is the AI cookie counter, which is per-browser and unsuitable for inquiry limits. | **High** | `routes/ai.ts:470-504`; no matches for rate-limit helpers |
-| F7 | ~~**The landlord's Tenants page cannot identify the boarder as a user.**~~ **CORRECTED — this finding was wrong.** `LandlordBoarderListItem.id` *is* the boarder's `users.id` (`u.id AS id` in the select, with the application's own id exposed separately as `application_id`), so the Tenants row could always name the counterpart. No API change was needed. | ~~Medium (blocker)~~ Resolved | `repositories/landlord-boarders.ts:22-42,125-140`; `routes/landlord/boarders.ts` (update/delete take that same `id`) |
-| F8 | **Application-stage communication is one-way.** The boarder writes a note (and tour notes reuse the same field); the landlord can neither reply in context nor be replied to except by e-mail outside the app. | Medium | `0006_applications.sql`; `landlord-boarders.ts:34` (`application_message`); `find-a-room/$id/tour.tsx:82` ("A tour request creates an application") |
-| F9 | **Admins are blind to messaging by design, but reports have no home.** D9 keeps admins out of content, which is defensible — but without a report row that an admin can see, an abuse report has nowhere to go. | Medium | `roleVisibleTypes('admin') === []` |
-| F10 | **Notification inserts are copy-pasted four times.** A fifth inline `INSERT INTO notifications` for messages would make drift likelier (title/message/metadata shapes already differ per call site). | Low | `announcements.ts:498`, `landlord-verification.ts:422`, `property-access/history.ts:172,221` |
-| F11 | **No badge infrastructure in the nav.** `NavItem` has no count field and the sidebar renders none, so an unread total in the nav (D8) requires touching the nav type + shell. | Low | `lib/nav.ts:5-17`, `components/layout` sidebar |
-| F12 | **Placeholder copy promises different things per role** ("Chat with your boarders." vs "Chat with your landlord.") while both notices say the same "coming soon" — harmless, but the copy must be replaced rather than extended (both screens are deleted, not built on). | Low | the two route files |
-| F13 | **Polling has one trap worth designing around:** a 5s refetch that re-renders the composer can wipe in-progress typing. The plan (§4.5) keeps the draft in component state and sends optimistically, so a refetch never touches it. | Low (design) | TanStack Query usage across the app |
+| #   | Finding                                                                                                                                                                                                                                                                                                                                                           | Severity                      | Evidence                                                                                                                                            |
+| --- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------- |
+| F1  | **The product's "Contact Landlord" button is a dead end.** `RoomDetailView` links to `BOARDER_MESSAGES_PATH`, which is a "coming soon" placeholder — a prospective boarder tapping _Contact Landlord_ lands on a page that tells them the feature does not exist.                                                                                                 | **High**                      | `RoomDetailView.tsx:134`, `boarder/messages.tsx:11-19`                                                                                              |
+| F2  | **QA documentation describes behaviour that does not exist.** Two QA docs assert a graceful `501 FEATURE_DEFERRED` for messages, and the audit records it as PASS. No such code path exists anywhere in the Worker, so those checks cannot have run against the current API.                                                                                      | **High (trust)**              | `docs/qa/specs/qa-spec.md:332-334,467`, `qa-spec-audit.md:32,74,189,215,325`; zero `FEATURE_DEFERRED` matches                                       |
+| F3  | **The documented schema is fiction.** `docs/reference/schema.md` describes a `messages` table as the backbone of the platform's messaging; no migration creates it. Useful side effect: this is a **greenfield build with no legacy rows to migrate**.                                                                                                            | Medium (doc)                  | `docs/reference/schema.md:93-105`; `workers/api/migrations/`                                                                                        |
+| F4  | **The gate and the CTA contradict each other.** `/boarder/messages` is wrapped in `RequireTenancy` (confirmed tenancy only), while the listing CTA is reachable by a brand-new boarder who has never applied — and the limited nav hides the Messages item, so even the nav cannot get them back to a reply.                                                      | **High**                      | `boarder/messages.tsx:15`, `nav.ts` `BOARDER_LIMITED_NAV`, `RoomDetailView.tsx:131-134`                                                             |
+| F5  | **No unread concept and no notification type.** `roleVisibleTypes` has no message type for either role, and nothing tracks read state for anything messaging-shaped; `is_read` exists only on the legacy design.                                                                                                                                                  | **High**                      | `repositories/notifications.ts:60-83`                                                                                                               |
+| F6  | **No abuse controls of any kind.** No report, no block, no send/rate cap. The only quota machinery in the codebase is the AI cookie counter, which is per-browser and unsuitable for inquiry limits.                                                                                                                                                              | **High**                      | `routes/ai.ts:470-504`; no matches for rate-limit helpers                                                                                           |
+| F7  | ~~**The landlord's Tenants page cannot identify the boarder as a user.**~~ **CORRECTED — this finding was wrong.** `LandlordBoarderListItem.id` _is_ the boarder's `users.id` (`u.id AS id` in the select, with the application's own id exposed separately as `application_id`), so the Tenants row could always name the counterpart. No API change was needed. | ~~Medium (blocker)~~ Resolved | `repositories/landlord-boarders.ts:22-42,125-140`; `routes/landlord/boarders.ts` (update/delete take that same `id`)                                |
+| F8  | **Application-stage communication is one-way.** The boarder writes a note (and tour notes reuse the same field); the landlord can neither reply in context nor be replied to except by e-mail outside the app.                                                                                                                                                    | Medium                        | `0006_applications.sql`; `landlord-boarders.ts:34` (`application_message`); `find-a-room/$id/tour.tsx:82` ("A tour request creates an application") |
+| F9  | **Admins are blind to messaging by design, but reports have no home.** D9 keeps admins out of content, which is defensible — but without a report row that an admin can see, an abuse report has nowhere to go.                                                                                                                                                   | Medium                        | `roleVisibleTypes('admin') === []`                                                                                                                  |
+| F10 | **Notification inserts are copy-pasted four times.** A fifth inline `INSERT INTO notifications` for messages would make drift likelier (title/message/metadata shapes already differ per call site).                                                                                                                                                              | Low                           | `announcements.ts:498`, `landlord-verification.ts:422`, `property-access/history.ts:172,221`                                                        |
+| F11 | **No badge infrastructure in the nav.** `NavItem` has no count field and the sidebar renders none, so an unread total in the nav (D8) requires touching the nav type + shell.                                                                                                                                                                                     | Low                           | `lib/nav.ts:5-17`, `components/layout` sidebar                                                                                                      |
+| F12 | **Placeholder copy promises different things per role** ("Chat with your boarders." vs "Chat with your landlord.") while both notices say the same "coming soon" — harmless, but the copy must be replaced rather than extended (both screens are deleted, not built on).                                                                                         | Low                           | the two route files                                                                                                                                 |
+| F13 | **Polling has one trap worth designing around:** a 5s refetch that re-renders the composer can wipe in-progress typing. The plan (§4.5) keeps the draft in component state and sends optimistically, so a refetch never touches it.                                                                                                                               | Low (design)                  | TanStack Query usage across the app                                                                                                                 |
 
 **What the review says in one line:** messages are not "deferred" — they were never started in this
 codebase; the affordances that point at them already ship, the docs that describe them are wrong, and the
@@ -260,18 +260,18 @@ Mounted once in `index.ts` (`app.route('/', messagesRoutes)`), authorized with
 `authorizeUser(db, c.req.raw, ['boarder', 'landlord'], env.JWT_SECRET)`; every handler re-checks that the
 caller is a participant of the thread.
 
-| Method & path | Purpose | Rules |
-| ------------- | ------- | ----- |
-| `GET /api/messages/threads` | The caller's inbox | Side-specific soft-delete filter; each row: counterpart id/name/avatar, property name (thread origin), last message preview + time, `unread_count` |
-| `POST /api/messages/threads` | Open (or return) the pair thread | Body `{ counterpart_id, property_id? }`. Unique pair → idempotent. Boarder initiator: max 5 new threads/24h (D13) else `429`. Landlord initiator: allowed only for a boarder tied to one of their properties/applications (D25). Self-thread and non-participant ids are rejected |
-| `GET /api/messages/threads/:id` | One thread + a page of messages | `?before=<message id>` for older pages (50/page, D24); returns `counterpart`, `blocked_by` (which side blocked), `property` context |
-| `POST /api/messages/threads/:id/messages` | Send | Body `{ body, attachments?: [{ url, key }], property_id? }`; rejects blank/over-2,000-char bodies, >4 attachments, blocked threads (D18), 30 msg/min per thread (D23). Sets `read_at` for the sender's own messages only on read, bumps `last_message_at` |
-| `POST /api/messages/threads/:id/read` | Mark the thread read | Sets `read_at` on the counterpart's unread messages; the only writer of read state |
-| `DELETE /api/messages/threads/:id` | Per-side delete | Sets `landlord_deleted_at` or `boarder_deleted_at`; the other side is untouched (D11). Re-messaging revives the thread rather than creating a second one |
-| `POST /api/messages/threads/:id/block` | Block/unblock | Body `{ blocked: boolean }`; writes/`removed_at`s a `message_blocks` row for the caller (D18) |
-| `POST /api/messages/threads/:id/report` | Report | Body `{ reason, details? }`; one open report per reporter per thread; returns 201 |
-| `GET /api/messages/unread-count` | Nav/inbox badge | Single integer, same visibility rules as the inbox |
-| `POST /api/messages/attachments` | Image upload | `multipart/form-data`, ≤4 files, images only, reuses `uploadFilesToUploadThing` (D28); returns `[{ url, key }]`; nothing is persisted until the message is sent |
+| Method & path                             | Purpose                          | Rules                                                                                                                                                                                                                                                                             |
+| ----------------------------------------- | -------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `GET /api/messages/threads`               | The caller's inbox               | Side-specific soft-delete filter; each row: counterpart id/name/avatar, property name (thread origin), last message preview + time, `unread_count`                                                                                                                                |
+| `POST /api/messages/threads`              | Open (or return) the pair thread | Body `{ counterpart_id, property_id? }`. Unique pair → idempotent. Boarder initiator: max 5 new threads/24h (D13) else `429`. Landlord initiator: allowed only for a boarder tied to one of their properties/applications (D25). Self-thread and non-participant ids are rejected |
+| `GET /api/messages/threads/:id`           | One thread + a page of messages  | `?before=<message id>` for older pages (50/page, D24); returns `counterpart`, `blocked_by` (which side blocked), `property` context                                                                                                                                               |
+| `POST /api/messages/threads/:id/messages` | Send                             | Body `{ body, attachments?: [{ url, key }], property_id? }`; rejects blank/over-2,000-char bodies, >4 attachments, blocked threads (D18), 30 msg/min per thread (D23). Sets `read_at` for the sender's own messages only on read, bumps `last_message_at`                         |
+| `POST /api/messages/threads/:id/read`     | Mark the thread read             | Sets `read_at` on the counterpart's unread messages; the only writer of read state                                                                                                                                                                                                |
+| `DELETE /api/messages/threads/:id`        | Per-side delete                  | Sets `landlord_deleted_at` or `boarder_deleted_at`; the other side is untouched (D11). Re-messaging revives the thread rather than creating a second one                                                                                                                          |
+| `POST /api/messages/threads/:id/block`    | Block/unblock                    | Body `{ blocked: boolean }`; writes/`removed_at`s a `message_blocks` row for the caller (D18)                                                                                                                                                                                     |
+| `POST /api/messages/threads/:id/report`   | Report                           | Body `{ reason, details? }`; one open report per reporter per thread; returns 201                                                                                                                                                                                                 |
+| `GET /api/messages/unread-count`          | Nav/inbox badge                  | Single integer, same visibility rules as the inbox                                                                                                                                                                                                                                |
+| `POST /api/messages/attachments`          | Image upload                     | `multipart/form-data`, ≤4 files, images only, reuses `uploadFilesToUploadThing` (D28); returns `[{ url, key }]`; nothing is persisted until the message is sent                                                                                                                   |
 
 Side effects of a send: one `notifications` row for the recipient (`type: 'message'`, title "New message
 from …", `metadata: { thread_id, sender_id }`, **no body**), and `'message'` added to
@@ -279,39 +279,39 @@ from …", `metadata: { thread_id, sender_id }`, **no body**), and `'message'` a
 
 ### 4.3 Frontend
 
-| File | Role |
-| ---- | ---- |
-| `apps/web/src/routes/landlord/messages.tsx` | Rewritten: `Protected` → `RoleShell` → two-pane inbox; `?thread=<id>` selects a thread on desktop. |
-| `apps/web/src/routes/landlord/messages/$threadId.tsx` | Deep link / mobile thread page (list → thread navigation below 1024px, D14). |
-| `apps/web/src/routes/boarder/messages.tsx` | Same inbox, **without `RequireTenancy`** (D12), `BOARDER_NAV`/`useBoarderNav()` shell. |
-| `apps/web/src/routes/boarder/messages/$threadId.tsx` | Boarder thread page. |
-| `apps/web/src/components/messages/MessageInbox.tsx` | Query + state (`['message-threads']`), the pane layout, unread totals. |
-| `apps/web/src/components/messages/ThreadList.tsx` | Rows: counterpart, preview, relative time, unread pill, block/report affordances in a `…` menu (same `CardMenu` pattern as `PropertyCard`). |
-| `apps/web/src/components/messages/MessageThread.tsx` | Bubbles, image grid, property chip, day separators, "Load earlier", composer. Owns the draft in local state so polling never clears typing (F13). |
-| `apps/web/src/components/messages/MessageComposer.tsx` | Textarea (2,000 chars + counter), image picker (≤4), optimistic send, disabled state while blocked. |
-| `apps/web/src/lib/api/messages.ts` | New client module: threads, thread, send, read, delete, block, report, unread count, attachments. |
-| `apps/web/src/lib/messages.ts` | Pure helpers (preview text, relative time grouping, unread totals) — unit-testable without a DOM. |
-| `apps/web/src/lib/types.ts` | New response types (`MessageThread`, `ThreadMessage`, …). |
-| `apps/web/src/lib/nav.ts` + sidebar | Optional `badge?: number` on `NavItem`, rendered as a pill; fed by the unread query (D8, F11). |
+| File                                                   | Role                                                                                                                                              |
+| ------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `apps/web/src/routes/landlord/messages.tsx`            | Rewritten: `Protected` → `RoleShell` → two-pane inbox; `?thread=<id>` selects a thread on desktop.                                                |
+| `apps/web/src/routes/landlord/messages/$threadId.tsx`  | Deep link / mobile thread page (list → thread navigation below 1024px, D14).                                                                      |
+| `apps/web/src/routes/boarder/messages.tsx`             | Same inbox, **without `RequireTenancy`** (D12), `BOARDER_NAV`/`useBoarderNav()` shell.                                                            |
+| `apps/web/src/routes/boarder/messages/$threadId.tsx`   | Boarder thread page.                                                                                                                              |
+| `apps/web/src/components/messages/MessageInbox.tsx`    | Query + state (`['message-threads']`), the pane layout, unread totals.                                                                            |
+| `apps/web/src/components/messages/ThreadList.tsx`      | Rows: counterpart, preview, relative time, unread pill, block/report affordances in a `…` menu (same `CardMenu` pattern as `PropertyCard`).       |
+| `apps/web/src/components/messages/MessageThread.tsx`   | Bubbles, image grid, property chip, day separators, "Load earlier", composer. Owns the draft in local state so polling never clears typing (F13). |
+| `apps/web/src/components/messages/MessageComposer.tsx` | Textarea (2,000 chars + counter), image picker (≤4), optimistic send, disabled state while blocked.                                               |
+| `apps/web/src/lib/api/messages.ts`                     | New client module: threads, thread, send, read, delete, block, report, unread count, attachments.                                                 |
+| `apps/web/src/lib/messages.ts`                         | Pure helpers (preview text, relative time grouping, unread totals) — unit-testable without a DOM.                                                 |
+| `apps/web/src/lib/types.ts`                            | New response types (`MessageThread`, `ThreadMessage`, …).                                                                                         |
+| `apps/web/src/lib/nav.ts` + sidebar                    | Optional `badge?: number` on `NavItem`, rendered as a pill; fed by the unread query (D8, F11).                                                    |
 
 Polling (D22): inbox `refetchInterval: 15_000`, open thread `5_000`, both `refetchOnWindowFocus: true`.
 The inbox query is invalidated on send/read/delete/block so the badge stays honest without a second poll.
 
 ### 4.4 Entry-point wiring (D15)
 
-| Surface | Change |
-| ------- | ------ |
+| Surface                             | Change                                                                                                                                                                                                                                                                                                   |
+| ----------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `RoomDetailView` "Contact Landlord" | Already points at the boarder inbox; it must now **carry the listing**: link to `/boarder/messages?compose=<propertyId>` so the inbox opens (or creates) the thread with that landlord and prefills "Hi, I'm interested in {listing title}…". Signed-out visitors keep the existing `authRedirect` flow. |
-| Application detail (both roles) | A "Message" button that opens/creates the pair thread with the application's counterparts; boarder side uses the application's `landlord_id`, landlord side uses the application's `boarder_id`. |
-| Landlord Tenants page | Row action that opens the thread with that boarder. **Requires** exposing the boarder's user id on `LandlordBoarderListItem` (F7) — additive key, same pattern as the admin enrichment in `landlord-properties-card-layout` D21. |
-| Notification bell | A `message` row deep-links to the thread (`metadata.thread_id`). |
+| Application detail (both roles)     | A "Message" button that opens/creates the pair thread with the application's counterparts; boarder side uses the application's `landlord_id`, landlord side uses the application's `boarder_id`.                                                                                                         |
+| Landlord Tenants page               | Row action that opens the thread with that boarder. **Requires** exposing the boarder's user id on `LandlordBoarderListItem` (F7) — additive key, same pattern as the admin enrichment in `landlord-properties-card-layout` D21.                                                                         |
+| Notification bell                   | A `message` row deep-links to the thread (`metadata.thread_id`).                                                                                                                                                                                                                                         |
 
 ### 4.5 States and edges
 
 Loading → skeleton thread rows (reuse `Skeleton`); empty inbox → `EmptyState` ("No conversations yet" +
 "Browse rooms"); empty thread → the composer with a one-line hint; error → `ErrorState`; blocked → the
 composer is replaced by a "You blocked this conversation" card with an unblock action (and the mirrored
-message when *they* blocked); deleted (per-side) → thread disappears from that side's inbox only; no
+message when _they_ blocked); deleted (per-side) → thread disappears from that side's inbox only; no
 avatars/photos → initials circle (reuse `Avatar`).
 
 ---
@@ -354,30 +354,30 @@ avatars/photos → initials circle (reuse `Avatar`).
   error toast.
 - **R20** — No "coming soon" copy remains anywhere once this ships, and the doc corrections in D20
   (the stale `501` claims and the schema doc) land in the same pass — the review's F2/F3 stop being true
-the moment the feature exists.
+  the moment the feature exists.
 
 ---
 
 ## 6. Edge cases
 
-| Case | Expected |
-| ---- | -------- |
-| Boarder messages a landlord with no tenancy and no application | Allowed (D5) — this is the *Contact Landlord* path; the thread simply carries the property context. |
-| Same boarder contacts two different landlords | Two threads, one per pair. |
-| Same pair, second listing | Same thread, new property chip; the header keeps the origin listing. |
-| Landlord replies to a boarder who deleted their side | Thread revives on the boarder's side with the new message (R11). |
-| Blocked party sends | `403` with the block message; composer disabled; the block is visible to both. |
-| Reported thread | One open report; the reporter and the reported can both still use the thread (report ≠ block). |
-| Message sent to a suspended/banned account | Delivered and stored (readable if the account returns); no notification row is created for a `banned` recipient… **(open question Q4)** |
-| Boarder's daily cap hit | `429` with "You've started 5 conversations today. Try again tomorrow." |
-| Thread of a property that was deleted | Thread survives with `property_id` nulled; header falls back to the counterpart's name. |
-| Application deleted/withdrawn | Thread survives (threads and applications are independent, D17). |
-| Tenancy ends | Nothing changes (D19). |
-| 2,000-char body pasted | Server rejects with the limit; the composer counter warns before submit. |
-| 5 images | Upload rejects the 5th with the cap message. |
-| Offline/failed send | Draft restored + error toast; no phantom message (R19). |
-| Very long thread (500+ messages) | Paged 50 at a time; "Load earlier" preserves scroll position. |
-| Two tabs open | Client poll keeps both lists fresh; read state follows whichever marked read first (idempotent). |
+| Case                                                           | Expected                                                                                                                                |
+| -------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------- |
+| Boarder messages a landlord with no tenancy and no application | Allowed (D5) — this is the _Contact Landlord_ path; the thread simply carries the property context.                                     |
+| Same boarder contacts two different landlords                  | Two threads, one per pair.                                                                                                              |
+| Same pair, second listing                                      | Same thread, new property chip; the header keeps the origin listing.                                                                    |
+| Landlord replies to a boarder who deleted their side           | Thread revives on the boarder's side with the new message (R11).                                                                        |
+| Blocked party sends                                            | `403` with the block message; composer disabled; the block is visible to both.                                                          |
+| Reported thread                                                | One open report; the reporter and the reported can both still use the thread (report ≠ block).                                          |
+| Message sent to a suspended/banned account                     | Delivered and stored (readable if the account returns); no notification row is created for a `banned` recipient… **(open question Q4)** |
+| Boarder's daily cap hit                                        | `429` with "You've started 5 conversations today. Try again tomorrow."                                                                  |
+| Thread of a property that was deleted                          | Thread survives with `property_id` nulled; header falls back to the counterpart's name.                                                 |
+| Application deleted/withdrawn                                  | Thread survives (threads and applications are independent, D17).                                                                        |
+| Tenancy ends                                                   | Nothing changes (D19).                                                                                                                  |
+| 2,000-char body pasted                                         | Server rejects with the limit; the composer counter warns before submit.                                                                |
+| 5 images                                                       | Upload rejects the 5th with the cap message.                                                                                            |
+| Offline/failed send                                            | Draft restored + error toast; no phantom message (R19).                                                                                 |
+| Very long thread (500+ messages)                               | Paged 50 at a time; "Load earlier" preserves scroll position.                                                                           |
+| Two tabs open                                                  | Client poll keeps both lists fresh; read state follows whichever marked read first (idempotent).                                        |
 
 ---
 
@@ -423,7 +423,7 @@ truncation, day grouping, unread totals, composer validation) plus source-contra
 routes render the inbox, that the boarder route no longer imports `RequireTenancy`, that the composer caps
 images at 4, and that `RoomDetailView` passes the property context into the CTA.
 
-**Manual walkthrough** (dev server + local D1, two accounts): prospective boarder → *Contact Landlord* from
+**Manual walkthrough** (dev server + local D1, two accounts): prospective boarder → _Contact Landlord_ from
 a listing (thread created with context) → landlord sees it in the bell + inbox → reply → boarder sees unread
 badge → send images → block → unblock → report → per-side delete → confirmed-tenancy boarder repeats the
 flow. At 390px and 1440px.
@@ -483,7 +483,7 @@ Everything in §4–§9 landed. These are the differences a reader of this spec 
    `apps/web/test/messages-inbox.test.tsx` 19 tests, both typechecks, the web build — all green.
 8. **Four defects the walkthrough caught, all fixed in this pass:**
    - **UTC timestamps read as local time.** D1 writes `CURRENT_TIMESTAMP` as `YYYY-MM-DD HH:MM:SS` (UTC, no
-     zone); V8 parses that shape as *local*, so a message sent seconds earlier read "8h ago" at UTC+8 and
+     zone); V8 parses that shape as _local_, so a message sent seconds earlier read "8h ago" at UTC+8 and
      day separators could land a late-evening UTC message on the wrong day. `lib/messages.ts` now routes
      every parse through `parseTimestamp` (adds the missing `Z` for that shape) and the test file pins it.
    - **A stale bell pointer.** Reading a thread cleared `messages.read_at` but left its `message`
@@ -499,7 +499,7 @@ Everything in §4–§9 landed. These are the differences a reader of this spec 
 9. **Image upload could not be exercised end to end locally:** `.dev.vars` has no `UPLOADTHING_TOKEN`, so the
    picker's upload leg fails with the server's "UploadThing token is not configured" (verified — the composer
    shows that message, keeps the draft and the picked files, and creates no message, which is R13's failure
-   path). The attachment *send* and *display* path was verified by sending a message whose `attachments`
+   path). The attachment _send_ and _display_ path was verified by sending a message whose `attachments`
    carried real URLs; the upload endpoint itself still needs a token to be signed off.
 10. **Inherited, not fixed:** the role shell is a fixed-width (`w-72`) sidebar plus one content column, with
     no sub-`lg` rail, so at 390px every role page scrolls horizontally (`/boarder/applications` overflows
@@ -509,7 +509,7 @@ Everything in §4–§9 landed. These are the differences a reader of this spec 
 
 ## 10. Open questions
 
-- **Q1 — Inquiry cap shape.** 5 *new threads* per day is the answered rule; whether a second message to the
+- **Q1 — Inquiry cap shape.** 5 _new threads_ per day is the answered rule; whether a second message to the
   same landlord should also count as an "inquiry" is unspecified. Default: no.
 - **Q2 — Notification for the first message only?** Every message currently means a bell row; a busy thread
   could flood the bell. Default: one row per message, collapsing is a follow-up.

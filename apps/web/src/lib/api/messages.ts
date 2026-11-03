@@ -49,7 +49,11 @@ export function getThread(
 export function sendMessage(
   token: string,
   threadId: number,
-  input: { body: string; attachments?: Array<{ url: string; key?: string | null }>; property_id?: number | null }
+  input: {
+    body: string;
+    attachments?: Array<{ url: string; key?: string | null }>;
+    property_id?: number | null;
+  }
 ): Promise<SendMessageResponse> {
   return apiFetch<SendMessageResponse>(
     base(),

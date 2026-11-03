@@ -227,7 +227,9 @@ async function emitLandlordOverdueNotices(db: D1Database, today: string): Promis
       userId: Number(row.landlord_id),
       type: 'payment_overdue_landlord',
       title: 'A boarder payment is overdue',
-      message: `${row.boarder_name || 'A boarder'}'s ${label} (₱${total.toLocaleString()}) was due ${dueDate} and is past its grace period.`,
+      message: `${
+        row.boarder_name || 'A boarder'
+      }'s ${label} (₱${total.toLocaleString()}) was due ${dueDate} and is past its grace period.`,
       metadata: {
         charge_id: Number(row.id),
         boarder_id: Number(row.boarder_id),

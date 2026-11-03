@@ -63,7 +63,14 @@ const rooms: LandlordRoom[] = [
   room({ id: 1, room_number: 'Room 1', status: 'available', occupied: 0 }),
   room({ id: 2, room_number: 'Room 2', status: 'occupied', occupied: 20 }),
   room({ id: 3, room_number: 'Room 10', status: 'maintenance', occupied: 0 }),
-  room({ id: 4, room_number: 'Room 3', status: 'available', occupied: 1, capacity: 20, price: 900 }),
+  room({
+    id: 4,
+    room_number: 'Room 3',
+    status: 'available',
+    occupied: 1,
+    capacity: 20,
+    price: 900,
+  }),
 ];
 
 describe('room stat rollups (D6/D11/D15)', () => {
@@ -196,12 +203,7 @@ describe('search, filter and sort (D13/D24/D25/D26/D33)', () => {
   });
 
   test('every filter and sort option carries a readable label', () => {
-    expect(ROOM_FILTERS.map(f => f.value)).toEqual([
-      'all',
-      'available',
-      'occupied',
-      'maintenance',
-    ]);
+    expect(ROOM_FILTERS.map(f => f.value)).toEqual(['all', 'available', 'occupied', 'maintenance']);
     expect(ROOM_SORT_OPTIONS[0].value).toBe('number');
     for (const option of [...ROOM_FILTERS, ...ROOM_SORT_OPTIONS]) {
       expect(option.label).not.toContain('_');
@@ -241,7 +243,9 @@ const router = createRouter({
 
 function renderInApp(node: ReactNode) {
   uiSlot = (
-    <QueryClientProvider client={new QueryClient({ defaultOptions: { queries: { retry: false } } })}>
+    <QueryClientProvider
+      client={new QueryClient({ defaultOptions: { queries: { retry: false } } })}
+    >
       {node}
     </QueryClientProvider>
   );
@@ -249,9 +253,30 @@ function renderInApp(node: ReactNode) {
 }
 
 const gridRooms: LandlordRoom[] = [
-  room({ id: 1, room_number: 'Room 1', status: 'available', occupied: 0, capacity: 20, price: 600 }),
-  room({ id: 2, room_number: 'Room 2', status: 'occupied', occupied: 20, capacity: 20, price: 600 }),
-  room({ id: 10, room_number: 'Room 10', status: 'available', occupied: 1, capacity: 20, price: 900 }),
+  room({
+    id: 1,
+    room_number: 'Room 1',
+    status: 'available',
+    occupied: 0,
+    capacity: 20,
+    price: 600,
+  }),
+  room({
+    id: 2,
+    room_number: 'Room 2',
+    status: 'occupied',
+    occupied: 20,
+    capacity: 20,
+    price: 600,
+  }),
+  room({
+    id: 10,
+    room_number: 'Room 10',
+    status: 'available',
+    occupied: 1,
+    capacity: 20,
+    price: 900,
+  }),
 ];
 
 function mockRoomsApi(roomsPayload: LandlordRoom[]) {
@@ -385,7 +410,14 @@ describe('room card rendering', () => {
 
 describe('rooms grid behaviour', () => {
   const grid = () =>
-    renderInApp(<PropertyRoomsGrid token="test-token" propertyId={7} addOpen={false} onAddOpenChange={() => {}} />);
+    renderInApp(
+      <PropertyRoomsGrid
+        token="test-token"
+        propertyId={7}
+        addOpen={false}
+        onAddOpenChange={() => {}}
+      />
+    );
 
   const headings = () => screen.getAllByRole('heading', { level: 3 }).map(h => h.textContent);
 
@@ -525,7 +557,12 @@ describe('rooms page contract', () => {
   });
 
   test('the four stat cards and the toolbar are declared once', () => {
-    for (const label of ['Total rooms', 'Occupied rooms', 'Available rooms', 'Tenants / capacity']) {
+    for (const label of [
+      'Total rooms',
+      'Occupied rooms',
+      'Available rooms',
+      'Tenants / capacity',
+    ]) {
       expect(grid).toContain(label);
     }
     expect(grid).toContain('ROOM_FILTERS');

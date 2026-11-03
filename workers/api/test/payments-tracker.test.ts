@@ -52,7 +52,7 @@ function createSqliteD1(db: Database): D1Database {
             },
           };
         },
-      }) as unknown as D1PreparedStatement,
+      } as unknown as D1PreparedStatement),
   } as unknown as D1Database;
 }
 
@@ -178,7 +178,10 @@ function insertSubmission(
   return Number(statement.lastInsertRowid ?? 0);
 }
 
-async function tracker(env: Env, query = ''): Promise<{
+async function tracker(
+  env: Env,
+  query = ''
+): Promise<{
   rows: Array<Record<string, unknown>>;
   summary: Record<string, number>;
   counts: { rows: number; needs_review: number };
@@ -218,11 +221,7 @@ describe('tracker rows', () => {
     const { sqlite, env } = setup();
     const due = addMonthsClamped(manilaToday(), 1);
     insertCharge(sqlite, { dueDate: due });
-    sqlite
-      .prepare(
-        `UPDATE applications SET next_due_date = ? WHERE id = 200`
-      )
-      .run(due);
+    sqlite.prepare(`UPDATE applications SET next_due_date = ? WHERE id = 200`).run(due);
 
     const data = await tracker(env);
     const row = data.rows[0] as Record<string, unknown>;
@@ -658,9 +657,7 @@ describe('history and export', () => {
 
     expect(response.status).toBe(200);
     expect(body.data.tenancy.boarder_name).toBe('Benny Boarder');
-    expect(body.data.charges.map(charge => charge.id).sort()).toEqual(
-      [rentId, rentId + 1].sort()
-    );
+    expect(body.data.charges.map(charge => charge.id).sort()).toEqual([rentId, rentId + 1].sort());
 
     const denied = await app.request(
       'http://localhost/api/landlord/tenancies/200/payment-history',

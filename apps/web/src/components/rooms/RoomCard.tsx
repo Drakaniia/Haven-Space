@@ -133,10 +133,7 @@ export function naturalRoomNumber(a: string | null | undefined, b: string | null
 }
 
 /** D13 — the search box matches the room number only. */
-export function matchesRoomSearch(
-  room: Pick<LandlordRoom, 'room_number'>,
-  query: string
-): boolean {
+export function matchesRoomSearch(room: Pick<LandlordRoom, 'room_number'>, query: string): boolean {
   const needle = query.trim().toLowerCase();
 
   if (!needle) return true;
@@ -147,10 +144,7 @@ export function matchesRoomSearch(
 }
 
 /** D24 — classification follows `room.status`, never the tenant count. */
-export function roomMatchesFilter(
-  room: Pick<LandlordRoom, 'status'>,
-  filter: RoomFilter
-): boolean {
+export function roomMatchesFilter(room: Pick<LandlordRoom, 'status'>, filter: RoomFilter): boolean {
   if (filter === 'all') return true;
 
   return String(room.status ?? 'available').toLowerCase() === filter;
@@ -254,9 +248,7 @@ export function RoomCard({
             <h3 className="line-clamp-2 text-[15px] font-semibold text-ink">{title}</h3>
             <StatusBadge status={room.status} label={roomStatusLabel(room.status)} />
           </div>
-          <p className="mt-0.5 text-[13px] text-gray-ink">
-            {roomTypeLabel(room.room_type)} room
-          </p>
+          <p className="mt-0.5 text-[13px] text-gray-ink">{roomTypeLabel(room.room_type)} room</p>
         </div>
       </div>
 
@@ -320,10 +312,7 @@ export function RoomCardSkeletonGrid({ count = 8 }: { count?: number }) {
   return (
     <ul className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4" aria-hidden="true">
       {Array.from({ length: count }, (_, index) => (
-        <li
-          key={index}
-          className="rounded-2xl border border-border bg-surface p-4 shadow-card"
-        >
+        <li key={index} className="rounded-2xl border border-border bg-surface p-4 shadow-card">
           <div className="flex items-start gap-3">
             <Skeleton className="h-14 w-14 rounded-xl" />
             <div className="flex flex-1 flex-col gap-2">

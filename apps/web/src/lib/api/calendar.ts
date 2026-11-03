@@ -38,9 +38,7 @@ export function getLandlordCalendar(
   token: string,
   query: LandlordCalendarQuery
 ): Promise<CalendarResponse> {
-  return apiFetch<CalendarResponse>(
-    base(),
-    `/api/landlord/calendar${calendarQueryString(query)}`,
-    { headers: { Authorization: `Bearer ${token}` } }
-  );
+  return apiFetch<CalendarResponse>(base(), `/api/landlord/calendar${calendarQueryString(query)}`, {
+    headers: { Authorization: `Bearer ${token}` },
+  });
 }

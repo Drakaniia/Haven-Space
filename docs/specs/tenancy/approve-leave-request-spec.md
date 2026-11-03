@@ -5,9 +5,9 @@ Branch: `feat/apple-ui-restructure-qa-hardening`
 Surfaces: `/landlord/boarders`, `/landlord/calendar` (day panel), `/boarder/tenancy`, `/boarder/payments`,
 `POST /api/landlord/approve-leave-request`, notification bell, messages inbox
 
-Source request: *"If the tenant requests leave, and the landlord sees it, it will have only Approve, and if
+Source request: _"If the tenant requests leave, and the landlord sees it, it will have only Approve, and if
 Approve is clicked there will be a modal popup that says about confirmation, and if clicked yes it will then
-successfully."*
+successfully."_
 
 ---
 
@@ -16,16 +16,16 @@ successfully."*
 An earlier pass on this branch already landed part of this flow. Whoever implements the rest must **extend**
 these files rather than duplicate them, and must reconcile them against this spec:
 
-| Already present | File | Gap vs this spec |
-| --- | --- | --- |
-| Shared confirmation dialog | `apps/web/src/components/tenancy/ApproveLeaveDialog.tsx` | No balance pre-check, no disabled-confirm blocked state, no approver line. |
-| Dialog wired into Boarders + calendar | `apps/web/src/routes/landlord/boarders.tsx`, `apps/web/src/components/calendar/LandlordCalendar.tsx` | No `outstanding_amount` on rows/events, no balance chip on the row. |
-| Decline removed | `workers/api/src/routes/tenancy.ts`, `repositories/tenancy.ts`, `lib/api/landlord.ts` | Keep removed; ADR/test asserting 404 stays. |
-| Lazy finalization | `finalizeDueLeaveRequests` in `repositories/tenancy.ts`, called from boarders, boarder tenancy, calendar, dashboard, notifications | Keep. |
-| Approval notification + landlord message | `routes/tenancy.ts` (`notifyBoarderOfLeaveApproval`), `repositories/notifications.ts` | Notification metadata must carry the deep-link target (see §4.6). |
-| Guard against re-request | `POST /api/boarder/leave-request` | Keep; add the submission warning (§4.7). |
-| `approved_by` / `approved_at` | — | Missing entirely: needs migration `0024`. |
-| Unpaid-balance gate | — | Missing entirely: the largest remaining piece. |
+| Already present                          | File                                                                                                                               | Gap vs this spec                                                           |
+| ---------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------- |
+| Shared confirmation dialog               | `apps/web/src/components/tenancy/ApproveLeaveDialog.tsx`                                                                           | No balance pre-check, no disabled-confirm blocked state, no approver line. |
+| Dialog wired into Boarders + calendar    | `apps/web/src/routes/landlord/boarders.tsx`, `apps/web/src/components/calendar/LandlordCalendar.tsx`                               | No `outstanding_amount` on rows/events, no balance chip on the row.        |
+| Decline removed                          | `workers/api/src/routes/tenancy.ts`, `repositories/tenancy.ts`, `lib/api/landlord.ts`                                              | Keep removed; ADR/test asserting 404 stays.                                |
+| Lazy finalization                        | `finalizeDueLeaveRequests` in `repositories/tenancy.ts`, called from boarders, boarder tenancy, calendar, dashboard, notifications | Keep.                                                                      |
+| Approval notification + landlord message | `routes/tenancy.ts` (`notifyBoarderOfLeaveApproval`), `repositories/notifications.ts`                                              | Notification metadata must carry the deep-link target (see §4.6).          |
+| Guard against re-request                 | `POST /api/boarder/leave-request`                                                                                                  | Keep; add the submission warning (§4.7).                                   |
+| `approved_by` / `approved_at`            | —                                                                                                                                  | Missing entirely: needs migration `0024`.                                  |
+| Unpaid-balance gate                      | —                                                                                                                                  | Missing entirely: the largest remaining piece.                             |
 
 ---
 
@@ -43,16 +43,16 @@ be triggered from.
 
 ## 2. Current mechanics (verified)
 
-| Concern | Location | Behaviour today |
-| --- | --- | --- |
-| Pending leave row | `apps/web/src/routes/landlord/boarders.tsx` | Row renders `status = leaving` with Approve; opens `ApproveLeaveDialog`; mutation fires `approveLeaveRequest`. |
-| Approve route | `workers/api/src/routes/tenancy.ts` `POST /api/landlord/approve-leave-request` | Requires landlord, reads `application_id`, 404 when no pending request, calls `approvePendingLeaveRequest`, notifies best-effort, then `finalizeDueLeaveRequests`. |
-| Approve repo | `workers/api/src/repositories/tenancy.ts` `approvePendingLeaveRequest` | Sets `leave_request_status='approved'`, frees the room, leaves open charges due, does not reset `users.boarder_status`. |
-| Leave columns | migration `0011_tenancy_leave_requests.sql` | `leave_request_status` (`none`/`pending`/`approved`), `leave_request_date`, `leave_request_reason`, `intended_leave_date`. **No approver columns.** |
-| Boarders row payload | `workers/api/src/repositories/landlord-boarders.ts` | Joins `paymentSummariesForApplications`, so `outstanding_total` per application is already computed and available — it is simply not exposed as a leave-approval input. |
-| Calendar events | `workers/api/src/repositories/landlord-calendar.ts` | Emits `leave_requested` / `tenancy_move_out`; carries `application_id` and a `leave_request` detail object. |
-| Boarder tenancy page | `apps/web/src/routes/boarder/tenancy.tsx` | `pending` → `PendingLeaveState`; `approved` → `ApprovedLeaveState`; otherwise the normal card with "Request to leave". |
-| Notification shape | `workers/api/src/repositories/notifications.ts` | `type`, `title`, `message`, `metadata` (JSON). Boarder visibility via `roleVisibleTypes`. |
+| Concern              | Location                                                                       | Behaviour today                                                                                                                                                         |
+| -------------------- | ------------------------------------------------------------------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Pending leave row    | `apps/web/src/routes/landlord/boarders.tsx`                                    | Row renders `status = leaving` with Approve; opens `ApproveLeaveDialog`; mutation fires `approveLeaveRequest`.                                                          |
+| Approve route        | `workers/api/src/routes/tenancy.ts` `POST /api/landlord/approve-leave-request` | Requires landlord, reads `application_id`, 404 when no pending request, calls `approvePendingLeaveRequest`, notifies best-effort, then `finalizeDueLeaveRequests`.      |
+| Approve repo         | `workers/api/src/repositories/tenancy.ts` `approvePendingLeaveRequest`         | Sets `leave_request_status='approved'`, frees the room, leaves open charges due, does not reset `users.boarder_status`.                                                 |
+| Leave columns        | migration `0011_tenancy_leave_requests.sql`                                    | `leave_request_status` (`none`/`pending`/`approved`), `leave_request_date`, `leave_request_reason`, `intended_leave_date`. **No approver columns.**                     |
+| Boarders row payload | `workers/api/src/repositories/landlord-boarders.ts`                            | Joins `paymentSummariesForApplications`, so `outstanding_total` per application is already computed and available — it is simply not exposed as a leave-approval input. |
+| Calendar events      | `workers/api/src/repositories/landlord-calendar.ts`                            | Emits `leave_requested` / `tenancy_move_out`; carries `application_id` and a `leave_request` detail object.                                                             |
+| Boarder tenancy page | `apps/web/src/routes/boarder/tenancy.tsx`                                      | `pending` → `PendingLeaveState`; `approved` → `ApprovedLeaveState`; otherwise the normal card with "Request to leave".                                                  |
+| Notification shape   | `workers/api/src/repositories/notifications.ts`                                | `type`, `title`, `message`, `metadata` (JSON). Boarder visibility via `roleVisibleTypes`.                                                                               |
 
 Outstanding balances already exist as `BoarderPaymentSnapshot.outstanding_total`
 (`workers/api/src/repositories/payments/ledger.ts`) and as `outstandingFor(charge)` in
@@ -131,10 +131,10 @@ Outstanding balances already exist as `BoarderPaymentSnapshot.outstanding_total`
     No lock, no archive, no system-notice replacement.
 28. **Notification target**: clicking the `leave_request_approved` notification opens `/boarder/tenancy`.
 29. **Notification copy**: title `Leave approved by {landlord}`, message
-   `Your tenancy at {property} ends on {long date}.`
+    `Your tenancy at {property} ends on {long date}.`
 30. **A second leave request is blocked** while pending or approved (409 naming the end date when approved).
 31. **Tenant submission warning**: the Request-to-leave form shows an inline amber note with the outstanding
-    amount *before* submission, and submission still succeeds.
+    amount _before_ submission, and submission still succeeds.
 
 ### 3.8 Failure handling and scope
 
@@ -157,9 +157,9 @@ Each row keeps its current shape and adds:
 ```jsonc
 {
   "leave_request_status": "pending",
-  "outstanding_amount": 2400,        // peso amount, 0 when settled
-  "outstanding_charge_count": 2,     // optional, for tooltips
-  "approved_by_name": null,          // set once approved
+  "outstanding_amount": 2400, // peso amount, 0 when settled
+  "outstanding_charge_count": 2, // optional, for tooltips
+  "approved_by_name": null, // set once approved
   "approved_at": null
 }
 ```
@@ -210,7 +210,7 @@ second definition of "unpaid" — reuse `payments/types.ts`.
 `finalizeDueLeaveRequests(db, { landlordId?: number; boarderId?: number })`:
 
 1. Select `leave_request_status='approved' AND status='confirmed' AND deleted_at IS NULL
-   AND intended_leave_date IS NOT NULL AND intended_leave_date <= date('now')`, narrowed by
+AND intended_leave_date IS NOT NULL AND intended_leave_date <= date('now')`, narrowed by
    `accessiblePropertyClause` or boarder id.
 2. Set `status='ended'`, `deleted_at=CURRENT_TIMESTAMP`, `updated_at=CURRENT_TIMESTAMP`.
 3. Set `users.boarder_status='new'` for the affected boarders.
@@ -331,8 +331,8 @@ open (`role="status"`).
 - Failed: `ErrorState` above the buttons with the API message; details intact; buttons re-enabled.
 
 **Copy rules**: dates long-form (`15 Nov 2026`); empty reason/date render `—`; when the leave date is today or
-earlier the consequence sentence becomes *"The leave date has already arrived, so the tenancy ends
-immediately."* The approver line (`Approved by … on …`) lives on the Boarders row, not in the dialog: the dialog
+earlier the consequence sentence becomes _"The leave date has already arrived, so the tenancy ends
+immediately."_ The approver line (`Approved by … on …`) lives on the Boarders row, not in the dialog: the dialog
 is only reachable while a request is pending, so it never opens for an already-approved leave.
 
 **Layout**: centred modal on desktop; on < 640px it becomes a full-height scrollable sheet with the action row
@@ -365,37 +365,37 @@ No change. The approval message lands in the existing leave thread and both side
 
 ## 6. API surface summary
 
-| Change | Detail |
-| --- | --- |
-| Add columns | `approved_at`, `approved_by`, `approved_by_name` (migration `0024`) |
-| Extend | `GET /api/landlord/boarders` rows: `outstanding_amount`, `approved_by_name`, `approved_at` |
-| Extend | calendar `CalendarEvent`: `outstanding_amount` on leave events |
-| Gate | approve → 409 `unsettled_balance` with `details.outstanding_amount` |
-| Extend | approve response: `finalized`, `approved_at`, `approved_by_name` |
-| Extend | `POST /api/boarder/leave-request` response: `outstanding_amount` |
-| Extend | `leave_request_approved` notification `metadata.route = "/boarder/tenancy"` |
-| Removed (keep removed) | `POST /api/landlord/decline-leave-request` + repo + client helper + README row |
+| Change                 | Detail                                                                                     |
+| ---------------------- | ------------------------------------------------------------------------------------------ |
+| Add columns            | `approved_at`, `approved_by`, `approved_by_name` (migration `0024`)                        |
+| Extend                 | `GET /api/landlord/boarders` rows: `outstanding_amount`, `approved_by_name`, `approved_at` |
+| Extend                 | calendar `CalendarEvent`: `outstanding_amount` on leave events                             |
+| Gate                   | approve → 409 `unsettled_balance` with `details.outstanding_amount`                        |
+| Extend                 | approve response: `finalized`, `approved_at`, `approved_by_name`                           |
+| Extend                 | `POST /api/boarder/leave-request` response: `outstanding_amount`                           |
+| Extend                 | `leave_request_approved` notification `metadata.route = "/boarder/tenancy"`                |
+| Removed (keep removed) | `POST /api/landlord/decline-leave-request` + repo + client helper + README row             |
 
 ---
 
 ## 7. Edge cases
 
-| Case | Expected |
-| --- | --- |
-| Leave date today or past | Confirms with an "ends immediately" sentence; response `finalized: true`; row disappears. |
-| Approved date passes with nobody opening the app | Next reconciling read closes the tenancy and resets `boarder_status`. |
-| Two landlord tabs | Second attempt gets 404; dialog stays open with `Leave request not found or already processed`. |
-| Tenant settles the balance while the dialog is open | Confirm is stale-disabled; the API re-check (decision 19) lets it through. Refresh re-enables. |
-| Tenant pays but it is awaiting verification | Still blocked — unverified ≠ settled (decision 16). |
-| Outstanding charge is cancelled mid-flow | It drops out of `outstandingFor`; not blocked. |
-| Room already re-let | Finalization only closes the tenancy; room status untouched by it. |
-| Boarder files again after approval | 409 with the end date. |
-| Landlord with property access (not owner) | Can approve; `approved_by` records them. |
-| Landlord deletes their account later | `approved_by_name` still renders; `approved_by` becomes NULL. |
-| Pending request never approved | Stays pending indefinitely (decision 15); Remove is the escape hatch. |
-| Notification/message insert fails | Approval still succeeds; failure logged. |
-| Old cached calendar event without `outstanding_amount` | Treat as unknown → confirm enabled, API returns 409 with the amount and the dialog shows it. |
-| Admin | No changes. |
+| Case                                                   | Expected                                                                                        |
+| ------------------------------------------------------ | ----------------------------------------------------------------------------------------------- |
+| Leave date today or past                               | Confirms with an "ends immediately" sentence; response `finalized: true`; row disappears.       |
+| Approved date passes with nobody opening the app       | Next reconciling read closes the tenancy and resets `boarder_status`.                           |
+| Two landlord tabs                                      | Second attempt gets 404; dialog stays open with `Leave request not found or already processed`. |
+| Tenant settles the balance while the dialog is open    | Confirm is stale-disabled; the API re-check (decision 19) lets it through. Refresh re-enables.  |
+| Tenant pays but it is awaiting verification            | Still blocked — unverified ≠ settled (decision 16).                                             |
+| Outstanding charge is cancelled mid-flow               | It drops out of `outstandingFor`; not blocked.                                                  |
+| Room already re-let                                    | Finalization only closes the tenancy; room status untouched by it.                              |
+| Boarder files again after approval                     | 409 with the end date.                                                                          |
+| Landlord with property access (not owner)              | Can approve; `approved_by` records them.                                                        |
+| Landlord deletes their account later                   | `approved_by_name` still renders; `approved_by` becomes NULL.                                   |
+| Pending request never approved                         | Stays pending indefinitely (decision 15); Remove is the escape hatch.                           |
+| Notification/message insert fails                      | Approval still succeeds; failure logged.                                                        |
+| Old cached calendar event without `outstanding_amount` | Treat as unknown → confirm enabled, API returns 409 with the amount and the dialog shows it.    |
+| Admin                                                  | No changes.                                                                                     |
 
 ---
 

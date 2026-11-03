@@ -45,7 +45,10 @@ export function PaymentMonitorFilters({
     function handlePointerDown(event: MouseEvent) {
       const target = event.target as Node | null;
 
-      if (target && (morePanelRef.current?.contains(target) || moreButtonRef.current?.contains(target))) {
+      if (
+        target &&
+        (morePanelRef.current?.contains(target) || moreButtonRef.current?.contains(target))
+      ) {
         return;
       }
 

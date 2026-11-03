@@ -19,10 +19,6 @@ function LandlordThreadPage() {
   const { draft } = Route.useSearch();
 
   return (
-    <MessageInbox
-      role="landlord"
-      threadId={Number(threadId)}
-      draftPropertyId={draft ?? null}
-    />
+    <MessageInbox role="landlord" threadId={Number(threadId)} draftPropertyId={draft ?? null} />
   );
 }

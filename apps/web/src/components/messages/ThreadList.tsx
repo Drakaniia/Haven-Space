@@ -49,7 +49,11 @@ export function ThreadList({
   }
 
   if (error) {
-    return <p className="rounded-xl border border-error-border bg-error-tint p-3 text-sm text-error-ink">{error}</p>;
+    return (
+      <p className="rounded-xl border border-error-border bg-error-tint p-3 text-sm text-error-ink">
+        {error}
+      </p>
+    );
   }
 
   if (threads.length === 0) {

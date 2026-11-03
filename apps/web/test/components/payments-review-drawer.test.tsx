@@ -175,9 +175,9 @@ test('approves through the existing verify route and refreshes the page', async 
   fireEvent.click(await screen.findByRole('button', { name: 'Approve payment' }));
 
   await waitFor(() => {
-    expect(requested.some(entry => entry.url.includes('/api/landlord/submissions/900/verify'))).toBe(
-      true
-    );
+    expect(
+      requested.some(entry => entry.url.includes('/api/landlord/submissions/900/verify'))
+    ).toBe(true);
   });
 
   await waitFor(() => expect(calls.changed).toBe(1));
@@ -197,9 +197,7 @@ test('blocks an approval that does not cover the full amount', async () => {
   })) as HTMLButtonElement;
 
   expect(approve.disabled).toBe(true);
-  expect(
-    screen.getByText(/The tenant submitted ₱3,500.00 of the ₱4,000.00 due/)
-  ).toBeDefined();
+  expect(screen.getByText(/The tenant submitted ₱3,500.00 of the ₱4,000.00 due/)).toBeDefined();
 });
 
 test('requires a reason before rejecting, then shows the rejected state', async () => {

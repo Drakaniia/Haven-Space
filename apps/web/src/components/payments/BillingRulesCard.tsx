@@ -26,7 +26,9 @@ export function BillingRulesCard({
 }) {
   const [grace, setGrace] = useState(String(settings.late_fee_grace_days));
   const [enabled, setEnabled] = useState(settings.late_fee_enabled === 1);
-  const [feeType, setFeeType] = useState(settings.late_fee_type === 'percent' ? 'percent' : 'fixed');
+  const [feeType, setFeeType] = useState(
+    settings.late_fee_type === 'percent' ? 'percent' : 'fixed'
+  );
   const [amount, setAmount] = useState(String(settings.late_fee_amount));
   const [percent, setPercent] = useState(String(settings.late_fee_percent));
 
@@ -147,7 +149,9 @@ export function BillingRulesCard({
 
       <p className="mt-3 text-xs text-gray-ink">
         {enabled
-          ? `A ${formatPeso(exampleBase)} cycle paid after the grace period would add ${formatPeso(example)}.`
+          ? `A ${formatPeso(exampleBase)} cycle paid after the grace period would add ${formatPeso(
+              example
+            )}.`
           : 'No late fee will be added while this is switched off.'}
       </p>
 

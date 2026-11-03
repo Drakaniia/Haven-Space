@@ -76,10 +76,14 @@ test('messages group into day sections with a readable label', () => {
 });
 
 test('the composer mirror rejects what the API rejects', () => {
-  expect(composerError({ body: '', attachmentCount: 0 })).toBe('Write a message or attach an image.');
+  expect(composerError({ body: '', attachmentCount: 0 })).toBe(
+    'Write a message or attach an image.'
+  );
   expect(composerError({ body: '', attachmentCount: 1 })).toBeNull();
   expect(composerError({ body: 'x'.repeat(2001), attachmentCount: 0 })).toContain('2,000');
-  expect(composerError({ body: 'hi', attachmentCount: MAX_MESSAGE_IMAGES + 1 })).toContain('4 images');
+  expect(composerError({ body: 'hi', attachmentCount: MAX_MESSAGE_IMAGES + 1 })).toContain(
+    '4 images'
+  );
   expect(composerError({ body: 'hi', attachmentCount: 4 })).toBeNull();
 });
 
@@ -223,7 +227,9 @@ test('the non-inbox entry points name a real counterpart (R17)', () => {
   // Landlord side: the tenant row's `id` is the boarder's user id.
   expect(source('routes', 'landlord', 'boarders.tsx')).toContain('counterpartId={row.id}');
   // Landlord applications use the application's boarder id, boarders its landlord id.
-  expect(source('routes', 'landlord', 'applications.tsx')).toContain('counterpartId={row.boarder_id}');
+  expect(source('routes', 'landlord', 'applications.tsx')).toContain(
+    'counterpartId={row.boarder_id}'
+  );
   expect(source('routes', 'boarder', 'applications', '$id.tsx')).toContain(
     'counterpartId={app.landlord_id}'
   );

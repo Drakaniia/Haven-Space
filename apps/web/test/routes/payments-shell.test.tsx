@@ -72,7 +72,12 @@ function shellCounts() {
 
 const PAGES: Array<[string, ComponentType, typeof LANDLORD_NAV, string]> = [
   ['/landlord/payments', componentOf(landlordLedger.Route), LANDLORD_NAV, 'Payments'],
-  ['/landlord/payments/record', componentOf(landlordRecord.Route), LANDLORD_NAV, 'Record a payment'],
+  [
+    '/landlord/payments/record',
+    componentOf(landlordRecord.Route),
+    LANDLORD_NAV,
+    'Record a payment',
+  ],
   ['/boarder/payments', componentOf(boarderLedger.Route), BOARDER_NAV, 'Payments'],
   ['/boarder/payments/pay', componentOf(boarderPay.Route), BOARDER_NAV, 'Submit a payment'],
 ];

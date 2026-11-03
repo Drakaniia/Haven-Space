@@ -176,7 +176,9 @@ export function PaymentsMonitoringPage() {
       row,
       title: `Message ${row.boarder_name.split(' ')[0]}`,
       body: reminderMessage(row, monthName),
-      note: row.reminder_sent_at ? `Last reminded ${formatPaymentDate(row.reminder_sent_at)}` : null,
+      note: row.reminder_sent_at
+        ? `Last reminded ${formatPaymentDate(row.reminder_sent_at)}`
+        : null,
     });
   }
 
@@ -212,7 +214,9 @@ export function PaymentsMonitoringPage() {
           rooms={rooms}
           value={filters}
           onChange={setFilters}
-          onClear={() => setFilters({ ...emptyMonitorFilters(filters.month), propertyId: filters.propertyId })}
+          onClear={() =>
+            setFilters({ ...emptyMonitorFilters(filters.month), propertyId: filters.propertyId })
+          }
         />
 
         <PaymentMetricsStrip metrics={metrics} loading={tracker.isLoading} />
