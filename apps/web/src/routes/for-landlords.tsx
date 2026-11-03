@@ -1,217 +1,267 @@
 import { createFileRoute, Link } from '@tanstack/react-router';
 import { PublicLayout } from '../components/layout/PublicLayout';
+import { buttonClasses } from '../components/ui/Button';
+import { Icon } from '../components/ui/Icon';
 
 export const Route = createFileRoute('/for-landlords')({
   component: ForLandlordsPage,
 });
 
-const BENEFITS = [
+/** The landlord workspace as it exists today (see `LANDLORD_NAV`). */
+const WORKSPACE = [
+  { icon: 'buildingOffice', label: 'Properties and rooms' },
+  { icon: 'calendar', label: 'Tour calendar' },
+  { icon: 'application', label: 'Applications' },
+  { icon: 'users', label: 'Boarders' },
+  { icon: 'payment', label: 'Rent and receipts' },
+  { icon: 'announcement', label: 'Announcements' },
+  { icon: 'chat', label: 'Messages' },
+];
+
+/** The four documents `/landlord/verification` asks for. */
+const DOCUMENTS = [
+  'A valid government-issued ID',
+  'Proof that you own the property',
+  'Your business permit',
+  'A selfie holding your ID',
+];
+
+const SETUP = [
   {
-    icon: '/assets/images/icons/verified_boarder.png',
-    title: 'Verified Boarders',
-    description:
-      'Connect with pre-screened tenants who have verified identities and rental histories.',
+    title: 'Create your account',
+    body: 'Sign up as a landlord and tell us a little about you and your first property.',
   },
   {
-    icon: '/assets/images/icons/analytics_dashboard.png',
-    title: 'Analytics Dashboard',
-    description: 'Track views, applications, and occupancy rates with real-time insights.',
+    title: 'Get verified',
+    body: 'Upload the four documents below. An admin reviews them, usually within 24 to 48 hours.',
   },
   {
-    icon: '/assets/images/icons/payment_tracking.png',
-    title: 'Payment Tracking',
-    description:
-      'Monitor rent payments, track payment history, and manage multiple payment methods.',
+    title: 'Add your rooms',
+    body: 'Set up the property, then each room with its price, photos and what is included.',
   },
   {
-    icon: '/assets/images/icons/isntant_notification.png',
-    title: 'Instant Notifications',
-    description: 'Get notified immediately when someone applies or messages about your property.',
-  },
-  {
-    icon: '/assets/images/icons/secure_platform.png',
-    title: 'Secure Platform',
-    description: 'Your data and transactions are protected with industry-standard encryption.',
+    title: 'Take tours and applications',
+    body: 'Boarders request visits and apply from your listing. You accept, decline or reply from one list.',
   },
 ];
 
-const FEATURES = [
-  'Unlimited property listings',
-  'Unlimited tenant applications',
-  'Advanced analytics dashboard',
-  'Priority customer support',
-  'Featured property listings',
-  'Automated payment tracking',
-  'Maintenance request management',
-  'Instant application notifications',
+const TOOLS = [
+  {
+    icon: 'application',
+    title: 'Applications in one list',
+    body: 'No more scrolling back through texts to find who asked first. Every application sits in one place, and you accept or decline with a click.',
+  },
+  {
+    icon: 'calendar',
+    title: 'Tours on a calendar',
+    body: 'Tour requests land on your calendar with the room and the boarder attached, so you can see the week at a glance.',
+  },
+  {
+    icon: 'payment',
+    title: 'Rent you can reconcile',
+    body: 'Boarders log GCash and bank payments with a reference and receipt; you confirm them, or record cash yourself. You can see who is paid, who is due and who is late.',
+  },
+  {
+    icon: 'announcement',
+    title: 'Notices that reach everyone',
+    body: 'Post a water interruption or a house-rule change once, and every boarder in the house sees it. Message anyone directly when it is just for them.',
+  },
+];
+
+const INCLUDED = [
+  'Unlimited properties and rooms',
+  'Tour requests and calendar',
+  'Application management',
+  'Boarder records',
+  'Rent tracking with receipts',
+  'Announcements and messages',
 ];
 
 function ForLandlordsPage() {
   return (
     <PublicLayout>
       {/* Hero */}
-      <section className="relative overflow-hidden bg-cream">
-        <div className="pointer-events-none absolute -top-24 left-1/2 h-96 w-[60rem] -translate-x-1/2 rounded-full bg-mint/40 blur-3xl" />
-        <div className="relative mx-auto max-w-7xl px-4 py-16 text-center md:py-24">
-          <span className="inline-block rounded-full bg-mint px-3 py-1 text-xs font-bold uppercase tracking-widest text-primary">
-            For Landlords
-          </span>
-          <h1 className="mx-auto mt-4 max-w-3xl text-4xl font-bold leading-tight text-ink md:text-5xl">
-            List your property.
-            <br />
-            Reach verified boarders.
-          </h1>
-          <p className="mx-auto mt-4 max-w-2xl text-lg text-gray-ink">
-            Haven Space connects property owners with quality tenants. Manage listings, track
-            applications, and grow your rental business with our trusted platform.
-          </p>
-          <div className="mt-8 flex flex-wrap justify-center gap-3">
-            <Link
-              to="/auth/signup/landlord"
-              className="rounded-full bg-primary-strong px-6 py-3 text-sm font-semibold text-white hover:bg-primary-hover"
-            >
-              Get Started
-            </Link>
-            <a
-              href="#pricing"
-              className="rounded-full border-2 border-primary px-6 py-3 text-sm font-semibold text-primary hover:bg-mint"
-            >
-              View Pricing
-            </a>
+      <section className="paper-grain border-b border-border">
+        <div className="mx-auto grid max-w-7xl gap-12 px-4 pb-16 pt-10 sm:px-6 sm:pt-14 lg:grid-cols-[minmax(0,7fr)_minmax(0,5fr)] lg:items-end lg:gap-16 lg:px-8 lg:pb-24 lg:pt-20">
+          <div className="rise-in max-w-2xl">
+            <p className="kicker">For landlords</p>
+            <h1 className="display-xl mt-4 text-ink">Run your boarding house from one place.</h1>
+            <p className="mt-6 max-w-xl text-lg leading-relaxed text-gray-ink">
+              List rooms, schedule tours, review applications and keep track of rent, with the same
+              records your boarders see. Built with landlords who were tired of notebooks and group
+              chats.
+            </p>
+            <div className="mt-8 flex flex-col gap-3 sm:flex-row">
+              <Link to="/auth/signup/landlord" className={buttonClasses({ size: 'lg' })}>
+                Create a landlord account
+              </Link>
+              <a href="#pricing" className={buttonClasses({ variant: 'outline', size: 'lg' })}>
+                See pricing
+              </a>
+            </div>
+          </div>
+
+          <aside
+            aria-label="What your workspace includes"
+            className="rounded-2xl border border-border bg-surface p-6 shadow-card sm:p-7"
+          >
+            <p className="text-sm font-semibold text-ink">Your workspace</p>
+            <ul className="mt-4 divide-y divide-border">
+              {WORKSPACE.map(item => (
+                <li key={item.label} className="flex items-center gap-3 py-3 text-[0.9375rem]">
+                  <Icon name={item.icon} size={18} className="text-primary" />
+                  <span className="text-ink">{item.label}</span>
+                </li>
+              ))}
+            </ul>
+          </aside>
+        </div>
+      </section>
+
+      {/* Setup */}
+      <section id="verification" aria-labelledby="setup-title" className="bg-cream">
+        <div className="mx-auto max-w-7xl px-4 py-20 sm:px-6 lg:px-8 lg:py-28">
+          <div className="max-w-2xl">
+            <p className="kicker">Getting set up</p>
+            <h2 id="setup-title" className="display-lg mt-3 text-ink">
+              Verified first, so boarders can trust the listing.
+            </h2>
+          </div>
+
+          <ol className="mt-12 grid gap-x-8 gap-y-10 sm:grid-cols-2 lg:grid-cols-4">
+            {SETUP.map((step, index) => (
+              <li key={step.title} className="border-t-2 border-ink pt-5">
+                <span
+                  aria-hidden="true"
+                  className="font-display text-sm font-medium text-gray-ink tabular"
+                >
+                  {String(index + 1).padStart(2, '0')}
+                </span>
+                <h3 className="mt-2 font-display text-xl font-medium tracking-[-0.015em] text-ink">
+                  <span className="sr-only">Step {index + 1}: </span>
+                  {step.title}
+                </h3>
+                <p className="mt-2 text-[0.9375rem] leading-relaxed text-gray-ink">{step.body}</p>
+              </li>
+            ))}
+          </ol>
+
+          <div className="mt-14 grid gap-6 rounded-2xl border border-border bg-surface p-6 sm:p-8 md:grid-cols-[minmax(0,5fr)_minmax(0,7fr)] md:gap-10">
+            <div>
+              <h3 className="font-display text-xl font-medium tracking-[-0.015em] text-ink">
+                What verification asks for
+              </h3>
+              <p className="mt-2 text-[0.9375rem] leading-relaxed text-gray-ink">
+                You can explore the dashboard straight away. Listings can be published once an admin
+                has approved these.
+              </p>
+            </div>
+            <ul className="grid gap-3 sm:grid-cols-2">
+              {DOCUMENTS.map(doc => (
+                <li
+                  key={doc}
+                  className="flex items-start gap-3 rounded-xl bg-subtle px-4 py-3 text-[0.9375rem] text-ink"
+                >
+                  <Icon name="document" size={18} className="mt-0.5 text-primary" />
+                  {doc}
+                </li>
+              ))}
+            </ul>
           </div>
         </div>
       </section>
 
-      {/* Benefits */}
-      <section className="bg-surface">
-        <div className="mx-auto max-w-7xl px-4 py-16 md:py-20">
-          <div className="mb-12 text-center">
-            <span className="inline-block rounded-full bg-mint px-3 py-1 text-xs font-bold uppercase tracking-widest text-primary">
-              Why Choose Us
-            </span>
-            <h2 className="mt-3 text-3xl font-bold text-ink">
-              Everything you need to run your property
+      {/* Tools */}
+      <section aria-labelledby="tools-title" className="border-y border-border bg-surface">
+        <div className="mx-auto grid max-w-7xl gap-10 px-4 py-20 sm:px-6 lg:grid-cols-[minmax(0,4fr)_minmax(0,8fr)] lg:gap-16 lg:px-8 lg:py-28">
+          <div className="lg:sticky lg:top-28 lg:self-start">
+            <p className="kicker">Day to day</p>
+            <h2 id="tools-title" className="display-lg mt-3 text-ink">
+              The jobs that used to live in a notebook.
             </h2>
-            <p className="mx-auto mt-3 max-w-2xl text-gray-ink">
-              Powerful tools that make managing boarders and listings simple, so you can focus on
-              growing your business.
-            </p>
           </div>
-          <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-            {BENEFITS.map(benefit => (
-              <div
-                key={benefit.title}
-                className="rounded-xl border border-border bg-cream p-6 text-center shadow-card"
-              >
-                <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-mint">
-                  <img
-                    src={benefit.icon}
-                    alt=""
-                    width={28}
-                    height={28}
-                    className="object-contain"
-                  />
-                </div>
-                <h3 className="mt-4 text-lg font-bold text-ink">{benefit.title}</h3>
-                <p className="mt-2 text-sm text-gray-ink">{benefit.description}</p>
+          <div className="grid gap-x-10 border-t border-border sm:grid-cols-2">
+            {TOOLS.map(tool => (
+              <div key={tool.title} className="border-b border-border py-8">
+                <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-mint text-primary">
+                  <Icon name={tool.icon} size={20} />
+                </span>
+                <h3 className="mt-4 text-lg font-semibold text-ink">{tool.title}</h3>
+                <p className="mt-2 leading-relaxed text-gray-ink">{tool.body}</p>
               </div>
             ))}
-            <div className="flex flex-col items-center justify-center rounded-xl border-2 border-dashed border-primary/30 bg-mint/20 p-6 text-center">
-              <h3 className="text-lg font-bold text-primary">Ready to start?</h3>
-              <p className="mt-2 text-sm text-gray-ink">
-                Create your landlord account and list your first property today.
-              </p>
-              <Link
-                to="/auth/signup/landlord"
-                className="mt-4 rounded-full bg-primary-strong px-5 py-2 text-sm font-semibold text-white hover:bg-primary-hover"
-              >
-                Get Started
-              </Link>
-            </div>
           </div>
         </div>
       </section>
 
       {/* Pricing */}
-      <section id="pricing" className="bg-cream">
-        <div className="mx-auto max-w-7xl px-4 py-16 md:py-20">
-          <div className="mb-12 text-center">
-            <span className="inline-block rounded-full bg-mint px-3 py-1 text-xs font-bold uppercase tracking-widest text-primary">
-              Pricing
-            </span>
-            <h2 className="mt-3 text-3xl font-bold text-ink">Simple, transparent pricing</h2>
-            <p className="mx-auto mt-3 max-w-2xl text-gray-ink">
-              Everything you need to manage your properties, all in one plan.
-            </p>
-          </div>
-          <div className="mx-auto max-w-3xl overflow-hidden rounded-2xl bg-primary-hover shadow-pop">
-            <div className="p-8 md:p-10">
-              <div className="flex flex-wrap items-start justify-between gap-4">
-                <div>
-                  <p className="text-xs font-bold uppercase tracking-widest text-mint">Pro Plan</p>
-                  <div className="mt-2 flex items-baseline gap-1">
-                    <h3 className="text-4xl font-bold text-white">₱499</h3>
-                    <span className="text-white/60">/ month</span>
-                  </div>
-                  <p className="mt-2 text-white/70">Complete property management solution</p>
-                </div>
-              </div>
-              <p className="mt-6 text-xs font-bold uppercase tracking-widest text-white/50">
-                All features included:
+      <section id="pricing" aria-labelledby="pricing-title" className="bg-cream">
+        <div className="mx-auto max-w-7xl px-4 py-20 sm:px-6 lg:px-8 lg:py-28">
+          <div className="grid overflow-hidden rounded-2xl border border-border bg-surface shadow-card md:grid-cols-[minmax(0,5fr)_minmax(0,7fr)]">
+            <div className="border-b border-border p-8 sm:p-10 md:border-b-0 md:border-r">
+              <p className="kicker">Pricing</p>
+              <h2 id="pricing-title" className="mt-3 font-display text-2xl font-medium text-ink">
+                One plan, everything included.
+              </h2>
+              <p className="mt-8 flex items-baseline gap-2">
+                <span className="display-xl text-clay tabular">₱499</span>
+                <span className="text-gray-ink">per month</span>
               </p>
-              <ul className="mt-3 grid gap-2 sm:grid-cols-2">
-                {FEATURES.map(feature => (
-                  <li key={feature} className="flex items-center gap-2 text-sm text-white/90">
-                    <img
-                      src="/assets/svg/check.svg"
-                      alt=""
-                      width={16}
-                      height={16}
-                      className="shrink-0"
-                    />
+              <p className="mt-4 text-[0.9375rem] leading-relaxed text-gray-ink">
+                Listing is free while you finish onboarding. No long-term contract, and a 30-day
+                money-back guarantee on paid plans.
+              </p>
+              <Link
+                to="/auth/signup/landlord"
+                className={buttonClasses({ size: 'lg', className: 'mt-8 w-full sm:w-auto' })}
+              >
+                Create a landlord account
+              </Link>
+            </div>
+            <div className="p-8 sm:p-10">
+              <h3 className="text-sm font-semibold text-ink">Included in the plan</h3>
+              <ul className="mt-5 grid gap-x-8 gap-y-4 sm:grid-cols-2">
+                {INCLUDED.map(feature => (
+                  <li key={feature} className="flex items-start gap-3 text-[0.9375rem] text-ink">
+                    <Icon name="check" size={18} className="mt-0.5 text-primary" />
                     {feature}
                   </li>
                 ))}
               </ul>
-              <Link
-                to="/auth/signup/landlord"
-                className="mt-8 inline-block rounded-full bg-mint px-8 py-3 text-sm font-bold text-primary-dark hover:bg-surface"
-              >
-                Get Started Now
-              </Link>
-              <p className="mt-3 text-xs text-white/50">
-                30-day money-back guarantee. No long-term contracts.
+              <p className="mt-8 border-t border-border pt-5 text-sm text-gray-ink">
+                Full terms are in the{' '}
+                <Link
+                  to="/legal/terms-of-service"
+                  className="font-semibold text-primary underline decoration-primary/40 underline-offset-4 hover:decoration-primary"
+                >
+                  Terms of Service
+                </Link>
+                .
               </p>
             </div>
           </div>
         </div>
       </section>
 
-      {/* CTA */}
-      <section className="bg-surface">
-        <div className="mx-auto max-w-4xl px-4 py-16 text-center">
-          <h2 className="text-3xl font-bold text-ink">
-            Ready to <span className="text-primary">grow</span> your rental business?
-          </h2>
-          <p className="mx-auto mt-3 max-w-2xl text-gray-ink">
-            Join hundreds of landlords who trust Haven Space to manage their properties and connect
-            with quality tenants.
-          </p>
-          <div className="mt-8 flex flex-wrap justify-center gap-3">
-            <Link
-              to="/auth/signup/landlord"
-              className="inline-flex items-center gap-2 rounded-full bg-primary-strong px-6 py-3 text-sm font-semibold text-white hover:bg-primary-hover"
-            >
-              Start Listing Today
-              <img src="/assets/svg/chevron-right.svg" alt="" width={18} height={18} />
-            </Link>
-            <Link
-              to="/"
-              className="rounded-full border-2 border-border-strong px-6 py-3 text-sm font-semibold text-gray-ink hover:bg-subtle"
-            >
-              Contact Sales
-            </Link>
+      {/* Close */}
+      <section className="border-t border-border bg-surface">
+        <div className="mx-auto flex max-w-7xl flex-col gap-8 px-4 py-16 sm:px-6 md:flex-row md:items-end md:justify-between lg:px-8">
+          <div className="max-w-xl">
+            <h2 className="display-md text-ink">Have a question before you sign up?</h2>
+            <p className="mt-3 leading-relaxed text-gray-ink">
+              Write to{' '}
+              <a
+                href="mailto:support@havenspace.app"
+                className="font-semibold text-primary underline decoration-primary/40 underline-offset-4 hover:decoration-primary"
+              >
+                support@havenspace.app
+              </a>{' '}
+              and someone from the team will get back to you.
+            </p>
           </div>
+          <Link to="/auth/signup/landlord" className={buttonClasses({ size: 'lg' })}>
+            Create a landlord account
+          </Link>
         </div>
       </section>
     </PublicLayout>

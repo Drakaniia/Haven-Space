@@ -22,12 +22,22 @@ export function PageHeader({
   actions?: ReactNode;
 }) {
   return (
-    <header className="mb-6 flex flex-wrap items-start justify-between gap-4">
-      <div className="flex items-center gap-3">
-        {icon ? <Icon name={icon} size={28} className="shrink-0" /> : null}
-        <div>
-          <h1 className="text-2xl font-bold tracking-tight text-ink">{title}</h1>
-          {subtitle ? <p className="mt-1 text-sm text-gray-ink">{subtitle}</p> : null}
+    <header className="mb-8 flex flex-wrap items-end justify-between gap-x-6 gap-y-4">
+      <div className="flex min-w-0 items-start gap-3.5">
+        {icon ? (
+          <span className="mt-1 flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-mint text-primary">
+            <Icon name={icon} size={22} />
+          </span>
+        ) : null}
+        <div className="min-w-0">
+          <h1 className="font-display text-[1.875rem] font-medium leading-[1.1] tracking-[-0.02em] text-ink sm:text-[2.125rem]">
+            {title}
+          </h1>
+          {subtitle ? (
+            <p className="mt-2 max-w-2xl text-[0.9375rem] leading-relaxed text-gray-ink">
+              {subtitle}
+            </p>
+          ) : null}
         </div>
       </div>
       {actions ? <div className="flex flex-wrap items-center gap-2">{actions}</div> : null}

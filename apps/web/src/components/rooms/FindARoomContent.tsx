@@ -1,35 +1,42 @@
-import { useQuery } from '@tanstack/react-query';
-import { useState } from 'react';
+import { keepPreviousData, useQuery } from '@tanstack/react-query';
+import { useEffect, useId, useRef, useState } from 'react';
 import { Link } from '@tanstack/react-router';
 import { useAuth } from '../../lib/auth-context';
 import { getPopularLocations, listPublicRooms } from '../../lib/api/public';
-import type {
-  PublicListingsFilters,
-  PublicListingsResponse,
-  PublicProperty,
-} from '../../lib/types';
+import type { PublicListingsFilters, PublicListingsResponse } from '../../lib/types';
+import { Button, buttonClasses } from '../ui/Button';
+import { Drawer } from '../ui/Drawer';
 import { EmptyState } from '../ui/EmptyState';
 import { ErrorState } from '../ui/ErrorState';
-import { Spinner } from '../ui/Spinner';
+import { Field, SelectInput } from '../ui/Field';
+import { Icon } from '../ui/Icon';
+import { ListingCard, ListingCardSkeleton } from './ListingCard';
 import { MapModal } from './MapModal';
 
 const DEFAULT_FILTERS: PublicListingsFilters = { sort_by: 'newest', limit: 20, offset: 0 };
 
 const PRICE_OPTIONS = [
-  { value: 'any', label: 'Any Price' },
-  { value: '0-3000', label: '₱0 - ₱3,000' },
-  { value: '3000-5000', label: '₱3,000 - ₱5,000' },
-  { value: '5000-8000', label: '₱5,000 - ₱8,000' },
-  { value: '8000+', label: '₱8,000+' },
+  { value: 'any', label: 'Any price' },
+  { value: '0-3000', label: '₱0 – ₱3,000' },
+  { value: '3000-5000', label: '₱3,000 – ₱5,000' },
+  { value: '5000-8000', label: '₱5,000 – ₱8,000' },
+  { value: '8000+', label: '₱8,000 and up' },
 ];
 
 const TYPE_OPTIONS = [
-  { value: 'any', label: 'Select type' },
-  { value: 'boarding-house', label: 'Boarding House' },
+  { value: 'any', label: 'Any property type' },
+  { value: 'boarding-house', label: 'Boarding house' },
   { value: 'dormitory', label: 'Dormitory' },
   { value: 'apartment', label: 'Apartment' },
-  { value: 'studio-unit', label: 'Studio Unit' },
+  { value: 'studio-unit', label: 'Studio unit' },
   { value: 'others', label: 'Others' },
+];
+
+const SORT_OPTIONS = [
+  { value: 'recommended', label: 'Recommended' },
+  { value: 'price-low', label: 'Price: low to high' },
+  { value: 'price-high', label: 'Price: high to low' },
+  { value: 'newest', label: 'Newest listings' },
 ];
 
 const AMENITY_OPTIONS = [
@@ -62,163 +69,20 @@ export function amenityIcon(amenity: string): string {
   return AMENITY_ICONS[key] ?? AMENITY_ICONS[amenity] ?? 'checkSimple';
 }
 
-function Badge({ type }: { type: string }) {
-  const styles: Record<string, string> = {
-    verified: 'bg-primary-strong text-white',
-    new: 'bg-green-400 text-white',
-    promo: 'bg-pink-600 text-white',
-  };
+/** The loader's first page is only valid for the default query, never for a filtered one. */
+function isDefaultQuery(filters: PublicListingsFilters): boolean {
   return (
-    <span
-      className={`inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-[0.7rem] font-bold uppercase tracking-wide ${
-        styles[type] ?? 'bg-gray-ink text-white'
-      }`}
-    >
-      {type === 'verified' ? (
-        <img src="/assets/svg/verified.svg" alt="" width={12} height={12} className="shrink-0" />
-      ) : null}
-      {type}
-    </span>
+    !filters.search &&
+    filters.price_min === undefined &&
+    filters.price_max === undefined &&
+    (filters.sort_by ?? 'newest') === DEFAULT_FILTERS.sort_by &&
+    (filters.offset ?? 0) === 0 &&
+    (filters.limit ?? 20) === DEFAULT_FILTERS.limit
   );
 }
 
-function PropertyCard({
-  property,
-  detailTo,
-  listView,
-}: {
-  property: PublicProperty;
-  detailTo: string;
-  listView: boolean;
-}) {
-  const [favorite, setFavorite] = useState(false);
-  const image = property.image || '/assets/images/placeholder-room.svg';
-  const previewAmenities = property.amenities.slice(0, 3);
-  const moreCount = Math.max(0, property.amenities.length - 3);
-  const available = property.availableRooms > 0;
-
-  return (
-    <li
-      className={`group overflow-hidden rounded-2xl bg-surface shadow-card transition-all duration-300 hover:-translate-y-1 hover:shadow-pop ${
-        listView ? 'grid sm:grid-cols-[320px_1fr]' : ''
-      }`}
-    >
-      {/* Image */}
-      <div className="relative h-56 overflow-hidden">
-        <img
-          src={image}
-          alt={property.title}
-          className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
-        />
-        <div className="absolute left-4 top-4 flex flex-col gap-2">
-          {property.badges.map(badge => (
-            <Badge key={badge} type={badge} />
-          ))}
-        </div>
-        <button
-          type="button"
-          aria-label={favorite ? 'Remove from saved' : 'Save this property'}
-          onClick={() => setFavorite(f => !f)}
-          className="absolute right-4 top-4 flex h-10 w-10 items-center justify-center rounded-full bg-surface/95 shadow-card transition-transform hover:scale-110"
-        >
-          <img
-            src="/assets/svg/bookmark.svg"
-            alt=""
-            width={20}
-            height={20}
-            className={`shrink-0 transition-colors ${
-              favorite
-                ? '[filter:invert(29%)_sepia(72%)_saturate(5438%)_hue-rotate(322deg)_brightness(92%)_contrast(97%)]'
-                : ''
-            }`}
-          />
-        </button>
-        {previewAmenities.length > 0 ? (
-          <div className="absolute bottom-4 left-4 right-4 flex items-center gap-2 rounded-full bg-black/30 p-2 backdrop-blur-sm">
-            {previewAmenities.map(amenity => (
-              <span
-                key={amenity}
-                title={amenity}
-                className="flex h-7 w-7 items-center justify-center rounded-full bg-white/25 text-white"
-              >
-                <img
-                  src={`/assets/svg/${amenityIcon(amenity)}.svg`}
-                  alt=""
-                  width={14}
-                  height={14}
-                  className="shrink-0"
-                />
-              </span>
-            ))}
-            {moreCount > 0 ? (
-              <span className="ml-1 text-xs font-semibold text-white">+{moreCount}</span>
-            ) : null}
-          </div>
-        ) : null}
-      </div>
-
-      {/* Content */}
-      <div className={`flex flex-col p-5 ${listView ? 'justify-between' : ''}`}>
-        <div className={`flex items-center justify-between gap-2 ${listView ? '' : ''}`}>
-          <p className="flex items-center gap-1.5 text-sm text-gray-ink">
-            <img
-              src="/assets/svg/location.svg"
-              alt=""
-              width={14}
-              height={14}
-              className="shrink-0"
-            />
-            <span className="truncate">{property.city || property.address}</span>
-          </p>
-          <p className="flex shrink-0 items-center gap-1 text-sm font-semibold text-ink">
-            <span className="text-amber-400">★</span>
-            <span>{property.rating}</span>
-            <span className="font-normal text-gray-ink">({property.reviews})</span>
-          </p>
-        </div>
-        <h3 className="mt-2 text-lg font-bold leading-snug text-ink">{property.title}</h3>
-        <p className="mt-1 line-clamp-1 text-sm text-gray-ink">{property.address}</p>
-        <div className="mt-3 flex flex-wrap items-center gap-4 text-sm text-gray-ink">
-          <span className="flex items-center gap-1.5">
-            <img src="/assets/svg/user.svg" alt="" width={14} height={14} className="shrink-0" />
-            {property.roomTypes || 'Rooms available'}
-          </span>
-          <span className="flex items-center gap-1.5">
-            <img
-              src="/assets/svg/calendar.svg"
-              alt=""
-              width={14}
-              height={14}
-              className="shrink-0"
-            />
-            {available ? 'Available Now' : 'No Availability'}
-          </span>
-        </div>
-        <div className="mt-4 flex items-center justify-between border-t border-border pt-4">
-          <p className="flex items-baseline gap-1">
-            <span className="text-xl font-bold text-primary">
-              ₱{property.price.toLocaleString()}
-            </span>
-            <span className="text-sm text-gray-ink">/month</span>
-          </p>
-          <Link
-            to={detailTo}
-            params={{ id: String(property.id) }}
-            className="inline-flex items-center gap-2 rounded-lg bg-primary-strong px-4 py-2 text-sm font-semibold text-white transition-all hover:bg-primary-hover"
-          >
-            View Details
-            <img
-              src="/assets/svg/chevron-right.svg"
-              alt=""
-              width={16}
-              height={16}
-              className="shrink-0"
-            />
-          </Link>
-        </div>
-      </div>
-    </li>
-  );
+function plural(count: number, one: string, many = `${one}s`): string {
+  return `${count.toLocaleString()} ${count === 1 ? one : many}`;
 }
 
 export function FindARoomContent({
@@ -234,16 +98,23 @@ export function FindARoomContent({
   const [roomType, setRoomType] = useState('any');
   const [selectedAmenities, setSelectedAmenities] = useState<string[]>([]);
   const [amenitiesOpen, setAmenitiesOpen] = useState(false);
+  const [sheetOpen, setSheetOpen] = useState(false);
   const [view, setView] = useState<'grid' | 'list'>('grid');
   const [searchInput, setSearchInput] = useState('');
   // The map opens in place so a visitor never loses their filters or scroll position
   // (spec `find-a-room-map-modal` D1/D6).
   const [mapOpen, setMapOpen] = useState(false);
+  const resultsRef = useRef<HTMLElement>(null);
+  const amenitiesRef = useRef<HTMLDivElement>(null);
+  const amenitiesMenuId = useId();
 
   const query = useQuery({
     queryKey: ['rooms', filters],
     queryFn: () => listPublicRooms(filters),
-    initialData,
+    initialData: isDefaultQuery(filters) ? initialData : undefined,
+    // Keep the current results on screen while a new filter loads, instead of
+    // flashing the skeleton on every change.
+    placeholderData: keepPreviousData,
   });
 
   const popular = useQuery({
@@ -251,18 +122,40 @@ export function FindARoomContent({
     queryFn: () => getPopularLocations(5),
   });
 
+  // The amenities menu closes on an outside press or Escape, like any menu.
+  useEffect(() => {
+    if (!amenitiesOpen) return;
+    function onPointerDown(event: PointerEvent) {
+      if (event.target instanceof Node && amenitiesRef.current?.contains(event.target)) return;
+      setAmenitiesOpen(false);
+    }
+    function onKeyDown(event: KeyboardEvent) {
+      if (event.key === 'Escape') setAmenitiesOpen(false);
+    }
+    document.addEventListener('pointerdown', onPointerDown);
+    document.addEventListener('keydown', onKeyDown);
+    return () => {
+      document.removeEventListener('pointerdown', onPointerDown);
+      document.removeEventListener('keydown', onKeyDown);
+    };
+  }, [amenitiesOpen]);
+
   function applyPriceRange(value: string) {
     setPriceRange(value);
     if (value === 'any') {
-      setFilters(f => ({ ...f, price_min: undefined, price_max: undefined }));
+      setFilters(f => ({ ...f, price_min: undefined, price_max: undefined, offset: 0 }));
       return;
     }
-    const [min, max] = value.split('-');
+    const [min, max] = value.replace('+', '').split('-');
     if (max) {
-      setFilters(f => ({ ...f, price_min: Number(min), price_max: Number(max) }));
+      setFilters(f => ({ ...f, price_min: Number(min), price_max: Number(max), offset: 0 }));
     } else {
-      setFilters(f => ({ ...f, price_min: Number(min), price_max: undefined }));
+      setFilters(f => ({ ...f, price_min: Number(min), price_max: undefined, offset: 0 }));
     }
+  }
+
+  function applySort(value: string) {
+    setFilters(f => ({ ...f, sort_by: value, offset: 0 }));
   }
 
   function toggleAmenity(amenity: string) {
@@ -283,8 +176,20 @@ export function FindARoomContent({
     setFilters(f => ({ ...f, search: searchInput.trim() || undefined, offset: 0 }));
   }
 
+  function clearSearch() {
+    setSearchInput('');
+    setFilters(f => ({ ...f, search: undefined, offset: 0 }));
+  }
+
+  function goToPage(offset: number) {
+    setFilters(f => ({ ...f, offset: Math.max(0, offset) }));
+    resultsRef.current?.scrollIntoView({ block: 'start' });
+  }
+
+  const pageProperties = query.data?.data.properties ?? [];
+
   // Client-side filtering for amenities + property type (API filters by search/price/sort only)
-  let properties = query.data?.data.properties ?? [];
+  let properties = pageProperties;
   if (selectedAmenities.length > 0) {
     properties = properties.filter(p =>
       selectedAmenities.every(sel =>
@@ -304,98 +209,116 @@ export function FindARoomContent({
     );
   }
 
-  const totalCount = query.data?.data.total_count ?? properties.length;
-  const hasMore = properties.length >= (filters.limit ?? 20);
+  const apiTotal = query.data?.data.total_count;
+  const totalCount = apiTotal ?? pageProperties.length;
+  const limit = filters.limit ?? 20;
+  const offset = filters.offset ?? 0;
+  // A full page means there may be more; the API's total, when present, settles it.
+  const hasNext =
+    pageProperties.length >= limit && (apiTotal === undefined || offset + limit < apiTotal);
+  const hasPrev = offset > 0;
+  const pageNumber = Math.floor(offset / limit) + 1;
 
-  function loadMore() {
-    setFilters(f => ({ ...f, offset: (f.offset ?? 0) + (f.limit ?? 20) }));
-  }
+  const clientFiltered = selectedAmenities.length > 0 || roomType !== 'any';
+  const filterCount = (priceRange !== 'any' ? 1 : 0) + (roomType !== 'any' ? 1 : 0) + selectedAmenities.length;
+  const hasActiveFilters = filterCount > 0 || Boolean(filters.search);
+  const updating = query.isFetching && query.isPlaceholderData;
+
+  const countHeading = clientFiltered
+    ? `${plural(properties.length, 'match', 'matches')} on this page`
+    : plural(totalCount, 'place to stay', 'places to stay');
 
   return (
     <div className="bg-cream">
-      {/* ================= HERO ================= */}
-      <section className="relative overflow-hidden bg-gradient-to-br from-primary to-primary-dark px-4 py-16 text-white md:py-20">
-        <div className="pointer-events-none absolute -right-24 -top-24 h-96 w-96 rounded-full bg-white/5" />
-        <div className="pointer-events-none absolute -bottom-32 -left-24 h-72 w-72 rounded-full bg-white/5" />
-        <div className="relative mx-auto max-w-3xl text-center">
-          <h1 className="text-4xl font-extrabold tracking-tight md:text-5xl">Explore Rooms</h1>
-          <p className="mx-auto mt-3 max-w-xl text-lg opacity-95">
-            Discover verified boarding houses near your university with all the amenities you need
+      {/* ================= HEADER ================= */}
+      <section className="paper-grain border-b border-border">
+        <div className="rise-in mx-auto max-w-7xl px-4 pb-10 pt-10 sm:px-6 md:pt-14 lg:px-8">
+          <p className="kicker">Find a room</p>
+          <h1 className="display-lg mt-3 max-w-3xl text-ink">
+            Boarding houses near your school and work
+          </h1>
+          <p className="mt-4 max-w-xl text-[1.0625rem] leading-relaxed text-gray-ink">
+            Browse verified rooms, compare rent and amenities, then request a tour or apply in a
+            few steps.
           </p>
 
-          {/* Search box */}
           <form
-            className="mt-8 flex items-center gap-2 rounded-2xl bg-surface p-2 shadow-pop"
+            role="search"
+            className="mt-8 flex max-w-3xl flex-col gap-2 sm:flex-row sm:items-center"
             onSubmit={e => {
               e.preventDefault();
               runSearch();
             }}
           >
-            <img
-              src="/assets/svg/search.svg"
-              alt=""
-              width={22}
-              height={22}
-              className="ml-2 shrink-0 opacity-70"
-            />
-            <input
-              type="text"
-              value={searchInput}
-              onChange={e => setSearchInput(e.target.value)}
-              placeholder="Search by location, university, or property name..."
-              className="flex-1 border-none bg-transparent px-2 py-2 text-ink outline-none placeholder:text-gray-ink"
-            />
-            <button
-              type="submit"
-              className="inline-flex items-center gap-2 rounded-xl bg-primary-strong px-5 py-2.5 text-sm font-semibold text-white transition-all hover:bg-primary-hover"
-            >
-              Search
-              <img
-                src="/assets/svg/chevron-right.svg"
-                alt=""
-                width={16}
-                height={16}
-                className="shrink-0"
+            <div className="relative flex-1">
+              <label htmlFor="find-a-room-search" className="sr-only">
+                Search by location, university or property name
+              </label>
+              <Icon
+                name="search"
+                size={20}
+                className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 text-muted"
               />
-            </button>
-            <button
-              type="button"
-              onClick={() => setMapOpen(true)}
-              className="inline-flex items-center gap-2 rounded-xl border border-primary px-4 py-2.5 text-sm font-semibold text-primary transition-all hover:bg-mint"
-              title="View Map"
-            >
-              <img src="/assets/svg/maps.svg" alt="" width={20} height={20} className="shrink-0" />
-              Map
-            </button>
+              <input
+                id="find-a-room-search"
+                type="search"
+                value={searchInput}
+                onChange={e => setSearchInput(e.target.value)}
+                placeholder="Location, university or property name"
+                className="h-12 w-full rounded-xl border border-border-strong bg-surface pl-11 pr-4 text-base text-ink shadow-card transition-[border-color,box-shadow] duration-150 placeholder:text-muted focus:border-primary focus:outline-none focus:ring-4 focus:ring-primary/15"
+              />
+            </div>
+            <div className="flex gap-2">
+              <Button type="submit" size="lg" className="flex-1 sm:flex-none">
+                Search
+              </Button>
+              <Button
+                type="button"
+                variant="outline"
+                size="lg"
+                onClick={() => setMapOpen(true)}
+                aria-haspopup="dialog"
+              >
+                <Icon name="map" size={18} />
+                Map
+              </Button>
+            </div>
           </form>
 
-          {/* Location chips */}
-          {popular.data ? (
-            <div className="mt-5 flex flex-wrap items-center justify-center gap-2">
-              <span className="text-sm font-medium opacity-90">Popular:</span>
-              {popular.data.data.locations.map(location => (
-                <button
-                  key={location.name}
-                  type="button"
-                  onClick={() => {
-                    setSearchInput(location.search_value);
-                    setFilters(f => ({ ...f, search: location.search_value, offset: 0 }));
-                  }}
-                  className="rounded-full border border-white/30 bg-white/15 px-4 py-1.5 text-sm font-medium text-white transition-all hover:-translate-y-0.5 hover:border-white/60 hover:bg-white/25"
-                >
-                  {location.name}
-                </button>
-              ))}
+          {popular.data && popular.data.data.locations.length > 0 ? (
+            <div className="mt-5 flex flex-wrap items-center gap-2">
+              <span className="text-sm text-gray-ink">Popular:</span>
+              {popular.data.data.locations.map(location => {
+                const active = filters.search === location.search_value;
+                return (
+                  <button
+                    key={location.name}
+                    type="button"
+                    aria-pressed={active}
+                    onClick={() => {
+                      setSearchInput(location.search_value);
+                      setFilters(f => ({ ...f, search: location.search_value, offset: 0 }));
+                    }}
+                    className={`rounded-lg border px-3 py-1.5 text-sm font-medium transition-[background-color,border-color,color] duration-150 ${
+                      active
+                        ? 'border-primary/40 bg-mint text-primary-dark'
+                        : 'border-border bg-surface text-gray-ink hover:border-border-strong hover:text-ink'
+                    }`}
+                  >
+                    {location.name}
+                  </button>
+                );
+              })}
             </div>
           ) : null}
 
           {/* Guest CTA — hidden for signed-in users */}
           {!isAuthenticated ? (
-            <p className="mt-6 text-sm opacity-95">
+            <p className="mt-6 text-sm text-gray-ink">
               Want to apply for a room?{' '}
               <Link
                 to="/auth/login"
-                className="font-semibold underline underline-offset-2 hover:text-mint"
+                className="font-semibold text-primary underline underline-offset-[3px] hover:text-primary-hover"
               >
                 Log in or sign up
               </Link>
@@ -405,285 +328,237 @@ export function FindARoomContent({
       </section>
 
       {/* ================= FILTER BAR ================= */}
-      <div className="sticky top-0 z-40 border-b border-border bg-surface shadow-sm">
-        <div className="mx-auto flex max-w-7xl flex-wrap items-end gap-6 px-4 py-4">
-          {/* Price range */}
-          <div className="flex min-w-[9rem] flex-col gap-2">
-            <label className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wide text-gray-ink">
-              <img
-                src="/assets/svg/payment.svg"
-                alt=""
-                width={16}
-                height={16}
-                className="shrink-0"
-              />
-              Price Range
-            </label>
-            <select
+      <div className="chrome-topbar sticky top-16 z-30 border-b border-border">
+        <div className="mx-auto flex max-w-7xl items-center gap-2 px-4 py-3 sm:px-6 lg:px-8">
+          {/* Phones and small tablets: one button opens the filter sheet. */}
+          <Button
+            type="button"
+            variant="outline"
+            onClick={() => setSheetOpen(true)}
+            aria-haspopup="dialog"
+            className="md:hidden"
+          >
+            <Icon name="settings" size={16} />
+            Filters
+            {filterCount > 0 ? (
+              <span className="tabular ml-0.5 flex h-5 min-w-5 items-center justify-center rounded-full bg-primary-strong px-1.5 text-xs text-white">
+                {filterCount}
+              </span>
+            ) : null}
+          </Button>
+
+          {/* Tablet and desktop: the filters themselves. */}
+          <div className="hidden min-w-0 items-center gap-2 md:flex">
+            <SelectInput
+              aria-label="Price range"
               value={priceRange}
               onChange={e => applyPriceRange(e.target.value)}
-              className="cursor-pointer rounded-lg border border-border px-3 py-2 text-sm text-ink outline-none transition-colors hover:border-primary focus:border-primary focus:ring-2 focus:ring-primary/10"
+              className="w-auto min-w-[9.5rem] cursor-pointer"
             >
               {PRICE_OPTIONS.map(option => (
                 <option key={option.value} value={option.value}>
                   {option.label}
                 </option>
               ))}
-            </select>
-          </div>
-
-          {/* Property type */}
-          <div className="flex min-w-[9rem] flex-col gap-2">
-            <label className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wide text-gray-ink">
-              <img src="/assets/svg/home.svg" alt="" width={16} height={16} className="shrink-0" />
-              Property Type
-            </label>
-            <select
+            </SelectInput>
+            <SelectInput
+              aria-label="Property type"
               value={roomType}
               onChange={e => setRoomType(e.target.value)}
-              className="cursor-pointer rounded-lg border border-border px-3 py-2 text-sm text-ink outline-none transition-colors hover:border-primary focus:border-primary focus:ring-2 focus:ring-primary/10"
+              className="w-auto min-w-[10.5rem] cursor-pointer"
             >
               {TYPE_OPTIONS.map(option => (
                 <option key={option.value} value={option.value}>
                   {option.label}
                 </option>
               ))}
-            </select>
-          </div>
+            </SelectInput>
 
-          {/* Amenities */}
-          <div className="flex min-w-[10rem] flex-col gap-2">
-            <label className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wide text-gray-ink">
-              <img
-                src="/assets/svg/ameneties.svg"
-                alt=""
-                width={16}
-                height={16}
-                className="shrink-0"
-              />
-              Amenities
-            </label>
-            <div className="relative">
+            <div className="relative" ref={amenitiesRef}>
               <button
                 type="button"
+                aria-expanded={amenitiesOpen}
+                aria-controls={amenitiesMenuId}
                 onClick={() => setAmenitiesOpen(o => !o)}
-                className="flex w-full items-center justify-between gap-2 rounded-lg border border-border px-3 py-2 text-sm text-ink transition-colors hover:border-primary"
+                className={`flex items-center gap-2 whitespace-nowrap rounded-xl border bg-surface px-3.5 py-2.5 text-base text-ink transition-[border-color,box-shadow] duration-150 hover:border-primary/50 ${
+                  selectedAmenities.length > 0 ? 'border-primary/60' : 'border-border-strong'
+                }`}
               >
                 {selectedAmenities.length > 0
-                  ? `${selectedAmenities.length} selected`
-                  : 'Select Amenities'}
-                <img
-                  src="/assets/svg/chevron-down.svg"
-                  alt=""
-                  width={16}
-                  height={16}
-                  className={`shrink-0 transition-transform ${amenitiesOpen ? 'rotate-180' : ''}`}
+                  ? `Amenities · ${selectedAmenities.length}`
+                  : 'Amenities'}
+                <Icon
+                  name="chevronDown"
+                  size={16}
+                  className={`text-muted transition-transform duration-150 ${amenitiesOpen ? 'rotate-180' : ''}`}
                 />
               </button>
               {amenitiesOpen ? (
-                <div className="absolute left-0 top-full z-50 mt-2 flex min-w-[14rem] flex-col gap-1 rounded-xl border border-border bg-surface p-3 shadow-pop">
+                <div
+                  id={amenitiesMenuId}
+                  role="group"
+                  aria-label="Amenities"
+                  className="menu-pop absolute left-0 top-full z-50 mt-2 w-60 rounded-2xl border border-border bg-surface p-2 shadow-pop [transform-origin:top_left]"
+                >
                   {AMENITY_OPTIONS.map(amenity => (
-                    <label
+                    <AmenityCheckbox
                       key={amenity}
-                      className="flex cursor-pointer items-center gap-2.5 rounded-lg px-2 py-1.5 text-sm text-ink transition-colors hover:bg-mint/40"
-                    >
-                      <input
-                        type="checkbox"
-                        checked={selectedAmenities.includes(amenity)}
-                        onChange={() => toggleAmenity(amenity)}
-                        className="h-4 w-4 accent-[var(--color-primary)]"
-                      />
-                      {amenity}
-                    </label>
+                      amenity={amenity}
+                      checked={selectedAmenities.includes(amenity)}
+                      onToggle={() => toggleAmenity(amenity)}
+                    />
                   ))}
                 </div>
               ) : null}
             </div>
+
+            {hasActiveFilters ? (
+              <Button type="button" variant="ghost" onClick={resetFilters}>
+                Clear all
+              </Button>
+            ) : null}
           </div>
 
-          {/* Distance */}
-          <div className="flex min-w-[9rem] flex-col gap-2">
-            <label className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wide text-gray-ink">
-              <img
-                src="/assets/svg/LocationPin.svg"
-                alt=""
-                width={16}
-                height={16}
-                className="shrink-0"
-              />
-              Distance
-            </label>
-            <select
-              className="cursor-pointer rounded-lg border border-border px-3 py-2 text-sm text-ink outline-none transition-colors hover:border-primary focus:border-primary focus:ring-2 focus:ring-primary/10"
-              defaultValue="any"
+          {/* Always visible: sort and layout. */}
+          <div className="ml-auto flex items-center gap-2">
+            <SelectInput
+              aria-label="Sort by"
+              value={filters.sort_by ?? 'newest'}
+              onChange={e => applySort(e.target.value)}
+              className="w-auto max-w-[11rem] cursor-pointer sm:max-w-none"
             >
-              <option value="any">Any Distance</option>
-              <option value="1">Within 1 km</option>
-              <option value="2">Within 2 km</option>
-              <option value="5">Within 5 km</option>
-              <option value="10">Within 10 km</option>
-            </select>
+              {SORT_OPTIONS.map(option => (
+                <option key={option.value} value={option.value}>
+                  {option.label}
+                </option>
+              ))}
+            </SelectInput>
+            <div
+              role="group"
+              aria-label="Layout"
+              className="hidden items-center rounded-xl border border-border-strong bg-surface p-1 sm:flex"
+            >
+              <ViewToggle
+                label="Grid view"
+                icon="grid"
+                active={view === 'grid'}
+                onClick={() => setView('grid')}
+              />
+              <ViewToggle
+                label="List view"
+                icon="list"
+                active={view === 'list'}
+                onClick={() => setView('list')}
+              />
+            </div>
           </div>
-
-          {/* Reset */}
-          <button
-            type="button"
-            onClick={resetFilters}
-            className="ml-auto inline-flex items-center gap-2 rounded-lg border border-border px-4 py-2 text-sm font-medium text-gray-ink transition-colors hover:border-border-strong hover:text-ink"
-          >
-            <img src="/assets/svg/history.svg" alt="" width={16} height={16} className="shrink-0" />
-            Reset
-          </button>
         </div>
 
-        {/* Active filter tags */}
-        {selectedAmenities.length > 0 || priceRange !== 'any' || roomType !== 'any' ? (
-          <div className="mx-auto flex max-w-7xl flex-wrap items-center gap-2 border-t border-border px-4 py-3">
+        {/* Active filters, each removable on its own. */}
+        {hasActiveFilters ? (
+          <div className="mx-auto flex max-w-7xl flex-wrap items-center gap-2 px-4 pb-3 sm:px-6 lg:px-8">
+            {filters.search ? (
+              <FilterTag label={`“${filters.search}”`} onRemove={clearSearch} removeLabel="Clear search" />
+            ) : null}
             {priceRange !== 'any' ? (
-              <span className="inline-flex items-center gap-1.5 rounded-full bg-mint px-3 py-1 text-xs font-medium text-primary-dark">
-                {PRICE_OPTIONS.find(o => o.value === priceRange)?.label}
-                <button
-                  type="button"
-                  onClick={() => applyPriceRange('any')}
-                  className="flex h-4 w-4 items-center justify-center rounded-full bg-primary-strong/20 text-[0.6rem] hover:bg-primary-strong hover:text-white"
-                  aria-label="Remove price filter"
-                >
-                  ✕
-                </button>
-              </span>
+              <FilterTag
+                label={PRICE_OPTIONS.find(o => o.value === priceRange)?.label ?? priceRange}
+                onRemove={() => applyPriceRange('any')}
+                removeLabel="Remove price filter"
+              />
             ) : null}
             {roomType !== 'any' ? (
-              <span className="inline-flex items-center gap-1.5 rounded-full bg-mint px-3 py-1 text-xs font-medium text-primary-dark">
-                {TYPE_OPTIONS.find(o => o.value === roomType)?.label}
-                <button
-                  type="button"
-                  onClick={() => setRoomType('any')}
-                  className="flex h-4 w-4 items-center justify-center rounded-full bg-primary-strong/20 text-[0.6rem] hover:bg-primary-strong hover:text-white"
-                  aria-label="Remove type filter"
-                >
-                  ✕
-                </button>
-              </span>
+              <FilterTag
+                label={TYPE_OPTIONS.find(o => o.value === roomType)?.label ?? roomType}
+                onRemove={() => setRoomType('any')}
+                removeLabel="Remove type filter"
+              />
             ) : null}
             {selectedAmenities.map(amenity => (
-              <span
+              <FilterTag
                 key={amenity}
-                className="inline-flex items-center gap-1.5 rounded-full bg-mint px-3 py-1 text-xs font-medium text-primary-dark"
-              >
-                {amenity}
-                <button
-                  type="button"
-                  onClick={() => toggleAmenity(amenity)}
-                  className="flex h-4 w-4 items-center justify-center rounded-full bg-primary-strong/20 text-[0.6rem] hover:bg-primary-strong hover:text-white"
-                  aria-label={`Remove ${amenity} filter`}
-                >
-                  ✕
-                </button>
-              </span>
+                label={amenity}
+                onRemove={() => toggleAmenity(amenity)}
+                removeLabel={`Remove ${amenity} filter`}
+              />
             ))}
           </div>
         ) : null}
       </div>
 
       {/* ================= RESULTS ================= */}
-      <div className="mx-auto max-w-7xl px-4">
-        <div className="flex flex-wrap items-center justify-between gap-4 py-8">
-          <div>
-            <h2 className="text-2xl font-bold text-ink">{totalCount} Rooms Available</h2>
-            <p className="mt-1 text-sm text-gray-ink">
-              {query.isLoading ? 'Loading properties...' : 'Verified boarding houses near you.'}
+      <section
+        ref={resultsRef}
+        aria-labelledby="find-a-room-results"
+        className="mx-auto max-w-7xl scroll-mt-32 px-4 pb-16 sm:px-6 lg:px-8"
+      >
+        <div className="flex flex-wrap items-end justify-between gap-x-6 gap-y-1 pb-6 pt-8">
+          <div aria-live="polite">
+            <h2 id="find-a-room-results" className="display-md text-ink">
+              {query.isPending ? 'Finding rooms…' : countHeading}
+            </h2>
+            <p className="mt-1.5 text-sm text-gray-ink">
+              {clientFiltered
+                ? `Amenity and type filters narrow the ${plural(pageProperties.length, 'place')} on this page.`
+                : filters.search
+                ? `Results for “${filters.search}”.`
+                : 'Boarding houses, dorms and apartments listed on Haven Space.'}
             </p>
           </div>
-          <div className="flex items-center gap-3">
-            <div className="flex items-center gap-2">
-              <button
-                type="button"
-                aria-label="Grid view"
-                onClick={() => setView('grid')}
-                className={`flex h-10 w-10 items-center justify-center rounded-lg border transition-colors ${
-                  view === 'grid'
-                    ? 'border-primary bg-primary-strong text-white'
-                    : 'border-border bg-surface hover:border-primary'
-                }`}
-              >
-                <img
-                  src="/assets/svg/grid2x2.svg"
-                  alt=""
-                  width={20}
-                  height={20}
-                  className="shrink-0"
-                />
-              </button>
-              <button
-                type="button"
-                aria-label="List view"
-                onClick={() => setView('list')}
-                className={`flex h-10 w-10 items-center justify-center rounded-lg border transition-colors ${
-                  view === 'list'
-                    ? 'border-primary bg-primary-strong text-white'
-                    : 'border-border bg-surface hover:border-primary'
-                }`}
-              >
-                <img
-                  src="/assets/svg/property.svg"
-                  alt=""
-                  width={20}
-                  height={20}
-                  className="shrink-0"
-                />
-              </button>
-            </div>
-            <div className="flex items-center gap-2">
-              <label className="text-sm font-medium text-gray-ink">Sort by:</label>
-              <select
-                value={filters.sort_by ?? 'newest'}
-                onChange={e => setFilters(f => ({ ...f, sort_by: e.target.value }))}
-                className="cursor-pointer rounded-lg border border-border px-3 py-2 text-sm text-ink outline-none transition-colors hover:border-primary focus:border-primary focus:ring-2 focus:ring-primary/10"
-              >
-                <option value="recommended">Recommended</option>
-                <option value="price-low">Price: Low to High</option>
-                <option value="price-high">Price: High to Low</option>
-                <option value="newest">Newest Listings</option>
-              </select>
-            </div>
-          </div>
+          {updating ? (
+            <p className="text-sm text-gray-ink" role="status">
+              Updating…
+            </p>
+          ) : null}
         </div>
 
-        {query.isLoading ? (
-          <Spinner />
+        {query.isPending ? (
+          <ul
+            aria-label="Loading rooms"
+            className={`grid gap-6 ${view === 'list' ? 'grid-cols-1' : 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-3'}`}
+          >
+            {Array.from({ length: 6 }, (_, index) => (
+              <ListingCardSkeleton key={index} listView={view === 'list'} />
+            ))}
+          </ul>
         ) : query.error ? (
-          <ErrorState message={query.error.message} />
+          <ErrorState
+            message="We couldn't load rooms right now."
+            hint={query.error.message}
+            action={
+              <Button variant="outline" size="sm" onClick={() => void query.refetch()}>
+                Try again
+              </Button>
+            }
+          />
         ) : properties.length === 0 ? (
-          <div className="py-16 text-center">
-            <img
-              src="/assets/svg/alert.svg"
-              alt=""
-              width={80}
-              height={80}
-              className="mx-auto mb-6 opacity-50"
+          hasActiveFilters ? (
+            <EmptyState
+              icon="search"
+              title="No rooms match these filters"
+              description="Try a wider price range, fewer amenities or a different area."
+              action={
+                <Button variant="outline" onClick={resetFilters}>
+                  Clear filters
+                </Button>
+              }
             />
-            <h3 className="text-2xl font-bold text-ink">No Properties Found</h3>
-            <p className="mx-auto mt-2 max-w-md text-gray-ink">
-              We couldn&apos;t find any properties matching your criteria. Try adjusting your
-              filters or search area.
-            </p>
-            <button
-              type="button"
-              onClick={resetFilters}
-              className="mt-6 rounded-full bg-primary-strong px-6 py-3 text-sm font-semibold text-white transition-colors hover:bg-primary-hover"
-            >
-              Clear All Filters
-            </button>
-          </div>
+          ) : (
+            <EmptyState
+              icon="buildingOffice"
+              title="No rooms listed yet"
+              description="New boarding houses appear here as soon as landlords publish them."
+            />
+          )
         ) : (
-          <>
-            <ul
-              className={`grid gap-6 pb-8 ${
+          <ul
+              aria-busy={updating}
+              className={`grid gap-6 transition-opacity duration-200 ${updating ? 'opacity-60' : ''} ${
                 view === 'list' ? 'grid-cols-1' : 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-3'
               }`}
             >
               {properties.map(property => (
-                <PropertyCard
+                <ListingCard
                   key={property.id}
                   property={property}
                   detailTo={detailTo}
@@ -691,28 +566,167 @@ export function FindARoomContent({
                 />
               ))}
             </ul>
-            {hasMore ? (
-              <div className="pb-12 pt-4 text-center">
-                <button
-                  type="button"
-                  onClick={loadMore}
-                  className="inline-flex items-center gap-3 rounded-xl border-2 border-primary bg-surface px-8 py-4 text-base font-semibold text-primary transition-all hover:-translate-y-0.5 hover:bg-primary-strong hover:text-white hover:shadow-lg"
-                >
-                  <img
-                    src="/assets/svg/history.svg"
-                    alt=""
-                    width={20}
-                    height={20}
-                    className="shrink-0"
-                  />
-                  Load More Properties
-                </button>
-              </div>
-            ) : null}
-          </>
         )}
-      </div>
+
+        {!query.isPending && !query.error && (hasPrev || hasNext) ? (
+          <nav
+            aria-label="Pages"
+            className="mt-10 flex items-center justify-between gap-3 border-t border-border pt-6"
+          >
+            <Button
+              variant="outline"
+              disabled={!hasPrev || updating}
+              onClick={() => goToPage(offset - limit)}
+            >
+              <Icon name="chevronLeft" size={16} />
+              Previous
+            </Button>
+            <p className="tabular text-sm text-gray-ink">Page {pageNumber}</p>
+            <Button
+              variant="outline"
+              disabled={!hasNext || updating}
+              onClick={() => goToPage(offset + limit)}
+            >
+              Next
+              <Icon name="chevronRight" size={16} />
+            </Button>
+          </nav>
+        ) : null}
+      </section>
+
+      {/* ================= MOBILE FILTER SHEET ================= */}
+      <Drawer
+        open={sheetOpen}
+        title="Filters"
+        onClose={() => setSheetOpen(false)}
+        footer={
+          <div className="flex items-center gap-3">
+            <Button
+              type="button"
+              variant="ghost"
+              onClick={resetFilters}
+              disabled={!hasActiveFilters}
+            >
+              Clear all
+            </Button>
+            <Button type="button" className="flex-1" onClick={() => setSheetOpen(false)}>
+              {query.isPending ? 'Show results' : `Show ${countHeading}`}
+            </Button>
+          </div>
+        }
+      >
+        <div className="flex flex-col gap-5">
+          <Field label="Price range" htmlFor="sheet-price">
+            <SelectInput
+              id="sheet-price"
+              value={priceRange}
+              onChange={e => applyPriceRange(e.target.value)}
+            >
+              {PRICE_OPTIONS.map(option => (
+                <option key={option.value} value={option.value}>
+                  {option.label}
+                </option>
+              ))}
+            </SelectInput>
+          </Field>
+          <Field label="Property type" htmlFor="sheet-type">
+            <SelectInput id="sheet-type" value={roomType} onChange={e => setRoomType(e.target.value)}>
+              {TYPE_OPTIONS.map(option => (
+                <option key={option.value} value={option.value}>
+                  {option.label}
+                </option>
+              ))}
+            </SelectInput>
+          </Field>
+          <fieldset>
+            <legend className="mb-1.5 text-sm font-semibold text-ink">Amenities</legend>
+            <div className="grid grid-cols-1 gap-1 min-[380px]:grid-cols-2">
+              {AMENITY_OPTIONS.map(amenity => (
+                <AmenityCheckbox
+                  key={amenity}
+                  amenity={amenity}
+                  checked={selectedAmenities.includes(amenity)}
+                  onToggle={() => toggleAmenity(amenity)}
+                />
+              ))}
+            </div>
+          </fieldset>
+        </div>
+      </Drawer>
+
       <MapModal open={mapOpen} onClose={() => setMapOpen(false)} />
     </div>
+  );
+}
+
+function AmenityCheckbox({
+  amenity,
+  checked,
+  onToggle,
+}: {
+  amenity: string;
+  checked: boolean;
+  onToggle: () => void;
+}) {
+  return (
+    <label className="flex cursor-pointer items-center gap-2.5 rounded-lg px-2.5 py-2 text-sm text-ink transition-colors duration-100 hover:bg-subtle">
+      <input
+        type="checkbox"
+        checked={checked}
+        onChange={onToggle}
+        className="h-4 w-4 shrink-0 accent-[var(--color-primary)]"
+      />
+      {amenity}
+    </label>
+  );
+}
+
+function FilterTag({
+  label,
+  onRemove,
+  removeLabel,
+}: {
+  label: string;
+  onRemove: () => void;
+  removeLabel: string;
+}) {
+  return (
+    <span className="inline-flex items-center gap-1 rounded-lg bg-mint py-1 pl-2.5 pr-1 text-xs font-medium text-primary-dark">
+      {label}
+      <button
+        type="button"
+        onClick={onRemove}
+        aria-label={removeLabel}
+        className="flex h-5 w-5 items-center justify-center rounded-md transition-colors duration-100 hover:bg-primary-strong/15"
+      >
+        <Icon name="close" size={12} />
+      </button>
+    </span>
+  );
+}
+
+function ViewToggle({
+  label,
+  icon,
+  active,
+  onClick,
+}: {
+  label: string;
+  icon: string;
+  active: boolean;
+  onClick: () => void;
+}) {
+  return (
+    <button
+      type="button"
+      aria-label={label}
+      aria-pressed={active}
+      onClick={onClick}
+      className={`flex h-9 w-9 items-center justify-center rounded-lg transition-colors duration-150 ${
+        active ? 'bg-mint text-primary-dark' : 'text-gray-ink hover:bg-subtle hover:text-ink'
+      }`}
+    >
+      <Icon name={icon} size={18} />
+    </button>
   );
 }

@@ -4,17 +4,22 @@ import { chatStream, type AiHistoryMessage } from '../lib/api/ai';
 import { useAuth } from '../lib/auth-context';
 import { PublicNavbar } from '../components/layout/PublicNavbar';
 import { LoginPromptOverlay } from '../components/ai/LoginPromptOverlay';
+import { buttonClasses } from '../components/ui/Button';
 import { Icon } from '../components/ui/Icon';
 
 export const Route = createFileRoute('/haven-ai')({
   component: HavenAiPage,
 });
 
+/**
+ * Starter questions. Haven AI is given the current listings plus general knowledge of the app, so
+ * these stay within what it can actually answer (rooms, and how things work here).
+ */
 const SUGGESTIONS = [
-  'Find a room near UST under ₱5,000',
-  'When is my next payment due?',
-  'Help me submit a maintenance request',
-  'Show me rooms with AC near my university',
+  'Which rooms are under ₱5,000 a month?',
+  'Which rooms have air-conditioning?',
+  'What should I check when I visit a room?',
+  'How do I log a rent payment?',
 ];
 
 /** Return-to path carried through login/signup so guests resume their chat. */
@@ -33,10 +38,28 @@ interface PendingChatState {
   blocked: boolean;
 }
 
-function AiAvatar() {
+function AiMark({ size = 'sm' }: { size?: 'sm' | 'lg' }) {
+  const box = size === 'lg' ? 'h-12 w-12 rounded-2xl' : 'h-8 w-8 rounded-xl';
   return (
-    <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-primary to-primary-light text-white">
-      <Icon name="sparkles" size={18} />
+    <span
+      aria-hidden="true"
+      className={`flex shrink-0 items-center justify-center bg-mint text-primary ${box}`}
+    >
+      <Icon name="sparkles" size={size === 'lg' ? 24 : 16} />
+    </span>
+  );
+}
+
+function AssistantMessage({ children }: { children: React.ReactNode }) {
+  return (
+    <div className="flex items-start gap-3">
+      <AiMark />
+      <div className="min-w-0 flex-1 pt-1">
+        <p className="text-xs font-semibold text-gray-ink">Haven AI</p>
+        <div className="mt-1 whitespace-pre-wrap text-[0.9375rem] leading-relaxed text-ink">
+          {children}
+        </div>
+      </div>
     </div>
   );
 }
@@ -199,86 +222,100 @@ function HavenAiPage() {
   }
 
   const hasMessages = history.length > 0;
+  // Shown only before a guest has used their free question.
+  const showGuestAllowance = isHydrated && !isAuthenticated && guestPromptsUsed === 0;
 
   return (
-    <div className="flex h-screen flex-col bg-surface text-ink">
+    <div className="flex h-dvh flex-col bg-cream text-ink">
       <PublicNavbar />
 
-      <main className="flex flex-1 flex-col overflow-hidden">
+      <main className="flex min-h-0 flex-1 flex-col">
         {/* Messages / empty state */}
-        <div ref={scrollRef} className="flex-1 overflow-y-auto">
+        <div ref={scrollRef} className="min-h-0 flex-1 overflow-y-auto">
           {!hasMessages && !loading ? (
-            <div className="mx-auto flex h-full max-w-3xl flex-col items-center justify-center px-4 py-10 text-center">
-              <div className="flex h-12 w-12 items-center justify-center rounded-full bg-gradient-to-br from-primary to-primary-light text-white">
-                <Icon name="sparkles" size={24} />
+            <div className="mx-auto flex min-h-full max-w-2xl flex-col justify-center px-4 py-10 sm:px-6">
+              <div className="rise-in">
+                <AiMark size="lg" />
+                <h1 className="display-lg mt-6 text-ink">What are you looking for?</h1>
+                <p className="mt-4 max-w-lg text-lg leading-relaxed text-gray-ink">
+                  Ask Haven AI about the rooms listed here, or how renting through Haven works. It
+                  answers in plain language and points you to the right page.
+                </p>
               </div>
-              <h1 className="mt-5 text-3xl font-bold tracking-tight text-ink">
-                What can I help with?
-              </h1>
-              <p className="mt-2 max-w-md text-gray-ink">
-                Ask Haven AI about rooms, payments, maintenance, or anything about your tenancy.
-              </p>
-              <div className="mt-8 grid w-full grid-cols-1 gap-3 sm:grid-cols-2">
-                {SUGGESTIONS.map(suggestion => (
-                  <button
-                    key={suggestion}
-                    type="button"
-                    disabled={guestBlocked}
-                    onClick={() => sendMessage(suggestion)}
-                    className="rounded-xl border border-border bg-surface p-4 text-left text-sm text-gray-ink transition hover:border-primary hover:bg-mint/40 hover:text-ink disabled:cursor-not-allowed disabled:opacity-50"
-                  >
-                    {suggestion}
-                  </button>
-                ))}
+
+              <div className="mt-10">
+                <p className="text-sm font-semibold text-ink">Try asking</p>
+                <ul className="mt-3 divide-y divide-border overflow-hidden rounded-2xl border border-border bg-surface shadow-card">
+                  {SUGGESTIONS.map(suggestion => (
+                    <li key={suggestion}>
+                      <button
+                        type="button"
+                        disabled={guestBlocked}
+                        onClick={() => sendMessage(suggestion)}
+                        className="flex w-full items-center gap-3 px-4 py-3.5 text-left text-[0.9375rem] text-ink transition-colors hover:bg-subtle focus-visible:bg-subtle disabled:cursor-not-allowed disabled:text-muted disabled:hover:bg-transparent"
+                      >
+                        <Icon name="search" size={16} className="text-primary" />
+                        {suggestion}
+                      </button>
+                    </li>
+                  ))}
+                </ul>
               </div>
             </div>
           ) : (
-            <div className="mx-auto flex max-w-3xl flex-col gap-6 px-4 py-6">
+            <div
+              role="log"
+              aria-label="Conversation with Haven AI"
+              aria-busy={loading}
+              className="mx-auto flex max-w-2xl flex-col gap-8 px-4 py-8 sm:px-6"
+            >
               {history.map((msg, index) =>
                 msg.role === 'user' ? (
                   <div key={index} className="flex justify-end">
-                    <div className="max-w-[80%] whitespace-pre-wrap rounded-2xl rounded-br-md bg-primary-strong px-4 py-3 text-sm leading-relaxed text-white">
+                    <p className="max-w-[85%] whitespace-pre-wrap rounded-2xl rounded-br-md bg-primary-strong px-4 py-3 text-[0.9375rem] leading-relaxed text-white sm:max-w-[75%]">
+                      <span className="sr-only">You: </span>
                       {msg.content}
-                    </div>
+                    </p>
                   </div>
                 ) : (
-                  <div key={index} className="flex items-start gap-3">
-                    <AiAvatar />
-                    <div className="max-w-[80%] whitespace-pre-wrap rounded-2xl rounded-bl-md border border-border bg-surface px-4 py-3 text-sm leading-relaxed text-ink">
-                      {msg.content}
-                    </div>
-                  </div>
+                  <AssistantMessage key={index}>{msg.content}</AssistantMessage>
                 )
               )}
 
               {loading ? (
-                <div className="flex items-start gap-3">
-                  <AiAvatar />
+                <AssistantMessage>
                   {streamingContent ? (
-                    <div className="max-w-[80%] whitespace-pre-wrap rounded-2xl rounded-bl-md border border-border bg-surface px-4 py-3 text-sm leading-relaxed text-ink">
+                    <>
                       {streamingContent}
-                      <span className="ml-0.5 inline-block h-3.5 w-0.5 animate-pulse bg-primary-strong align-middle" />
-                    </div>
+                      <span
+                        aria-hidden="true"
+                        className="ml-0.5 inline-block h-4 w-0.5 animate-pulse bg-primary align-middle"
+                      />
+                    </>
                   ) : (
-                    <div className="flex gap-1 rounded-2xl rounded-bl-md border border-border bg-surface px-4 py-3">
-                      {[0, 1, 2].map(i => (
-                        <span
-                          key={i}
-                          className="h-2 w-2 animate-bounce rounded-full bg-gray-ink"
-                          style={{ animationDelay: `${i * 0.2}s` }}
-                        />
-                      ))}
-                    </div>
+                    <span className="inline-flex items-center gap-2 text-gray-ink">
+                      <span aria-hidden="true" className="flex gap-1">
+                        {[0, 1, 2].map(i => (
+                          <span
+                            key={i}
+                            className="h-1.5 w-1.5 animate-pulse rounded-full bg-primary"
+                            style={{ animationDelay: `${i * 0.2}s` }}
+                          />
+                        ))}
+                      </span>
+                      Thinking
+                    </span>
                   )}
-                </div>
+                </AssistantMessage>
               ) : null}
 
               {error ? (
                 <p
-                  className={`rounded-lg px-4 py-3 text-sm ${
+                  role="alert"
+                  className={`rounded-xl border px-4 py-3 text-sm ${
                     dailyLimitHit
-                      ? 'bg-warning-tint text-warning-ink'
-                      : 'bg-error-tint text-error-ink'
+                      ? 'border-warning-border bg-warning-tint text-warning-ink'
+                      : 'border-error-border bg-error-tint text-error-ink'
                   }`}
                 >
                   {error}
@@ -289,23 +326,21 @@ function HavenAiPage() {
         </div>
 
         {/* Composer */}
-        <div className="border-t border-border bg-surface px-4 py-4">
-          <div className="mx-auto max-w-3xl">
+        <div className="border-t border-border bg-cream/95 px-4 pb-4 pt-3 sm:px-6">
+          <div className="mx-auto max-w-2xl">
             {guestBlocked ? (
-              <div className="mb-3 flex items-center justify-between gap-3 rounded-xl border border-primary/20 bg-mint/50 px-4 py-3">
-                <p className="text-sm text-ink">
-                  Log in or sign up to keep chatting with Haven AI.
-                </p>
+              <div className="mb-3 flex flex-col gap-3 rounded-2xl border border-border bg-surface px-4 py-3 sm:flex-row sm:items-center sm:justify-between">
+                <p className="text-sm text-ink">Log in or sign up to keep chatting with Haven AI.</p>
                 <div className="flex shrink-0 items-center gap-2">
                   <a
                     href={`/auth/login?redirect=${REDIRECT_PATH}`}
-                    className="rounded-full bg-primary-strong px-4 py-1.5 text-xs font-semibold text-white transition hover:bg-primary-hover"
+                    className={buttonClasses({ size: 'sm' })}
                   >
                     Log in
                   </a>
                   <a
                     href={`/auth/choose?redirect=${REDIRECT_PATH}`}
-                    className="rounded-full border border-primary px-4 py-1.5 text-xs font-semibold text-primary transition hover:bg-surface"
+                    className={buttonClasses({ variant: 'outline', size: 'sm' })}
                   >
                     Sign up
                   </a>
@@ -315,9 +350,13 @@ function HavenAiPage() {
 
             <form
               onSubmit={onSubmit}
-              className="flex items-end gap-2 rounded-3xl border border-border-strong bg-surface p-2 shadow-sm focus-within:border-primary focus-within:shadow-[0_0_0_3px_rgba(74,124,35,0.1)]"
+              className="flex items-end gap-2 rounded-2xl border border-border-strong bg-surface p-2 shadow-card transition-[border-color,box-shadow] duration-150 focus-within:border-primary focus-within:shadow-[0_0_0_3px_rgb(59_106_42/0.12)]"
             >
+              <label htmlFor="haven-ai-input" className="sr-only">
+                Message Haven AI
+              </label>
               <textarea
+                id="haven-ai-input"
                 rows={1}
                 value={input}
                 disabled={guestBlocked}
@@ -329,34 +368,38 @@ function HavenAiPage() {
                   }
                 }}
                 placeholder={
-                  guestBlocked ? 'Log in to continue chatting' : 'Ask Haven AI anything...'
+                  guestBlocked ? 'Log in to continue chatting' : 'Ask about rooms, rent or tours'
                 }
-                className="max-h-40 flex-1 resize-none bg-transparent px-3 py-2 text-sm text-ink outline-none placeholder:text-muted disabled:cursor-not-allowed disabled:opacity-60"
+                className="max-h-40 min-h-10 flex-1 resize-none bg-transparent px-3 py-2 text-[0.9375rem] leading-6 text-ink outline-none [field-sizing:content] placeholder:text-muted disabled:cursor-not-allowed disabled:opacity-60"
               />
               <button
                 type="submit"
                 disabled={loading || guestBlocked || input.trim() === ''}
                 aria-label="Send message"
-                className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-primary-strong text-white transition hover:bg-primary-hover disabled:cursor-not-allowed disabled:bg-subtle"
+                className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-primary-strong text-white transition-[background-color,transform] duration-150 hover:bg-primary-hover active:scale-[0.95] disabled:cursor-not-allowed disabled:bg-subtle disabled:text-muted disabled:active:scale-100"
               >
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
-                  width="16"
-                  height="16"
+                  width="18"
+                  height="18"
                   viewBox="0 0 24 24"
                   fill="none"
                   stroke="currentColor"
                   strokeWidth="2"
                   strokeLinecap="round"
                   strokeLinejoin="round"
+                  aria-hidden="true"
                 >
-                  <path d="M5 12h14" />
-                  <path d="m12 5 7 7-7 7" />
+                  <path d="M12 19V5" />
+                  <path d="m5 12 7-7 7 7" />
                 </svg>
               </button>
             </form>
             <p className="mt-2 text-center text-xs text-muted">
-              Haven AI can make mistakes. Check important information.
+              {showGuestAllowance
+                ? 'You can ask one question without an account. '
+                : null}
+              Haven AI can make mistakes. Check important details with the landlord.
             </p>
           </div>
         </div>

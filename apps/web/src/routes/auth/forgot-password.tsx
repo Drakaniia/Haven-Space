@@ -1,11 +1,11 @@
 import { Link, createFileRoute, useNavigate } from '@tanstack/react-router';
 import { useState, type FormEvent } from 'react';
+import { AuthAlert } from '../../components/auth/AuthAlert';
 import { AuthSplitLayout } from '../../components/auth/AuthSplitLayout';
 import { Button } from '../../components/ui/Button';
-import { ErrorState } from '../../components/ui/ErrorState';
 import { Field, TextInput } from '../../components/ui/Field';
 import { ApiRequestError } from '../../lib/api/http';
-import { forgotPassword, verifyResetCode } from '../../lib/api/auth';
+import { forgotPassword, resendResetCode, verifyResetCode } from '../../lib/api/auth';
 
 export const Route = createFileRoute('/auth/forgot-password')({
   component: ForgotPasswordPage,
@@ -19,6 +19,7 @@ function ForgotPasswordPage() {
   const [error, setError] = useState<string | null>(null);
   const [info, setInfo] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
+  const [resending, setResending] = useState(false);
 
   async function handleEmailSubmit(e: FormEvent) {
     e.preventDefault();
@@ -57,61 +58,127 @@ function ForgotPasswordPage() {
     }
   }
 
+  async function handleResend() {
+    setError(null);
+    setInfo(null);
+    setResending(true);
+    try {
+      const result = await resendResetCode(email.trim());
+      setInfo(result.message);
+      setCode('');
+    } catch (err) {
+      setError(err instanceof ApiRequestError ? err.message : 'Failed to resend the code.');
+    } finally {
+      setResending(false);
+    }
+  }
+
+  function changeEmail() {
+    setStep('email');
+    setCode('');
+    setError(null);
+    setInfo(null);
+  }
+
+  const linkButton =
+    'font-semibold text-primary underline-offset-4 hover:underline disabled:cursor-not-allowed disabled:opacity-60';
+
   return (
     <AuthSplitLayout
-      title={step === 'email' ? 'Forgot Password?' : 'Enter Verification Code'}
+      title={step === 'email' ? 'Reset your password' : 'Check your email'}
       subtitle={
-        step === 'email'
-          ? "No worries! Enter your email and we'll send you a reset code."
-          : `We've sent a 6-digit code to ${email}`
+        step === 'email' ? (
+          'Enter the email you signed up with and we’ll send you a 6-digit reset code.'
+        ) : (
+          <>
+            Enter the 6-digit code we sent to{' '}
+            <span className="font-semibold text-ink">{email.trim()}</span>.
+          </>
+        )
       }
       footer={
-        <p className="text-center">
-          Remember your password?{' '}
-          <Link to="/auth/login" className="text-primary hover:underline">
-            Log in
+        <p>
+          Remembered it?{' '}
+          <Link
+            to="/auth/login"
+            className="font-semibold text-primary underline-offset-4 hover:underline"
+          >
+            Back to login
           </Link>
         </p>
       }
     >
-      {error ? <ErrorState message={error} /> : null}
-      {info ? <div className="rounded-md bg-mint p-3 text-sm">{info}</div> : null}
+      {error ? <AuthAlert title={error} /> : null}
+      {info ? <AuthAlert tone="success" title={info} /> : null}
 
       {step === 'email' ? (
-        <form className="flex flex-col gap-4" onSubmit={handleEmailSubmit}>
+        <form className="flex flex-col gap-5" onSubmit={handleEmailSubmit}>
           <Field label="Email" htmlFor="email">
             <TextInput
               id="email"
               type="email"
               name="email"
-              placeholder="Enter your email"
+              placeholder="you@example.com"
+              autoComplete="email"
+              inputMode="email"
               required
+              autoFocus
               value={email}
               onChange={e => setEmail(e.target.value)}
             />
           </Field>
-          <Button type="submit" disabled={submitting}>
-            {submitting ? 'Sending…' : 'Send Reset Code'}
+          <Button type="submit" size="lg" className="w-full" disabled={submitting}>
+            {submitting ? 'Sending code…' : 'Send reset code'}
           </Button>
         </form>
       ) : (
-        <form className="flex flex-col gap-4" onSubmit={handleCodeSubmit}>
+        <form className="flex flex-col gap-5" onSubmit={handleCodeSubmit}>
           <Field label="6-digit code" htmlFor="code">
             <TextInput
               id="code"
               name="code"
               inputMode="numeric"
+              autoComplete="one-time-code"
               pattern="[0-9]*"
               maxLength={6}
               placeholder="000000"
               required
+              autoFocus
+              className="tabular text-center font-semibold tracking-[0.5em]"
               value={code}
               onChange={e => setCode(e.target.value.replace(/\D/g, '').slice(0, 6))}
             />
           </Field>
-          <Button type="submit" disabled={submitting || code.length !== 6}>
-            {submitting ? 'Verifying…' : 'Verify Code'}
+          <Button
+            type="submit"
+            size="lg"
+            className="w-full"
+            disabled={submitting || resending || code.length !== 6}
+          >
+            {submitting ? 'Verifying…' : 'Verify code'}
           </Button>
+          <div className="flex flex-col items-center gap-2 text-sm text-gray-ink">
+            <p>
+              Didn’t get it? Check spam, or{' '}
+              <button
+                type="button"
+                className={linkButton}
+                disabled={resending || submitting}
+                onClick={() => void handleResend()}
+              >
+                {resending ? 'sending a new code…' : 'send a new code'}
+              </button>
+              .
+            </p>
+            <button
+              type="button"
+              className={linkButton}
+              disabled={submitting}
+              onClick={changeEmail}
+            >
+              Use a different email
+            </button>
+          </div>
         </form>
       )}
     </AuthSplitLayout>

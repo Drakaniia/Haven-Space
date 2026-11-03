@@ -64,6 +64,18 @@ const ICON_FILES: Record<string, string> = {
   report: 'report.svg',
 };
 
+/** Brand marks keep their own colours; everything else is a monochrome glyph. */
+const MULTICOLOUR = new Set(['google']);
+
+/**
+ * App icon.
+ *
+ * The glyph SVGs are single-colour (with opacity layers for a duotone look), so
+ * they render as a CSS mask filled with `currentColor`: an icon takes the text
+ * colour of whatever it sits in (`text-primary`, `text-white` on a solid
+ * button, `text-error-ink` in a banner) instead of a baked-in grey. Brand marks
+ * in `MULTICOLOUR` stay plain images.
+ */
 export function Icon({
   name,
   size = 20,
@@ -75,14 +87,28 @@ export function Icon({
 }) {
   const file = ICON_FILES[name];
   if (!file) return null;
+  const src = `/assets/svg/${file}`;
+
+  if (MULTICOLOUR.has(name)) {
+    return (
+      <img
+        src={src}
+        alt=""
+        width={size}
+        height={size}
+        className={className}
+        aria-hidden="true"
+      />
+    );
+  }
+
+  const mask = `url("${src}") center / contain no-repeat`;
   return (
-    <img
-      src={`/assets/svg/${file}`}
-      alt=""
-      width={size}
-      height={size}
-      className={className}
+    <span
       aria-hidden="true"
+      data-icon={name}
+      className={`inline-block shrink-0 bg-current align-middle ${className}`}
+      style={{ width: size, height: size, mask, WebkitMask: mask }}
     />
   );
 }

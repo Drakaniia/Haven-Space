@@ -15,12 +15,18 @@ export function PropertyDetailHeader({
   propertyId,
   name,
   subtitle,
+  meta,
+  imageUrl,
   trailTail,
   action,
 }: {
   propertyId: number;
   name: string;
   subtitle?: string;
+  /** A quiet line under the title: status pills, address, room count. */
+  meta?: ReactNode;
+  /** Optional cover photo, shown as a small thumbnail beside the title. */
+  imageUrl?: string | null;
   /** Appended after the property name, e.g. `Rooms` (D7). Omit on the detail page. */
   trailTail?: string;
   action?: ReactNode;
@@ -70,10 +76,35 @@ export function PropertyDetailHeader({
         </ol>
       </nav>
 
-      <header className="mb-6 flex flex-wrap items-start justify-between gap-4">
-        <div className="min-w-0">
-          <h1 className="text-2xl font-bold tracking-tight text-ink">{name}</h1>
-          {subtitle ? <p className="mt-1 text-sm text-gray-ink">{subtitle}</p> : null}
+      <header className="mb-6 flex flex-wrap items-end justify-between gap-x-6 gap-y-4">
+        <div className="flex min-w-0 items-center gap-4">
+          {imageUrl !== undefined ? (
+            <span className="hidden h-16 w-16 shrink-0 items-center justify-center overflow-hidden rounded-2xl bg-mint text-primary sm:flex">
+              {imageUrl ? (
+                <img src={imageUrl} alt="" className="h-full w-full object-cover" />
+              ) : (
+                <Icon name="buildingOffice" size={26} />
+              )}
+            </span>
+          ) : null}
+          <div className="min-w-0">
+            <h1 className="font-display text-[1.75rem] font-medium leading-[1.12] tracking-[-0.02em] text-ink sm:text-[2rem]">
+              {trailTail ? (
+                <>
+                  {trailTail}
+                  <span className="text-gray-ink"> · {name}</span>
+                </>
+              ) : (
+                name
+              )}
+            </h1>
+            {subtitle ? <p className="mt-1.5 text-sm text-gray-ink">{subtitle}</p> : null}
+            {meta ? (
+              <div className="mt-2 flex flex-wrap items-center gap-x-3 gap-y-1.5 text-sm text-gray-ink">
+                {meta}
+              </div>
+            ) : null}
+          </div>
         </div>
         {action ? <div className="flex flex-wrap items-center gap-2">{action}</div> : null}
       </header>

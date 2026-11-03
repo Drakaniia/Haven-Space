@@ -1,9 +1,9 @@
-import { Link, createFileRoute, useNavigate, useSearch } from '@tanstack/react-router';
+import { Link, createFileRoute, useSearch } from '@tanstack/react-router';
 import { useState, type FormEvent } from 'react';
+import { AuthAlert, AuthStatus } from '../../components/auth/AuthAlert';
 import { AuthSplitLayout } from '../../components/auth/AuthSplitLayout';
-import { Button } from '../../components/ui/Button';
-import { ErrorState } from '../../components/ui/ErrorState';
-import { Field, PasswordInput, TextInput } from '../../components/ui/Field';
+import { Button, buttonClasses } from '../../components/ui/Button';
+import { Field, PasswordInput } from '../../components/ui/Field';
 import { ApiRequestError } from '../../lib/api/http';
 import { resetPassword } from '../../lib/api/auth';
 
@@ -20,29 +20,36 @@ export const Route = createFileRoute('/auth/reset-password')({
   component: ResetPasswordPage,
 });
 
+type FieldErrors = Partial<Record<'newPassword' | 'confirmPassword', string>>;
+
+const footerLink = 'font-semibold text-primary underline-offset-4 hover:underline';
+
 function ResetPasswordPage() {
   const { email, request_id } = useSearch({ from: '/auth/reset-password' });
-  const navigate = useNavigate();
   const [newPassword, setNewPassword] = useState('');
   const [confirm, setConfirm] = useState('');
   const [error, setError] = useState<string | null>(null);
+  const [fieldErrors, setFieldErrors] = useState<FieldErrors>({});
   const [success, setSuccess] = useState(false);
   const [submitting, setSubmitting] = useState(false);
+
+  const linkIncomplete = !email || !request_id;
 
   async function handleSubmit(e: FormEvent) {
     e.preventDefault();
     setError(null);
+    setFieldErrors({});
 
     if (!email || !request_id) {
       setError('This reset link is incomplete. Please request a new reset code.');
       return;
     }
     if (newPassword !== confirm) {
-      setError('Passwords do not match');
+      setFieldErrors({ confirmPassword: 'Passwords do not match' });
       return;
     }
     if (newPassword.length < 8) {
-      setError('Password must be at least 8 characters long');
+      setFieldErrors({ newPassword: 'Password must be at least 8 characters long' });
       return;
     }
 
@@ -57,66 +64,142 @@ function ResetPasswordPage() {
     }
   }
 
+  const liveMismatch =
+    confirm.length > 0 && confirm.length >= newPassword.length && confirm !== newPassword
+      ? 'Passwords do not match'
+      : null;
+
+  if (success) {
+    return (
+      <AuthSplitLayout
+        title="Password updated"
+        subtitle="You can now log in with your new password."
+      >
+        <AuthStatus
+          tone="success"
+          icon="check"
+          actions={
+            <Link to="/auth/login" className={buttonClasses({ size: 'lg', className: 'w-full' })}>
+              Log in
+            </Link>
+          }
+        >
+          Your password has been updated. Use it the next time you log in
+          {email ? (
+            <>
+              {' '}
+              as <span className="font-semibold text-ink">{email}</span>
+            </>
+          ) : null}
+          .
+        </AuthStatus>
+      </AuthSplitLayout>
+    );
+  }
+
+  if (linkIncomplete) {
+    return (
+      <AuthSplitLayout
+        title="This reset link isn’t valid"
+        subtitle="It may be incomplete or already used."
+        footer={
+          <p>
+            Remembered it?{' '}
+            <Link to="/auth/login" className={footerLink}>
+              Back to login
+            </Link>
+          </p>
+        }
+      >
+        <AuthStatus
+          tone="error"
+          icon="clock"
+          actions={
+            <Link
+              to="/auth/forgot-password"
+              className={buttonClasses({ size: 'lg', className: 'w-full' })}
+            >
+              Request a new code
+            </Link>
+          }
+        >
+          This reset link is incomplete. Please request a new reset code.
+        </AuthStatus>
+      </AuthSplitLayout>
+    );
+  }
+
   return (
     <AuthSplitLayout
-      title={success ? 'Password Reset Successful!' : 'Reset Your Password'}
+      title="Choose a new password"
       subtitle={
-        success
-          ? 'You can now log in with your new password.'
-          : 'Create a new password for your account.'
-      }
-    >
-      {success ? (
-        <div className="flex flex-col gap-4">
-          <div className="rounded-md bg-mint p-3 text-sm">
-            Your password has been updated. Head back to login to continue.
-          </div>
-          <Link to="/auth/login" className="text-center text-primary hover:underline">
-            Go to Login
-          </Link>
-        </div>
-      ) : (
         <>
-          {error ? <ErrorState message={error} /> : null}
-          <form className="flex flex-col gap-4" onSubmit={handleSubmit}>
-            <Field label="New Password" htmlFor="newPassword">
-              <PasswordInput
-                id="newPassword"
-                name="newPassword"
-                autoComplete="new-password"
-                placeholder="Enter your new password"
-                required
-                minLength={8}
-                value={newPassword}
-                onChange={e => setNewPassword(e.target.value)}
-              />
-            </Field>
-            <Field label="Confirm Password" htmlFor="confirmPassword">
-              <PasswordInput
-                id="confirmPassword"
-                name="confirmPassword"
-                autoComplete="new-password"
-                placeholder="Confirm your new password"
-                required
-                minLength={8}
-                value={confirm}
-                onChange={e => setConfirm(e.target.value)}
-              />
-            </Field>
-            <Button type="submit" disabled={submitting}>
-              {submitting ? 'Resetting…' : 'Reset Password'}
-            </Button>
-          </form>
+          For <span className="font-semibold text-ink">{email}</span>. Use at least 8
+          characters.
         </>
-      )}
-      {!success ? (
-        <p className="mt-6 text-sm">
-          Remember your password?{' '}
-          <Link to="/auth/login" className="text-primary hover:underline">
-            Log in
+      }
+      footer={
+        <p>
+          Remembered it?{' '}
+          <Link to="/auth/login" className={footerLink}>
+            Back to login
           </Link>
         </p>
+      }
+    >
+      {error ? (
+        <AuthAlert
+          title={error}
+          action={
+            <Link to="/auth/forgot-password" className={footerLink}>
+              Request a new code
+            </Link>
+          }
+        />
       ) : null}
+      <form className="flex flex-col gap-5" onSubmit={handleSubmit}>
+        <Field label="New password" htmlFor="newPassword" error={fieldErrors.newPassword}>
+          <PasswordInput
+            id="newPassword"
+            name="newPassword"
+            autoComplete="new-password"
+            placeholder="8 or more characters"
+            required
+            minLength={8}
+            autoFocus
+            aria-invalid={fieldErrors.newPassword ? true : undefined}
+            value={newPassword}
+            onChange={e => {
+              setNewPassword(e.target.value);
+              if (fieldErrors.newPassword) setFieldErrors(f => ({ ...f, newPassword: undefined }));
+            }}
+          />
+        </Field>
+        <Field
+          label="Confirm new password"
+          htmlFor="confirmPassword"
+          error={fieldErrors.confirmPassword ?? liveMismatch}
+        >
+          <PasswordInput
+            id="confirmPassword"
+            name="confirmPassword"
+            autoComplete="new-password"
+            placeholder="Type it again"
+            required
+            minLength={8}
+            aria-invalid={fieldErrors.confirmPassword || liveMismatch ? true : undefined}
+            value={confirm}
+            onChange={e => {
+              setConfirm(e.target.value);
+              if (fieldErrors.confirmPassword)
+                setFieldErrors(f => ({ ...f, confirmPassword: undefined }));
+            }}
+          />
+        </Field>
+        <Button type="submit" size="lg" className="mt-1 w-full" disabled={submitting}>
+          {submitting ? 'Updating password…' : 'Update password'}
+        </Button>
+      </form>
     </AuthSplitLayout>
   );
 }

@@ -1,15 +1,24 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { useState, type ReactNode } from 'react';
+import { useMemo, useState, type ReactNode } from 'react';
 import { bulkPatchApplicationStatus, getApplications } from '../../../lib/api/admin';
 import type { AdminApplicationRow } from '../../../lib/types';
 import { Button } from '../../ui/Button';
 import { ConfirmDialog } from '../../ui/ConfirmDialog';
 import { DataTable, type Column } from '../../ui/DataTable';
 import { StatusBadge } from '../../ui/StatusBadge';
-import { AdminSection, StatCard } from '../AdminSection';
+import { AdminSection, StatStrip } from '../AdminSection';
+import {
+  FilterChips,
+  NoMatches,
+  SearchField,
+  TableToolbar,
+  countBy,
+  matchesQuery,
+  resultCount,
+} from '../AdminToolbar';
 import { BULK_SELECT_CLASSES, BulkActionBar } from '../BulkActionBar';
 import { LandlordDocumentsModal } from '../LandlordDocumentsModal';
-import { StatsGridSkeleton, TableSkeleton } from '../AdminSkeletons';
+import { StatStripSkeleton, TableSkeleton, ToolbarSkeleton } from '../AdminSkeletons';
 import { formatDate, type PushToast } from '../sections';
 
 type PendingConfirm = {
@@ -19,12 +28,20 @@ type PendingConfirm = {
   run: () => void;
 };
 
+/** Known statuses lead the filter in this order; anything else follows. */
+const STATUS_ORDER = ['pending', 'approved', 'rejected'];
+
+function statusLabel(status: string): string {
+  const text = status.replaceAll('_', ' ');
+  return text.charAt(0).toUpperCase() + text.slice(1);
+}
+
 /**
  * Boarder applications across every property.
  *
- * Keeps its own four-stat block (these describe *this* section's data, unlike
- * the platform counters that moved to Overview), and owns the entry point into
- * the verification-document review modal.
+ * Its figures describe *this* section's data, so they sit above the table as
+ * one compact strip rather than four cards. It also owns an entry point into
+ * the verification-document review modal (the landlord name on each row).
  */
 export function ApplicationsSection({ token, push }: { token: string; push: PushToast }) {
   const queryClient = useQueryClient();
@@ -34,6 +51,8 @@ export function ApplicationsSection({ token, push }: { token: string; push: Push
   const [confirm, setConfirm] = useState<PendingConfirm | null>(null);
   /** Landlord whose verification documents are open in the review modal. */
   const [documentLandlordId, setDocumentLandlordId] = useState<number | null>(null);
+  const [query, setQuery] = useState('');
+  const [status, setStatus] = useState('all');
 
   const invalidate = () => {
     void queryClient.invalidateQueries({ queryKey: ['admin'] });
@@ -67,6 +86,37 @@ export function ApplicationsSection({ token, push }: { token: string; push: Push
   const rows = applications.data?.data.applications ?? [];
   const stats = applications.data?.data.stats;
 
+  const statusCounts = useMemo(() => countBy(rows, row => row.status), [rows]);
+  const statusOptions = useMemo(() => {
+    const keys = Object.keys(statusCounts).sort((a, b) => {
+      const ai = STATUS_ORDER.indexOf(a);
+      const bi = STATUS_ORDER.indexOf(b);
+      return (ai === -1 ? 99 : ai) - (bi === -1 ? 99 : bi) || a.localeCompare(b);
+    });
+    return [
+      { value: 'all', label: 'All' },
+      ...keys.map(key => ({ value: key, label: statusLabel(key), count: statusCounts[key] })),
+    ];
+  }, [statusCounts]);
+  const visible = useMemo(
+    () =>
+      rows.filter(
+        row =>
+          (status === 'all' || row.status === status) &&
+          matchesQuery(
+            query,
+            `${row.boarder_first} ${row.boarder_last}`,
+            row.boarder_email,
+            `${row.landlord_first} ${row.landlord_last}`,
+            row.room_title
+          )
+      ),
+    [rows, status, query]
+  );
+  const visibleIds = new Set(visible.map(row => row.id));
+  const hiddenSelected = Array.from(selected).filter(id => !visibleIds.has(id)).length;
+  const filtered = query.trim() !== '' || status !== 'all';
+
   function requestBulk() {
     const count = selected.size;
     setConfirm({
@@ -82,8 +132,15 @@ export function ApplicationsSection({ token, push }: { token: string; push: Push
   }
 
   const columns: Column<AdminApplicationRow>[] = [
-    { header: 'Boarder', cell: row => `${row.boarder_first} ${row.boarder_last}` },
-    { header: 'Boarder email', cell: row => row.boarder_email },
+    {
+      header: 'Boarder',
+      cell: row => (
+        <div className="min-w-[11rem]">
+          <p className="font-medium text-ink">{`${row.boarder_first} ${row.boarder_last}`}</p>
+          <p className="text-xs text-gray-ink">{row.boarder_email}</p>
+        </div>
+      ),
+    },
     {
       header: 'Landlord',
       // The landlord name is a record link that opens the verification-documents
@@ -95,7 +152,7 @@ export function ApplicationsSection({ token, push }: { token: string; push: Push
         ) : (
           <button
             type="button"
-            className="-mx-1 rounded px-1 py-0.5 text-left text-sm font-medium text-primary transition-all duration-100 ease-out hover:underline focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary active:scale-[0.98] motion-reduce:transition-none"
+            className="-mx-1 whitespace-nowrap rounded px-1 py-0.5 text-left text-sm font-medium text-primary transition-[color,transform] duration-100 ease-out hover:underline active:scale-[0.98] motion-reduce:transition-none"
             aria-label={`View verification documents for ${row.landlord_first} ${row.landlord_last}`}
             onClick={() => setDocumentLandlordId(row.landlord_id)}
           >
@@ -103,9 +160,15 @@ export function ApplicationsSection({ token, push }: { token: string; push: Push
           </button>
         ),
     },
-    { header: 'Room', cell: row => row.room_title ?? '—' },
+    {
+      header: 'Room',
+      cell: row => row.room_title ?? <span className="text-muted">No room</span>,
+    },
     { header: 'Status', cell: row => <StatusBadge status={row.status} /> },
-    { header: 'Applied', cell: row => formatDate(row.created_at) },
+    {
+      header: 'Applied',
+      cell: row => <span className="whitespace-nowrap text-gray-ink">{formatDate(row.created_at)}</span>,
+    },
   ];
 
   return (
@@ -113,14 +176,17 @@ export function ApplicationsSection({ token, push }: { token: string; push: Push
       section="applications"
       isLoading={applications.isLoading}
       error={applications.error}
+      onRetry={() => void applications.refetch()}
       empty={!applications.data?.data.applications.length}
-      emptyTitle="No applications"
+      emptyTitle="No applications yet"
+      emptyDescription="Applications appear here when boarders apply for a room on a published listing."
       emptyIcon="application"
       skeleton={
         <>
-          <StatsGridSkeleton count={4} />
-          <div className="mt-4">
-            <TableSkeleton rows={5} columns={6} />
+          <StatStripSkeleton count={4} />
+          <div className="mt-6">
+            <ToolbarSkeleton chips={4} />
+            <TableSkeleton rows={6} columns={5} />
           </div>
         </>
       }
@@ -129,65 +195,100 @@ export function ApplicationsSection({ token, push }: { token: string; push: Push
           <Button
             variant={selectMode ? 'secondary' : 'outline'}
             size="sm"
+            aria-pressed={selectMode}
             onClick={() => {
               if (selectMode) setSelected(new Set());
               setSelectMode(value => !value);
             }}
           >
-            {selectMode ? 'Cancel' : 'Select'}
+            {selectMode ? 'Done selecting' : 'Select'}
           </Button>
         ) : null
       }
       toolbar={
-        rows.length ? (
-          <p className="mb-3 text-xs text-gray-ink">{rows.length} applications</p>
-        ) : null
+        <>
+          {stats ? (
+            <div className="mb-6">
+              <StatStrip
+                label="Application figures"
+                items={[
+                  { label: 'Total', value: String(stats.total) },
+                  {
+                    label: 'Pending',
+                    value: String(stats.pending),
+                    sub: stats.pending > 0 ? 'Waiting on a landlord' : 'None waiting',
+                    tone: stats.pending > 0 ? 'attention' : 'default',
+                  },
+                  { label: 'Approved', value: String(stats.approved) },
+                  {
+                    label: 'Answered',
+                    value: `${stats.processed_rate_percent}%`,
+                    sub: `${stats.rejected} rejected`,
+                  },
+                ]}
+              />
+            </div>
+          ) : null}
+          <TableToolbar
+            count={resultCount(visible.length, rows.length, 'application', 'applications')}
+          >
+            <SearchField
+              label="Search applications"
+              placeholder="Search boarder, landlord or room"
+              value={query}
+              onChange={setQuery}
+            />
+            <FilterChips<string>
+              label="Filter by status"
+              value={status}
+              onChange={setStatus}
+              options={statusOptions}
+            />
+          </TableToolbar>
+        </>
       }
     >
-      {stats ? (
-        <div className="mb-4 grid grid-cols-2 gap-4 lg:grid-cols-4">
-          <StatCard label="Total" value={String(stats.total)} icon="application" />
-          <StatCard label="Pending" value={String(stats.pending)} icon="clock" />
-          <StatCard label="Approved" value={String(stats.approved)} icon="check" />
-          <StatCard
-            label="Processed rate"
-            value={`${stats.processed_rate_percent}%`}
-            sub={`${stats.rejected} rejected`}
-            icon="analytics"
-          />
-        </div>
-      ) : null}
-
-      <DataTable
-        rows={rows}
-        columns={columns}
-        keyFor={row => row.id}
-        selectable={selectMode}
-        selectedIds={selected as Set<string | number>}
-        onToggle={id => {
-          const next = new Set(selected);
-          if (next.has(id as number)) next.delete(id as number);
-          else {
-            if (next.size >= 100) {
-              push({ tone: 'error', message: 'Max 100 per bulk operation' });
-              return;
+      {visible.length === 0 && filtered ? (
+        <NoMatches
+          noun="applications"
+          onClear={() => {
+            setQuery('');
+            setStatus('all');
+          }}
+        />
+      ) : (
+        <DataTable
+          rows={visible}
+          columns={columns}
+          keyFor={row => row.id}
+          selectable={selectMode}
+          selectedIds={selected as Set<string | number>}
+          onToggle={id => {
+            const next = new Set(selected);
+            if (next.has(id as number)) next.delete(id as number);
+            else {
+              if (next.size >= 100) {
+                push({ tone: 'error', message: 'Max 100 per bulk operation' });
+                return;
+              }
+              next.add(id as number);
             }
-            next.add(id as number);
-          }
-          setSelected(next);
-        }}
-        onToggleAll={checked => {
-          if (checked) {
-            if (rows.length > 100)
-              push({ tone: 'info', message: 'Selected first 100 — max 100 per bulk operation' });
-            setSelected(new Set(rows.slice(0, 100).map(r => r.id)));
-          } else setSelected(new Set());
-        }}
-      />
+            setSelected(next);
+          }}
+          onToggleAll={checked => {
+            if (checked) {
+              if (visible.length > 100)
+                push({ tone: 'info', message: 'Selected first 100 — max 100 per bulk operation' });
+              setSelected(new Set(visible.slice(0, 100).map(r => r.id)));
+            } else setSelected(new Set());
+          }}
+        />
+      )}
 
       {selectMode && selected.size > 0 && (
         <BulkActionBar
           count={selected.size}
+          hiddenCount={hiddenSelected}
           busy={bulkApplications.isPending}
           overCap={overCap}
           onApply={requestBulk}
@@ -195,6 +296,7 @@ export function ApplicationsSection({ token, push }: { token: string; push: Push
             setSelectMode(false);
             setSelected(new Set());
           }}
+          actionLabel="Action"
           actionControl={
             <select
               aria-label="Bulk application action"

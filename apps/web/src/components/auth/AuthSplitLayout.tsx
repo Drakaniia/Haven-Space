@@ -9,6 +9,11 @@ export const AUTH_PANEL_IMAGE = '/assets/images/public/login_hero.webp';
 export const AUTH_PANEL_IMAGE_ALT =
   'Find your haven, right next door. Verified boarding houses near you, managed by trusted landlords.';
 
+/**
+ * Two-panel auth frame: pinned artwork on the left (desktop only), one calm form column on
+ * the right. Every auth screen names itself once with `title`; `subtitle` says what happens
+ * next. `footer` holds the cross-links between login / signup / forgot.
+ */
 export function AuthSplitLayout({
   title,
   subtitle,
@@ -18,7 +23,7 @@ export function AuthSplitLayout({
   footer,
 }: {
   title: string;
-  subtitle?: string;
+  subtitle?: ReactNode;
   /** Left-panel artwork. Override only if a page genuinely needs different art. */
   image?: string;
   /** Describes the artwork for screen readers. */
@@ -33,7 +38,7 @@ export function AuthSplitLayout({
           signup) scrolls past it, and `lg:h-screen` keeps it exactly one viewport tall so
           `object-cover` stops re-cropping as the form grows. The page must stay the scroll
           container: no ancestor may set `overflow`, or sticky silently stops working. */}
-      <div className="relative hidden w-1/2 overflow-hidden bg-primary-strong lg:sticky lg:top-0 lg:block lg:h-screen">
+      <div className="relative hidden w-[46%] overflow-hidden bg-primary-dark lg:sticky lg:top-0 lg:block lg:h-screen">
         <img
           src={image}
           alt={imageAlt}
@@ -45,22 +50,38 @@ export function AuthSplitLayout({
       </div>
 
       {/* Right form panel */}
-      <div className="flex w-full items-center justify-center bg-cream px-4 py-10 lg:w-1/2">
-        <div className="w-full max-w-md">
-          <Link to="/" className="mb-8 flex items-center gap-2">
+      <main className="paper-grain flex w-full items-start justify-center px-5 pb-12 pt-8 sm:items-center sm:px-8 sm:py-14 lg:w-[54%]">
+        <div className="rise-in w-full max-w-[420px]">
+          <Link
+            to="/"
+            className="mb-8 inline-flex items-center gap-2.5 rounded-lg sm:mb-12"
+            aria-label="Haven Space home"
+          >
             <img
               src="/assets/images/Haven_Space_Logo.png"
-              alt="Haven Space"
-              className="h-9 w-9 object-contain"
+              alt=""
+              className="h-8 w-8 object-contain"
             />
-            <span className="text-lg font-bold text-primary">Haven Space</span>
+            <span className="font-display text-lg font-semibold tracking-[-0.01em] text-ink">
+              Haven Space
+            </span>
           </Link>
-          <h1 className="text-2xl font-bold text-ink">{title}</h1>
-          {subtitle ? <p className="mt-1 text-sm text-gray-ink">{subtitle}</p> : null}
-          <div className="mt-6">{children}</div>
-          {footer ? <div className="mt-6 border-t border-border pt-4 text-sm">{footer}</div> : null}
+          <div>
+            <h1 className="font-display text-[1.75rem] font-medium leading-[1.1] tracking-[-0.02em] text-ink sm:text-[2.125rem]">
+              {title}
+            </h1>
+            {subtitle ? (
+              <p className="mt-2.5 text-[0.9375rem] leading-relaxed text-gray-ink">{subtitle}</p>
+            ) : null}
+          </div>
+          <div className="mt-8">{children}</div>
+          {footer ? (
+            <div className="mt-10 border-t border-border pt-5 text-center text-sm text-gray-ink">
+              {footer}
+            </div>
+          ) : null}
         </div>
-      </div>
+      </main>
     </div>
   );
 }
@@ -83,10 +104,10 @@ export function GoogleButton({
       onClick={onClick}
       disabled={isDisabled}
       aria-busy={loading}
-      className={`flex w-full items-center justify-center gap-2 rounded-full border px-4 py-2.5 text-sm font-semibold transition-colors ${
+      className={`flex h-12 w-full items-center justify-center gap-2.5 rounded-xl border px-4 text-[0.9375rem] font-semibold shadow-card transition-[background-color,border-color,transform] duration-150 active:scale-[0.98] motion-reduce:active:scale-100 ${
         isDisabled
-          ? 'cursor-not-allowed border-border bg-subtle text-muted'
-          : 'border-border-strong bg-surface text-ink hover:bg-mint'
+          ? 'cursor-not-allowed border-border bg-subtle text-muted shadow-none'
+          : 'border-border-strong bg-surface text-ink hover:border-[#b9af98] hover:bg-cream'
       }`}
     >
       {loading ? (
@@ -97,17 +118,17 @@ export function GoogleButton({
       ) : (
         <Icon name="google" size={18} />
       )}
-      {loading ? 'Redirecting…' : label}
+      {loading ? 'Redirecting to Google…' : label}
     </button>
   );
 }
 
-export function AuthDivider() {
+export function AuthDivider({ label = 'or use your email' }: { label?: string }) {
   return (
-    <div className="my-5 flex items-center gap-3 text-xs text-gray-ink">
-      <span className="h-px flex-1 bg-subtle" />
-      or
-      <span className="h-px flex-1 bg-subtle" />
+    <div className="my-6 flex items-center gap-3 text-xs font-medium text-muted">
+      <span className="h-px flex-1 bg-border" />
+      {label}
+      <span className="h-px flex-1 bg-border" />
     </div>
   );
 }

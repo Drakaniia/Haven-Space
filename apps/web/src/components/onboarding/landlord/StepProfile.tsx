@@ -1,5 +1,7 @@
+import type { FormEvent } from 'react';
+import { FormSection } from '../../auth/FormSection';
 import { Field, TextArea, TextInput } from '../../ui/Field';
-import { Button } from '../../ui/Button';
+import { WizardActions } from '../WizardActions';
 
 export interface LandlordProfileStepData {
   businessName: string;
@@ -24,60 +26,69 @@ export function StepProfile({
 
   return (
     <form
-      className="flex flex-col gap-4"
-      onSubmit={e => {
+      className="flex flex-col gap-9"
+      onSubmit={(e: FormEvent) => {
         e.preventDefault();
         onNext();
       }}
     >
-      <Field label="Business / boarding house name" htmlFor="businessName">
-        <TextInput
-          id="businessName"
-          placeholder="e.g. Sunrise Boarding House"
-          value={data.businessName}
-          onChange={e => set({ businessName: e.target.value })}
-        />
-      </Field>
-      <Field label="Contact number" htmlFor="contactNumber">
-        <TextInput
-          id="contactNumber"
-          placeholder="09XX XXX XXXX"
-          value={data.contactNumber}
-          onChange={e => set({ contactNumber: e.target.value })}
-        />
-      </Field>
-      <div className="grid gap-4 sm:grid-cols-2">
-        <Field label="City" htmlFor="city">
+      <FormSection title="Your business" description="How boarders will know and reach you.">
+        <Field label="Business / boarding house name" htmlFor="businessName">
           <TextInput
-            id="city"
-            placeholder="e.g. Quezon City"
-            value={data.city}
-            onChange={e => set({ city: e.target.value })}
+            id="businessName"
+            placeholder="e.g. Sunrise Boarding House"
+            autoComplete="organization"
+            value={data.businessName}
+            onChange={e => set({ businessName: e.target.value })}
           />
         </Field>
-        <Field label="Province" htmlFor="province">
+        <Field label="Contact number" htmlFor="contactNumber">
           <TextInput
-            id="province"
-            placeholder="e.g. Metro Manila"
-            value={data.province}
-            onChange={e => set({ province: e.target.value })}
+            id="contactNumber"
+            type="tel"
+            inputMode="tel"
+            autoComplete="tel"
+            placeholder="0917 123 4567"
+            className="sm:max-w-xs"
+            value={data.contactNumber}
+            onChange={e => set({ contactNumber: e.target.value })}
           />
         </Field>
-      </div>
-      <Field label="Business bio" htmlFor="bio">
-        <TextArea
-          id="bio"
-          rows={3}
-          placeholder="Describe your boarding house"
-          value={data.bio}
-          onChange={e => set({ bio: e.target.value })}
-        />
-      </Field>
-      <div className="flex justify-end">
-        <Button type="submit" disabled={saving}>
-          {saving ? 'Saving…' : 'Continue'}
-        </Button>
-      </div>
+        <Field label="Business bio" htmlFor="bio">
+          <TextArea
+            id="bio"
+            rows={4}
+            placeholder="A few lines about your boarding house and how you run it"
+            value={data.bio}
+            onChange={e => set({ bio: e.target.value })}
+          />
+        </Field>
+      </FormSection>
+
+      <FormSection title="Location">
+        <div className="grid gap-5 sm:grid-cols-2 sm:gap-4">
+          <Field label="City" htmlFor="city">
+            <TextInput
+              id="city"
+              placeholder="e.g. Quezon City"
+              autoComplete="address-level2"
+              value={data.city}
+              onChange={e => set({ city: e.target.value })}
+            />
+          </Field>
+          <Field label="Province" htmlFor="province">
+            <TextInput
+              id="province"
+              placeholder="e.g. Metro Manila"
+              autoComplete="address-level1"
+              value={data.province}
+              onChange={e => set({ province: e.target.value })}
+            />
+          </Field>
+        </div>
+      </FormSection>
+
+      <WizardActions primaryLabel="Continue" saving={saving} />
     </form>
   );
 }

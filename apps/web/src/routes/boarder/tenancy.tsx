@@ -1,23 +1,24 @@
 import { createFileRoute, Link } from '@tanstack/react-router';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { useState, type FormEvent } from 'react';
+import { useState, type FormEvent, type ReactNode } from 'react';
 import { Protected } from '../../components/auth/Protected';
+import { DetailList, type DetailItem } from '../../components/boarder/DetailList';
 import { RoleShell } from '../../components/layout/RoleShell';
-import { Button } from '../../components/ui/Button';
+import { Button, buttonClasses } from '../../components/ui/Button';
 import { Card } from '../../components/ui/Card';
 import { EmptyState } from '../../components/ui/EmptyState';
 import { ErrorState } from '../../components/ui/ErrorState';
 import { Field, TextArea, TextInput } from '../../components/ui/Field';
 import { Icon } from '../../components/ui/Icon';
 import { Modal } from '../../components/ui/Modal';
-import { Spinner } from '../../components/ui/Spinner';
+import { Skeleton } from '../../components/ui/Skeleton';
 import { StatusBadge } from '../../components/ui/StatusBadge';
 import { RequireTenancy } from '../../components/boarder/FeatureGate';
 import { ToastStack, useToasts } from '../../components/ui/Toast';
 import { ApiRequestError } from '../../lib/api/http';
 import { getTenancy, leaveNow, leaveRequest } from '../../lib/api/boarder';
 import { useAuth } from '../../lib/auth-context';
-import { formatPaymentDate, manilaToday } from '../../lib/payments';
+import { formatPaymentDate, formatPeso, manilaToday } from '../../lib/payments';
 import { BOARDER_STATUS_KEY, useBoarderNav } from '../../lib/use-boarder-nav';
 
 export const Route = createFileRoute('/boarder/tenancy')({
@@ -27,6 +28,17 @@ export const Route = createFileRoute('/boarder/tenancy')({
     </Protected>
   ),
 });
+
+function joinAddress(data: Record<string, unknown>): string {
+  return [data.address, data.city, data.province]
+    .map(part => (typeof part === 'string' ? part.trim() : ''))
+    .filter(Boolean)
+    .join(', ');
+}
+
+function dateOrDash(value: unknown): string {
+  return typeof value === 'string' && value ? formatPaymentDate(value) : '—';
+}
 
 function TenancyPage() {
   const { token } = useAuth();
@@ -110,6 +122,7 @@ function TenancyPage() {
       {leftProperty !== null ? (
         <div className="max-w-2xl">
           <EmptyState
+            icon="home"
             title="No active tenancy"
             description={`You've moved out. Your tenancy at ${leftProperty} has ended.`}
           />
@@ -117,9 +130,26 @@ function TenancyPage() {
       ) : (
         <RequireTenancy>
           {tenancy.isLoading ? (
-            <Spinner />
+            <div aria-busy="true">
+              <Skeleton className="h-4 w-24" />
+              <Skeleton className="mt-3 h-9 w-2/3" />
+              <div className="mt-8 grid grid-cols-1 gap-6 lg:grid-cols-[minmax(0,1.4fr)_minmax(0,1fr)]">
+                <Skeleton className="h-60 w-full rounded-2xl" />
+                <Skeleton className="h-60 w-full rounded-2xl" />
+              </div>
+            </div>
+          ) : tenancy.error ? (
+            <ErrorState
+              message={tenancy.error.message}
+              action={
+                <Button variant="outline" size="sm" onClick={() => void tenancy.refetch()}>
+                  Try again
+                </Button>
+              }
+            />
           ) : !data ? (
             <EmptyState
+              icon="document"
               title="No active tenancy"
               description="Once your booking is confirmed, your tenancy details appear here."
             />
@@ -134,40 +164,42 @@ function TenancyPage() {
               }}
             />
           ) : (
-            <div className="max-w-2xl">
-              {error ? (
-                <div className="mb-4">
-                  <ErrorState message={error} />
-                </div>
-              ) : null}
-              <Card>
-                <div className="flex items-center gap-3">
-                  <Icon name="document" size={28} className="shrink-0" />
-                  <h1 className="text-xl font-bold">
-                    {String(data.property_name ?? 'Your tenancy')}
-                  </h1>
-                </div>
-                <p className="mt-1 text-gray-ink">
-                  {String(data.address ?? '')}
-                  {data.city ? `, ${String(data.city)}` : ''}
-                  {data.province ? `, ${String(data.province)}` : ''}
+            <TenancyLayout
+              data={data}
+              badge={<StatusBadge status="active" label="Active tenancy" />}
+              extraDetails={[]}
+            >
+              <p className="kicker">Your stay</p>
+              <h2 className="mt-0.5 font-display text-xl font-medium tracking-[-0.01em] text-ink">
+                Planning to move out?
+              </h2>
+              <p className="mt-1 text-sm leading-relaxed text-gray-ink">
+                Send your landlord a leave request with your intended date. Your room stays yours
+                until they approve it.
+              </p>
+              {outstanding > 0 ? (
+                <p className="mt-3 rounded-xl border border-warning-border bg-warning-tint px-3 py-2 text-sm text-warning-ink">
+                  Unsettled balance: {formatPeso(outstanding)}. It must be paid before a leave can
+                  be approved.
                 </p>
-                <TenancyDetails data={data} />
-                <div className="mt-4">
-                  {/* `outline` variant, not a hand-rolled className: Tailwind resolves conflicting
-                      classes by stylesheet order, so the default `primary` variant's `text-white` beat
-                      this override's `text-primary` — white text on the white panel, legible only on
-                      hover. Colour belongs to the variant. */}
-                  <Button variant="outline" onClick={() => setLeaveOpen(true)}>
-                    Request to leave
-                  </Button>
-                </div>
-              </Card>
-            </div>
+              ) : null}
+              <div className="mt-5">
+                {/* `outline` variant, not a hand-rolled className: Tailwind resolves conflicting
+                    classes by stylesheet order, so the default `primary` variant's `text-white` beat
+                    this override's `text-primary` — white text on the white panel, legible only on
+                    hover. Colour belongs to the variant. */}
+                <Button variant="outline" onClick={() => setLeaveOpen(true)}>
+                  Request to leave
+                </Button>
+              </div>
+            </TenancyLayout>
           )}
 
           <Modal open={leaveOpen} title="Request to leave" onClose={() => setLeaveOpen(false)}>
             <form className="flex flex-col gap-4" onSubmit={handleLeaveSubmit}>
+              <p className="text-sm text-gray-ink">
+                Your landlord reviews this request. You&apos;ll be notified when they respond.
+              </p>
               <Field label="Reason" htmlFor="reason">
                 <TextInput
                   id="reason"
@@ -182,6 +214,7 @@ function TenancyPage() {
                   id="leaveDate"
                   type="date"
                   required
+                  min={today}
                   value={leaveDate}
                   onChange={e => setLeaveDate(e.target.value)}
                 />
@@ -202,9 +235,15 @@ function TenancyPage() {
                   can&apos;t approve this request until it&apos;s settled.
                 </p>
               ) : null}
-              <Button type="submit" disabled={leave.isPending}>
-                {leave.isPending ? 'Submitting…' : 'Submit request'}
-              </Button>
+              {error ? <ErrorState message={error} /> : null}
+              <div className="flex flex-col-reverse gap-3 sm:flex-row sm:justify-end">
+                <Button type="button" variant="ghost" onClick={() => setLeaveOpen(false)}>
+                  Cancel
+                </Button>
+                <Button type="submit" disabled={leave.isPending}>
+                  {leave.isPending ? 'Submitting…' : 'Submit request'}
+                </Button>
+              </div>
             </form>
           </Modal>
 
@@ -216,27 +255,19 @@ function TenancyPage() {
                   {formatPaymentDate(today)}. The room was already released when your leave was
                   approved. Your landlord will be notified.
                 </p>
-                <dl className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-                  <div>
-                    <dt className="text-sm text-gray-ink">Approved leave date</dt>
-                    <dd className="font-medium">
-                      {formatPaymentDate(String(data.intended_leave_date ?? ''))}
-                    </dd>
-                  </div>
-                  <div>
-                    <dt className="text-sm text-gray-ink">Move-out date</dt>
-                    <dd className="font-medium">{formatPaymentDate(today)}</dd>
-                  </div>
-                  <div>
-                    <dt className="text-sm text-gray-ink">Room</dt>
-                    <dd className="font-medium">
-                      {String(data.room_number ?? data.room_title ?? '—')}
-                    </dd>
-                  </div>
-                </dl>
+                <DetailList
+                  items={[
+                    {
+                      label: 'Approved leave date',
+                      value: formatPaymentDate(String(data.intended_leave_date ?? '')),
+                    },
+                    { label: 'Move-out date', value: formatPaymentDate(today) },
+                    { label: 'Room', value: String(data.room_number ?? data.room_title ?? '—') },
+                  ]}
+                />
                 <p className="text-sm font-medium text-error-ink">This cannot be undone.</p>
                 {leaveNowError ? <ErrorState message={leaveNowError} /> : null}
-                <div className="flex justify-end gap-3">
+                <div className="flex flex-col-reverse gap-3 sm:flex-row sm:justify-end">
                   <Button
                     variant="ghost"
                     onClick={closeLeaveNow}
@@ -261,26 +292,91 @@ function TenancyPage() {
   );
 }
 
-function TenancyDetails({ data }: { data: Record<string, unknown> }) {
+/**
+ * The tenancy page frame shared by every state: the property as the page title,
+ * the lease summary on the left, and the state-specific "your stay" panel on
+ * the right (stacked below on small screens).
+ */
+function TenancyLayout({
+  data,
+  badge,
+  extraDetails,
+  children,
+}: {
+  data: Record<string, unknown>;
+  badge: ReactNode;
+  extraDetails: DetailItem[];
+  children: ReactNode;
+}) {
+  const address = joinAddress(data);
+
   return (
-    <dl className="mt-4 grid grid-cols-1 gap-3 sm:grid-cols-2">
-      <div>
-        <dt className="text-sm text-gray-ink">Room</dt>
-        <dd className="font-medium">{String(data.room_number ?? data.room_title ?? '—')}</dd>
+    <div>
+      <header className="rise-in mb-8">
+        <p className="kicker">My tenancy</p>
+        <div className="mt-1 flex flex-wrap items-center gap-x-3 gap-y-2">
+          <h1 className="font-display text-[1.875rem] font-medium leading-[1.1] tracking-[-0.02em] text-ink sm:text-[2.125rem]">
+            {String(data.property_name ?? 'Your tenancy')}
+          </h1>
+          {badge}
+        </div>
+        {address ? (
+          <p className="mt-2 flex items-start gap-1.5 text-[0.9375rem] text-gray-ink">
+            <Icon name="location" size={16} className="mt-1 text-muted" />
+            {address}
+          </p>
+        ) : null}
+      </header>
+
+      <div className="grid grid-cols-1 items-start gap-6 lg:grid-cols-[minmax(0,1.4fr)_minmax(0,1fr)]">
+        <Card padding="p-6">
+          <h2 className="font-display text-xl font-medium tracking-[-0.01em] text-ink">
+            Lease summary
+          </h2>
+          <TenancyDetails data={data} extra={extraDetails} />
+          <div className="mt-6 flex flex-wrap gap-2 border-t border-border/80 pt-5">
+            <Link to="/boarder/payments" className={buttonClasses({ variant: 'outline', size: 'sm' })}>
+              Payments
+            </Link>
+            <Link
+              to="/boarder/house-rules"
+              className={buttonClasses({ variant: 'ghost', size: 'sm' })}
+            >
+              House rules
+            </Link>
+            <Link to="/boarder/messages" className={buttonClasses({ variant: 'ghost', size: 'sm' })}>
+              Messages
+            </Link>
+          </div>
+        </Card>
+
+        <Card padding="p-6">{children}</Card>
       </div>
-      <div>
-        <dt className="text-sm text-gray-ink">Monthly rent</dt>
-        <dd className="font-medium">₱{Number(data.monthly_rent ?? 0).toLocaleString()}</dd>
-      </div>
-      <div>
-        <dt className="text-sm text-gray-ink">Move-in date</dt>
-        <dd className="font-medium">{String(data.tenancy_start_date ?? '—')}</dd>
-      </div>
-      <div>
-        <dt className="text-sm text-gray-ink">Deposit</dt>
-        <dd className="font-medium">₱{Number(data.deposit ?? 0).toLocaleString()}</dd>
-      </div>
-    </dl>
+    </div>
+  );
+}
+
+function TenancyDetails({
+  data,
+  extra = [],
+}: {
+  data: Record<string, unknown>;
+  extra?: DetailItem[];
+}) {
+  return (
+    <DetailList
+      className="mt-4"
+      items={[
+        { label: 'Room', value: String(data.room_number ?? data.room_title ?? '—') },
+        {
+          label: 'Monthly rent',
+          value: `₱${Number(data.monthly_rent ?? 0).toLocaleString()}`,
+        },
+        { label: 'Move-in date', value: dateOrDash(data.tenancy_start_date) },
+        { label: 'Deposit', value: `₱${Number(data.deposit ?? 0).toLocaleString()}` },
+        ...extra,
+      ]}
+    />
   );
 }
 
@@ -303,55 +399,44 @@ function ApprovedLeaveState({
   const hasBalance = Number.isFinite(balance) && balance > 0;
 
   return (
-    <div className="max-w-2xl">
-      <Card>
-        <div className="flex items-center gap-3">
-          <Icon name="document" size={28} className="shrink-0" />
-          <h1 className="text-xl font-bold">{propertyName}</h1>
-          <StatusBadge status="approved" label="Leave approved" />
+    <TenancyLayout
+      data={data}
+      badge={<StatusBadge status="approved" label="Leave approved" />}
+      extraDetails={[{ label: 'Moving out', value: leaveDate }]}
+    >
+      <p className="kicker">Your stay</p>
+      <h2 className="mt-0.5 font-display text-xl font-medium tracking-[-0.01em] text-ink">
+        Leave approved
+      </h2>
+      <p className="mt-1 text-sm text-gray-ink">You&apos;re moving out on {leaveDate}.</p>
+      <p className="mt-2 text-sm leading-relaxed text-gray-ink">
+        Your tenancy at {propertyName} ends on {leaveDate}.
+        {canLeaveNow
+          ? ' If you need to move out sooner, you can leave now. Your landlord will be notified and your tenancy ends today.'
+          : ''}
+      </p>
+      {canLeaveNow ? (
+        <div className="mt-5 border-t border-border/80 pt-5">
+          {hasBalance ? (
+            <p className="mb-4 rounded-xl border border-warning-border bg-warning-tint px-3 py-2 text-sm text-warning-ink">
+              You have an outstanding balance of ₱{balance.toLocaleString('en-PH')}. Settle your
+              fees before you can leave now. Payments awaiting your landlord&apos;s verification
+              also count.{' '}
+              <Link to="/boarder/payments" className="font-semibold underline">
+                Go to Payments
+              </Link>
+            </p>
+          ) : null}
+          <Button variant="danger" disabled={hasBalance} onClick={onLeaveNow}>
+            Leave now
+          </Button>
         </div>
-        <div className="mt-4 rounded-lg bg-mint/60 p-4">
-          <p className="font-semibold text-primary">Leave approved</p>
-          <p className="mt-1 text-sm text-gray-ink">You&apos;re moving out on {leaveDate}.</p>
-          <p className="mt-2 text-sm text-gray-ink">
-            Your tenancy at {propertyName} ends on {leaveDate}.
-            {canLeaveNow
-              ? ' If you need to move out sooner, you can leave now. Your landlord will be notified and your tenancy ends today.'
-              : ''}
-          </p>
-        </div>
-        <TenancyDetails data={data} />
-        {canLeaveNow ? (
-          <div className="mt-4">
-            {hasBalance ? (
-              <p className="mb-3 text-sm text-gray-ink">
-                You have an outstanding balance of ₱{balance.toLocaleString('en-PH')}. Settle your
-                fees before you can leave now. Payments awaiting your landlord&apos;s verification
-                also count.{' '}
-                <Link to="/boarder/payments" className="font-semibold text-primary underline">
-                  Go to Payments
-                </Link>
-              </p>
-            ) : null}
-            <Button variant="danger" disabled={hasBalance} onClick={onLeaveNow}>
-              Leave now
-            </Button>
-          </div>
-        ) : null}
-      </Card>
-    </div>
+      ) : null}
+    </TenancyLayout>
   );
 }
 
 function PendingLeaveState({ data }: { data: Record<string, unknown> }) {
-  const propertyName = String(data.property_name ?? 'Your tenancy');
-  const address = [
-    String(data.address ?? ''),
-    data.city ? String(data.city) : '',
-    data.province ? String(data.province) : '',
-  ]
-    .filter(Boolean)
-    .join(', ');
   const reason =
     typeof data.leave_request_reason === 'string' && data.leave_request_reason
       ? data.leave_request_reason
@@ -365,43 +450,31 @@ function PendingLeaveState({ data }: { data: Record<string, unknown> }) {
       ? data.leave_request_date
       : null;
 
+  const requestDetails: DetailItem[] = [
+    ...(reason ? [{ label: 'Reason', value: reason }] : []),
+    ...(intendedDate
+      ? [{ label: 'Intended leave date', value: formatPaymentDate(intendedDate) }]
+      : []),
+    ...(submittedDate ? [{ label: 'Requested on', value: formatPaymentDate(submittedDate) }] : []),
+  ];
+
   return (
-    <div className="max-w-2xl">
-      <Card>
-        <div className="flex items-center gap-3">
-          <Icon name="document" size={28} className="shrink-0" />
-          <h1 className="text-xl font-bold">{propertyName}</h1>
-          <StatusBadge status="pending" />
-        </div>
-        {address ? <p className="mt-1 text-gray-ink">{address}</p> : null}
-        <div className="mt-4 rounded-lg bg-mint/60 p-4">
-          <p className="font-semibold text-primary">Leave request pending</p>
-          <p className="mt-1 text-sm text-gray-ink">
-            Your landlord will review your request. Your room stays reserved for you until it&apos;s
-            approved, and you can&apos;t submit another request until it&apos;s resolved.
-          </p>
-        </div>
-        <dl className="mt-4 grid grid-cols-1 gap-3 sm:grid-cols-2">
-          {reason ? (
-            <div>
-              <dt className="text-sm text-gray-ink">Reason</dt>
-              <dd className="font-medium">{reason}</dd>
-            </div>
-          ) : null}
-          {intendedDate ? (
-            <div>
-              <dt className="text-sm text-gray-ink">Intended leave date</dt>
-              <dd className="font-medium">{intendedDate}</dd>
-            </div>
-          ) : null}
-          {submittedDate ? (
-            <div>
-              <dt className="text-sm text-gray-ink">Requested on</dt>
-              <dd className="font-medium">{submittedDate}</dd>
-            </div>
-          ) : null}
-        </dl>
-      </Card>
-    </div>
+    <TenancyLayout
+      data={data}
+      badge={<StatusBadge status="pending" label="Leave requested" />}
+      extraDetails={[]}
+    >
+      <p className="kicker">Your stay</p>
+      <h2 className="mt-0.5 font-display text-xl font-medium tracking-[-0.01em] text-ink">
+        Leave request pending
+      </h2>
+      <p className="mt-1 text-sm leading-relaxed text-gray-ink">
+        Your landlord will review your request. Your room stays reserved for you until it&apos;s
+        approved, and you can&apos;t submit another request until it&apos;s resolved.
+      </p>
+      {requestDetails.length > 0 ? (
+        <DetailList className="mt-5" columns={2} items={requestDetails} />
+      ) : null}
+    </TenancyLayout>
   );
 }

@@ -4,6 +4,7 @@ import { useQuery } from '@tanstack/react-query';
 import { Button } from '../ui/Button';
 import { Drawer } from '../ui/Drawer';
 import { ErrorState } from '../ui/ErrorState';
+import { Icon } from '../ui/Icon';
 import { Skeleton } from '../ui/Skeleton';
 import { StatusBadge } from '../ui/StatusBadge';
 import { getPaymentHistory } from '../../lib/api/payments';
@@ -87,49 +88,80 @@ export function TenantPaymentDrawer({
       width="lg"
       suspended={suspended}
     >
-      <div className="flex flex-col gap-5">
-        <div>
+      <div className="flex flex-col gap-6">
+        <div className="flex flex-wrap items-center gap-2">
           <StatusBadge status={meta.tone} label={meta.label} />
+          {row.reminder_sent_at ? (
+            <span className="text-xs text-muted">
+              Last reminded {formatPaymentDate(row.reminder_sent_at)}
+            </span>
+          ) : null}
         </div>
 
-        <dl className="grid grid-cols-2 gap-4">
-          <div>
-            <dt className="text-xs uppercase tracking-wide text-gray-ink">Current rent</dt>
-            <dd className="mt-1 text-sm text-ink">{formatPeso(row.monthly_rent)}</dd>
+        <dl className="grid grid-cols-2 overflow-hidden rounded-2xl border border-border">
+          <div className="px-4 py-3">
+            <dt className="text-xs font-medium text-gray-ink">Current rent</dt>
+            <dd className="mt-0.5 font-semibold tabular text-ink">
+              {formatPeso(row.monthly_rent)}
+            </dd>
           </div>
-          <div>
-            <dt className="text-xs uppercase tracking-wide text-gray-ink">Due date</dt>
-            <dd className="mt-1 text-sm text-ink">
+          <div className="border-l border-border px-4 py-3">
+            <dt className="text-xs font-medium text-gray-ink">Due date</dt>
+            <dd className="mt-0.5 font-semibold text-ink">
               {row.next_due_date ? formatPaymentDate(row.next_due_date) : '—'}
+            </dd>
+          </div>
+          <div className="border-t border-border px-4 py-3">
+            <dt className="text-xs font-medium text-gray-ink">Balance due</dt>
+            <dd
+              className={`mt-0.5 font-semibold tabular ${
+                row.amount_due > 0 ? 'text-ink' : 'text-success-ink'
+              }`}
+            >
+              {row.amount_due > 0 ? formatPeso(row.amount_due) : 'Nothing owed'}
+            </dd>
+          </div>
+          <div className="border-l border-t border-border px-4 py-3">
+            <dt className="text-xs font-medium text-gray-ink">Last payment</dt>
+            <dd className="mt-0.5 text-sm text-ink">
+              {row.last_payment
+                ? `${formatPaymentDate(row.last_payment.date)} · ${formatPeso(row.last_payment.amount)}`
+                : 'None recorded'}
             </dd>
           </div>
         </dl>
 
-        <div className="flex flex-wrap gap-2">
-          <Button variant="outline" size="sm" onClick={onSendMessage}>
-            Send message
-          </Button>
-          <Button variant="outline" size="sm" onClick={onRemind}>
-            Remind
-          </Button>
-          {row.has_pending_claim ? (
-            <Button size="sm" onClick={onReview}>
-              Approve payment
+        <div className="flex flex-col gap-3">
+          <div className="flex flex-wrap gap-2">
+            {row.has_pending_claim ? (
+              <Button size="sm" onClick={onReview}>
+                Review proof
+              </Button>
+            ) : null}
+            <Button variant="outline" size="sm" onClick={onRemind}>
+              Remind
             </Button>
-          ) : null}
-        </div>
+            <Button variant="outline" size="sm" onClick={onSendMessage}>
+              Send message
+            </Button>
+          </div>
 
-        <div className="flex flex-wrap gap-2 border-t border-border pt-4">
-          <Button variant="ghost" size="sm" onClick={onLogPayment}>
-            Log offline payment
-          </Button>
-          <Button variant="ghost" size="sm" onClick={onAddCharge}>
-            Add a charge
-          </Button>
+          <div className="flex flex-wrap gap-1 rounded-xl bg-subtle/60 p-1">
+            <Button variant="ghost" size="sm" onClick={onLogPayment}>
+              <Icon name="banknotes" size={14} />
+              Log offline payment
+            </Button>
+            <Button variant="ghost" size="sm" onClick={onAddCharge}>
+              <Icon name="plus" size={14} />
+              Add a charge
+            </Button>
+          </div>
         </div>
 
         <section aria-label="Payment activity">
-          <h3 className="text-sm font-semibold text-ink">Payment activity</h3>
+          <h3 className="font-display text-lg font-medium tracking-[-0.01em] text-ink">
+            Payment activity
+          </h3>
 
           {history.isLoading ? (
             <div className="mt-3 flex flex-col gap-3">
@@ -164,9 +196,9 @@ export function TenantPaymentDrawer({
                         DOT_TONES[event.tone]
                       }`}
                     />
-                    <p className="text-sm font-medium text-ink">{event.title}</p>
+                    <p className="text-sm font-semibold text-ink">{event.title}</p>
                     {event.detail ? <p className="text-sm text-gray-ink">{event.detail}</p> : null}
-                    <p className="mt-0.5 text-xs text-gray-ink">{formatDateTime(event.at)}</p>
+                    <p className="mt-0.5 text-xs text-muted">{formatDateTime(event.at)}</p>
                     {event.proof_url ? (
                       <a
                         href={event.proof_url}

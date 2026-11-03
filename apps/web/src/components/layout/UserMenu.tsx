@@ -61,12 +61,14 @@ export function UserMenu() {
         aria-expanded={open}
         aria-label={`Account menu for ${fullName}`}
         onClick={() => setOpen(value => !value)}
-        className={`flex items-center gap-2 rounded-full border py-1 pl-1 pr-2 transition-colors ${
-          open ? 'border-primary bg-mint' : 'border-border hover:bg-mint/60'
+        className={`flex items-center gap-2 rounded-full border py-1 pl-1 pr-2.5 transition-colors ${
+          open ? 'border-border-strong bg-surface' : 'border-border bg-surface/70 hover:bg-surface'
         }`}
       >
         <Avatar user={user} size={30} />
-        <span className="max-w-28 truncate text-sm font-medium">{user.first_name}</span>
+        <span className="hidden max-w-28 truncate text-sm font-semibold sm:inline">
+          {user.first_name}
+        </span>
         <Icon
           name="chevronDown"
           size={14}
@@ -77,9 +79,9 @@ export function UserMenu() {
       {open ? (
         <div
           role="menu"
-          className="menu-pop absolute right-0 z-40 mt-2 w-56 origin-top-right rounded-xl border border-border bg-surface py-1.5 shadow-pop"
+          className="menu-pop absolute right-0 z-40 mt-2 w-64 origin-top-right rounded-2xl border border-border bg-surface p-1.5 shadow-pop"
         >
-          <div className="border-b border-border px-4 py-3">
+          <div className="mb-1 rounded-xl bg-cream px-3 py-3">
             <div className="flex items-center gap-3">
               <Avatar user={user} size={40} />
               <div className="min-w-0">
@@ -95,9 +97,9 @@ export function UserMenu() {
               to={home.to}
               role="menuitem"
               onClick={() => setOpen(false)}
-              className="flex items-center gap-2.5 px-4 py-2 text-sm text-gray-ink hover:bg-mint/60 hover:text-primary"
+              className="flex items-center gap-2.5 rounded-lg px-3 py-2 text-sm text-ink hover:bg-subtle"
             >
-              <Icon name="home" size={16} className="shrink-0" />
+              <Icon name="home" size={16} className="shrink-0 text-gray-ink" />
               {home.label}
             </Link>
             {settingsPath ? (
@@ -105,19 +107,19 @@ export function UserMenu() {
                 to={settingsPath}
                 role="menuitem"
                 onClick={() => setOpen(false)}
-                className="flex items-center gap-2.5 px-4 py-2 text-sm text-gray-ink hover:bg-mint/60 hover:text-primary"
+                className="flex items-center gap-2.5 rounded-lg px-3 py-2 text-sm text-ink hover:bg-subtle"
               >
-                <Icon name="settings" size={16} className="shrink-0" />
+                <Icon name="settings" size={16} className="shrink-0 text-gray-ink" />
                 Profile &amp; settings
               </Link>
             ) : null}
           </div>
 
-          <div className="border-t border-border py-1">
+          <div className="mt-1 border-t border-border pt-1">
             <button
               type="button"
               role="menuitem"
-              className="flex w-full items-center gap-2.5 px-4 py-2 text-left text-sm text-error hover:bg-mint/60"
+              className="flex w-full items-center gap-2.5 rounded-lg px-3 py-2 text-left text-sm text-error-ink hover:bg-error-tint"
               onClick={async () => {
                 setOpen(false);
                 await logout();

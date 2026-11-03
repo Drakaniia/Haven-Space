@@ -5,11 +5,14 @@ import type { ButtonHTMLAttributes, Ref } from 'react';
   separate from the accent so the two can diverge if a theme ever needs it.
 */
 const VARIANTS: Record<string, string> = {
-  primary: 'bg-primary-strong text-white hover:bg-primary-hover',
+  primary:
+    'bg-primary-strong text-white shadow-[inset_0_1px_0_rgb(255_255_255/0.12),0_1px_2px_rgb(28_32_25/0.18)] hover:bg-primary-hover',
   secondary: 'bg-ink text-cream hover:bg-ink/90',
-  outline: 'border-2 border-primary bg-surface text-primary hover:bg-mint',
-  ghost: 'bg-transparent text-primary hover:bg-mint',
-  danger: 'bg-error text-white hover:brightness-90',
+  /** The quiet companion to `primary`: a bordered paper button, moss text. */
+  outline:
+    'border border-border-strong bg-surface text-primary hover:border-primary/50 hover:bg-mint/60',
+  ghost: 'bg-transparent text-primary hover:bg-mint/70',
+  danger: 'bg-error text-white hover:brightness-95',
   /** Destructive row action that shouldn't shout: red text, quiet until hovered. */
   dangerGhost: 'bg-transparent text-error-ink hover:bg-error-tint',
   /** Amber CTA for "finish setting up" prompts. Uses `warning-strong` for the
@@ -25,8 +28,9 @@ const VARIANTS: Record<string, string> = {
 };
 
 const SIZES: Record<string, string> = {
-  sm: 'px-3 py-1.5 text-sm',
-  md: 'px-4 py-2',
+  sm: 'h-8 gap-1.5 rounded-lg px-3 text-sm',
+  md: 'h-10 gap-2 rounded-xl px-4 text-sm',
+  lg: 'h-12 gap-2 rounded-xl px-6 text-base',
 };
 
 export type ButtonVariant =
@@ -38,7 +42,7 @@ export type ButtonVariant =
   | 'dangerGhost'
   | 'warning'
   | 'warningGhost';
-export type ButtonSize = 'sm' | 'md';
+export type ButtonSize = 'sm' | 'md' | 'lg';
 
 /**
  * The one button look, addressable from a `<Link>` too.
@@ -60,7 +64,8 @@ export function buttonClasses({
   size?: ButtonSize;
   className?: string;
 } = {}) {
-  return `inline-flex items-center justify-center rounded-full font-semibold transition-all duration-100 ease-out active:scale-[0.97] disabled:cursor-not-allowed disabled:opacity-60 disabled:active:scale-100 ${VARIANTS[variant]} ${SIZES[size]} ${className}`;
+  // Exact properties only (never `transition: all`): colour on hover, transform on press.
+  return `inline-flex shrink-0 select-none items-center justify-center whitespace-nowrap font-semibold transition-[background-color,border-color,color,box-shadow,transform] duration-150 ease-out active:scale-[0.97] disabled:cursor-not-allowed disabled:opacity-55 disabled:active:scale-100 motion-reduce:active:scale-100 ${VARIANTS[variant]} ${SIZES[size]} ${className}`;
 }
 
 export function Button({

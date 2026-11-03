@@ -2,10 +2,31 @@ import { createFileRoute } from '@tanstack/react-router';
 import { useState, type FormEvent } from 'react';
 import { Button } from '../../../components/ui/Button';
 import { Card } from '../../../components/ui/Card';
+import { Icon } from '../../../components/ui/Icon';
+import { PageHeader } from '../../../components/ui/PageHeader';
+import { Toggle } from '../../../components/ui/Toggle';
 
 export const Route = createFileRoute('/boarder/applications/settings')({
   component: ApplicationSettingsPage,
 });
+
+const ROWS = [
+  {
+    key: 'application_updates',
+    label: 'Application status updates',
+    description: 'When a landlord accepts or declines an application.',
+  },
+  {
+    key: 'landlord_messages',
+    label: 'Messages from landlords',
+    description: 'When a landlord replies about a room you applied for.',
+  },
+  {
+    key: 'announcements',
+    label: 'Property announcements',
+    description: 'House notices from properties you are applying to.',
+  },
+] as const;
 
 function ApplicationSettingsPage() {
   const [prefs, setPrefs] = useState({
@@ -26,36 +47,44 @@ function ApplicationSettingsPage() {
   }
 
   return (
-    <Card>
-      <h1 className="text-xl font-bold">Application notifications</h1>
-      <p className="mt-1 text-sm text-gray-ink">
-        These preferences are stored locally in this browser — the API does not yet expose a
-        notification-settings endpoint.
-      </p>
+    <div className="max-w-2xl">
+      <PageHeader
+        title="Application notifications"
+        subtitle="Choose which application updates you want to hear about."
+      />
+      <Card padding="p-6">
+        <p className="flex items-start gap-2 rounded-xl bg-subtle px-4 py-3 text-sm text-gray-ink">
+          <Icon name="lightbulb" size={16} className="mt-0.5 text-muted" />
+          These preferences are stored locally in this browser — the API does not yet expose a
+          notification-settings endpoint.
+        </p>
 
-      <form className="mt-4 flex flex-col gap-3" onSubmit={handleSubmit}>
-        {(
-          [
-            ['application_updates', 'Application status updates'],
-            ['landlord_messages', 'Messages from landlords'],
-            ['announcements', 'Property announcements'],
-          ] as const
-        ).map(([key, label]) => (
-          <label key={key} className="flex items-center gap-2 text-sm">
-            <input
-              type="checkbox"
-              checked={prefs[key]}
-              onChange={() => toggle(key)}
-              className="h-4 w-4 accent-primary"
-            />
-            {label}
-          </label>
-        ))}
-        <div className="mt-2">
-          <Button type="submit">Save preferences</Button>
-        </div>
-        {saved ? <p className="text-sm text-gray-ink">Preferences saved (locally).</p> : null}
-      </form>
-    </Card>
+        <form className="mt-4" onSubmit={handleSubmit}>
+          <div className="divide-y divide-border">
+            {ROWS.map(row => (
+              <Toggle
+                key={row.key}
+                id={`app-pref-${row.key}`}
+                label={row.label}
+                description={row.description}
+                checked={prefs[row.key]}
+                onChange={() => toggle(row.key)}
+              />
+            ))}
+          </div>
+          <div className="mt-5 flex flex-wrap items-center gap-3 border-t border-border pt-5">
+            <Button type="submit">Save preferences</Button>
+            <p role="status" aria-live="polite" className="text-sm text-success-ink">
+              {saved ? (
+                <span className="inline-flex items-center gap-1.5">
+                  <Icon name="check" size={16} />
+                  Preferences saved (locally).
+                </span>
+              ) : null}
+            </p>
+          </div>
+        </form>
+      </Card>
+    </div>
   );
 }

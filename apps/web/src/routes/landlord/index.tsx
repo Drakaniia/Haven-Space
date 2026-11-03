@@ -15,11 +15,12 @@ import { RecentActivityCard } from '../../components/landlord/dashboard/RecentAc
 import { RevenueTrendCard } from '../../components/landlord/dashboard/RevenueTrendCard';
 import { buttonClasses } from '../../components/ui/Button';
 import { ErrorState } from '../../components/ui/ErrorState';
+import { Icon } from '../../components/ui/Icon';
 import { PageHeader } from '../../components/ui/PageHeader';
 import { getLandlordActivity } from '../../lib/api/activity';
 import { getDashboardStats, getProperties } from '../../lib/api/landlord';
 import { useAuth } from '../../lib/auth-context';
-import { maintenanceRequests, revenueTrend } from '../../lib/fixtures/dashboard';
+import { revenueTrend } from '../../lib/fixtures/dashboard';
 import { LANDLORD_NAV } from '../../lib/nav';
 
 export const Route = createFileRoute('/landlord/')({
@@ -30,6 +31,14 @@ export const Route = createFileRoute('/landlord/')({
   ),
 });
 
+/**
+ * The landlord dashboard, built around today's decisions.
+ *
+ * Reading order: the Action Center (verification, applications, payments,
+ * renewals) leads at two-thirds width; the portfolio snapshot (occupancy and
+ * rent collected — API figures only) supports it; then the collection trend,
+ * the properties and the recent activity. Same three queries as before.
+ */
 function LandlordDashboard() {
   const { token, user } = useAuth();
 
@@ -56,17 +65,19 @@ function LandlordDashboard() {
     (total, property) => total + Number(property.pending_applications ?? 0),
     0
   );
-  // On error the property count is unknown; keep the chart (its fixtures) rather
-  // than showing a misleading "no properties" empty state.
+  // On error the property count is unknown; keep the chart rather than showing
+  // a misleading "no properties" empty state.
   const hasProperties = properties.isLoading || properties.isError ? true : propertyList.length > 0;
-  const maintenance = properties.data ? (hasProperties ? maintenanceRequests : 0) : null;
   const statData = stats.data?.data;
+  const alerts = statData?.payment_alerts;
 
   const attention =
-    properties.data && statData
+    properties.data && statData && alerts
       ? pendingApplications +
-        (maintenance ?? 0) +
-        statData.payment_alerts.due_soon +
+        alerts.due_today +
+        alerts.in_grace +
+        alerts.overdue +
+        alerts.due_soon +
         statData.renewals.upcoming_count
       : null;
 
@@ -74,65 +85,61 @@ function LandlordDashboard() {
     attention === null
       ? undefined
       : attention === 0
-      ? 'You have nothing that needs attention today.'
-      : `You have ${attention} ${attention === 1 ? 'thing' : 'things'} that need attention today.`;
+      ? 'Nothing needs your attention today. Your houses are in order.'
+      : `${attention} ${attention === 1 ? 'thing needs' : 'things need'} your attention today.`;
 
   return (
     <RoleShell nav={LANDLORD_NAV}>
-      {user?.verification_status === 'pending' ? (
-        <div className="mb-6 flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-warning-border bg-warning-tint px-5 py-4">
-          <p className="text-sm text-warning-ink">
-            Your account is pending verification. You can browse the dashboard, but your listings
-            won&apos;t be visible to boarders until your identity is verified.
-          </p>
-          <Link
-            to="/landlord/verification"
-            className={buttonClasses({ size: 'sm', variant: 'warning' })}
-          >
-            Complete verification
-          </Link>
-        </div>
-      ) : null}
-
       <PageHeader
         title={user?.first_name ? `Welcome back, ${user.first_name}` : 'Welcome back'}
         subtitle={subtitle}
         actions={
           <Link to="/landlord/listings/create" className={buttonClasses()}>
-            + Create listing
+            <Icon name="plus" size={16} />
+            Create listing
           </Link>
         }
       />
 
-      {stats.isLoading ? (
-        <DashboardStatCardsSkeleton />
-      ) : stats.error ? (
-        <ErrorState message={stats.error.message} />
-      ) : !statData ? null : (
-        <DashboardStatCards data={statData} />
-      )}
-
-      <div className="mt-5 grid grid-cols-1 gap-5 lg:grid-cols-3">
-        <div className="lg:col-span-2">
-          <RevenueTrendCard points={revenueTrend()} hasProperties={hasProperties} />
-        </div>
-        <div className="lg:col-span-1">
+      <div className="grid grid-cols-1 gap-6 lg:grid-cols-12">
+        <div className="lg:col-span-7 xl:col-span-8">
           {stats.isLoading || properties.isLoading ? (
             <ActionCenterCardSkeleton />
           ) : (
             <ActionCenterCard
+              verificationStatus={user?.verification_status}
               counts={{
                 applications: properties.data ? pendingApplications : null,
-                maintenance,
-                rentDue: statData?.payment_alerts.due_soon ?? null,
+                payments: alerts
+                  ? {
+                      dueToday: alerts.due_today,
+                      inGrace: alerts.in_grace,
+                      overdue: alerts.overdue,
+                    }
+                  : null,
+                rentDue: alerts?.due_soon ?? null,
                 renewals: statData?.renewals.upcoming_count ?? null,
               }}
             />
           )}
         </div>
+
+        <div className="lg:col-span-5 xl:col-span-4">
+          {stats.isLoading ? (
+            <DashboardStatCardsSkeleton />
+          ) : stats.error ? (
+            <ErrorState message={stats.error.message} />
+          ) : !statData ? null : (
+            <DashboardStatCards data={statData} />
+          )}
+        </div>
       </div>
 
-      <div className="mt-5 grid grid-cols-1 gap-5 md:grid-cols-2">
+      <div className="mt-6">
+        <RevenueTrendCard points={revenueTrend()} hasProperties={hasProperties} sample />
+      </div>
+
+      <div className="mt-6 grid grid-cols-1 gap-6 md:grid-cols-2">
         <MyPropertiesCard
           properties={properties.data ? propertyList : undefined}
           isLoading={properties.isLoading}

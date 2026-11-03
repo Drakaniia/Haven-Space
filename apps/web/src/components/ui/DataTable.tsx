@@ -37,7 +37,7 @@ function AppleCheckbox({
           'flex h-5 w-5 items-center justify-center rounded-full border-[1.6px] transition-all duration-150 ease-out',
           'motion-reduce:transition-none',
           checked
-            ? 'border-[#007AFF] bg-[#007AFF] text-white shadow-sm scale-100'
+            ? 'border-primary-strong bg-primary-strong text-white shadow-sm scale-100'
             : 'border-border-strong bg-surface active:scale-[0.96]',
         ].join(' ')}
       >
@@ -89,10 +89,10 @@ export function DataTable<T>({
   const someSelected = selectable && !allSelected && allIds.some(id => selectedIds?.has(id));
 
   return (
-    <div className="overflow-x-auto rounded-2xl border border-border bg-surface shadow-card">
+    <div className="overflow-x-auto rounded-2xl border border-border/80 bg-surface shadow-card">
       <table className="w-full text-left text-sm">
         <thead>
-          <tr className="border-b border-border bg-mint/50">
+          <tr className="border-b border-border bg-subtle/70 text-xs text-gray-ink">
             {selectable ? (
               <th className="w-12 px-4 py-3">
                 <AppleCheckbox
@@ -109,7 +109,7 @@ export function DataTable<T>({
               </th>
             ) : null}
             {columns.map(column => (
-              <th key={column.header} className="px-4 py-3 font-semibold">
+              <th key={column.header} scope="col" className="whitespace-nowrap px-4 py-3 font-semibold">
                 {column.header}
               </th>
             ))}
@@ -124,8 +124,8 @@ export function DataTable<T>({
             return (
               <Fragment key={key}>
                 <tr
-                  className={`border-b border-border transition-colors ${
-                    isSelected ? 'bg-info-tint/60' : 'hover:bg-subtle/60'
+                  className={`border-b border-border/70 transition-colors last:border-b-0 ${
+                    isSelected ? 'bg-mint/60' : 'hover:bg-cream/70'
                   }`}
                 >
                   {selectable ? (

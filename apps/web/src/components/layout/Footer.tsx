@@ -1,63 +1,93 @@
 import { Link } from '@tanstack/react-router';
 
-const COLUMNS: { title: string; links: { to: string; label: string }[] }[] = [
+/** Grouped by what someone is trying to do, not by template column names. */
+const GROUPS: { title: string; links: { to: string; label: string }[] }[] = [
   {
-    title: 'Company',
+    title: 'Looking for a room',
     links: [
-      { to: '/our-story', label: 'Our Story' },
-      { to: '/teams', label: 'Our Team' },
-      { to: '/for-landlords', label: 'For Landlords' },
+      { to: '/find-a-room', label: 'Browse rooms' },
+      { to: '/maps', label: 'Map view' },
+      { to: '/haven-ai', label: 'Ask Haven AI' },
     ],
   },
   {
-    title: 'Legal',
+    title: 'Renting out rooms',
     links: [
-      { to: '/legal/privacy-policy', label: 'Privacy Policy' },
-      { to: '/legal/terms-of-service', label: 'Terms of Service' },
-      { to: '/legal/user-agreement', label: 'User Agreement' },
+      { to: '/for-landlords', label: 'Why list with Haven' },
+      { to: '/auth/signup/landlord', label: 'Create a landlord account' },
     ],
   },
   {
-    title: 'Resources',
+    title: 'About',
     links: [
-      { to: '/find-a-room', label: 'Find a Room' },
-      { to: '/maps', label: 'Maps' },
-      { to: '/haven-ai', label: 'Haven AI' },
+      { to: '/our-story', label: 'Our story' },
+      { to: '/teams', label: 'The team' },
     ],
   },
+];
+
+const LEGAL = [
+  { to: '/legal/privacy-policy', label: 'Privacy' },
+  { to: '/legal/terms-of-service', label: 'Terms' },
+  { to: '/legal/user-agreement', label: 'User agreement' },
 ];
 
 export function Footer() {
   return (
     <footer className="border-t border-border bg-surface">
-      <div className="mx-auto grid max-w-7xl gap-8 px-4 py-10 sm:px-6 md:grid-cols-4">
-        <div>
-          <img
-            src="/assets/images/Haven_Space_Logo.png"
-            alt="Haven Space"
-            className="h-10 w-10 object-contain"
-          />
-          <p className="mt-3 text-sm text-gray-ink">
-            Affordable boarding houses and rooms across the Philippines.
+      <div className="mx-auto grid max-w-7xl gap-12 px-4 py-14 sm:px-6 lg:grid-cols-[1.3fr_2fr] lg:px-8">
+        <div className="max-w-sm">
+          <Link to="/" className="inline-flex items-center gap-2.5" aria-label="Haven Space home">
+            <img
+              src="/assets/images/Haven_Space_Logo.png"
+              alt=""
+              className="h-9 w-9 object-contain"
+            />
+            <span className="font-display text-xl font-semibold tracking-[-0.01em] text-ink">
+              Haven Space
+            </span>
+          </Link>
+          <p className="mt-4 font-display text-[1.375rem] leading-snug tracking-[-0.01em] text-ink">
+            Affordable, verified boarding houses across the Philippines.
+          </p>
+          <p className="mt-3 text-sm leading-relaxed text-gray-ink">
+            Built for students and young professionals looking for a room near school or work, and
+            for the landlords who keep those houses running.
           </p>
         </div>
-        {COLUMNS.map(column => (
-          <div key={column.title}>
-            <p className="mb-3 text-sm font-semibold">{column.title}</p>
-            <ul className="space-y-2">
-              {column.links.map(link => (
-                <li key={link.to}>
-                  <Link to={link.to} className="text-sm text-gray-ink hover:text-primary">
-                    {link.label}
-                  </Link>
-                </li>
-              ))}
-            </ul>
-          </div>
-        ))}
+        <div className="grid gap-10 sm:grid-cols-3">
+          {GROUPS.map(group => (
+            <div key={group.title}>
+              <p className="text-sm font-semibold text-ink">{group.title}</p>
+              <ul className="mt-4 space-y-2.5">
+                {group.links.map(link => (
+                  <li key={link.to}>
+                    <Link
+                      to={link.to}
+                      className="text-sm text-gray-ink transition-colors hover:text-primary"
+                    >
+                      {link.label}
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          ))}
+        </div>
       </div>
-      <div className="border-t border-border py-4 text-center text-sm text-gray-ink">
-        © {new Date().getFullYear()} Haven Space. All rights reserved.
+      <div className="border-t border-border">
+        <div className="mx-auto flex max-w-7xl flex-col gap-3 px-4 py-5 text-sm text-gray-ink sm:flex-row sm:items-center sm:justify-between sm:px-6 lg:px-8">
+          <p>© {new Date().getFullYear()} Haven Space</p>
+          <ul className="flex flex-wrap gap-x-5 gap-y-2">
+            {LEGAL.map(link => (
+              <li key={link.to}>
+                <Link to={link.to} className="transition-colors hover:text-primary">
+                  {link.label}
+                </Link>
+              </li>
+            ))}
+          </ul>
+        </div>
       </div>
     </footer>
   );

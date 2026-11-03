@@ -94,7 +94,7 @@ export function StatusBadge({
   const style = statusTone(status);
   return (
     <span
-      className={`inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-xs font-medium capitalize ${style}`}
+      className={`inline-flex items-center gap-1 whitespace-nowrap rounded-md px-2 py-0.5 text-xs font-semibold capitalize leading-5 ${style}`}
     >
       {icon ? <Icon name={icon} size={12} className="shrink-0" /> : null}
       {label ?? status.replaceAll('_', ' ')}

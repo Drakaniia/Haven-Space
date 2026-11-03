@@ -27,6 +27,24 @@ export function Avatar({
     );
   }
 
+  // Initials read as a person; the silhouette is the fallback when there is no name yet.
+  const initials = [user.first_name, user.last_name]
+    .map(part => part?.trim().charAt(0) ?? '')
+    .join('')
+    .toUpperCase();
+
+  if (initials) {
+    return (
+      <span
+        aria-hidden="true"
+        style={{ width: size, height: size, fontSize: Math.max(10, Math.round(size * 0.38)) }}
+        className={`inline-flex shrink-0 select-none items-center justify-center rounded-full bg-mint font-semibold tracking-[0.01em] text-primary-dark ${className}`}
+      >
+        {initials}
+      </span>
+    );
+  }
+
   return (
     <span
       aria-hidden="true"

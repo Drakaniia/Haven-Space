@@ -1,186 +1,283 @@
 @import 'tailwindcss';
 
 /*
-  ── Theme tokens ────────────────────────────────────────────────────────
-  The app is light-only: these are the exact colours the app shipped with.
+  ── Haven Space design system ──────────────────────────────────────────
+  Direction: warm editorial hospitality — a well-printed neighbourhood guide,
+  not a SaaS template. See docs/design/haven-design-system.md.
 
-  Three families:
-    • neutrals  — surface / subtle / border / border-strong, plus the text
-                  ramp (ink / gray-ink / muted).
-    • brand     — `primary` is the accent (text, icons, borders) and
-                  `primary-strong` is the solid fill that carries white text.
-                  They are kept as separate tokens so the accent and the fill
-                  can diverge if a theme ever needs it.
-    • semantics — each status has a solid colour plus a tint / ink / border
-                  triple for banners, pills and inline notes.
+  Token *names* are stable (every page already speaks them); only values
+  changed in the redesign, so the whole app re-skins from here.
+
+  Families:
+    • paper neutrals — canvas (`cream`), surface, subtle, border, border-strong,
+                       and the ink ramp (ink / gray-ink / muted).
+    • moss brand     — `primary` is the accent (text, icons, borders);
+                       `primary-strong` is the solid fill that carries white
+                       text; `mint` is the quiet sage tint for selected/hover.
+    • clay accent    — `clay` is the ONE deliberate accent. Reserve it for the
+                       key moment on a screen (a price, the emphasised word in
+                       a hero). Never for chrome, never for status.
+    • semantics      — each status has a solid colour plus tint / ink / border.
 */
 @theme {
-  --color-primary: #4a7c23;
-  --color-primary-strong: #4a7c23;
-  --color-primary-hover: #2d4a14;
-  --color-primary-dark: #2d4a14;
-  --color-primary-light: #7cb342;
-  --color-cream: #fef9f0;
-  --color-mint: #e8f5e9;
-  --color-surface: #ffffff;
-  --color-subtle: #f3f4f6;
-  --color-border: #e5e7eb;
-  --color-border-strong: #d1d5db;
-  --color-ink: #1a1a1a;
-  --color-gray-ink: #555555;
-  --color-muted: #9ca3af;
-  --color-success: #388e3c;
-  --color-warning: #ff9800;
-  --color-error: #d32f2f;
-  --color-info: #1976d2;
-  --color-success-tint: #dcfce7;
-  --color-success-ink: #166534;
-  --color-success-border: #bbf7d0;
-  --color-warning-tint: #fffbeb;
-  --color-warning-ink: #92400e;
-  --color-warning-border: #fde68a;
-  /* A solid amber fill that carries white text — kept separate from
-     `warning-ink` for the same reason `primary-strong` is separate from
-     `primary`. */
-  --color-warning-strong: #92400e;
-  --color-error-tint: #fef2f2;
-  --color-error-ink: #b91c1c;
-  --color-error-border: #fecaca;
-  /* The darker red the payments tracker uses for "overdue, past the grace
-     period" — deliberately heavier than `error-ink` so it reads as a different
-     state from "due today" (`payments-tracker-redesign` §3.4). */
-  --color-critical-tint: #fee2e2;
-  --color-critical-ink: #7f1d1d;
-  --color-critical-border: #fca5a5;
-  --color-info-tint: #dbeafe;
-  --color-info-ink: #1d4ed8;
-  --color-info-border: #bfdbfe;
-  --color-accent-tint: #f3e8ff;
-  --color-accent-ink: #7e22ce;
-  --font-sans: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto,
-    'Helvetica Neue', Arial, sans-serif;
-  --shadow-card: 0 1px 3px rgba(0, 0, 0, 0.1);
-  --shadow-pop: 0 10px 15px rgba(0, 0, 0, 0.1);
-  /* Critically damped settle — the web approximation of Apple's damping 1.0
-     (response ~0.35s). No overshoot: bounce is only earned by momentum-driven
-     gestures, and this app has none. */
+  /* Moss */
+  --color-primary: #3b6a2a;
+  --color-primary-strong: #35612a;
+  --color-primary-hover: #284b1f;
+  --color-primary-dark: #22401a;
+  --color-primary-light: #8db46f;
+  --color-mint: #e6eedb;
+
+  /* Paper */
+  --color-cream: #f6f2e9;
+  --color-surface: #fffdf8;
+  --color-subtle: #efeadf;
+  --color-border: #e4ddcd;
+  --color-border-strong: #cbc2ae;
+  --color-ink: #1c2019;
+  --color-gray-ink: #565b51;
+  --color-muted: #7d8276;
+
+  /* The one accent */
+  --color-clay: #b4532d;
+  --color-clay-tint: #f6e4d9;
+
+  /* Semantics */
+  --color-success: #2f7d3b;
+  --color-warning: #c77a0a;
+  --color-error: #c2372b;
+  --color-info: #2a64a8;
+  --color-success-tint: #e3f1df;
+  --color-success-ink: #1f5a2a;
+  --color-success-border: #bddcb5;
+  --color-warning-tint: #fbf1dc;
+  --color-warning-ink: #87500a;
+  --color-warning-border: #ecd39a;
+  /* Solid amber fill that carries white text (a fill, not an accent). */
+  --color-warning-strong: #87500a;
+  --color-error-tint: #fbe9e5;
+  --color-error-ink: #a52a20;
+  --color-error-border: #f0c3ba;
+  /* "Overdue, past the grace period" — heavier than error-ink on purpose
+     (`payments-tracker-redesign` §3.4). */
+  --color-critical-tint: #f7dcd6;
+  --color-critical-ink: #6f1d16;
+  --color-critical-border: #e2a397;
+  --color-info-tint: #e2ecf7;
+  --color-info-ink: #1f4f88;
+  --color-info-border: #bcd1ea;
+  --color-accent-tint: #efe6f3;
+  --color-accent-ink: #6b3584;
+
+  /* Type: a soft optical-size serif for display, a warm grotesk for UI. */
+  --font-sans: 'Hanken Grotesk', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --font-display: 'Fraunces', ui-serif, Georgia, 'Times New Roman', serif;
+
+  /* Elevation: most things sit flat. `card` is a hairline lift; `pop` is for
+     floating layers only (menus, modals, toasts). Warm-tinted, never grey. */
+  --shadow-card: 0 1px 0 rgb(28 32 25 / 0.03), 0 1px 3px rgb(28 32 25 / 0.06);
+  --shadow-lift: 0 1px 2px rgb(28 32 25 / 0.05), 0 8px 24px -8px rgb(28 32 25 / 0.14);
+  --shadow-pop: 0 2px 6px rgb(28 32 25 / 0.06), 0 24px 48px -12px rgb(28 32 25 / 0.22);
+
+  /* Motion. `settle` ≈ a critically damped spring (no overshoot). `out` is
+     the strong ease-out for entrances; `drawer` is the iOS sheet curve. */
   --ease-settle: cubic-bezier(0.22, 1, 0.36, 1);
+  --ease-out: cubic-bezier(0.23, 1, 0.32, 1);
+  --ease-drawer: cubic-bezier(0.32, 0.72, 0, 1);
 }
 
 :root {
-  /* Light only. Declaring the scheme lets the browser paint native form
-     controls, scrollbars and the page canvas in light mode even when the OS
-     prefers dark. */
+  /* Light only: lets native controls and scrollbars paint light even when the
+     OS prefers dark. */
   color-scheme: light;
 }
 
-/* Reserve the scrollbar track so pinning a panel (the auth artwork, the shell sidebar) can't
-   shift the page sideways when a long form starts scrolling. Progressive enhancement: browsers
-   without support simply ignore it. */
+/* Reserve the scrollbar track so pinning a panel can't shift the page. */
 html {
   scrollbar-gutter: stable;
+  -webkit-text-size-adjust: 100%;
 }
 
 body {
   font-family: var(--font-sans);
   background-color: var(--color-cream);
   color: var(--color-ink);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+}
+
+/* Tabular figures wherever numbers are compared (tables, money, stats). */
+table,
+.tabular {
+  font-variant-numeric: tabular-nums;
+}
+
+::selection {
+  background-color: rgb(59 106 42 / 0.18);
+}
+
+/* Visible, consistent keyboard focus — never rely on the UA ring alone. */
+:where(a, button, [role='button'], [role='tab'], [role='switch'], summary):focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 2px;
+}
+
+/* ── Typography ───────────────────────────────────────────────────────
+   Tracking and leading are size-specific: display text tightens as it grows,
+   body stays near zero. `font-optical-sizing` lets Fraunces change shape
+   with size. */
+.font-display {
+  font-optical-sizing: auto;
+  font-variation-settings: 'SOFT' 50, 'WONK' 0;
+  letter-spacing: -0.015em;
+}
+
+.display-xl {
+  font-family: var(--font-display);
+  font-optical-sizing: auto;
+  font-variation-settings: 'SOFT' 60, 'WONK' 1;
+  font-weight: 500;
+  font-size: clamp(2.6rem, 6.2vw, 5.25rem);
+  line-height: 0.98;
+  letter-spacing: -0.03em;
+}
+
+.display-lg {
+  font-family: var(--font-display);
+  font-optical-sizing: auto;
+  font-variation-settings: 'SOFT' 50, 'WONK' 0;
+  font-weight: 500;
+  font-size: clamp(2rem, 4vw, 3.25rem);
+  line-height: 1.04;
+  letter-spacing: -0.025em;
+}
+
+.display-md {
+  font-family: var(--font-display);
+  font-optical-sizing: auto;
+  font-variation-settings: 'SOFT' 50, 'WONK' 0;
+  font-weight: 500;
+  font-size: clamp(1.5rem, 2.6vw, 2.125rem);
+  line-height: 1.12;
+  letter-spacing: -0.02em;
+}
+
+/* Small section label. Sentence case, modest tracking — not a shouting
+   uppercase eyebrow. */
+.kicker {
+  font-size: 0.8125rem;
+  font-weight: 600;
+  letter-spacing: 0.01em;
+  color: var(--color-primary);
+}
+
+/* Long-form reading measure (legal pages, story). */
+.prose-haven {
+  max-width: 68ch;
+  line-height: 1.7;
+  color: var(--color-gray-ink);
+}
+.prose-haven h2 {
+  font-family: var(--font-display);
+  font-weight: 500;
+  font-size: 1.5rem;
+  line-height: 1.2;
+  letter-spacing: -0.015em;
+  color: var(--color-ink);
+  margin-top: 2.5rem;
+  margin-bottom: 0.75rem;
+}
+.prose-haven h3 {
+  font-weight: 700;
+  color: var(--color-ink);
+  margin-top: 1.75rem;
+  margin-bottom: 0.5rem;
+}
+.prose-haven p + p {
+  margin-top: 1rem;
+}
+.prose-haven ul {
+  list-style: disc;
+  padding-left: 1.25rem;
+  margin-top: 0.75rem;
+}
+.prose-haven li + li {
+  margin-top: 0.375rem;
+}
+.prose-haven a {
+  color: var(--color-primary);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+/* ── Surfaces ─────────────────────────────────────────────────────────
+   A faint paper grain on the canvas only — warm material without competing
+   with content. Cards stay clean. */
+.paper-grain {
+  background-color: var(--color-cream);
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 0.11 0 0 0 0 0.12 0 0 0 0 0.09 0 0 0 0.035 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
 }
 
 /* ── Translucent chrome ───────────────────────────────────────────────
    Material weight encodes hierarchy: the structural sidebar is heavier than
-   the floating topbar. Translucency is reserved for chrome (these two) and
-   floating layers (modal, menus, toasts) — cards stay opaque, because stacking
-   one translucent surface on another collapses legibility.
-
-   Both degrade to opaque when the user asks for reduced transparency. */
+   the floating topbar. Translucency is reserved for chrome and floating
+   layers — cards stay opaque. All degrade to solid under reduced
+   transparency or increased contrast. */
 .chrome-topbar {
-  background-color: rgb(255 255 255 / 0.7);
-  backdrop-filter: blur(20px) saturate(150%);
-  -webkit-backdrop-filter: blur(20px) saturate(150%);
+  background-color: rgb(246 242 233 / 0.78);
+  backdrop-filter: blur(18px) saturate(140%);
+  -webkit-backdrop-filter: blur(18px) saturate(140%);
 }
 
 .chrome-sidebar {
-  background-color: rgb(255 255 255 / 0.85);
-  backdrop-filter: blur(24px) saturate(150%);
-  -webkit-backdrop-filter: blur(24px) saturate(150%);
+  background-color: rgb(255 253 248 / 0.92);
+  backdrop-filter: blur(24px) saturate(140%);
+  -webkit-backdrop-filter: blur(24px) saturate(140%);
 }
 
-/* The one floating surface that is not a dialog: the bulk action bar. It is
-   deliberately lighter than the sidebar (it is transient, not structural) and
-   exists as a class rather than raw `backdrop-blur` utilities so that it picks
-   up the reduced-transparency rules below. */
 .chrome-float {
-  background-color: rgb(255 255 255 / 0.9);
-  backdrop-filter: blur(20px) saturate(150%);
-  -webkit-backdrop-filter: blur(20px) saturate(150%);
+  background-color: rgb(255 253 248 / 0.92);
+  backdrop-filter: blur(20px) saturate(140%);
+  -webkit-backdrop-filter: blur(20px) saturate(140%);
 }
 
-/* Soft scroll edge where content passes under the pinned topbar — a fade
-   instead of a hard divider, and a child of the bar so it needs no height. */
+/* Soft scroll edge where content passes under the pinned topbar. */
 .chrome-scroll-edge {
-  background-image: linear-gradient(to bottom, rgb(255 255 255 / 0.7), rgb(255 255 255 / 0));
+  background-image: linear-gradient(to bottom, rgb(246 242 233 / 0.78), rgb(246 242 233 / 0));
 }
 
 @media (prefers-reduced-transparency: reduce) {
-  .chrome-topbar,
+  .chrome-topbar {
+    background-color: var(--color-cream);
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+  }
   .chrome-sidebar,
   .chrome-float {
     background-color: var(--color-surface);
     backdrop-filter: none;
     -webkit-backdrop-filter: none;
   }
-
   .chrome-scroll-edge {
-    background-image: linear-gradient(to bottom, rgb(255 255 255 / 0.95), rgb(255 255 255 / 0));
+    background-image: linear-gradient(to bottom, rgb(246 242 233 / 0.98), rgb(246 242 233 / 0));
   }
 }
 
-/* Dashed top fade grid background (legacy public.css .vision-grid-background) */
-.vision-grid-background {
-  position: absolute;
-  inset: 0;
-  z-index: 0;
-  background-image: linear-gradient(to right, #e7e5e4 1px, transparent 1px),
-    linear-gradient(to bottom, #e7e5e4 1px, transparent 1px);
-  background-size: 20px 20px;
-  background-position: 0 0, 0 0;
-  mask-image: repeating-linear-gradient(
-      to right,
-      black 0px,
-      black 3px,
-      transparent 3px,
-      transparent 8px
-    ),
-    repeating-linear-gradient(to bottom, black 0px, black 3px, transparent 3px, transparent 8px),
-    radial-gradient(ellipse 70% 60% at 50% 0%, #000 60%, transparent 100%);
-  -webkit-mask-image: repeating-linear-gradient(
-      to right,
-      black 0px,
-      black 3px,
-      transparent 3px,
-      transparent 8px
-    ),
-    repeating-linear-gradient(to bottom, black 0px, black 3px, transparent 3px, transparent 8px),
-    radial-gradient(ellipse 70% 60% at 50% 0%, #000 60%, transparent 100%);
-  mask-composite: intersect;
-  -webkit-mask-composite: source-in;
+@media (prefers-contrast: more) {
+  .chrome-topbar,
+  .chrome-sidebar,
+  .chrome-float {
+    background-color: var(--color-surface);
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+    border-color: var(--color-border-strong);
+  }
 }
 
-/* The decorative textures in this stylesheet (this grid and the hero glow
-   below) are ornament, not surfaces, so they keep their own literal colours. */
-
-/* Warm brand glow behind the landing hero. */
-.hero-glow {
-  background-image: radial-gradient(at 25% -12%, rgb(255 226 178 / 0.8) 0%, transparent 50%),
-    radial-gradient(at 75% -1%, rgb(78 237 80 / 0.39) 0%, transparent 50%);
-}
-
-/* ── Entrance motion ──────────────────────────────────────────────────
-   All three entrances use the critically damped settle curve above and scale
-   or slide from the element's own anchor (skill §7: anchor interactions to
-   their source). Under reduced motion each keeps a short opacity cross-fade
-   rather than dropping feedback entirely (skill §14). */
+/* ── Motion ───────────────────────────────────────────────────────────
+   Entrances scale/slide from their anchor with the settle curve. Under
+   reduced motion each keeps a short opacity cross-fade instead of travel. */
 @keyframes fade-in {
   from {
     opacity: 0;
@@ -190,11 +287,10 @@ body {
   }
 }
 
-/* Dropdown menu entrance: scale from the trigger */
 @keyframes menu-pop {
   from {
     opacity: 0;
-    transform: translateY(-4px) scale(0.96);
+    transform: translateY(-4px) scale(0.97);
   }
   to {
     opacity: 1;
@@ -204,10 +300,9 @@ body {
 
 .menu-pop {
   transform-origin: top right;
-  animation: menu-pop 180ms var(--ease-settle);
+  animation: menu-pop 170ms var(--ease-settle);
 }
 
-/* Modal entrance: fade the backdrop and scale the card in quickly */
 @keyframes modal-pop {
   from {
     opacity: 0;
@@ -224,54 +319,112 @@ body {
 }
 
 .modal-fade {
-  animation: modal-fade 180ms ease-out;
+  animation: fade-in 180ms ease-out;
 }
 
-@keyframes modal-fade {
-  from {
-    opacity: 0;
-  }
-  to {
-    opacity: 1;
-  }
-}
-
-/* Reduced motion: keep the feedback, drop the travel. */
-@media (prefers-reduced-motion: reduce) {
-  .menu-pop,
-  .modal-pop,
-  .toast-in {
-    animation: fade-in 150ms ease-out;
-  }
-
-  .modal-fade {
-    animation: none;
-  }
-}
-
-/* Toast entrance: slide in from the right + fade */
 @keyframes toast-in {
   from {
     opacity: 0;
-    transform: translateX(16px);
+    transform: translateY(8px) scale(0.98);
   }
   to {
     opacity: 1;
-    transform: translateX(0);
+    transform: translateY(0) scale(1);
   }
 }
 
 .toast-in {
-  animation: toast-in 200ms var(--ease-settle);
+  animation: toast-in 220ms var(--ease-settle);
+}
+
+/* Mobile nav drawer: enters from the left edge it lives on. */
+@keyframes drawer-in {
+  from {
+    transform: translateX(-100%);
+  }
+  to {
+    transform: translateX(0);
+  }
+}
+
+.drawer-in {
+  animation: drawer-in 300ms var(--ease-drawer);
+}
+
+/* One orchestrated page-load: children of `.rise-in` settle upward in a
+   short stagger. Decorative — it never blocks interaction. Use on marketing
+   heroes and page headers, not on every card. */
+@keyframes rise {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.rise-in > * {
+  animation: rise 520ms var(--ease-out) both;
+}
+.rise-in > *:nth-child(2) {
+  animation-delay: 60ms;
+}
+.rise-in > *:nth-child(3) {
+  animation-delay: 120ms;
+}
+.rise-in > *:nth-child(4) {
+  animation-delay: 180ms;
+}
+.rise-in > *:nth-child(5) {
+  animation-delay: 240ms;
+}
+.rise-in > *:nth-child(n + 6) {
+  animation-delay: 300ms;
+}
+
+/* Clickable card: lifts on fine-pointer hover, presses on pointer-down. */
+.press-card {
+  transition:
+    transform 160ms var(--ease-out),
+    box-shadow 200ms var(--ease-out),
+    border-color 200ms ease;
+}
+.press-card:active {
+  transform: scale(0.99);
+}
+@media (hover: hover) and (pointer: fine) {
+  .press-card:hover {
+    box-shadow: var(--shadow-lift);
+    border-color: var(--color-border-strong);
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {
+  .menu-pop,
+  .modal-pop,
+  .toast-in,
+  .drawer-in {
+    animation: fade-in 150ms ease-out;
+  }
+  .modal-fade {
+    animation: none;
+  }
+  .rise-in > * {
+    animation: fade-in 200ms ease-out both;
+    animation-delay: 0ms !important;
+  }
+  .press-card,
+  .press-card:active {
+    transform: none;
+  }
   .animate-pulse {
     animation: none;
   }
 }
 
-/* Logo cloud marquee (legacy logo-cloud.css) */
+/* Logo marquee (only for real, verifiable logos). */
 @keyframes logo-marquee {
   from {
     transform: translateX(0);
@@ -285,7 +438,7 @@ body {
   display: flex;
   gap: 42px;
   width: max-content;
-  animation: logo-marquee 30s linear infinite;
+  animation: logo-marquee 40s linear infinite;
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -295,26 +448,18 @@ body {
 }
 
 .logo-marquee-track img {
-  height: 3rem;
+  height: 2.5rem;
   width: auto;
-  max-width: 200px;
+  max-width: 180px;
   object-fit: contain;
   pointer-events: none;
   user-select: none;
 }
 
 /* ── Hover-transform gating ───────────────────────────────────────────
-   Touch devices trigger :hover on tap, causing transforms that stick
-   until the user taps elsewhere. Gate transform hovers behind a fine
-   pointer + hover-capable media query so they only fire on devices
-   where hover is meaningful (mouse / stylus). Color-only hovers are
-   left ungated — they cause no layout shift and feel correct on tap.
-
-   We reset Tailwind's generated hover utilities to no-op by default,
-   then re-enable them inside @media (hover: hover) and (pointer: fine).
-   ─────────────────────────────────────────────────────────────────── */
-
-/* Reset: suppress transform hovers on touch / coarse-pointer devices */
+   Touch devices trigger :hover on tap, so transform hovers stick. Suppress
+   them by default and re-enable on fine-pointer, hover-capable devices.
+   Colour-only hovers stay ungated. */
 .hover\:-translate-y-0\.5:hover,
 .hover\:-translate-y-1:hover,
 .hover\:scale-105:hover,
@@ -322,7 +467,6 @@ body {
   transform: none;
 }
 
-/* Re-enable on devices with fine pointer + hover support */
 @media (hover: hover) and (pointer: fine) {
   .hover\:-translate-y-0\.5:hover {
     --tw-translate-y: -0.125rem;

@@ -1,6 +1,7 @@
 import { Link } from '@tanstack/react-router';
 import type { ReactNode } from 'react';
 import { useBoarderStatus } from '../../lib/use-boarder-nav';
+import { buttonClasses } from '../ui/Button';
 import { EmptyState } from '../ui/EmptyState';
 
 /**
@@ -11,17 +12,17 @@ import { EmptyState } from '../ui/EmptyState';
  */
 export function FeatureGate() {
   return (
-    <div className="mx-auto max-w-md py-8 text-center">
+    <div className="mx-auto max-w-lg py-6 sm:py-10">
       <EmptyState
+        icon="shield"
         title="Not available yet"
-        description="This becomes available once your booking is confirmed and your tenancy starts."
+        description="This becomes available once your booking is confirmed and your tenancy starts. Your applications show where things stand."
+        action={
+          <Link to="/boarder/applications" className={buttonClasses()}>
+            Go to Applications
+          </Link>
+        }
       />
-      <Link
-        to="/boarder/applications"
-        className="mt-4 inline-block rounded-full bg-primary-strong px-6 py-2.5 text-sm font-semibold text-white hover:bg-primary-hover"
-      >
-        Go to Applications
-      </Link>
     </div>
   );
 }

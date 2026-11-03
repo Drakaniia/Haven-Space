@@ -1,5 +1,7 @@
-import { useState } from 'react';
-import { Button } from '../../ui/Button';
+import type { FormEvent } from 'react';
+import { FormSection } from '../../auth/FormSection';
+import { Field, TextInput } from '../../ui/Field';
+import { WizardActions } from '../WizardActions';
 
 export interface LandlordVerificationStepData {
   stripeConnectId: string;
@@ -11,49 +13,54 @@ export function StepVerification({
   saving,
   onNext,
   onSkip,
+  onBack,
 }: {
   data: LandlordVerificationStepData;
   onChange: (data: LandlordVerificationStepData) => void;
   saving?: boolean;
   onNext: () => void;
   onSkip: () => void;
+  onBack?: () => void;
 }) {
-  const [error, setError] = useState<string | null>(null);
   const set = (patch: Partial<LandlordVerificationStepData>) => onChange({ ...data, ...patch });
 
   return (
     <form
-      className="flex flex-col gap-4"
-      onSubmit={e => {
+      className="flex flex-col gap-9"
+      onSubmit={(e: FormEvent) => {
         e.preventDefault();
         onNext();
       }}
     >
-      <div className="rounded-md bg-cream p-3 text-sm">
-        <p className="font-medium">Verification &amp; payouts</p>
-        <p className="text-gray-ink">
-          Link your identity verification and bank/payout account to receive rent. If your platform
-          already has your details, you can skip this step.
-        </p>
-      </div>
-      <label className="block">
-        <span className="mb-1 block text-sm font-medium">Stripe Connect account ID</span>
-        <input
-          className="w-full rounded-xl border border-border-strong bg-surface/50 px-4 py-2.5 focus:border-primary focus:outline-none"
-          placeholder="acct_..."
-          value={data.stripeConnectId}
-          onChange={e => set({ stripeConnectId: e.target.value })}
-        />
-      </label>
-      {error ? <p className="text-sm text-error-ink">{error}</p> : null}
-      <div className="flex items-center justify-end gap-3">
-        <Button type="button" variant="ghost" onClick={onSkip} disabled={saving}>
-          Skip for now
-        </Button>
-        <Button type="submit" disabled={saving}>
-          {saving ? 'Saving…' : 'Finish'}
-        </Button>
-      </div>
+      <FormSection
+        title="Verification & payouts"
+        description="Link your payout account to receive rent. If Haven Space already has your details, skip this step."
+      >
+        <div>
+          <Field label="Stripe Connect account ID" htmlFor="stripeConnectId">
+            <TextInput
+              id="stripeConnectId"
+              placeholder="acct_…"
+              autoComplete="off"
+              spellCheck={false}
+              aria-describedby="stripeConnectId-hint"
+              className="font-mono sm:max-w-sm"
+              value={data.stripeConnectId}
+              onChange={e => set({ stripeConnectId: e.target.value })}
+            />
+          </Field>
+          <p id="stripeConnectId-hint" className="mt-1.5 text-sm text-muted">
+            Starts with <span className="font-mono">acct_</span>. Optional.
+          </p>
+        </div>
+      </FormSection>
+
+      <WizardActions
+        primaryLabel="Finish"
+        saving={saving}
+        onBack={onBack}
+        onSkip={onSkip}
+      />
     </form>
   );
 }

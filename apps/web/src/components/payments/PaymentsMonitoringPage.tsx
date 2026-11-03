@@ -11,6 +11,7 @@ import { RecordPaymentModal } from './RecordPaymentModal';
 import { ReviewPaymentDrawer } from './ReviewPaymentDrawer';
 import { TenantPaymentDrawer } from './TenantPaymentDrawer';
 import { Button } from '../ui/Button';
+import { Icon } from '../ui/Icon';
 import { PageHeader } from '../ui/PageHeader';
 import { ToastStack, useToasts } from '../ui/Toast';
 import { getProperties } from '../../lib/api/landlord';
@@ -128,6 +129,9 @@ export function PaymentsMonitoringPage() {
     () => [...new Set(rows.map(row => row.room_number).filter(Boolean))].sort(),
     [rows]
   );
+  // Proofs waiting on the landlord, counted across the whole month (not just the
+  // filtered view) so a narrow filter can never hide a decision that is due.
+  const awaitingReview = useMemo(() => rows.filter(row => row.has_pending_claim).length, [rows]);
 
   const refresh = () => {
     void queryClient.invalidateQueries({ queryKey: ['payment-tracker'] });
@@ -197,6 +201,7 @@ export function PaymentsMonitoringPage() {
 
       <PageHeader
         title="Payments"
+        subtitle="Who owes rent this month, how late they are, and what to do next."
         actions={
           <Button
             variant="outline"
@@ -220,6 +225,24 @@ export function PaymentsMonitoringPage() {
         />
 
         <PaymentMetricsStrip metrics={metrics} loading={tracker.isLoading} />
+
+        {awaitingReview > 0 && !filters.needsReview ? (
+          <div className="flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-info-border bg-info-tint px-4 py-3 sm:px-5">
+            <p className="flex items-center gap-2.5 text-sm font-medium text-info-ink">
+              <Icon name="document" size={18} className="shrink-0" />
+              {awaitingReview === 1
+                ? '1 payment proof is waiting for your review.'
+                : `${awaitingReview} payment proofs are waiting for your review.`}
+            </p>
+            <Button
+              size="sm"
+              variant="outline"
+              onClick={() => setFilters(current => ({ ...current, needsReview: true }))}
+            >
+              Show only these
+            </Button>
+          </div>
+        ) : null}
 
         <PaymentMonitorTable
           rows={visibleRows}
