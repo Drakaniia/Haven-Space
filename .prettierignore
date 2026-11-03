@@ -4,6 +4,7 @@ dist/
 build/
 .wrangler/
 apps/web/src/routeTree.gen.ts
+apps/web/worker-configuration.d.ts
 *.log
 *.tmp
 .DS_Store
