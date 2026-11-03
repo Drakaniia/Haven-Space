@@ -4,7 +4,7 @@
   "type": "module",
   "scripts": {
     "dev": "vite dev",
-    "build": "bun ../../scripts/probe/pages-probe.mjs",
+    "build": "mkdir -p dist/server dist/client/assets && echo \"export default { fetch: () => new Response(\\\"probe-ok\\\") };\" > dist/server/index.js && echo ok > dist/client/assets/probe.txt",
     "preview": "vite preview",
     "deploy": "bun run build && bun ../../scripts/build/build-pages.mjs && wrangler pages deploy dist/pages --project-name haven-space --branch main",
     "typecheck": "bun run cf-typegen && tsc --noEmit",
