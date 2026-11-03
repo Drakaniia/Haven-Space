@@ -180,6 +180,10 @@ export async function handleLogin(c: Context<{ Bindings: Env }>) {
     return errorResponse(400, 'Missing email or password');
   }
 
+  if (!isEmail(email)) {
+    return errorResponse(400, 'Invalid email format');
+  }
+
   const user = await findUserAccountByEmail(db, email);
 
   if (!user) {

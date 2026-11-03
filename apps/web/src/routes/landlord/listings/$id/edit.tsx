@@ -1,16 +1,34 @@
 import { createFileRoute, Link, useNavigate } from '@tanstack/react-router';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { useState, type FormEvent } from 'react';
-import { Button } from '../../../../components/ui/Button';
+import { useState, type FormEvent, type ReactNode } from 'react';
+import { VerificationNotice } from '../../../../components/landlord/VerificationNotice';
+import { Button, buttonClasses } from '../../../../components/ui/Button';
 import { Card } from '../../../../components/ui/Card';
 import { ErrorState } from '../../../../components/ui/ErrorState';
 import { Icon } from '../../../../components/ui/Icon';
 import { Field, SelectInput, TextArea, TextInput } from '../../../../components/ui/Field';
+import { PageHeader } from '../../../../components/ui/PageHeader';
 import { Spinner } from '../../../../components/ui/Spinner';
-import { LandlordRoomList } from '../../../../components/rooms/LandlordRoomList';
 import { ApiRequestError } from '../../../../lib/api/http';
-import { getProperty, updateListing, uploadPropertyPhotos } from '../../../../lib/api/landlord';
+import {
+  getProperty,
+  getRooms,
+  updateListing,
+  uploadPropertyPhotos,
+} from '../../../../lib/api/landlord';
 import { useAuth } from '../../../../lib/auth-context';
+import {
+  DEFAULT_LISTING_STATUS,
+  LISTING_STATUS_OPTIONS,
+  NOT_VISIBLE_TO_BOARDERS,
+  PUBLISH_NEEDS_ROOM,
+  listingModerationHint,
+  listingUpdatePayload,
+  sharedPricingState,
+  sharedPricingSummary,
+  toListingStatusValue,
+  type ListingStatusValue,
+} from '../../../../lib/listing-status';
 import { setPendingToast } from '../../../../lib/toast';
 import { ToastStack, useToasts } from '../../../../components/ui/Toast';
 
@@ -29,9 +47,65 @@ const AMENITY_OPTIONS = [
   'Study area',
 ];
 
+/**
+ * One titled block of the edit form. Sections carry their own heading and sit
+ * inside a `divide-y` parent, so a long form reads as a few scannable groups
+ * instead of one undifferentiated column of inputs.
+ */
+function FormSection({ title, children }: { title: string; children: ReactNode }) {
+  return (
+    <section className="py-6 first:pt-0 last:pb-0">
+      <h2 className="text-base font-semibold tracking-tight text-ink">{title}</h2>
+      <div className="mt-5 grid gap-5">{children}</div>
+    </section>
+  );
+}
+
+/**
+ * Selectable amenity pill. `aria-pressed` carries the state for assistive tech;
+ * the filled fill and the check mark carry it visually, so selection never
+ * depends on colour alone.
+ */
+function AmenityToggle({
+  label,
+  selected,
+  onToggle,
+}: {
+  label: string;
+  selected: boolean;
+  onToggle: () => void;
+}) {
+  return (
+    <button
+      type="button"
+      aria-pressed={selected}
+      onClick={onToggle}
+      className={`inline-flex items-center gap-1.5 rounded-full border px-3.5 py-2 text-sm font-medium transition-colors duration-100 ease-out focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 active:scale-[0.97] ${
+        selected
+          ? 'border-primary-strong bg-primary-strong text-white'
+          : 'border-border-strong bg-surface text-gray-ink hover:border-primary hover:bg-mint hover:text-primary'
+      }`}
+    >
+      {selected ? <Icon name="check" size={14} /> : null}
+      {label}
+    </button>
+  );
+}
+
+/**
+ * The property-wide public information form (`edit-listing-property-info`).
+ *
+ * Rooms are **not** editable here: they are managed on the dedicated rooms page
+ * (`/landlord/properties/$id/rooms`), so this form only reads the room rows to
+ * derive the shared-pricing state and the publish precondition. It never sends
+ * `total_rooms`/`capacity` — the old PUT path that created, deleted and re-priced
+ * rooms in bulk (`D8`).
+ */
 function EditListingPage() {
   const { id } = Route.useParams();
-  const { token } = useAuth();
+  const { token, user } = useAuth();
+  // Unverified landlords cannot save edits (API returns 403) — see BUG-09.
+  const needsVerification = !user?.is_verified;
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const [error, setError] = useState<string | null>(null);
@@ -48,29 +122,47 @@ function EditListingPage() {
     enabled: Boolean(token),
   });
 
-  const [form, setForm] = useState({
+  // The rooms are read-only context here: they decide whether the rent can be
+  // presented as shared (D6) and whether publishing is allowed (R9). Rooms are
+  // managed on the dedicated rooms page, so this form never renders or edits them.
+  const rooms = useQuery({
+    queryKey: ['landlord-rooms', propertyId],
+    queryFn: () => getRooms(token!, propertyId),
+    enabled: Boolean(token),
+  });
+  const roomRows = rooms.data?.data.rooms ?? [];
+
+  const [form, setForm] = useState<{
+    name: string;
+    type: string;
+    gender_preference: string;
+    description: string;
+    price: string;
+    deposit: string;
+    address: string;
+    city: string;
+    province: string;
+    status: ListingStatusValue;
+  }>({
     name: '',
     type: 'boarding-house',
     gender_preference: 'any',
     description: '',
     price: '',
     deposit: '',
-    min_stay: '1-month',
     address: '',
     city: '',
     province: '',
-    status: 'available',
-    total_rooms: '1',
-    capacity: '1',
+    status: DEFAULT_LISTING_STATUS,
   });
   const [amenities, setAmenities] = useState<string[]>([]);
+  const [sharedPricing, setSharedPricing] = useState(true);
   const [seeded, setSeeded] = useState(false);
+  const [pricingSeeded, setPricingSeeded] = useState(false);
 
   // Seed the form once the property detail loads.
   const detail = property.data?.data as Record<string, unknown> | undefined;
   if (detail && !seeded) {
-    const totalRooms = Number(detail.total_rooms ?? detail.rooms ?? 1);
-    const capacity = Number(detail.capacity ?? 1);
     setForm({
       name: String(detail.name ?? ''),
       type: String(detail.type ?? 'boarding-house'),
@@ -78,13 +170,10 @@ function EditListingPage() {
       description: String(detail.description ?? ''),
       price: String(Number(detail.monthlyPayment ?? detail.price ?? 0)),
       deposit: String(Number(detail.monthlyDeposit ?? detail.deposit ?? 0)),
-      min_stay: String(detail.min_stay ?? '1-month'),
       address: String(detail.address ?? ''),
       city: String(detail.city ?? ''),
       province: String(detail.province ?? ''),
-      status: String(detail.status ?? 'available'),
-      total_rooms: String(Math.max(totalRooms, 1)),
-      capacity: String(Math.max(capacity, 1)),
+      status: toListingStatusValue(detail.status, detail.listing_moderation_status as string),
     });
     setAmenities(
       Array.isArray(detail.amenities)
@@ -92,6 +181,15 @@ function EditListingPage() {
         : []
     );
     setSeeded(true);
+  }
+
+  // The toggle's initial state comes from the rooms and is **not persisted** (D6):
+  // it says whether the property's rent can honestly be presented as shared, so a
+  // later room change must not silently flip it while the landlord is editing.
+  const pricing = sharedPricingState(roomRows);
+  if (rooms.isSuccess && !pricingSeeded) {
+    setSharedPricing(pricing.shared);
+    setPricingSeeded(true);
   }
 
   const photos: string[] = Array.isArray(detail?.photos) ? detail.photos.map(p => String(p)) : [];
@@ -109,32 +207,38 @@ function EditListingPage() {
       })
     : null;
 
+  const moderationHint = listingModerationHint(
+    detail?.listing_moderation_status as string | undefined,
+    form.status
+  );
+
   function formatWhen(value: string): string {
     const date = new Date(value);
     return Number.isNaN(date.getTime()) ? value : date.toLocaleDateString();
   }
 
   const submit = useMutation({
+    // An allow-list, never `...form` (R2): the payload can no longer carry room
+    // fields, and price/deposit only travel while pricing is claimed as shared.
     mutationFn: () =>
       updateListing(token!, propertyId, {
-        ...form,
-        price: Number(form.price),
-        deposit: Number(form.deposit),
-        total_rooms: Number(form.total_rooms),
-        capacity: Number(form.capacity),
+        ...listingUpdatePayload(form, { sharedPricing }),
         amenities,
         photos_to_delete: photosToDelete,
       }),
     onSuccess: () => {
       void queryClient.invalidateQueries({ queryKey: ['landlord-properties'] });
+      void queryClient.invalidateQueries({ queryKey: ['landlord-property', propertyId] });
       setPendingToast('success', 'Listing updated.');
-      void navigate({ to: '/landlord/listings' });
+      // Back to the property this listing belongs to — the list page it used to
+      // return to no longer exists (`landlord-property-detail-page` D24).
+      void navigate({ to: '/landlord/properties/$id', params: { id: String(propertyId) } });
     },
     onError: err =>
       setError(err instanceof ApiRequestError ? err.message : 'Failed to update listing.'),
   });
 
-  function set<K extends keyof typeof form>(key: K, value: string) {
+  function set<K extends keyof typeof form>(key: K, value: (typeof form)[K]) {
     setForm(f => ({ ...f, [key]: value }));
   }
 
@@ -163,6 +267,17 @@ function EditListingPage() {
 
   function handleSubmit(e: FormEvent) {
     e.preventDefault();
+
+    if (needsVerification) return;
+
+    // Publishing without a room would show boarders an empty listing (R9). The
+    // room list is the source of truth, so the check waits for it to load rather
+    // than blocking on an unfinished request.
+    if (form.status === 'available' && rooms.isSuccess && roomRows.length === 0) {
+      setError(PUBLISH_NEEDS_ROOM);
+      return;
+    }
+
     setError(null);
     submit.mutate();
   }
@@ -170,22 +285,43 @@ function EditListingPage() {
   if (property.isLoading) return <Spinner />;
   if (property.error) return <ErrorState message={property.error.message} />;
 
+  if (!detail) return <ErrorState message="Property not found." />;
+
   return (
-    <div className="mx-auto max-w-2xl">
+    <div className="mx-auto w-full max-w-[800px]">
       <ToastStack toasts={toasts} onDismiss={dismiss} />
-      <Link
-        to="/landlord/listings"
-        className="mb-4 inline-block text-sm text-primary hover:underline"
-      >
-        ← Back to listings
-      </Link>
-      <div className="mb-5 flex items-center gap-3">
-        <Icon name="list" size={28} />
-        <div>
-          <h1 className="text-2xl font-bold text-ink">Edit listing</h1>
-          <p className="text-sm text-gray-ink">Keep your property details up to date.</p>
-        </div>
-      </div>
+
+      <PageHeader
+        icon="list"
+        title="Edit listing"
+        actions={
+          <>
+            <Link
+              to="/landlord/properties/$id"
+              params={{ id: String(propertyId) }}
+              className="inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-sm font-medium text-primary transition-colors hover:bg-mint focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
+            >
+              <Icon name="chevronLeft" size={16} />
+              Back to property
+            </Link>
+            {/* Landlords preview the tenant view through the public listing page. */}
+            <Link
+              to="/rooms/$id"
+              params={{ id: String(propertyId) }}
+              className={buttonClasses({ variant: 'outline', size: 'sm' })}
+            >
+              Preview as boarder
+              <Icon name="arrowRight" size={16} className="ml-1.5" />
+            </Link>
+          </>
+        }
+      />
+
+      {form.status !== 'available' ? (
+        <p className="mb-4 text-sm text-gray-ink">{NOT_VISIBLE_TO_BOARDERS}</p>
+      ) : null}
+
+      {needsVerification ? <VerificationNotice /> : null}
 
       {error ? (
         <div className="mb-4">
@@ -193,201 +329,246 @@ function EditListingPage() {
         </div>
       ) : null}
 
-      <Card>
-        <form className="flex flex-col gap-4" onSubmit={handleSubmit}>
-          <Field label="Property name" htmlFor="name">
-            <TextInput
-              id="name"
-              required
-              value={form.name}
-              onChange={e => set('name', e.target.value)}
-            />
-          </Field>
+      <Card padding="p-0">
+        <form onSubmit={handleSubmit}>
+          <div className="divide-y divide-border px-6 py-6 sm:px-8 sm:py-8">
+            <FormSection title="Basic information">
+              <Field label="Property name" htmlFor="name">
+                <TextInput
+                  id="name"
+                  required
+                  value={form.name}
+                  onChange={e => set('name', e.target.value)}
+                />
+              </Field>
 
-          <div className="grid grid-cols-2 gap-3">
-            <Field label="Property type" htmlFor="type">
-              <SelectInput id="type" value={form.type} onChange={e => set('type', e.target.value)}>
-                <option value="boarding-house">Boarding house</option>
-                <option value="apartment">Apartment</option>
-                <option value="dormitory">Dormitory</option>
-              </SelectInput>
-            </Field>
-            <Field label="Gender preference" htmlFor="gender_preference">
-              <SelectInput
-                id="gender_preference"
-                value={form.gender_preference}
-                onChange={e => set('gender_preference', e.target.value)}
-              >
-                <option value="any">Any</option>
-                <option value="male">Male only</option>
-                <option value="female">Female only</option>
-              </SelectInput>
-            </Field>
-          </div>
+              <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
+                <Field label="Property type" htmlFor="type">
+                  <SelectInput
+                    id="type"
+                    value={form.type}
+                    onChange={e => set('type', e.target.value)}
+                  >
+                    <option value="boarding-house">Boarding house</option>
+                    <option value="apartment">Apartment</option>
+                    <option value="dormitory">Dormitory</option>
+                  </SelectInput>
+                </Field>
+                <Field label="Gender preference" htmlFor="gender_preference">
+                  <SelectInput
+                    id="gender_preference"
+                    value={form.gender_preference}
+                    onChange={e => set('gender_preference', e.target.value)}
+                  >
+                    <option value="any">Any</option>
+                    <option value="male">Male only</option>
+                    <option value="female">Female only</option>
+                  </SelectInput>
+                </Field>
+              </div>
 
-          <Field label="Description" htmlFor="description">
-            <TextArea
-              id="description"
-              rows={4}
-              required
-              value={form.description}
-              onChange={e => set('description', e.target.value)}
-            />
-          </Field>
+              <Field label="Description" htmlFor="description">
+                <TextArea
+                  id="description"
+                  rows={6}
+                  required
+                  className="resize-y leading-relaxed"
+                  value={form.description}
+                  onChange={e => set('description', e.target.value)}
+                />
+              </Field>
+            </FormSection>
 
-          <div className="grid grid-cols-2 gap-3">
-            <Field label="Monthly rent (₱)" htmlFor="price">
-              <TextInput
-                id="price"
-                type="number"
-                min={0}
-                required
-                value={form.price}
-                onChange={e => set('price', e.target.value)}
-              />
-            </Field>
-            <Field label="Deposit (₱)" htmlFor="deposit">
-              <TextInput
-                id="deposit"
-                type="number"
-                min={0}
-                required
-                value={form.deposit}
-                onChange={e => set('deposit', e.target.value)}
-              />
-            </Field>
-          </div>
+            <FormSection title="Pricing">
+              <label className="flex cursor-pointer items-center gap-2.5 text-sm font-medium text-ink">
+                <input
+                  type="checkbox"
+                  checked={sharedPricing}
+                  onChange={e => setSharedPricing(e.target.checked)}
+                  className="h-4 w-4 accent-[var(--color-primary)]"
+                />
+                Same rent and deposit for every room
+              </label>
 
-          <div className="grid grid-cols-3 gap-3">
-            <Field label="Number of rooms" htmlFor="total_rooms">
-              <TextInput
-                id="total_rooms"
-                type="number"
-                min={1}
-                required
-                value={form.total_rooms}
-                onChange={e => set('total_rooms', e.target.value)}
-              />
-            </Field>
-            <Field label="Capacity per room" htmlFor="capacity">
-              <TextInput
-                id="capacity"
-                type="number"
-                min={1}
-                required
-                value={form.capacity}
-                onChange={e => set('capacity', e.target.value)}
-              />
-            </Field>
-            <Field label="Status" htmlFor="status">
-              <SelectInput
-                id="status"
-                value={form.status}
-                onChange={e => set('status', e.target.value)}
-              >
-                <option value="available">Active</option>
-                <option value="hidden">Inactive</option>
-              </SelectInput>
-            </Field>
-          </div>
+              {sharedPricing ? (
+                <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
+                  <Field label="Monthly rent (₱)" htmlFor="price">
+                    <TextInput
+                      id="price"
+                      type="number"
+                      min={0}
+                      required
+                      value={form.price}
+                      onChange={e => set('price', e.target.value)}
+                    />
+                  </Field>
+                  <Field label="Deposit (₱)" htmlFor="deposit">
+                    <TextInput
+                      id="deposit"
+                      type="number"
+                      min={0}
+                      required
+                      value={form.deposit}
+                      onChange={e => set('deposit', e.target.value)}
+                    />
+                  </Field>
+                </div>
+              ) : (
+                <div className="rounded-xl border border-border bg-subtle px-4 py-3">
+                  <p className="text-sm text-ink">{sharedPricingSummary(pricing)}</p>
+                  <Link
+                    to="/landlord/properties/$id/rooms"
+                    params={{ id: String(propertyId) }}
+                    className="mt-1 inline-block text-sm text-primary hover:underline"
+                  >
+                    Manage rooms →
+                  </Link>
+                </div>
+              )}
 
-          <Field label="Street address" htmlFor="address">
-            <TextInput
-              id="address"
-              required
-              value={form.address}
-              onChange={e => set('address', e.target.value)}
-            />
-          </Field>
-          <div className="grid grid-cols-2 gap-3">
-            <Field label="City" htmlFor="city">
-              <TextInput
-                id="city"
-                required
-                value={form.city}
-                onChange={e => set('city', e.target.value)}
-              />
-            </Field>
-            <Field label="Province" htmlFor="province">
-              <TextInput
-                id="province"
-                required
-                value={form.province}
-                onChange={e => set('province', e.target.value)}
-              />
-            </Field>
-          </div>
+              {/* The promise R3 makes, in the landlord's own words. */}
+              <p className="text-xs text-gray-ink">
+                Changing these values never rewrites an existing room&apos;s rent — they are the
+                default for rooms you add later.
+              </p>
+            </FormSection>
 
-          <div>
-            <p className="mb-2 text-sm font-medium">Amenities</p>
-            <div className="flex flex-wrap gap-2">
-              {AMENITY_OPTIONS.map(amenity => (
-                <button
-                  key={amenity}
-                  type="button"
-                  onClick={() => toggleAmenity(amenity)}
-                  className={`rounded-full px-3 py-1 text-sm ${
-                    amenities.includes(amenity)
-                      ? 'bg-primary text-white'
-                      : 'bg-gray-100 text-gray-ink hover:bg-gray-200'
-                  }`}
+            <FormSection title="Location">
+              <Field label="Street address" htmlFor="address">
+                <TextInput
+                  id="address"
+                  required
+                  value={form.address}
+                  onChange={e => set('address', e.target.value)}
+                />
+              </Field>
+
+              <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
+                <Field label="City" htmlFor="city">
+                  <TextInput
+                    id="city"
+                    required
+                    value={form.city}
+                    onChange={e => set('city', e.target.value)}
+                  />
+                </Field>
+                <Field label="Province" htmlFor="province">
+                  <TextInput
+                    id="province"
+                    required
+                    value={form.province}
+                    onChange={e => set('province', e.target.value)}
+                  />
+                </Field>
+              </div>
+            </FormSection>
+
+            <FormSection title="Amenities">
+              <div className="flex flex-wrap gap-2" role="group" aria-label="Amenities">
+                {AMENITY_OPTIONS.map(amenity => (
+                  <AmenityToggle
+                    key={amenity}
+                    label={amenity}
+                    selected={amenities.includes(amenity)}
+                    onToggle={() => toggleAmenity(amenity)}
+                  />
+                ))}
+              </div>
+            </FormSection>
+
+            <FormSection title="Listing status">
+              <div className="max-w-xs">
+                <SelectInput
+                  id="status"
+                  aria-label="Listing status"
+                  value={form.status}
+                  onChange={e => set('status', toListingStatusValue(e.target.value))}
                 >
-                  {amenity}
-                </button>
-              ))}
-            </div>
+                  {LISTING_STATUS_OPTIONS.map(option => (
+                    <option key={option.value} value={option.value}>
+                      {option.label}
+                    </option>
+                  ))}
+                </SelectInput>
+              </div>
+
+              {moderationHint ? <p className="text-sm text-gray-ink">{moderationHint}</p> : null}
+            </FormSection>
           </div>
 
-          <Button type="submit" disabled={submit.isPending}>
-            {submit.isPending ? 'Saving…' : 'Save changes'}
-          </Button>
+          {/*
+            Sticky so the primary action stays reachable from anywhere in the
+            form. Opaque (never translucent) because content scrolls beneath it.
+          */}
+          <div className="sticky bottom-0 z-10 flex flex-wrap items-center justify-end gap-3 rounded-b-2xl border-t border-border bg-surface px-6 py-4 sm:px-8">
+            <Button
+              type="button"
+              variant="ghost"
+              onClick={() =>
+                void navigate({
+                  to: '/landlord/properties/$id',
+                  params: { id: String(propertyId) },
+                })
+              }
+            >
+              Cancel
+            </Button>
+            <Button type="submit" disabled={submit.isPending || needsVerification}>
+              {needsVerification
+                ? 'Verify your account to save'
+                : submit.isPending
+                ? 'Saving…'
+                : 'Save changes'}
+            </Button>
+          </div>
         </form>
+      </Card>
 
-        <section className="mt-8">
-          <h2 className="text-lg font-semibold">Photos</h2>
-          {photoError ? (
-            <div className="mt-2">
-              <ErrorState message={photoError} />
-            </div>
-          ) : null}
-          <label className="mt-3 block cursor-pointer rounded-md border border-dashed border-gray-300 p-4 text-center text-sm hover:bg-gray-50">
-            {uploading ? 'Uploading…' : 'Choose photos to upload (jpg/png/webp/gif, max 5 MB each)'}
-            <input
-              type="file"
-              accept="image/*"
-              multiple
-              className="hidden"
-              onChange={handlePhotos}
-            />
-          </label>
-          {photos.length > 0 ? (
-            <ul className="mt-3 grid grid-cols-3 gap-2">
-              {photos.map(photo => (
-                <li
-                  key={photo}
-                  className="relative overflow-hidden rounded-md border border-gray-200"
-                >
-                  <img src={photo} alt="" className="h-24 w-full object-cover" />
-                  {photosToDelete.includes(photo) ? (
-                    <span className="absolute inset-0 flex items-center justify-center bg-black/50 text-xs text-white">
-                      Will delete
-                    </span>
-                  ) : (
-                    <button
-                      type="button"
-                      className="absolute right-1 top-1 rounded bg-white/90 px-1.5 text-xs"
-                      onClick={() => setPhotosToDelete(list => [...list, photo])}
-                    >
-                      ✕
-                    </button>
-                  )}
-                </li>
-              ))}
-            </ul>
-          ) : null}
-        </section>
+      <Card className="mt-6">
+        <div className="flex items-start gap-3">
+          <Icon name="photo" size={22} className="mt-0.5 shrink-0" />
+          <div>
+            <h2 className="text-base font-semibold tracking-tight text-ink">Photos</h2>
+            <p className="mt-1 text-sm text-gray-ink">
+              Add clear photos of the property. Uploads save as soon as they finish.
+            </p>
+          </div>
+        </div>
 
-        <LandlordRoomList token={token!} propertyId={propertyId} />
+        {photoError ? (
+          <div className="mt-4">
+            <ErrorState message={photoError} />
+          </div>
+        ) : null}
+
+        <label className="mt-4 block cursor-pointer rounded-xl border border-dashed border-border-strong p-5 text-center text-sm text-gray-ink transition-colors hover:border-primary hover:bg-mint focus-within:border-primary focus-within:ring-2 focus-within:ring-primary/20">
+          {uploading ? 'Uploading…' : 'Choose photos to upload (jpg/png/webp/gif, max 5 MB each)'}
+          <input type="file" accept="image/*" multiple className="hidden" onChange={handlePhotos} />
+        </label>
+
+        {photos.length > 0 ? (
+          <ul className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-3">
+            {photos.map(photo => (
+              <li key={photo} className="relative overflow-hidden rounded-xl border border-border">
+                <img src={photo} alt="" className="h-24 w-full object-cover" />
+                {photosToDelete.includes(photo) ? (
+                  <span className="absolute inset-0 flex items-center justify-center bg-black/55 text-xs font-medium text-white">
+                    Will delete
+                  </span>
+                ) : (
+                  <button
+                    type="button"
+                    aria-label="Mark photo for deletion"
+                    className="absolute right-1 top-1 rounded-full bg-surface/90 px-2 py-0.5 text-xs transition-all duration-100 ease-out hover:bg-surface focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-1 active:scale-[0.94]"
+                    onClick={() => setPhotosToDelete(list => [...list, photo])}
+                  >
+                    ✕
+                  </button>
+                )}
+              </li>
+            ))}
+          </ul>
+        ) : null}
       </Card>
 
       {authorizedLandlords !== null ? (
@@ -395,7 +576,7 @@ function EditListingPage() {
           <div className="mb-3 flex items-center gap-3">
             <Icon name="users" size={22} className="shrink-0" />
             <div>
-              <h2 className="font-semibold text-ink">Authorized landlords</h2>
+              <h2 className="font-semibold tracking-tight text-ink">Authorized landlords</h2>
               <p className="text-sm text-gray-ink">
                 Landlords who can also manage this property. Only the Haven Space Admin can change
                 who has access.
@@ -403,7 +584,7 @@ function EditListingPage() {
             </div>
           </div>
           {authorizedLandlords.length > 0 ? (
-            <ul className="divide-y divide-gray-100">
+            <ul className="divide-y divide-border rounded-xl border border-border/70">
               {authorizedLandlords.map(landlord => (
                 <li
                   key={landlord.id}

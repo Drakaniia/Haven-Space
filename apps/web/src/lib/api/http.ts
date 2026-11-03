@@ -1,3 +1,4 @@
+import { clearStoredAuth, getStoredAuth } from '../auth-store';
 import { getApiBaseUrl } from '../config';
 import type { ApiErrorBody } from '../types';
 
@@ -6,6 +7,19 @@ export class ApiRequestError extends Error {
     super(message);
     this.name = 'ApiRequestError';
   }
+}
+
+/**
+ * A 401 on a call that carried a stored session means that session is no longer
+ * valid (expired, revoked, suspended account) — drop it so `Protected` can route
+ * the user to /auth/login instead of leaving them inside a shell where every
+ * panel fails silently. No stored session (e.g. a failed login) means there is
+ * nothing to clear. Guarded for SSR, where there is no localStorage.
+ */
+function clearRejectedSession(): void {
+  if (typeof window === 'undefined') return;
+  if (!getStoredAuth().token) return;
+  clearStoredAuth();
 }
 
 export async function apiFetch<T>(
@@ -26,6 +40,8 @@ export async function apiFetch<T>(
   const body = (await response.json().catch(() => ({}))) as T & ApiErrorBody;
 
   if (!response.ok) {
+    if (response.status === 401) clearRejectedSession();
+
     throw new ApiRequestError(
       response.status,
       body.error ?? body.message ?? `Request failed (${response.status})`,

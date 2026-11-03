@@ -3,21 +3,26 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useState, type FormEvent } from 'react';
 import { Protected } from '../../components/auth/Protected';
 import { RoleShell } from '../../components/layout/RoleShell';
+import { MessageButton } from '../../components/messages/MessageButton';
 import { Button } from '../../components/ui/Button';
+import { ConfirmDialog } from '../../components/ui/ConfirmDialog';
 import { DataTable } from '../../components/ui/DataTable';
 import { EmptyState } from '../../components/ui/EmptyState';
 import { ErrorState } from '../../components/ui/ErrorState';
 import { Field, SelectInput, TextInput } from '../../components/ui/Field';
-import { Icon } from '../../components/ui/Icon';
+import { PageHeader } from '../../components/ui/PageHeader';
 import { Modal } from '../../components/ui/Modal';
 import { Spinner } from '../../components/ui/Spinner';
 import { StatusBadge } from '../../components/ui/StatusBadge';
 import { ToastStack, useToasts } from '../../components/ui/Toast';
+import {
+  ApproveLeaveDialog,
+  type ApproveLeaveDetails,
+} from '../../components/tenancy/ApproveLeaveDialog';
 import { ApiRequestError } from '../../lib/api/http';
 import {
   addBoarder,
   approveLeaveRequest,
-  declineLeaveRequest,
   getBoarders,
   getProperties,
   getRooms,
@@ -26,6 +31,7 @@ import {
 } from '../../lib/api/landlord';
 import { useAuth } from '../../lib/auth-context';
 import { LANDLORD_NAV } from '../../lib/nav';
+import { formatPaymentDate } from '../../lib/payments';
 import type { LandlordBoarder } from '../../lib/types';
 
 export const Route = createFileRoute('/landlord/boarders')({
@@ -62,6 +68,9 @@ function BoardersPage() {
   const [modalOpen, setModalOpen] = useState(false);
   const [form, setForm] = useState<BoarderForm>(EMPTY_FORM);
   const [error, setError] = useState<string | null>(null);
+  const [pendingRemove, setPendingRemove] = useState<LandlordBoarder | null>(null);
+  const [pendingApprove, setPendingApprove] = useState<LandlordBoarder | null>(null);
+  const [approveError, setApproveError] = useState<string | null>(null);
 
   const properties = useQuery({
     queryKey: ['landlord-properties'],
@@ -118,35 +127,29 @@ function BoardersPage() {
     mutationFn: (id: number) => removeBoarder(token!, id),
     onSuccess: () => {
       void queryClient.invalidateQueries({ queryKey: ['boarders', propertyIdNumber] });
+      setPendingRemove(null);
       push({ tone: 'success', message: 'Boarder removed.' });
     },
     onError: err =>
       setError(err instanceof ApiRequestError ? err.message : 'Failed to remove boarder.'),
   });
 
-  const respond = useMutation({
-    mutationFn: ({
-      applicationId,
-      action,
-    }: {
-      applicationId: number;
-      action: 'approve' | 'decline';
-    }) =>
-      action === 'approve'
-        ? approveLeaveRequest(token!, applicationId)
-        : declineLeaveRequest(token!, applicationId),
-    onSuccess: (_data, { action }) => {
+  const approve = useMutation({
+    mutationFn: (applicationId: number) => approveLeaveRequest(token!, applicationId),
+    onSuccess: () => {
       // Approval frees the room and changes occupancy, so refresh rooms too.
       void queryClient.invalidateQueries({ queryKey: ['boarders', propertyIdNumber] });
       void queryClient.invalidateQueries({ queryKey: ['landlord-rooms', propertyIdNumber] });
       void queryClient.invalidateQueries({ queryKey: ['landlord-properties'] });
-      push({
-        tone: 'success',
-        message: action === 'approve' ? 'Leave request approved.' : 'Leave request declined.',
-      });
+      void queryClient.invalidateQueries({ queryKey: ['landlord-calendar'] });
+      setPendingApprove(null);
+      setApproveError(null);
+      push({ tone: 'success', message: 'Leave request approved.' });
     },
     onError: err =>
-      setError(err instanceof ApiRequestError ? err.message : 'Failed to update leave request.'),
+      setApproveError(
+        err instanceof ApiRequestError ? err.message : 'Failed to approve leave request.'
+      ),
   });
 
   function openAdd() {
@@ -175,9 +178,23 @@ function BoardersPage() {
   }
 
   const boarderList = boarders.data?.data.boarders ?? [];
+  const propertyName =
+    properties.data?.data.properties.find(property => property.id === propertyIdNumber)?.name ?? '';
+  const approveDetails: ApproveLeaveDetails | null = pendingApprove
+    ? {
+        applicationId: pendingApprove.application_id,
+        boarderName: `${pendingApprove.first_name} ${pendingApprove.last_name}`.trim(),
+        propertyName,
+        roomName: pendingApprove.room_title ?? '',
+        leaveDate: pendingApprove.intended_leave_date ?? '',
+        requestedOn: pendingApprove.leave_request_date,
+        reason: pendingApprove.leave_request_reason,
+        outstandingAmount: pendingApprove.outstanding_amount,
+      }
+    : null;
 
   return (
-    <RoleShell title="Boarders" nav={LANDLORD_NAV}>
+    <RoleShell nav={LANDLORD_NAV}>
       <ToastStack toasts={toasts} onDismiss={dismiss} />
       {error ? (
         <div className="mb-4">
@@ -185,15 +202,9 @@ function BoardersPage() {
         </div>
       ) : null}
 
-      <div className="mb-5 flex items-center gap-3">
-        <Icon name="users" size={28} />
-        <div>
-          <h2 className="text-2xl font-bold text-ink">Boarders</h2>
-          <p className="text-sm text-gray-ink">Manage the tenants in your properties.</p>
-        </div>
-      </div>
+      <PageHeader icon="users" title="Boarders" />
 
-      <div className="mb-4 flex flex-wrap items-end justify-between gap-3">
+      <div className="mb-5 flex flex-wrap items-end justify-between gap-4">
         <div className="w-72">
           <Field label="Property" htmlFor="propertyId">
             <SelectInput
@@ -215,6 +226,7 @@ function BoardersPage() {
 
       {!propertyIdNumber ? (
         <EmptyState
+          icon="buildingOffice"
           title="Select a property"
           description="Choose a property to see its boarders."
         />
@@ -223,7 +235,11 @@ function BoardersPage() {
       ) : boarders.error ? (
         <ErrorState message={boarders.error.message} />
       ) : boarderList.length === 0 ? (
-        <EmptyState title="No boarders" description="Add your first boarder to get started." />
+        <EmptyState
+          icon="users"
+          title="No boarders"
+          description="Add your first boarder to get started."
+        />
       ) : (
         <DataTable<LandlordBoarder>
           rows={boarderList}
@@ -243,10 +259,41 @@ function BoardersPage() {
               header: 'Status',
               cell: row => {
                 if (row.leave_request_status === 'pending') {
-                  return <StatusBadge status="pending" label="Leave requested" />;
+                  return (
+                    <div>
+                      <StatusBadge status="pending" label="Leave requested" />
+                      {row.intended_leave_date ? (
+                        <p className="mt-1 text-xs text-gray-ink">
+                          Leaves {formatPaymentDate(row.intended_leave_date)}
+                        </p>
+                      ) : null}
+                      {/* Approval is blocked on an unsettled balance, so the
+                          amount is visible before the landlord clicks Approve
+                          (spec `approve-leave-request` §5.1). */}
+                      {row.outstanding_amount > 0 ? (
+                        <p className="mt-1 text-xs font-medium text-warning-ink">
+                          ₱{row.outstanding_amount.toLocaleString()} due
+                        </p>
+                      ) : null}
+                    </div>
+                  );
                 }
                 if (row.leave_request_status === 'approved') {
-                  return <StatusBadge status="approved" label="Leaving approved" />;
+                  return (
+                    <div>
+                      <StatusBadge status="approved" label="Leaving approved" />
+                      {row.intended_leave_date ? (
+                        <p className="mt-1 text-xs text-gray-ink">
+                          Leaves {formatPaymentDate(row.intended_leave_date)}
+                        </p>
+                      ) : null}
+                      {row.approved_by_name ? (
+                        <p className="mt-1 text-xs text-gray-ink">
+                          Approved by {row.approved_by_name} on {formatPaymentDate(row.approved_at)}
+                        </p>
+                      ) : null}
+                    </div>
+                  );
                 }
                 return <StatusBadge status="active" />;
               },
@@ -255,46 +302,39 @@ function BoardersPage() {
               header: 'Actions',
               cell: row => {
                 const isPendingLeave = row.leave_request_status === 'pending';
+                const isApprovedLeave = row.leave_request_status === 'approved';
                 return (
-                  <div className="flex items-center gap-2">
+                  <div className="flex flex-wrap items-center gap-2">
                     {isPendingLeave ? (
-                      <>
-                        <button
-                          type="button"
-                          className="text-sm font-medium text-primary hover:underline disabled:opacity-50"
-                          disabled={respond.isPending}
-                          onClick={() =>
-                            respond.mutate({ applicationId: row.application_id, action: 'approve' })
-                          }
-                        >
-                          Approve
-                        </button>
-                        <button
-                          type="button"
-                          className="text-sm text-red-600 hover:underline disabled:opacity-50"
-                          disabled={respond.isPending}
-                          onClick={() =>
-                            respond.mutate({ applicationId: row.application_id, action: 'decline' })
-                          }
-                        >
-                          Decline
-                        </button>
-                      </>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => {
+                          setApproveError(null);
+                          setPendingApprove(row);
+                        }}
+                      >
+                        Approve
+                      </Button>
                     ) : null}
-                    <button
-                      type="button"
-                      className="text-sm text-primary hover:underline"
-                      onClick={() => openEdit(row)}
-                    >
-                      Edit
-                    </button>
-                    <button
-                      type="button"
-                      className="text-sm text-red-600 hover:underline"
-                      onClick={() => remove.mutate(row.id)}
-                    >
-                      Remove
-                    </button>
+                    {/* `row.id` is the boarder's user id (the application's own id
+                        is `application_id`), which is exactly what a thread needs
+                        (F7 correction, R17). */}
+                    <MessageButton role="landlord" counterpartId={row.id} />
+                    {isApprovedLeave ? null : (
+                      <>
+                        <Button variant="ghost" size="sm" onClick={() => openEdit(row)}>
+                          Edit
+                        </Button>
+                        <Button
+                          variant="dangerGhost"
+                          size="sm"
+                          onClick={() => setPendingRemove(row)}
+                        >
+                          Remove
+                        </Button>
+                      </>
+                    )}
                   </div>
                 );
               },
@@ -309,7 +349,7 @@ function BoardersPage() {
         onClose={() => setModalOpen(false)}
       >
         <form className="flex flex-col gap-4" onSubmit={handleSubmit}>
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-2 gap-4">
             <Field label="First name" htmlFor="first_name">
               <TextInput
                 id="first_name"
@@ -364,6 +404,41 @@ function BoardersPage() {
           </Button>
         </form>
       </Modal>
+
+      <ApproveLeaveDialog
+        details={approveDetails}
+        busy={approve.isPending}
+        error={approveError}
+        onConfirm={() => {
+          if (pendingApprove) approve.mutate(pendingApprove.application_id);
+        }}
+        onCancel={() => {
+          setPendingApprove(null);
+          setApproveError(null);
+        }}
+      />
+
+      {/* Removing a boarder destroys tenure data, so it confirms — the pattern
+          `LandlordRoomList` already uses for room deletes (R22). */}
+      <ConfirmDialog
+        open={pendingRemove !== null}
+        title="Remove boarder"
+        message={
+          <>
+            Remove{' '}
+            <strong>
+              {`${pendingRemove?.first_name ?? ''} ${pendingRemove?.last_name ?? ''}`.trim()}
+            </strong>
+            ? This cannot be undone.
+          </>
+        }
+        confirmLabel="Remove boarder"
+        busy={remove.isPending}
+        onConfirm={() => {
+          if (pendingRemove) remove.mutate(pendingRemove.id);
+        }}
+        onCancel={() => setPendingRemove(null)}
+      />
     </RoleShell>
   );
 }

@@ -28,32 +28,14 @@ function mapPropertyType(value: string | null | undefined): string {
   return typeMapping[value] ?? value;
 }
 
-function mapListStatus(property: LandlordPropertyListRow): string {
-  const totalRooms = Number(property.rooms_count);
-  const occupiedRooms = Number(property.occupied_rooms);
-
-  if (property.listing_moderation_status === 'rejected') {
-    return 'inactive';
-  }
-
-  if (totalRooms > 0 && occupiedRooms >= totalRooms) {
-    return 'full';
-  }
-
-  return 'active';
-}
-
-function mapDetailStatus(status: string): string {
-  if (status === 'available') {
-    return 'active';
-  }
-
-  if (status === 'hidden') {
-    return 'inactive';
-  }
-
-  return status;
-}
+/*
+ * No status translation here any more (`edit-listing-property-info` D15). The API
+ * returns the stored value — `draft` / `available` / `hidden` — plus
+ * `listing_moderation_status`, and the web owns the landlord's vocabulary
+ * (Draft / Published / Unpublished) in one helper. Two translations in series were
+ * what let the card and the edit form disagree, and the derived `full` state is
+ * computed from `total_rooms`/`occupied_rooms`, which both payloads already carry.
+ */
 
 function formatLandlordPropertyListItem(
   property: LandlordPropertyListRow,
@@ -74,7 +56,10 @@ function formatLandlordPropertyListItem(
     city: property.city ?? '',
     province: property.province ?? '',
     price: Number(property.price),
-    status: mapListStatus(property),
+    status: property.status,
+    // The admin axis is returned for the landlord's own surfaces too, so a rejected
+    // listing reads as Unpublished rather than as a live one (D12).
+    listing_moderation_status: property.listing_moderation_status,
     role: property.role ?? 'owner',
     total_rooms: totalRooms,
     occupied_rooms: occupiedRooms,
@@ -106,7 +91,11 @@ function formatLandlordPropertyDetail(result: LandlordPropertyDetailResult) {
     capacity: '',
     min_stay: property.min_stay ?? '',
     availability: 'available-now',
-    status: mapDetailStatus(property.status),
+    status: property.status,
+    // Surfaced so the landlord detail page can label the listing's real publish
+    // state (`landlord-property-detail-page` D15/R16). The column was already
+    // selected by `getLandlordPropertyDetail` — it was simply not returned.
+    listing_moderation_status: property.listing_moderation_status,
     role: property.role ?? 'owner',
     total_rooms: Number(property.rooms_count),
     rooms: Number(property.rooms_count),

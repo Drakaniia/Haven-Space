@@ -38,7 +38,7 @@ export function Testimonials() {
           {TESTIMONIALS.map(testimonial => (
             <div
               key={testimonial.name}
-              className="flex flex-col rounded-xl border border-gray-200 bg-white p-6 shadow-card"
+              className="flex flex-col rounded-xl border border-border bg-surface p-6 shadow-card"
             >
               {testimonial.image ? (
                 <img

@@ -54,7 +54,7 @@ export function LoginPromptOverlay({ open, redirect, onNotNow }: LoginPromptOver
       onClick={onNotNow}
     >
       <div
-        className="modal-pop relative w-full max-w-md overflow-hidden rounded-3xl bg-white shadow-2xl ring-1 ring-ink/5"
+        className="modal-pop relative w-full max-w-md overflow-hidden rounded-3xl bg-surface shadow-2xl ring-1 ring-ink/5"
         onClick={event => event.stopPropagation()}
       >
         {/* Soft mint glow behind the badge */}
@@ -67,9 +67,9 @@ export function LoginPromptOverlay({ open, redirect, onNotNow }: LoginPromptOver
           <div className="relative">
             <span
               aria-hidden="true"
-              className="absolute inset-0 -m-1.5 rounded-2xl bg-primary/10"
+              className="absolute inset-0 -m-1.5 rounded-2xl bg-primary-strong/10"
             />
-            <div className="relative flex h-14 w-14 items-center justify-center rounded-2xl bg-gradient-to-br from-primary to-primary-light text-white shadow-pop">
+            <div className="relative flex h-14 w-14 items-center justify-center rounded-2xl bg-gradient-to-br from-primary-strong to-primary-hover text-white shadow-pop">
               <Icon name="sparkles" size={26} />
             </div>
           </div>
@@ -93,14 +93,14 @@ export function LoginPromptOverlay({ open, redirect, onNotNow }: LoginPromptOver
               ref={loginRef}
               to="/auth/login"
               search={{ redirect }}
-              className="w-full rounded-full bg-primary px-4 py-3 text-sm font-semibold text-white shadow-sm transition hover:bg-primary-dark focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
+              className="w-full rounded-full bg-primary-strong px-4 py-3 text-sm font-semibold text-white shadow-sm transition hover:bg-primary-hover focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
             >
               Log in
             </Link>
             <Link
               to="/auth/choose"
               search={{ redirect }}
-              className="w-full rounded-full border-2 border-primary bg-white px-4 py-3 text-sm font-semibold text-primary transition hover:bg-mint focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
+              className="w-full rounded-full border-2 border-primary bg-surface px-4 py-3 text-sm font-semibold text-primary transition hover:bg-mint focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
             >
               Sign up
             </Link>

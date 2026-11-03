@@ -27,7 +27,7 @@ const CARDS = [
 
 export function VisionCards() {
   return (
-    <section className="relative bg-white">
+    <section className="relative bg-surface">
       {/* Dashed top fade grid background */}
       <div className="vision-grid-background" aria-hidden="true" />
 
@@ -43,11 +43,11 @@ export function VisionCards() {
           </p>
         </div>
 
-        <div className="grid w-full gap-6 rounded-3xl border border-gray-200 bg-white p-6 md:grid-cols-3">
+        <div className="grid w-full gap-6 rounded-3xl border border-border bg-surface p-6 md:grid-cols-3">
           {CARDS.map(card => (
             <div
               key={card.title}
-              className="relative flex min-h-[420px] flex-col overflow-hidden rounded-2xl border border-gray-200 bg-white p-10"
+              className="relative flex min-h-[420px] flex-col overflow-hidden rounded-2xl border border-border bg-surface p-10"
             >
               <h3 className="flex flex-col items-start gap-2 text-2xl font-bold text-ink">
                 <img src={card.icon} alt="" className="h-[67px] w-[67px] object-contain" />

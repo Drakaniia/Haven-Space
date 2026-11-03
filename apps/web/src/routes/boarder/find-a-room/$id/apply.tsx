@@ -1,28 +1,23 @@
 import { createFileRoute, Link, useNavigate } from '@tanstack/react-router';
-import { useMutation, useQuery } from '@tanstack/react-query';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useMemo, useState, type FormEvent } from 'react';
 import { Protected } from '../../../../components/auth/Protected';
-import { RoleShell } from '../../../../components/layout/RoleShell';
 import { Button } from '../../../../components/ui/Button';
 import { ErrorState } from '../../../../components/ui/ErrorState';
 import { Field, TextArea, TextInput } from '../../../../components/ui/Field';
 import { Icon } from '../../../../components/ui/Icon';
 import { Spinner } from '../../../../components/ui/Spinner';
+import { formatPrice } from '../../../../components/rooms/detail-helpers';
 import { ApiRequestError } from '../../../../lib/api/http';
 import { createApplication } from '../../../../lib/api/boarder';
 import { getRoomDetail } from '../../../../lib/api/public';
 import { useAuth } from '../../../../lib/auth-context';
-import { BOARDER_NAV } from '../../../../lib/nav';
+import { BOARDER_STATUS_KEY } from '../../../../lib/use-boarder-nav';
 import type { RoomDetail } from '../../../../lib/types';
 
 function cleanRoomType(room: RoomDetail): string {
   const raw = room.roomType && room.roomType !== 'N/A' ? room.roomType : room.roomNumber || 'Room';
   return (raw.charAt(0).toUpperCase() + raw.slice(1)).replace(/-\d+$/, '');
-}
-
-function formatPrice(value: number | null | undefined): string {
-  if (value === null || value === undefined || Number.isNaN(value)) return 'N/A';
-  return `₱${value.toLocaleString()}`;
 }
 
 function tomorrow(): string {
@@ -48,6 +43,7 @@ function ApplyPage() {
   const { room: initialRoom } = Route.useSearch();
   const { token } = useAuth();
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
   const [roomId, setRoomId] = useState(initialRoom);
   const [moveInDate, setMoveInDate] = useState('');
   const [message, setMessage] = useState('');
@@ -70,7 +66,12 @@ function ApplyPage() {
         message: fullMessage,
       });
     },
-    onSuccess: () => void navigate({ to: '/boarder/application-submitted' }),
+    onSuccess: () => {
+      // Submitting moves the boarder's status (new → applied_pending) — refresh
+      // it so the sidebar/gates stay accurate (spec R13).
+      void queryClient.invalidateQueries({ queryKey: [BOARDER_STATUS_KEY] });
+      void navigate({ to: '/boarder/application-submitted' });
+    },
     onError: err =>
       setError(err instanceof ApiRequestError ? err.message : 'Failed to submit application.'),
   });
@@ -125,13 +126,10 @@ function ApplyPage() {
                 <h1 className="bg-gradient-to-r from-primary to-primary-dark bg-clip-text text-3xl font-extrabold tracking-tight text-transparent">
                   Confirm Your Application
                 </h1>
-                <p className="mt-1.5 text-gray-ink">
-                  Review your application details before submitting to the landlord
-                </p>
               </div>
 
               {/* Property summary */}
-              <div className="flex flex-col gap-4 rounded-2xl bg-white p-5 shadow-card sm:flex-row">
+              <div className="flex flex-col gap-4 rounded-2xl bg-surface p-5 shadow-card sm:flex-row">
                 <div className="h-40 w-full shrink-0 overflow-hidden rounded-xl bg-mint/40 sm:h-[140px] sm:w-[180px]">
                   <img
                     src={listing.coverImage || '/assets/images/placeholder-room.svg'}
@@ -169,7 +167,7 @@ function ApplyPage() {
               {/* Application details */}
               <form
                 id="application-form"
-                className="rounded-2xl bg-white p-6 shadow-card"
+                className="rounded-2xl bg-surface p-6 shadow-card"
                 onSubmit={handleSubmit}
               >
                 <h3 className="mb-5 text-lg font-bold text-ink">Application Details</h3>
@@ -185,7 +183,7 @@ function ApplyPage() {
                             className={`block cursor-pointer rounded-xl border-2 p-4 transition ${
                               selected
                                 ? 'border-primary bg-mint/40 shadow-[0_0_0_4px_rgba(74,124,35,0.1)]'
-                                : 'border-gray-200 bg-cream/40 hover:border-primary/60 hover:bg-mint/20'
+                                : 'border-border bg-cream/40 hover:border-primary/60 hover:bg-mint/20'
                             }`}
                           >
                             <input
@@ -226,7 +224,7 @@ function ApplyPage() {
                       })}
                     </div>
                   ) : (
-                    <div className="rounded-xl border-2 border-red-200 bg-red-50 p-6 text-center">
+                    <div className="rounded-xl border-2 border-error-border bg-error-tint p-6 text-center">
                       <p className="text-3xl">🚫</p>
                       <h4 className="mt-2 text-lg font-bold text-ink">No rooms available</h4>
                       <p className="mx-auto mt-1 max-w-sm text-sm text-gray-ink">
@@ -294,7 +292,7 @@ function ApplyPage() {
 
                 <div className="mt-5 flex flex-col gap-3 sm:flex-row">
                   <Link
-                    to="/boarder/find-a-room/$id"
+                    to="/rooms/$id"
                     params={{ id }}
                     className="flex flex-1 items-center justify-center gap-2 rounded-xl border-2 border-primary px-5 py-3 text-sm font-semibold text-primary transition hover:bg-mint"
                   >
@@ -315,7 +313,7 @@ function ApplyPage() {
             {/* Right: summary sidebar */}
             <aside className="flex flex-col gap-5 lg:sticky lg:top-6">
               {/* Cost summary */}
-              <div className="rounded-2xl bg-white p-5 shadow-card">
+              <div className="rounded-2xl bg-surface p-5 shadow-card">
                 <h3 className="mb-4 text-lg font-bold text-ink">Cost Summary</h3>
                 <div className="space-y-3 text-sm">
                   <div className="flex items-center justify-between">
@@ -330,7 +328,7 @@ function ApplyPage() {
                     <span className="text-gray-ink">Advance Payment</span>
                     <span className="font-semibold text-ink">{formatPrice(advance)}</span>
                   </div>
-                  <div className="my-2 h-px bg-gray-200" />
+                  <div className="my-2 h-px bg-subtle" />
                   <div className="flex items-center justify-between">
                     <span className="font-semibold text-ink">Initial Payment</span>
                     <span className="text-2xl font-extrabold text-primary">
@@ -345,7 +343,7 @@ function ApplyPage() {
               </div>
 
               {/* What happens next */}
-              <div className="rounded-2xl bg-white p-5 shadow-card">
+              <div className="rounded-2xl bg-surface p-5 shadow-card">
                 <h3 className="mb-4 flex items-center gap-2 text-base font-bold text-ink">
                   <Icon name="lightbulb" size={18} className="text-primary" />
                   What Happens Next?
@@ -400,10 +398,10 @@ function ProgressStep({
 }) {
   const circle =
     state === 'completed'
-      ? 'bg-primary border-primary text-white'
+      ? 'bg-primary-strong border-primary text-white'
       : state === 'active'
       ? 'border-primary text-primary bg-mint/40'
-      : 'border-gray-300 text-gray-ink bg-white';
+      : 'border-border-strong text-gray-ink bg-surface';
   const labelClass = state === 'pending' ? 'text-gray-ink' : 'text-primary';
   return (
     <div className="flex flex-col items-center gap-2">
@@ -420,7 +418,7 @@ function ProgressStep({
 function ProgressLine({ active = false }: { active?: boolean }) {
   return (
     <div
-      className={`mb-7 h-[3px] w-16 sm:w-24 ${active ? 'bg-primary' : 'bg-gray-200'}`}
+      className={`mb-7 h-[3px] w-16 sm:w-24 ${active ? 'bg-primary-strong' : 'bg-subtle'}`}
       aria-hidden="true"
     />
   );

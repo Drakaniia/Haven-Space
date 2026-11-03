@@ -1,4 +1,7 @@
 import { describe, expect, it } from 'bun:test';
+import { Database } from 'bun:sqlite';
+import { readdirSync, readFileSync } from 'node:fs';
+import { join } from 'node:path';
 
 import app from '../src/index';
 import type { Env } from '../src/env';
@@ -188,6 +191,7 @@ describe('boarder saved-listing routes', () => {
           },
           { first: { id: 100, title: 'Single Room', status: 'available' } },
           { first: null },
+          { run: { success: true, meta: { last_row_id: 0, changes: 0 }, results: [] } },
           { run: { success: true, meta: { last_row_id: 22, changes: 1 }, results: [] } },
         ],
         capturedBinds
@@ -203,7 +207,8 @@ describe('boarder saved-listing routes', () => {
     expect(body.data.room_id).toBe(100);
     expect(typeof body.data.saved_at).toBe('string');
     expect(capturedBinds.slice(0, 4)).toEqual([[7], [10], [100, 10], [7, 10]]);
-    expect(capturedBinds[4].slice(0, 3)).toEqual([7, 10, 100]);
+    expect(capturedBinds[4].slice(2)).toEqual([7, 10]);
+    expect(capturedBinds[5].slice(0, 3)).toEqual([7, 10, 100]);
   });
 
   it('returns PHP-compatible save validation errors', async () => {
@@ -383,5 +388,116 @@ describe('boarder saved-listing routes', () => {
 
     expect(notFoundResponse.status).toBe(404);
     expect(await notFoundResponse.json()).toEqual({ error: 'Saved listing not found' });
+  });
+});
+
+function runMigrations(db: Database): void {
+  const migrationDir = join(import.meta.dir, '..', 'migrations');
+  const migrationNames = readdirSync(migrationDir)
+    // Skip seed migrations (demo data) — tests build their own fixtures.
+    .filter(name => name.endsWith('.sql') && !name.includes('seed'))
+    .sort();
+
+  for (const name of migrationNames) {
+    db.exec(readFileSync(join(migrationDir, name), 'utf8'));
+  }
+}
+
+function createSqliteD1(db: Database): D1Database {
+  return {
+    prepare: (sql: string) =>
+      ({
+        bind: (...values: unknown[]) => {
+          const statement = db.prepare(sql);
+
+          return {
+            first: async <T>() => (statement.get(...values) ?? null) as T | null,
+            all: async <T>() => ({ results: statement.all(...values) as T[] }),
+            run: async () => {
+              const result = statement.run(...values);
+
+              return {
+                success: true,
+                meta: {
+                  last_row_id: Number(result.lastInsertRowid ?? 0),
+                  changes: Number(result.changes ?? 0),
+                },
+                results: [],
+              };
+            },
+          };
+        },
+      } as unknown as D1PreparedStatement),
+  } as unknown as D1Database;
+}
+
+function createSqliteEnv(db: Database): Env {
+  return {
+    APP_ENV: 'test',
+    APP_ORIGIN: 'http://localhost',
+    JWT_SECRET: 'test-secret',
+    DB: createSqliteD1(db),
+  };
+}
+
+describe('boarder saved-listing soft-delete lifecycle', () => {
+  it('revives a soft-deleted saved listing instead of violating the unique index', async () => {
+    const db = new Database(':memory:');
+    runMigrations(db);
+    db.exec(
+      `INSERT INTO users (first_name, last_name, email, password_hash, role, is_verified, email_verified)
+       VALUES ('Bea', 'Boarder', 'bea.saved@example.com', 'x', 'boarder', 1, 1)`
+    );
+    db.exec(
+      `INSERT INTO users (first_name, last_name, email, password_hash, role, is_verified, email_verified)
+       VALUES ('Ana', 'Reyes', 'ana.saved@example.com', 'x', 'landlord', 1, 1)`
+    );
+    db.exec(
+      `INSERT INTO addresses (address_line_1, city, province) VALUES ('1 Mabini St', 'Manila', 'Metro Manila')`
+    );
+    db.exec(
+      `INSERT INTO properties (landlord_id, address_id, title, description, status, listing_moderation_status)
+       VALUES (2, 1, 'Pine House', 'Near campus', 'available', 'published')`
+    );
+    const env = createSqliteEnv(db);
+    const headers = { 'Content-Type': 'application/json', 'X-User-ID': '1' };
+    const url = 'http://localhost/api/boarder/saved-listings';
+
+    expect(
+      (
+        await app.request(
+          url,
+          { method: 'POST', headers, body: JSON.stringify({ property_id: 1 }) },
+          env
+        )
+      ).status
+    ).toBe(201);
+    expect(
+      (
+        await app.request(
+          url,
+          { method: 'DELETE', headers, body: JSON.stringify({ property_id: 1 }) },
+          env
+        )
+      ).status
+    ).toBe(200);
+
+    // Regression: re-saving after an unsave used to violate UNIQUE(boarder_id, property_id) → 500.
+    const resave = await app.request(
+      url,
+      { method: 'POST', headers, body: JSON.stringify({ property_id: 1 }) },
+      env
+    );
+    expect(resave.status).toBe(201);
+
+    const list = await app.request(url, { headers }, env);
+    expect((await list.json()).count).toBe(1);
+    expect((db.prepare('SELECT COUNT(*) AS n FROM saved_listings').get() as { n: number }).n).toBe(
+      1
+    );
+    expect(
+      (db.prepare('SELECT deleted_at FROM saved_listings').get() as { deleted_at: string | null })
+        .deleted_at
+    ).toBeNull();
   });
 });

@@ -57,26 +57,70 @@ export function formatAmount(value: string): string {
   return value;
 }
 
-/** Strip a trailing "-X" suffix (e.g. "Room 1-1" -> "Room 1") and capitalize. */
+/**
+ * Room-type display name. The vocabulary is private / shared / dorm; legacy rows
+ * may still say `single`, and anything unrecognised falls back to the room number
+ * (with a trailing "-X" suffix stripped, e.g. "Room 1-1" -> "Room 1").
+ */
 export function cleanRoomType(room: RoomDetail): string {
-  const raw = room.roomType && room.roomType !== 'N/A' ? room.roomType : room.roomNumber || 'Room';
-  return capitalize(raw.replace(/-\d+$/, ''));
+  const raw = (room.roomType ?? '').trim();
+  const normalized = raw.toLowerCase();
+
+  if (normalized === 'private' || normalized === 'single') return 'Private';
+  if (normalized === 'shared') return 'Shared';
+  if (normalized === 'dorm') return 'Dorm';
+
+  const fallback = raw && raw !== 'N/A' ? raw : room.roomNumber || 'Room';
+  return capitalize(fallback.replace(/-\d+$/, ''));
 }
 
+/** Free slots the API reported, or the room's capacity when it did not. */
+export function freeSlots(room: RoomDetail): number {
+  const reported = Number(room.freeSlots);
+
+  if (Number.isFinite(reported)) {
+    return Math.max(reported, 0);
+  }
+
+  return Math.max(Number(room.capacity ?? 1), 1);
+}
+
+/** Tenant-facing occupancy copy, e.g. "2 of 4 slots free" or "Full". */
+export function freeSlotsLabel(room: RoomDetail): string {
+  const capacity = Math.max(Number(room.capacity ?? 1), 1);
+  const free = freeSlots(room);
+
+  if (free <= 0) return 'Full';
+
+  return `${free} of ${capacity} slot${capacity === 1 ? '' : 's'} free`;
+}
+
+/**
+ * A room is bookable while it has a free slot, even if its status still says
+ * `occupied` (a shared room fills up slot by slot). Maintenance always wins.
+ */
 export function isRoomAvailable(room: RoomDetail): boolean {
   const status = (room.status || '').toLowerCase();
+
+  if (status === 'maintenance' || status === 'deleted') return false;
+  if (typeof room.freeSlots === 'number') return freeSlots(room) > 0;
+
   return status !== 'occupied' && status !== 'full';
 }
 
 export function roomStatusLabel(room: RoomDetail): { label: string; className: string } {
   const status = (room.status || '').toLowerCase();
-  if (status === 'occupied' || status === 'full') {
-    return { label: 'Occupied', className: 'bg-red-100 text-red-700' };
+
+  if (status === 'maintenance') {
+    return { label: 'Maintenance', className: 'bg-subtle text-gray-ink' };
   }
-  if (status === 'limited' || status === 'few-left') {
-    return { label: 'Limited', className: 'bg-amber-100 text-amber-700' };
+  if (freeSlots(room) <= 0) {
+    return { label: 'Full', className: 'bg-error-tint text-error-ink' };
   }
-  return { label: 'Available', className: 'bg-green-100 text-green-700' };
+  if (status === 'occupied' || status === 'full' || status === 'limited' || status === 'few-left') {
+    return { label: 'Limited', className: 'bg-warning-tint text-warning-ink' };
+  }
+  return { label: 'Available', className: 'bg-success-tint text-success-ink' };
 }
 
 export function genderInfo(preference: string): {

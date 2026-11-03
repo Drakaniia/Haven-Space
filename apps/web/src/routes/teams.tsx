@@ -58,13 +58,13 @@ function TeamsPage() {
         </div>
       </section>
 
-      <section className="bg-white">
+      <section className="bg-surface">
         <div className="mx-auto max-w-7xl px-4 py-16">
           <div className="grid gap-8 sm:grid-cols-2 lg:grid-cols-4">
             {MEMBERS.map(member => (
               <div
                 key={member.name}
-                className="overflow-hidden rounded-2xl border border-gray-200 bg-cream shadow-card"
+                className="overflow-hidden rounded-2xl border border-border bg-cream shadow-card"
               >
                 <div className="aspect-square overflow-hidden bg-mint/30">
                   <img

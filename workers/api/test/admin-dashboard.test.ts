@@ -232,6 +232,15 @@ describe('admin dashboard routes', () => {
         id: 10,
         title: 'Pending House',
         listing_moderation_status: 'pending_review',
+        // Card facts ride along with the queue (`landlord-properties-card-layout` D21).
+        created_at: '2026-05-04 08:00:00',
+        address: null,
+        city: null,
+        province: null,
+        rooms_count: 1,
+        occupied_rooms: 0,
+        monthly_revenue: 0,
+        cover_photo: null,
       }),
     ]);
 
@@ -255,6 +264,98 @@ describe('admin dashboard routes', () => {
         listing_moderation_status: string;
       }
     ).toEqual({ listing_moderation_status: 'published' });
+  });
+
+  it('enriches the moderation queue with occupancy, revenue, address and cover photo', async () => {
+    const sqlite = new Database(':memory:');
+    runMigrations(sqlite);
+    seedAdminDashboardData(sqlite);
+    const env = createEnv(sqlite);
+
+    sqlite.exec(`
+      UPDATE rooms SET status = 'occupied' WHERE id = 100;
+
+      INSERT INTO addresses (id, address_line_1, city, province)
+      VALUES (5, '4140 Parker Rd', 'Allentown', 'New Mexico');
+
+      UPDATE properties SET address_id = 5 WHERE id = 10;
+
+      INSERT INTO property_photos (property_id, photo_url, is_cover, display_order)
+      VALUES
+        (10, '/storage/properties/10/side.jpg', 0, 1),
+        (10, '/storage/properties/10/cover.jpg', 1, 0);
+    `);
+
+    // `moderation=all` is the queue the admin console itself requests; a bare
+    // request defaults to `pending_review`.
+    const response = await app.request(
+      'http://localhost/api/admin/properties?moderation=all',
+      { headers: { 'X-User-ID': '1' } },
+      env
+    );
+    const body = (await response.json()) as { data: Array<Record<string, unknown>> };
+
+    expect(response.status).toBe(200);
+    expect(body.data.find(row => row.id === 10)).toEqual(
+      expect.objectContaining({
+        created_at: '2026-05-04 08:00:00',
+        address: '4140 Parker Rd',
+        city: 'Allentown',
+        province: 'New Mexico',
+        rooms_count: 1,
+        occupied_rooms: 1,
+        monthly_revenue: 4500,
+        // `is_cover` wins over display order, the same rule the room endpoints use.
+        cover_photo: '/storage/properties/10/cover.jpg',
+      })
+    );
+
+    // A property with no photos still resolves, with a null cover.
+    expect(body.data.find(row => row.id === 11)?.cover_photo).toBeNull();
+  });
+
+  it('returns a read-only per-room view with capacity and occupancy', async () => {
+    const sqlite = new Database(':memory:');
+    runMigrations(sqlite);
+    seedAdminDashboardData(sqlite);
+    const env = createEnv(sqlite);
+
+    sqlite.exec("UPDATE rooms SET capacity = 4, occupied = 2, room_type = 'shared' WHERE id = 100");
+
+    const response = await app.request(
+      'http://localhost/api/admin/properties/rooms?id=10',
+      { headers: { 'X-User-ID': '1' } },
+      env
+    );
+    const body = (await response.json()) as { data: unknown[] };
+
+    expect(response.status).toBe(200);
+    expect(body.data).toEqual([
+      expect.objectContaining({
+        id: 100,
+        room_number: '',
+        room_type: 'shared',
+        capacity: 4,
+        occupied: 2,
+        free_slots: 2,
+        status: 'available',
+        photo_count: 0,
+      }),
+    ]);
+
+    const missingId = await app.request(
+      'http://localhost/api/admin/properties/rooms',
+      { headers: { 'X-User-ID': '1' } },
+      env
+    );
+    expect(missingId.status).toBe(400);
+
+    const denied = await app.request(
+      'http://localhost/api/admin/properties/rooms?id=10',
+      { headers: { 'X-User-ID': '2' } },
+      env
+    );
+    expect(denied.status).toBe(403);
   });
 
   it('returns and updates platform settings', async () => {
@@ -311,6 +412,64 @@ describe('admin dashboard routes', () => {
     ]);
   });
 
+  // Regression (BUG-10 / W5-A9): the audit table was write-only — no route served it,
+  // so admins could not see who performed which admin action.
+  it('serves the admin audit log newest-first with actor details and parsed ids', async () => {
+    const sqlite = new Database(':memory:');
+    runMigrations(sqlite);
+    seedAdminDashboardData(sqlite);
+    sqlite.exec(`
+      INSERT INTO admin_audit_log (actor_id, entity, ids_json, action, created_at)
+      VALUES
+        (1, 'properties', '[10]', 'reject', '2026-05-10 09:00:00'),
+        (1, 'users', '[2,3]', 'suspended', '2026-05-11 09:00:00');
+    `);
+
+    const response = await app.request(
+      'http://localhost/api/admin/audit-log',
+      { headers: adminHeaders() },
+      createEnv(sqlite)
+    );
+    const body = (await response.json()) as {
+      data: Array<{
+        entity: string;
+        action: string;
+        ids: number[];
+        actor_name: string | null;
+        actor_email: string | null;
+      }>;
+      meta: { total: number };
+    };
+
+    expect(response.status).toBe(200);
+    expect(body.meta.total).toBe(2);
+    expect(body.data[0]).toMatchObject({
+      entity: 'users',
+      action: 'suspended',
+      ids: [2, 3],
+      actor_name: 'Ada Admin',
+      actor_email: 'admin@example.com',
+    });
+    expect(body.data[1]).toMatchObject({ entity: 'properties', action: 'reject', ids: [10] });
+  });
+
+  it('returns an empty audit log instead of failing when nothing happened yet', async () => {
+    const sqlite = new Database(':memory:');
+    runMigrations(sqlite);
+    seedAdminDashboardData(sqlite);
+
+    const response = await app.request(
+      'http://localhost/api/admin/audit-log',
+      { headers: adminHeaders() },
+      createEnv(sqlite)
+    );
+    const body = (await response.json()) as { data: unknown[]; meta: { total: number } };
+
+    expect(response.status).toBe(200);
+    expect(body.data).toEqual([]);
+    expect(body.meta.total).toBe(0);
+  });
+
   it('requires admin role for admin dashboard routes', async () => {
     const sqlite = new Database(':memory:');
     runMigrations(sqlite);
@@ -324,5 +483,19 @@ describe('admin dashboard routes', () => {
 
     expect(response.status).toBe(403);
     expect(await response.json()).toEqual({ error: 'Access denied. Admins only.' });
+  });
+
+  it('requires admin role for the audit log', async () => {
+    const sqlite = new Database(':memory:');
+    runMigrations(sqlite);
+    seedAdminDashboardData(sqlite);
+
+    const response = await app.request(
+      'http://localhost/api/admin/audit-log',
+      { headers: { 'X-User-ID': '3' } },
+      createEnv(sqlite)
+    );
+
+    expect(response.status).toBe(403);
   });
 });

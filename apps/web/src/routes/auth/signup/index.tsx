@@ -14,7 +14,7 @@ import {
   authErrorSearch,
   googleAuthorizeUrl,
   handleOAuthHash,
-  redirectPathForUser,
+  resolvePostAuthPath,
 } from '../../../lib/oauth';
 
 export const Route = createFileRoute('/auth/signup/')({
@@ -33,10 +33,11 @@ function BoarderSignupPage() {
   const [confirm, setConfirm] = useState('');
   const [error, setError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
+  const [googleLoading, setGoogleLoading] = useState(false);
 
   useEffect(() => {
     const user = handleOAuthHash();
-    if (user) void navigate({ to: redirect ?? redirectPathForUser(user) });
+    if (user) void navigate({ to: resolvePostAuthPath(user, redirect) });
   }, [navigate, redirect]);
 
   async function handleSubmit(e: FormEvent) {
@@ -61,7 +62,7 @@ function BoarderSignupPage() {
         password,
         role: 'boarder',
       });
-      void navigate({ to: redirect ?? redirectPathForUser(user) });
+      void navigate({ to: resolvePostAuthPath(user, redirect) });
     } catch (err) {
       setError(
         err instanceof ApiRequestError ? err.message : 'An error occurred. Please try again.'
@@ -75,7 +76,6 @@ function BoarderSignupPage() {
     <AuthSplitLayout
       title="Create your account"
       subtitle="Sign up as a boarder to find your next home."
-      image="/assets/images/public/signup_lower_right.png"
       footer={
         <p className="text-center">
           Already have an account?{' '}
@@ -89,8 +89,16 @@ function BoarderSignupPage() {
       {error ? <ErrorState message={error} /> : null}
 
       <GoogleButton
+        loading={googleLoading}
         onClick={() => {
-          window.location.href = googleAuthorizeUrl('signup', 'boarder', redirect);
+          setGoogleLoading(true);
+          setError(null);
+          try {
+            window.location.href = googleAuthorizeUrl('signup', 'boarder', redirect);
+            window.setTimeout(() => setGoogleLoading(false), 4000);
+          } catch {
+            setGoogleLoading(false);
+          }
         }}
       />
       <AuthDivider />

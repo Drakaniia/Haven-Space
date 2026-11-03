@@ -10,6 +10,11 @@
   "observability": {
     "enabled": true
   },
+  // Nightly payments billing run (spec `payments-feature` §8.2). 17:00 UTC is
+  // 01:00 in Asia/Manila, so the run lands on the new Philippine day.
+  "triggers": {
+    "crons": ["0 17 * * *"]
+  },
   "vars": {
     "APP_ENV": "production",
     "APP_ORIGIN": "https://haven-space.pages.dev,http://localhost:3000,http://localhost:4173"
@@ -20,6 +25,9 @@
       "vars": {
         "APP_ENV": "staging",
         "APP_ORIGIN": "https://haven-space.pages.dev,http://localhost:3000,http://localhost:4173"
+      },
+      "triggers": {
+        "crons": ["0 17 * * *"]
       }
     }
   },

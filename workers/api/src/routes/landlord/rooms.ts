@@ -40,12 +40,38 @@ import {
 } from './shared';
 const validRoomStatuses = new Set(['available', 'occupied', 'maintenance']);
 
+// Spec `create-listing-room-details` R7: room types are private / shared / dorm.
+const validRoomTypes = new Set(['private', 'shared', 'dorm']);
+
+const maxRoomCapacity = 10;
+
 const allowedRoomPhotoExtensions = new Set(['jpg', 'jpeg', 'png', 'webp']);
 
 function normalizeRoomCreateStatus(value: unknown): string {
   const status = String(value ?? '');
 
   return validRoomStatuses.has(status) ? status : 'available';
+}
+
+/**
+ * Maps a payload room type to the private/shared/dorm vocabulary. Legacy
+ * `single` values (older clients, pre-0019 rows) map to `private`; anything else
+ * unknown is rejected by the caller.
+ */
+function normalizeRoomType(value: unknown): string | null {
+  const roomType = String(value ?? '')
+    .trim()
+    .toLowerCase();
+
+  if (!roomType) {
+    return null;
+  }
+
+  if (roomType === 'single') {
+    return 'private';
+  }
+
+  return validRoomTypes.has(roomType) ? roomType : null;
 }
 
 function formatLandlordManagedRoom(room: LandlordRoomRow, photos: LandlordRoomPhotoRow[] = []) {
@@ -60,6 +86,9 @@ function formatLandlordManagedRoom(room: LandlordRoomRow, photos: LandlordRoomPh
     formattedPhotos[0]?.photo_url ??
     null;
 
+  const capacity = Number(room.capacity ?? 1);
+  const occupied = Math.max(0, Number(room.occupied ?? 0));
+
   return {
     id: Number(room.id),
     property_id: Number(room.property_id),
@@ -69,7 +98,9 @@ function formatLandlordManagedRoom(room: LandlordRoomRow, photos: LandlordRoomPh
     price: Number(room.price),
     deposit: Number(room.deposit ?? 0),
     status: room.status ?? 'available',
-    capacity: Number(room.capacity ?? 1),
+    capacity,
+    occupied,
+    free_slots: Math.max(capacity - occupied, 0),
     size: room.size === null || room.size === undefined ? null : Number(room.size),
     cover_photo: coverPhoto,
     photos: formattedPhotos,
@@ -170,15 +201,34 @@ async function handleCreateLandlordRoom(c: Context<{ Bindings: Env }>) {
     return errorResponse(409, 'A room with this number already exists in this property');
   }
 
+  const roomType = normalizeRoomType(body.room_type);
+
+  if (!isPhpEmpty(body.room_type) && roomType === null) {
+    return errorResponse(400, 'room_type must be one of: private, shared, dorm');
+  }
+
+  const capacity = body.capacity === undefined ? 1 : intValue(body.capacity);
+
+  if (capacity < 1 || capacity > maxRoomCapacity) {
+    return errorResponse(400, `capacity must be between 1 and ${maxRoomCapacity}`);
+  }
+
+  const occupied = body.occupied === undefined ? 0 : intValue(body.occupied);
+
+  if (occupied < 0 || occupied > capacity) {
+    return errorResponse(400, 'occupied must be between 0 and capacity');
+  }
+
   const roomId = await createLandlordManagedRoom(db, {
     propertyId,
     landlordId: user.user_id,
     roomNumber,
-    roomType: isPhpEmpty(body.room_type) ? null : String(body.room_type),
+    roomType: isPhpEmpty(body.room_type) ? null : roomType,
     price: floatValue(body.price),
     deposit: body.deposit === undefined ? 0 : floatValue(body.deposit),
     status: normalizeRoomCreateStatus(body.status),
-    capacity: body.capacity === undefined ? 1 : intValue(body.capacity),
+    capacity,
+    occupied,
     description: isPhpEmpty(body.description) ? '' : String(body.description),
     size: isPhpEmpty(body.size) ? 0 : floatValue(body.size),
   });
@@ -237,13 +287,42 @@ async function handleUpdateLandlordRoom(c: Context<{ Bindings: Env }>) {
     }
   }
 
+  if (hasOwnBodyField(body, 'room_type')) {
+    const normalized = normalizeRoomType(body.room_type);
+
+    if (normalized === null) {
+      return errorResponse(400, 'room_type must be one of: private, shared, dorm');
+    }
+  }
+
+  const capacityFromBody = hasOwnBodyField(body, 'capacity') ? intValue(body.capacity) : null;
+
+  if (capacityFromBody !== null && (capacityFromBody < 1 || capacityFromBody > maxRoomCapacity)) {
+    return errorResponse(400, `capacity must be between 1 and ${maxRoomCapacity}`);
+  }
+
+  // Manual occupancy is the landlord's correction of the booking-driven count
+  // (spec D8) — it must stay inside the room's capacity for the tenant-facing
+  // "X of Y slots free" to make sense. The current capacity is only read when the
+  // payload changes occupancy without capacity.
+  if (hasOwnBodyField(body, 'occupied')) {
+    const occupied = intValue(body.occupied);
+    const capacityForCheck =
+      capacityFromBody ?? Number((await getLandlordManagedRoomById(db, roomId))?.capacity ?? 1);
+
+    if (occupied < 0 || occupied > capacityForCheck) {
+      return errorResponse(400, 'occupied must be between 0 and capacity');
+    }
+  }
+
   await updateLandlordManagedRoom(db, roomId, {
     ...(hasOwnBodyField(body, 'room_number') ? { room_number: String(body.room_number) } : {}),
-    ...(hasOwnBodyField(body, 'room_type') ? { room_type: String(body.room_type) } : {}),
+    ...(hasOwnBodyField(body, 'room_type') ? { room_type: normalizeRoomType(body.room_type) } : {}),
     ...(hasOwnBodyField(body, 'price') ? { price: floatValue(body.price) } : {}),
     ...(hasOwnBodyField(body, 'deposit') ? { deposit: floatValue(body.deposit) } : {}),
     ...(hasOwnBodyField(body, 'status') ? { status: String(body.status) } : {}),
-    ...(hasOwnBodyField(body, 'capacity') ? { capacity: intValue(body.capacity) } : {}),
+    ...(capacityFromBody !== null ? { capacity: capacityFromBody } : {}),
+    ...(hasOwnBodyField(body, 'occupied') ? { occupied: intValue(body.occupied) } : {}),
     ...(hasOwnBodyField(body, 'description') ? { description: String(body.description) } : {}),
     ...(hasOwnBodyField(body, 'size') ? { size: floatValue(body.size) } : {}),
   });

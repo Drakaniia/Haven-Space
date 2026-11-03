@@ -59,7 +59,7 @@ function NotFoundPage() {
       </p>
       <Link
         to="/"
-        className="mt-2 rounded-full bg-primary px-6 py-2.5 text-sm font-semibold text-white hover:bg-primary-dark"
+        className="mt-2 rounded-full bg-primary-strong px-6 py-2.5 text-sm font-semibold text-white hover:bg-primary-hover"
       >
         ← Back to home
       </Link>
@@ -91,7 +91,20 @@ function RootComponent() {
       }
       return;
     }
-    if (handleGooglePendingHash()) void navigate({ to: '/auth/choose-role' });
+    const pending = handleGooglePendingHash();
+    if (pending) {
+      // Already on the chooser — let its own effect parse the hash. Don't
+      // navigate and strip the fragment, or the JWT is lost ("session expired").
+      if (window.location.pathname === '/auth/choose-role') return;
+      const rawHash = window.location.hash.slice(1);
+      // Preserve the pending JWT through the navigation; TanStack hash support
+      // varies by version, so double-ensure window.location.hash survives.
+      void navigate({ to: '/auth/choose-role', hash: rawHash } as never);
+      // Fallback: if router drops hash, restore it synchronously
+      if (rawHash && window.location.hash.slice(1) !== rawHash) {
+        window.location.hash = rawHash;
+      }
+    }
   }, [navigate]);
 
   return (

@@ -5,6 +5,7 @@ import { RoleShell } from '../../components/layout/RoleShell';
 import { Button } from '../../components/ui/Button';
 import { Card } from '../../components/ui/Card';
 import { Field, TextArea, TextInput } from '../../components/ui/Field';
+import { PageHeader } from '../../components/ui/PageHeader';
 import { LANDLORD_NAV } from '../../lib/nav';
 
 export const Route = createFileRoute('/landlord/onboarding')({
@@ -35,7 +36,8 @@ function OnboardingPage() {
   }
 
   return (
-    <RoleShell title="Onboarding" nav={LANDLORD_NAV}>
+    <RoleShell nav={LANDLORD_NAV}>
+      <PageHeader icon="buildingOffice" title="Onboarding" />
       <Card className="mx-auto max-w-2xl">
         <div className="mb-6 flex items-center gap-2 text-sm">
           {[1, 2, 3].map(n => (
@@ -43,10 +45,10 @@ function OnboardingPage() {
               key={n}
               className={`rounded-full px-3 py-1 ${
                 n === step
-                  ? 'bg-primary text-white'
+                  ? 'bg-primary-strong text-white'
                   : n < step
                   ? 'bg-mint text-primary'
-                  : 'bg-gray-100 text-gray-ink'
+                  : 'bg-subtle text-gray-ink'
               }`}
             >
               Step {n}
@@ -56,7 +58,7 @@ function OnboardingPage() {
 
         {step === 1 ? (
           <form className="flex flex-col gap-4" onSubmit={handleNext}>
-            <h1 className="text-xl font-bold">Business details</h1>
+            <h2 className="text-xl font-bold tracking-tight">Business details</h2>
             <Field label="Business / property name" htmlFor="businessName">
               <TextInput
                 id="businessName"
@@ -96,7 +98,7 @@ function OnboardingPage() {
           </form>
         ) : step === 2 ? (
           <form className="flex flex-col gap-4" onSubmit={handleNext}>
-            <h1 className="text-xl font-bold">About your property</h1>
+            <h2 className="text-xl font-bold tracking-tight">About your property</h2>
             <Field label="Tell boarders about your property" htmlFor="bio">
               <TextArea
                 id="bio"
@@ -107,10 +109,7 @@ function OnboardingPage() {
               />
             </Field>
             <div className="flex justify-between">
-              <Button
-                className="border border-gray-300 bg-white text-gray-ink hover:bg-gray-50"
-                onClick={() => setStep(1)}
-              >
+              <Button variant="outline" onClick={() => setStep(1)}>
                 Back
               </Button>
               <Button type="submit">Continue</Button>
@@ -118,7 +117,7 @@ function OnboardingPage() {
           </form>
         ) : (
           <div className="flex flex-col gap-4">
-            <h1 className="text-xl font-bold">You're all set!</h1>
+            <h2 className="text-xl font-bold tracking-tight">You're all set!</h2>
             <p className="text-gray-ink">
               Your onboarding details are stored locally in this form. Saving them to your profile
               will be wired once the landlord profile endpoints are finalized.

@@ -11,7 +11,7 @@ import {
   authErrorSearch,
   clearGooglePendingHash,
   handleGooglePendingHash,
-  redirectPathForUser,
+  resolvePostAuthPath,
   type GooglePendingSession,
 } from '../../lib/oauth';
 
@@ -67,12 +67,28 @@ function ChooseRolePage() {
     if (!pending) return;
     setBusy(true);
     setError(null);
+    const timeout = window.setTimeout(() => {
+      setError('Google sign-in is taking too long. Please check your connection and try again.');
+      setBusy(false);
+    }, 15000);
     try {
       const user = await completeGoogle({ pendingToken: pending.token, ...input });
+      window.clearTimeout(timeout);
       setPendingToast('success', `Welcome back, ${user.first_name}!`);
-      void navigate({ to: session?.redirect ?? searchRedirect ?? redirectPathForUser(user) });
+      void navigate({ to: resolvePostAuthPath(user, session?.redirect ?? searchRedirect) });
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'An error occurred. Please try again.');
+      window.clearTimeout(timeout);
+      const message =
+        err instanceof Error && err.message ? err.message : 'An error occurred. Please try again.';
+      if (message.includes('Invalid or expired Google session')) {
+        setError('This Google session expired. Please go back to login and try again.');
+      } else if (message.includes('already exists') || message.includes('already linked')) {
+        setError(message + ' Try logging in with your password, then link Google from settings.');
+      } else {
+        setError(message);
+      }
+    } finally {
+      window.clearTimeout(timeout);
       setBusy(false);
     }
   }
@@ -254,7 +270,7 @@ function ChooseRolePage() {
             type="button"
             disabled={busy}
             onClick={() => void finish({ role: 'boarder' })}
-            className="flex items-center gap-4 rounded-xl border-2 border-primary bg-white px-4 py-4 text-left hover:bg-mint"
+            className="flex items-center gap-4 rounded-xl border-2 border-primary bg-surface px-4 py-4 text-left hover:bg-mint"
           >
             <Icon name="search" size={28} className="shrink-0" />
             <span>
@@ -266,7 +282,7 @@ function ChooseRolePage() {
             type="button"
             disabled={busy}
             onClick={() => setStep('landlord-details')}
-            className="flex items-center gap-4 rounded-xl border-2 border-gray-200 bg-white px-4 py-4 text-left hover:border-primary hover:bg-mint"
+            className="flex items-center gap-4 rounded-xl border-2 border-border bg-surface px-4 py-4 text-left hover:border-primary hover:bg-mint"
           >
             <Icon name="buildingOffice" size={28} className="shrink-0" />
             <span>

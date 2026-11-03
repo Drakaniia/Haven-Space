@@ -13,6 +13,7 @@ import {
   markAllNotificationsRead,
   markNotificationRead,
 } from '../repositories/notifications';
+import { finalizeDueLeaveRequests } from '../repositories/tenancy';
 
 const notificationRoutes = new Hono<{ Bindings: Env }>();
 
@@ -33,6 +34,11 @@ async function requireAnyUser(c: Context<{ Bindings: Env }>) {
 notificationRoutes.get('/api/notifications', async c => {
   const db = requireD1(c.env);
   const user = await requireAnyUser(c);
+  // The bell is one of the reconciling reads (spec `approve-leave-request` §4.2).
+  await finalizeDueLeaveRequests(
+    db,
+    user.role === 'landlord' ? { landlordId: user.user_id } : { boarderId: user.user_id }
+  );
   const notifications = await listNotifications(db, {
     userId: user.user_id,
     role: user.role,
@@ -50,6 +56,10 @@ notificationRoutes.get('/api/notifications', async c => {
 notificationRoutes.get('/api/notifications/unread-count', async c => {
   const db = requireD1(c.env);
   const user = await requireAnyUser(c);
+  await finalizeDueLeaveRequests(
+    db,
+    user.role === 'landlord' ? { landlordId: user.user_id } : { boarderId: user.user_id }
+  );
 
   return jsonResponse({
     data: {

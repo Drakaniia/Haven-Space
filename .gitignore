@@ -65,3 +65,8 @@ bun.lock
 .tanstack/
 .omp/extensions/emdash-hook.ts
 .kiro/agents/emdash.json
+
+# Agent session artifacts (opencode run-continuation state)
+.omo/
+
+.tmp-verify*

@@ -201,7 +201,7 @@ function HavenAiPage() {
   const hasMessages = history.length > 0;
 
   return (
-    <div className="flex h-screen flex-col bg-white text-ink">
+    <div className="flex h-screen flex-col bg-surface text-ink">
       <PublicNavbar />
 
       <main className="flex flex-1 flex-col overflow-hidden">
@@ -225,7 +225,7 @@ function HavenAiPage() {
                     type="button"
                     disabled={guestBlocked}
                     onClick={() => sendMessage(suggestion)}
-                    className="rounded-xl border border-gray-200 bg-white p-4 text-left text-sm text-gray-ink transition hover:border-primary hover:bg-mint/40 hover:text-ink disabled:cursor-not-allowed disabled:opacity-50"
+                    className="rounded-xl border border-border bg-surface p-4 text-left text-sm text-gray-ink transition hover:border-primary hover:bg-mint/40 hover:text-ink disabled:cursor-not-allowed disabled:opacity-50"
                   >
                     {suggestion}
                   </button>
@@ -237,14 +237,14 @@ function HavenAiPage() {
               {history.map((msg, index) =>
                 msg.role === 'user' ? (
                   <div key={index} className="flex justify-end">
-                    <div className="max-w-[80%] whitespace-pre-wrap rounded-2xl rounded-br-md bg-primary px-4 py-3 text-sm leading-relaxed text-white">
+                    <div className="max-w-[80%] whitespace-pre-wrap rounded-2xl rounded-br-md bg-primary-strong px-4 py-3 text-sm leading-relaxed text-white">
                       {msg.content}
                     </div>
                   </div>
                 ) : (
                   <div key={index} className="flex items-start gap-3">
                     <AiAvatar />
-                    <div className="max-w-[80%] whitespace-pre-wrap rounded-2xl rounded-bl-md border border-gray-200 bg-white px-4 py-3 text-sm leading-relaxed text-ink">
+                    <div className="max-w-[80%] whitespace-pre-wrap rounded-2xl rounded-bl-md border border-border bg-surface px-4 py-3 text-sm leading-relaxed text-ink">
                       {msg.content}
                     </div>
                   </div>
@@ -255,12 +255,12 @@ function HavenAiPage() {
                 <div className="flex items-start gap-3">
                   <AiAvatar />
                   {streamingContent ? (
-                    <div className="max-w-[80%] whitespace-pre-wrap rounded-2xl rounded-bl-md border border-gray-200 bg-white px-4 py-3 text-sm leading-relaxed text-ink">
+                    <div className="max-w-[80%] whitespace-pre-wrap rounded-2xl rounded-bl-md border border-border bg-surface px-4 py-3 text-sm leading-relaxed text-ink">
                       {streamingContent}
-                      <span className="ml-0.5 inline-block h-3.5 w-0.5 animate-pulse bg-primary align-middle" />
+                      <span className="ml-0.5 inline-block h-3.5 w-0.5 animate-pulse bg-primary-strong align-middle" />
                     </div>
                   ) : (
-                    <div className="flex gap-1 rounded-2xl rounded-bl-md border border-gray-200 bg-white px-4 py-3">
+                    <div className="flex gap-1 rounded-2xl rounded-bl-md border border-border bg-surface px-4 py-3">
                       {[0, 1, 2].map(i => (
                         <span
                           key={i}
@@ -276,7 +276,9 @@ function HavenAiPage() {
               {error ? (
                 <p
                   className={`rounded-lg px-4 py-3 text-sm ${
-                    dailyLimitHit ? 'bg-amber-50 text-amber-800' : 'bg-red-50 text-red-600'
+                    dailyLimitHit
+                      ? 'bg-warning-tint text-warning-ink'
+                      : 'bg-error-tint text-error-ink'
                   }`}
                 >
                   {error}
@@ -287,7 +289,7 @@ function HavenAiPage() {
         </div>
 
         {/* Composer */}
-        <div className="border-t border-gray-200 bg-white px-4 py-4">
+        <div className="border-t border-border bg-surface px-4 py-4">
           <div className="mx-auto max-w-3xl">
             {guestBlocked ? (
               <div className="mb-3 flex items-center justify-between gap-3 rounded-xl border border-primary/20 bg-mint/50 px-4 py-3">
@@ -297,13 +299,13 @@ function HavenAiPage() {
                 <div className="flex shrink-0 items-center gap-2">
                   <a
                     href={`/auth/login?redirect=${REDIRECT_PATH}`}
-                    className="rounded-full bg-primary px-4 py-1.5 text-xs font-semibold text-white transition hover:bg-primary-dark"
+                    className="rounded-full bg-primary-strong px-4 py-1.5 text-xs font-semibold text-white transition hover:bg-primary-hover"
                   >
                     Log in
                   </a>
                   <a
                     href={`/auth/choose?redirect=${REDIRECT_PATH}`}
-                    className="rounded-full border border-primary px-4 py-1.5 text-xs font-semibold text-primary transition hover:bg-white"
+                    className="rounded-full border border-primary px-4 py-1.5 text-xs font-semibold text-primary transition hover:bg-surface"
                   >
                     Sign up
                   </a>
@@ -313,7 +315,7 @@ function HavenAiPage() {
 
             <form
               onSubmit={onSubmit}
-              className="flex items-end gap-2 rounded-3xl border border-gray-300 bg-white p-2 shadow-sm focus-within:border-primary focus-within:shadow-[0_0_0_3px_rgba(74,124,35,0.1)]"
+              className="flex items-end gap-2 rounded-3xl border border-border-strong bg-surface p-2 shadow-sm focus-within:border-primary focus-within:shadow-[0_0_0_3px_rgba(74,124,35,0.1)]"
             >
               <textarea
                 rows={1}
@@ -335,7 +337,7 @@ function HavenAiPage() {
                 type="submit"
                 disabled={loading || guestBlocked || input.trim() === ''}
                 aria-label="Send message"
-                className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-primary text-white transition hover:bg-primary-dark disabled:cursor-not-allowed disabled:bg-gray-300"
+                className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-primary-strong text-white transition hover:bg-primary-hover disabled:cursor-not-allowed disabled:bg-subtle"
               >
                 <svg
                   xmlns="http://www.w3.org/2000/svg"

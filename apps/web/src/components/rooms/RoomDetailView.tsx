@@ -1,7 +1,18 @@
 import { useMemo, useState } from 'react';
 import { Link } from '@tanstack/react-router';
+import { useAuth } from '../../lib/auth-context';
+import { osmEmbedUrl } from '../../lib/maps';
+import {
+  BOARDER_MESSAGES_PATH,
+  BROWSE_LISTINGS_PATH,
+  boarderApplyPath,
+  boarderTourPath,
+  loginRedirectPath,
+} from '../../lib/routes';
 import type { ListingDetail, RoomDetail, SimilarProperty } from '../../lib/types';
+import { useMapLocation } from '../../lib/use-map-location';
 import { Icon } from '../ui/Icon';
+import { MapLocationControl } from './MapLocationControl';
 import { SaveButton } from './SaveButton';
 import {
   amenityIcon,
@@ -9,6 +20,7 @@ import {
   cleanRoomType,
   formatAmount,
   formatPrice,
+  freeSlotsLabel,
   genderInfo,
   isRoomAvailable,
   roomStatusLabel,
@@ -25,7 +37,7 @@ function Stars({ rating, className = '' }: { rating: number; className?: string 
         <span
           key={star}
           aria-hidden="true"
-          className={star <= clamped ? 'text-amber-400' : 'text-gray-300'}
+          className={star <= clamped ? 'text-amber-400' : 'text-muted'}
         >
           ★
         </span>
@@ -36,7 +48,7 @@ function Stars({ rating, className = '' }: { rating: number; className?: string 
 
 const PLACEHOLDER_IMAGE = '/assets/images/placeholder-room.svg';
 
-function MapEmbed({
+function ListingMap({
   latitude,
   longitude,
   title,
@@ -45,15 +57,12 @@ function MapEmbed({
   longitude: number;
   title: string;
 }) {
-  const dLng = 0.012;
-  const dLat = 0.009;
-  const bbox = `${longitude - dLng},${latitude - dLat},${longitude + dLng},${latitude + dLat}`;
+  // The bbox math lives in `lib/maps` so the listing marker and the user's position are framed
+  // identically (spec `map-use-location` R11).
   return (
     <iframe
       title={`Map of ${title}`}
-      src={`https://www.openstreetmap.org/export/embed.html?bbox=${encodeURIComponent(
-        bbox
-      )}&layer=mapnik&marker=${latitude},${longitude}`}
+      src={osmEmbedUrl(latitude, longitude)}
       className="h-[420px] w-full rounded-xl border-0 sm:h-[480px]"
       loading="lazy"
     />
@@ -73,8 +82,17 @@ export function RoomDetailView({
 }) {
   const [currentImage, setCurrentImage] = useState(0);
   const [showMap, setShowMap] = useState(false);
+  // No auto-apply here: this map's default is the listing itself, and re-centring it on a
+  // remembered user position would hide the listing the page opened the map to show.
+  const mapLocation = useMapLocation({ autoApply: false });
   const [roomFilter, setRoomFilter] = useState('all');
   const [selectedRoomId, setSelectedRoomId] = useState<number | null>(null);
+  const { isAuthenticated, user } = useAuth();
+  // A signed-in boarder applies through the in-shell form; everyone else has to
+  // authenticate first. The session only exists client-side, so the signed-out
+  // link is what the server renders — the client re-renders with the real
+  // destination once auth hydrates.
+  const isBoarder = isAuthenticated && user?.role === 'boarder';
 
   const images = useMemo(() => {
     const sources = listing.images.length > 0 ? listing.images : [];
@@ -104,13 +122,21 @@ export function RoomDetailView({
 
   const activeRoomId = selectedRoomId ?? availableRooms[0]?.id ?? null;
   const roomParam = activeRoomId ? String(activeRoomId) : '';
-  const publicDetailHref = `/rooms/${listing.id}`;
-  const authRedirect = `/auth/login?redirect=${encodeURIComponent(publicDetailHref)}`;
-  const applyHref = applyTo ?? authRedirect;
-  const tourPath = `/boarder/find-a-room/${listing.id}/tour`;
-  const secondaryHref = applyTo ? tourPath : authRedirect;
-  const contactHref = applyTo ? '/boarder/messages' : authRedirect;
-  const browseHref = applyTo ? '/boarder/find-a-room' : '/find-a-room';
+  const applyPath = boarderApplyPath(listing.id);
+  // Guests are sent to login and come back to the form itself, not to this page.
+  const authRedirect = loginRedirectPath(applyPath);
+  const applyHref = applyTo ?? (isBoarder ? applyPath : authRedirect);
+  // Apply/tour/messaging all live inside the boarder shell, so an explicit
+  // `applyTo` (in-shell callers) and a signed-in boarder share the same gate.
+  const inBoarderFlow = Boolean(applyTo) || isBoarder;
+  const tourPath = boarderTourPath(listing.id);
+  const secondaryHref = inBoarderFlow ? tourPath : authRedirect;
+  // Messaging lives in the boarder shell and is gated on a session, never on a
+  // tenancy (spec `messages-feature-review` D12/R14). Guests still authenticate
+  // first, and the inbox then opens the thread for *this* listing.
+  const contactHref = inBoarderFlow ? BOARDER_MESSAGES_PATH : authRedirect;
+  const contactSearch = inBoarderFlow ? { compose: listing.id } : undefined;
+  const browseHref = BROWSE_LISTINGS_PATH;
 
   function prevImage() {
     setCurrentImage(index => (index - 1 + images.length) % images.length);
@@ -147,23 +173,26 @@ export function RoomDetailView({
       </nav>
 
       {/* Gallery / Map */}
-      <section className="mt-4 rounded-2xl bg-white p-3 shadow-card sm:p-5" aria-label="Photos">
+      <section className="mt-4 rounded-2xl bg-surface p-3 shadow-card sm:p-5" aria-label="Photos">
         {showMap && hasCoords ? (
-          <div className="relative">
-            <button
-              type="button"
-              onClick={() => setShowMap(false)}
-              className="absolute left-3 top-3 z-10 flex items-center gap-2 rounded-lg border border-gray-200 bg-white/95 px-3 py-2 text-sm font-medium text-gray-ink shadow-card transition-colors hover:bg-white"
-            >
-              <Icon name="chevronLeft" size={16} />
-              Back to Images
-            </button>
-            <MapEmbed
-              latitude={listing.latitude as number}
-              longitude={listing.longitude as number}
-              title={listing.title}
-            />
-          </div>
+          <>
+            <MapLocationControl state={mapLocation} resetLabel="Reset to listing" />
+            <div className="relative">
+              <button
+                type="button"
+                onClick={() => setShowMap(false)}
+                className="absolute left-3 top-3 z-10 flex items-center gap-2 rounded-lg border border-border bg-surface/95 px-3 py-2 text-sm font-medium text-gray-ink shadow-card transition-colors hover:bg-surface"
+              >
+                <Icon name="chevronLeft" size={16} />
+                Back to Images
+              </button>
+              <ListingMap
+                latitude={mapLocation.coordinates?.latitude ?? (listing.latitude as number)}
+                longitude={mapLocation.coordinates?.longitude ?? (listing.longitude as number)}
+                title={mapLocation.coordinates ? 'your location' : listing.title}
+              />
+            </div>
+          </>
         ) : (
           <>
             <div className="relative overflow-hidden rounded-xl">
@@ -182,7 +211,7 @@ export function RoomDetailView({
                     type="button"
                     onClick={prevImage}
                     aria-label="Previous photo"
-                    className="absolute left-3 top-1/2 flex h-11 w-11 -translate-y-1/2 items-center justify-center rounded-full bg-white/90 text-ink shadow-card transition-[background-color,box-shadow] hover:bg-white hover:shadow-pop"
+                    className="absolute left-3 top-1/2 flex h-11 w-11 -translate-y-1/2 items-center justify-center rounded-full bg-surface/90 text-ink shadow-card transition-[background-color,box-shadow] hover:bg-surface hover:shadow-pop"
                   >
                     <Icon name="chevronLeft" size={22} />
                   </button>
@@ -190,7 +219,7 @@ export function RoomDetailView({
                     type="button"
                     onClick={nextImage}
                     aria-label="Next photo"
-                    className="absolute right-3 top-1/2 flex h-11 w-11 -translate-y-1/2 items-center justify-center rounded-full bg-white/90 text-ink shadow-card transition-[background-color,box-shadow] hover:bg-white hover:shadow-pop"
+                    className="absolute right-3 top-1/2 flex h-11 w-11 -translate-y-1/2 items-center justify-center rounded-full bg-surface/90 text-ink shadow-card transition-[background-color,box-shadow] hover:bg-surface hover:shadow-pop"
                   >
                     <Icon name="chevronRight" size={22} />
                   </button>
@@ -201,7 +230,7 @@ export function RoomDetailView({
                 <button
                   type="button"
                   onClick={() => setShowMap(true)}
-                  className="absolute left-3 top-3 flex items-center gap-2 rounded-lg border border-gray-200 bg-white/95 px-3 py-2 text-sm font-medium text-gray-ink shadow-card transition-colors hover:bg-white"
+                  className="absolute left-3 top-3 flex items-center gap-2 rounded-lg border border-border bg-surface/95 px-3 py-2 text-sm font-medium text-gray-ink shadow-card transition-colors hover:bg-surface"
                 >
                   <Icon name="map" size={16} />
                   Show Map
@@ -244,7 +273,7 @@ export function RoomDetailView({
         {/* Left column */}
         <div className="flex min-w-0 flex-col gap-6">
           {/* Header */}
-          <section className="rounded-2xl bg-white p-5 shadow-card sm:p-6">
+          <section className="rounded-2xl bg-surface p-5 shadow-card sm:p-6">
             <div className="flex flex-wrap items-start justify-between gap-4">
               <div className="min-w-0">
                 {listing.badges.length > 0 ? (
@@ -266,7 +295,7 @@ export function RoomDetailView({
                         return (
                           <span
                             key={badge}
-                            className="inline-flex items-center rounded-full bg-green-100 px-3 py-1 text-xs font-semibold text-primary-light"
+                            className="inline-flex items-center rounded-full bg-success-tint px-3 py-1 text-xs font-semibold text-primary-light"
                           >
                             New Listing
                           </span>
@@ -276,7 +305,7 @@ export function RoomDetailView({
                         return (
                           <span
                             key={badge}
-                            className="inline-flex items-center rounded-full bg-amber-100 px-3 py-1 text-xs font-semibold text-amber-700"
+                            className="inline-flex items-center rounded-full bg-warning-tint px-3 py-1 text-xs font-semibold text-warning-ink"
                           >
                             Promo
                           </span>
@@ -285,7 +314,7 @@ export function RoomDetailView({
                       return (
                         <span
                           key={badge}
-                          className="inline-flex items-center rounded-full bg-gray-100 px-3 py-1 text-xs font-semibold text-gray-ink"
+                          className="inline-flex items-center rounded-full bg-subtle px-3 py-1 text-xs font-semibold text-gray-ink"
                         >
                           {badge}
                         </span>
@@ -347,7 +376,7 @@ export function RoomDetailView({
           </section>
 
           {/* Description */}
-          <section className="rounded-2xl bg-white p-5 shadow-card sm:p-6">
+          <section className="rounded-2xl bg-surface p-5 shadow-card sm:p-6">
             <SectionTitle>About This Property</SectionTitle>
             {descriptionParagraphs.length > 0 ? (
               <div className="space-y-3 leading-relaxed text-gray-ink">
@@ -361,7 +390,7 @@ export function RoomDetailView({
           </section>
 
           {/* Amenities */}
-          <section className="rounded-2xl bg-white p-5 shadow-card sm:p-6">
+          <section className="rounded-2xl bg-surface p-5 shadow-card sm:p-6">
             <SectionTitle>Amenities</SectionTitle>
             {listing.amenities.length > 0 ? (
               <ul className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
@@ -381,7 +410,7 @@ export function RoomDetailView({
           </section>
 
           {/* Property rules */}
-          <section className="rounded-2xl bg-white p-5 shadow-card sm:p-6">
+          <section className="rounded-2xl bg-surface p-5 shadow-card sm:p-6">
             <SectionTitle>Property Rules</SectionTitle>
             {rules.length > 0 ? (
               <ul className="space-y-3">
@@ -398,7 +427,7 @@ export function RoomDetailView({
           </section>
 
           {/* Gender preference */}
-          <section className="rounded-2xl bg-white p-5 shadow-card sm:p-6">
+          <section className="rounded-2xl bg-surface p-5 shadow-card sm:p-6">
             <SectionTitle>Gender Preferences</SectionTitle>
             <div className="flex gap-3 rounded-lg bg-cream p-4">
               <Icon name={gender.icon} size={20} className="mt-0.5 shrink-0 text-primary" />
@@ -410,7 +439,7 @@ export function RoomDetailView({
           </section>
 
           {/* Reviews */}
-          <section className="rounded-2xl bg-white p-5 shadow-card sm:p-6">
+          <section className="rounded-2xl bg-surface p-5 shadow-card sm:p-6">
             <SectionTitle>Reviews &amp; Ratings</SectionTitle>
             {listing.reviews > 0 && listing.rating > 0 ? (
               <div className="flex flex-wrap items-center gap-4 rounded-lg bg-cream p-5">
@@ -440,7 +469,7 @@ export function RoomDetailView({
 
         {/* Right column: booking card */}
         <aside className="h-fit lg:sticky lg:top-6">
-          <div className="rounded-2xl bg-white p-5 shadow-card sm:p-6">
+          <div className="rounded-2xl bg-surface p-5 shadow-card sm:p-6">
             <div>
               <span className="text-3xl font-extrabold text-primary">
                 {formatPrice(listing.price)}
@@ -476,7 +505,7 @@ export function RoomDetailView({
               </div>
             </div>
 
-            <div className="my-5 h-px bg-gray-200" />
+            <div className="my-5 h-px bg-subtle" />
 
             <h3 className="text-sm font-semibold text-ink">Available Room Types</h3>
             {availableRooms.length > 0 ? (
@@ -493,16 +522,19 @@ export function RoomDetailView({
                       className={`flex w-full items-center justify-between gap-2 rounded-lg border-2 px-3.5 py-3 text-left transition-all ${
                         selected
                           ? 'border-primary bg-mint/40 shadow-[0_0_0_3px_rgba(74,124,35,0.1)]'
-                          : 'border-gray-200 bg-cream/50 hover:border-primary/60'
+                          : 'border-border bg-cream/50 hover:border-primary/60'
                       }`}
                     >
-                      <span className="flex min-w-0 items-center gap-2 text-sm font-medium text-ink">
-                        <Icon
-                          name={room.capacity > 1 ? 'users' : 'user'}
-                          size={16}
-                          className="shrink-0 text-primary"
-                        />
-                        <span className="truncate">{cleanRoomType(room)}</span>
+                      <span className="flex min-w-0 flex-col">
+                        <span className="flex min-w-0 items-center gap-2 text-sm font-medium text-ink">
+                          <Icon
+                            name={room.capacity > 1 ? 'users' : 'user'}
+                            size={16}
+                            className="shrink-0 text-primary"
+                          />
+                          <span className="truncate">{cleanRoomType(room)}</span>
+                        </span>
+                        <span className="mt-0.5 text-xs text-gray-ink">{freeSlotsLabel(room)}</span>
                       </span>
                       <span className="flex shrink-0 items-center gap-1.5">
                         <span className="text-sm font-bold text-primary">
@@ -510,10 +542,12 @@ export function RoomDetailView({
                         </span>
                         <span
                           className={`flex h-4 w-4 items-center justify-center rounded-full border-2 ${
-                            selected ? 'border-primary bg-primary' : 'border-gray-300'
+                            selected ? 'border-primary bg-primary-strong' : 'border-border-strong'
                           }`}
                         >
-                          {selected ? <span className="h-1.5 w-1.5 rounded-full bg-white" /> : null}
+                          {selected ? (
+                            <span className="h-1.5 w-1.5 rounded-full bg-surface" />
+                          ) : null}
                         </span>
                       </span>
                     </button>
@@ -531,7 +565,7 @@ export function RoomDetailView({
                 <Link
                   to={applyTo}
                   search={{ room: roomParam }}
-                  className="flex items-center justify-center gap-2 rounded-lg bg-primary px-5 py-3 text-sm font-semibold text-white transition-all hover:-translate-y-0.5 hover:bg-primary-dark hover:shadow-pop"
+                  className="flex items-center justify-center gap-2 rounded-lg bg-primary-strong px-5 py-3 text-sm font-semibold text-white transition-all hover:-translate-y-0.5 hover:bg-primary-hover hover:shadow-pop"
                 >
                   <Icon name="application" size={18} />
                   Apply Now
@@ -539,7 +573,7 @@ export function RoomDetailView({
               ) : (
                 <Link
                   to={applyHref}
-                  className="flex items-center justify-center gap-2 rounded-lg bg-primary px-5 py-3 text-sm font-semibold text-white transition-all hover:-translate-y-0.5 hover:bg-primary-dark hover:shadow-pop"
+                  className="flex items-center justify-center gap-2 rounded-lg bg-primary-strong px-5 py-3 text-sm font-semibold text-white transition-all hover:-translate-y-0.5 hover:bg-primary-hover hover:shadow-pop"
                 >
                   <Icon name="application" size={18} />
                   Apply Now
@@ -548,7 +582,7 @@ export function RoomDetailView({
               <Link
                 to={secondaryHref}
                 search={applyTo ? { room: roomParam } : undefined}
-                className="flex items-center justify-center gap-2 rounded-lg border-2 border-primary bg-white px-5 py-2.5 text-sm font-semibold text-primary transition-colors hover:bg-mint"
+                className="flex items-center justify-center gap-2 rounded-lg border-2 border-primary bg-surface px-5 py-2.5 text-sm font-semibold text-primary transition-colors hover:bg-mint"
               >
                 <Icon name="calendarDays" size={18} />
                 Schedule a Tour
@@ -559,6 +593,7 @@ export function RoomDetailView({
               <p className="text-sm text-gray-ink">Questions about this property?</p>
               <Link
                 to={contactHref}
+                search={contactSearch}
                 className="mt-1 inline-flex items-center gap-1.5 text-sm font-semibold text-primary hover:underline"
               >
                 <Icon name="chat" size={16} />
@@ -568,7 +603,7 @@ export function RoomDetailView({
           </div>
 
           {/* Landlord info */}
-          <div className="mt-4 rounded-2xl bg-white p-5 shadow-card">
+          <div className="mt-4 rounded-2xl bg-surface p-5 shadow-card">
             <h4 className="text-sm font-semibold text-ink">Property Managed by</h4>
             <div className="mt-3 flex gap-3 rounded-lg bg-cream p-4">
               <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-mint text-primary">
@@ -629,7 +664,7 @@ export function RoomDetailView({
               return (
                 <article
                   key={room.id}
-                  className="overflow-hidden rounded-xl border border-gray-200 bg-white shadow-card transition-shadow hover:shadow-pop"
+                  className="overflow-hidden rounded-xl border border-border bg-surface shadow-card transition-shadow hover:shadow-pop"
                 >
                   <div className="relative h-40 w-full overflow-hidden bg-mint/40">
                     <img
@@ -657,6 +692,10 @@ export function RoomDetailView({
                       <span className="flex items-center gap-1.5">
                         <Icon name="users" size={14} className="text-primary" />
                         {room.capacity} {room.capacity === 1 ? 'person' : 'persons'}
+                      </span>
+                      <span className="flex items-center gap-1.5">
+                        <Icon name="calendarDays" size={14} className="text-primary" />
+                        {freeSlotsLabel(room)}
                       </span>
                       {room.size ? (
                         <span className="flex items-center gap-1.5">
@@ -687,7 +726,7 @@ export function RoomDetailView({
               );
             })
           ) : (
-            <div className="col-span-full rounded-xl bg-white p-8 text-center text-gray-ink shadow-card">
+            <div className="col-span-full rounded-xl bg-surface p-8 text-center text-gray-ink shadow-card">
               <p className="font-medium text-ink">No rooms match the selected filter.</p>
               <p className="mt-1 text-sm">Try a different room type.</p>
             </div>
@@ -707,7 +746,7 @@ export function RoomDetailView({
                   key={property.id}
                   to="/rooms/$id"
                   params={{ id: String(property.id) }}
-                  className="group overflow-hidden rounded-xl border border-gray-200 bg-white shadow-card transition-all hover:-translate-y-1 hover:shadow-pop"
+                  className="group overflow-hidden rounded-xl border border-border bg-surface shadow-card transition-all hover:-translate-y-1 hover:shadow-pop"
                 >
                   <div className="relative h-40 w-full overflow-hidden bg-mint/40">
                     <img
@@ -719,7 +758,7 @@ export function RoomDetailView({
                       }}
                     />
                     {verified ? (
-                      <span className="absolute left-2.5 top-2.5 inline-flex items-center gap-1 rounded-full bg-white/95 px-2.5 py-0.5 text-[11px] font-semibold text-primary">
+                      <span className="absolute left-2.5 top-2.5 inline-flex items-center gap-1 rounded-full bg-surface/95 px-2.5 py-0.5 text-[11px] font-semibold text-primary">
                         <Icon name="shieldCheck" size={12} />
                         Verified
                       </span>
@@ -765,7 +804,7 @@ function SectionTitle({ children }: { children: React.ReactNode }) {
 
 function QuickInfoCard({ icon, label, value }: { icon: string; label: string; value: string }) {
   return (
-    <div className="flex items-start gap-3 rounded-2xl bg-white p-4 shadow-card">
+    <div className="flex items-start gap-3 rounded-2xl bg-surface p-4 shadow-card">
       <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-mint text-primary">
         <Icon name={icon} size={24} />
       </div>
@@ -792,8 +831,8 @@ function FilterChip({
       onClick={onClick}
       className={`rounded-full px-4 py-1.5 text-sm font-medium transition-all ${
         active
-          ? 'bg-primary text-white'
-          : 'border border-gray-200 bg-white text-gray-ink hover:border-primary hover:text-primary'
+          ? 'bg-primary-strong text-white'
+          : 'border border-border bg-surface text-gray-ink hover:border-primary hover:text-primary'
       }`}
     >
       {children}

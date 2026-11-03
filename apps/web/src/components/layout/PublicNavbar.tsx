@@ -14,7 +14,7 @@ export function PublicNavbar() {
   const { isAuthenticated } = useAuth();
 
   return (
-    <nav className="sticky top-0 z-40 border-b border-gray-200 bg-white/95 backdrop-blur">
+    <nav className="sticky top-0 z-40 border-b border-border bg-surface/95 backdrop-blur">
       <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4 sm:px-6">
         <Link to="/" className="flex items-center gap-2">
           <img
@@ -29,7 +29,7 @@ export function PublicNavbar() {
             <li key={link.to}>
               <Link
                 to={link.to}
-                className="text-sm font-medium text-gray-700 hover:text-primary"
+                className="text-sm font-medium text-gray-ink hover:text-primary"
                 activeProps={{ className: 'text-primary font-semibold' }}
               >
                 {link.label}
@@ -44,13 +44,13 @@ export function PublicNavbar() {
             <>
               <Link
                 to="/auth/login"
-                className="text-sm font-medium text-gray-700 hover:text-primary"
+                className="text-sm font-medium text-gray-ink hover:text-primary"
               >
                 Log in
               </Link>
               <Link
                 to="/auth/choose"
-                className="rounded-full bg-primary px-4 py-2 text-sm font-semibold text-white hover:bg-primary-dark"
+                className="rounded-full bg-primary-strong px-4 py-2 text-sm font-semibold text-white hover:bg-primary-hover"
               >
                 Join now
               </Link>

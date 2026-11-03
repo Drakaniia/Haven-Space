@@ -68,7 +68,7 @@ function ForLandlordsPage() {
           <div className="mt-8 flex flex-wrap justify-center gap-3">
             <Link
               to="/auth/signup/landlord"
-              className="rounded-full bg-primary px-6 py-3 text-sm font-semibold text-white hover:bg-primary-dark"
+              className="rounded-full bg-primary-strong px-6 py-3 text-sm font-semibold text-white hover:bg-primary-hover"
             >
               Get Started
             </Link>
@@ -83,7 +83,7 @@ function ForLandlordsPage() {
       </section>
 
       {/* Benefits */}
-      <section className="bg-white">
+      <section className="bg-surface">
         <div className="mx-auto max-w-7xl px-4 py-16 md:py-20">
           <div className="mb-12 text-center">
             <span className="inline-block rounded-full bg-mint px-3 py-1 text-xs font-bold uppercase tracking-widest text-primary">
@@ -101,7 +101,7 @@ function ForLandlordsPage() {
             {BENEFITS.map(benefit => (
               <div
                 key={benefit.title}
-                className="rounded-xl border border-gray-200 bg-cream p-6 text-center shadow-card"
+                className="rounded-xl border border-border bg-cream p-6 text-center shadow-card"
               >
                 <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-mint">
                   <img
@@ -123,7 +123,7 @@ function ForLandlordsPage() {
               </p>
               <Link
                 to="/auth/signup/landlord"
-                className="mt-4 rounded-full bg-primary px-5 py-2 text-sm font-semibold text-white hover:bg-primary-dark"
+                className="mt-4 rounded-full bg-primary-strong px-5 py-2 text-sm font-semibold text-white hover:bg-primary-hover"
               >
                 Get Started
               </Link>
@@ -144,7 +144,7 @@ function ForLandlordsPage() {
               Everything you need to manage your properties, all in one plan.
             </p>
           </div>
-          <div className="mx-auto max-w-3xl overflow-hidden rounded-2xl bg-primary-dark shadow-pop">
+          <div className="mx-auto max-w-3xl overflow-hidden rounded-2xl bg-primary-hover shadow-pop">
             <div className="p-8 md:p-10">
               <div className="flex flex-wrap items-start justify-between gap-4">
                 <div>
@@ -175,7 +175,7 @@ function ForLandlordsPage() {
               </ul>
               <Link
                 to="/auth/signup/landlord"
-                className="mt-8 inline-block rounded-full bg-mint px-8 py-3 text-sm font-bold text-primary-dark hover:bg-white"
+                className="mt-8 inline-block rounded-full bg-mint px-8 py-3 text-sm font-bold text-primary-dark hover:bg-surface"
               >
                 Get Started Now
               </Link>
@@ -188,7 +188,7 @@ function ForLandlordsPage() {
       </section>
 
       {/* CTA */}
-      <section className="bg-white">
+      <section className="bg-surface">
         <div className="mx-auto max-w-4xl px-4 py-16 text-center">
           <h2 className="text-3xl font-bold text-ink">
             Ready to <span className="text-primary">grow</span> your rental business?
@@ -200,14 +200,14 @@ function ForLandlordsPage() {
           <div className="mt-8 flex flex-wrap justify-center gap-3">
             <Link
               to="/auth/signup/landlord"
-              className="inline-flex items-center gap-2 rounded-full bg-primary px-6 py-3 text-sm font-semibold text-white hover:bg-primary-dark"
+              className="inline-flex items-center gap-2 rounded-full bg-primary-strong px-6 py-3 text-sm font-semibold text-white hover:bg-primary-hover"
             >
               Start Listing Today
               <img src="/assets/svg/chevron-right.svg" alt="" width={18} height={18} />
             </Link>
             <Link
               to="/"
-              className="rounded-full border-2 border-gray-300 px-6 py-3 text-sm font-semibold text-gray-ink hover:bg-gray-50"
+              className="rounded-full border-2 border-border-strong px-6 py-3 text-sm font-semibold text-gray-ink hover:bg-subtle"
             >
               Contact Sales
             </Link>

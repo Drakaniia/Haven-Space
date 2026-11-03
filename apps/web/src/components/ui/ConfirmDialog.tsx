@@ -70,7 +70,7 @@ export function ConfirmDialog({
       onClick={busy ? undefined : onCancel}
     >
       <div
-        className="w-full max-w-md rounded-lg bg-white p-6 shadow-xl"
+        className="w-full max-w-md rounded-2xl border border-border bg-surface p-6 shadow-pop"
         onClick={event => event.stopPropagation()}
       >
         <h2 id="confirm-dialog-title" className="text-lg font-semibold text-ink">

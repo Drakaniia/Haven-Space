@@ -95,10 +95,52 @@ function seedAnnouncementData(db: Database): void {
 }
 
 describe('announcement routes', () => {
+  it('skips notification rows for boarders who muted announcements', async () => {
+    const sqlite = new Database(':memory:');
+    runMigrations(sqlite);
+    seedAnnouncementData(sqlite);
+    // Announcements default to off, so a boarder with no saved row is muted.
+    expect(sqlite.prepare('SELECT COUNT(*) as count FROM notification_preferences').get()).toEqual({
+      count: 0,
+    });
+    const env = createEnv(sqlite);
+
+    const create = await app.request(
+      'http://localhost/api/landlord/announcements',
+      {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-User-ID': '3',
+        },
+        body: JSON.stringify({
+          title: 'Muted notice',
+          description: 'This boarder turned announcements off.',
+          category: 'general',
+          priority: 'normal',
+          publish_date: '2026-05-01',
+          properties: ['10'],
+        }),
+      },
+      env
+    );
+
+    expect(create.status).toBe(201);
+    expect(
+      sqlite.prepare('SELECT COUNT(*) as count FROM notifications WHERE user_id = 2').get()
+    ).toEqual({ count: 0 });
+    // The announcement itself still exists — muting only silences the bell.
+    expect(sqlite.prepare('SELECT COUNT(*) as count FROM announcements').get()).toEqual({
+      count: 1,
+    });
+  });
+
   it('creates and lists landlord announcements with property targets and notifications', async () => {
     const sqlite = new Database(':memory:');
     runMigrations(sqlite);
     seedAnnouncementData(sqlite);
+    // Opt this boarder in — announcements are muted by default.
+    sqlite.run(`INSERT INTO notification_preferences (user_id, announcements) VALUES (2, 1)`);
     const env = createEnv(sqlite);
 
     const create = await app.request(

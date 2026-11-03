@@ -29,7 +29,7 @@ const COLUMNS: { title: string; links: { to: string; label: string }[] }[] = [
 
 export function Footer() {
   return (
-    <footer className="border-t border-gray-200 bg-white">
+    <footer className="border-t border-border bg-surface">
       <div className="mx-auto grid max-w-7xl gap-8 px-4 py-10 sm:px-6 md:grid-cols-4">
         <div>
           <img
@@ -56,7 +56,7 @@ export function Footer() {
           </div>
         ))}
       </div>
-      <div className="border-t border-gray-100 py-4 text-center text-sm text-gray-ink">
+      <div className="border-t border-border py-4 text-center text-sm text-gray-ink">
         © {new Date().getFullYear()} Haven Space. All rights reserved.
       </div>
     </footer>

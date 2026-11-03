@@ -257,6 +257,23 @@ describe('auth routes', () => {
     expect(await invalidResponse.json()).toEqual({ error: 'Invalid email format' });
   });
 
+  it('rejects malformed login emails with a format error before the account lookup', async () => {
+    const sqlite = new Database(':memory:');
+    runMigrations(sqlite);
+    const response = await app.request(
+      'http://localhost/auth/login',
+      {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: 'not-an-email', password: 'StrongPass123' }),
+      },
+      createEnv(sqlite)
+    );
+
+    expect(response.status).toBe(400);
+    expect(await response.json()).toEqual({ error: 'Invalid email format' });
+  });
+
   it('starts Google OAuth with a signed state cookie', async () => {
     const sqlite = new Database(':memory:');
     runMigrations(sqlite);
@@ -691,7 +708,7 @@ describe('auth routes', () => {
 
     expect(callback.status).toBe(302);
     expect(location.hash).toStartWith('#auth=');
-    expect(location.origin + location.pathname).toBe('http://localhost:4173/boarder/find-a-room');
+    expect(location.origin + location.pathname).toBe('http://localhost:4173/find-a-room');
   });
   it('redirects a cancelled Google consent back to login with a friendly banner', async () => {
     const sqlite = new Database(':memory:');
@@ -954,7 +971,7 @@ describe('auth routes', () => {
     const location = new URL(callback.headers.get('Location') as string);
 
     // The malicious value is dropped — the user lands on the role home instead.
-    expect(location.origin + location.pathname).toBe('http://localhost:4173/boarder/find-a-room');
-    expect(location.searchParams.get('redirect')).toBe('/boarder/find-a-room');
+    expect(location.origin + location.pathname).toBe('http://localhost:4173/find-a-room');
+    expect(location.searchParams.get('redirect')).toBe('/find-a-room');
   });
 });

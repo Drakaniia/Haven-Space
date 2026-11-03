@@ -170,6 +170,30 @@ describe('phase 7 flow smoke test', () => {
 
     expect(adminLogin.status).toBe(200);
 
+    // Approval now requires all four verification documents on file. Uploads have
+    // their own coverage in landlord-verification.test.ts, so seed a complete bundle
+    // here to keep this smoke test focused on the approval hand-off.
+    for (const documentType of [
+      'government_id',
+      'proof_of_ownership',
+      'business_permit',
+      'selfie_with_id',
+    ]) {
+      sqlite
+        .prepare(
+          `
+            INSERT INTO landlord_verification_documents (user_id, document_type, file_url, file_name)
+            VALUES (?, ?, ?, ?)
+          `
+        )
+        .run(
+          landlordSignupBody.user.id,
+          documentType,
+          `https://utfs.io/f/${documentType}-key`,
+          `${documentType}.jpg`
+        );
+    }
+
     const pendingLandlords = await app.request(
       'http://localhost/api/admin/landlords?status=pending',
       {
@@ -232,6 +256,57 @@ describe('phase 7 flow smoke test', () => {
     expect(listingBody.data.id).toBeGreaterThan(0);
     expect(listingBody.data.room_ids).toHaveLength(1);
 
+    /** Two axes gate visibility now (`edit-listing-property-info` D17/R13). */
+    async function publicTitles(): Promise<string[]> {
+      const response = await app.request(
+        'http://localhost/api/rooms/public?search=Flow%20House',
+        {},
+        env
+      );
+      const body = (await response.json()) as {
+        data: { properties: Array<{ id: number; title: string }> };
+      };
+
+      expect(response.status).toBe(200);
+
+      return body.data.properties.map(property => property.title);
+    }
+
+    // A new listing is a draft (`edit-listing-property-info` D4/R14) — boarders
+    // cannot see it before the landlord publishes it and an admin approves it.
+    expect(await publicTitles()).not.toContain('Flow House');
+
+    const publish = await app.request(
+      `http://localhost/api/landlord/listings/${listingBody.data.id}`,
+      {
+        method: 'PUT',
+        headers: authHeaders(landlordSignupBody.access_token),
+        body: JSON.stringify({ status: 'available' }),
+      },
+      env
+    );
+
+    expect(publish.status).toBe(200);
+
+    // Still invisible: the landlord's Published is a request for review, and the
+    // listing was created awaiting moderation.
+    expect(await publicTitles()).not.toContain('Flow House');
+
+    const moderation = await app.request(
+      'http://localhost/api/admin/properties',
+      {
+        method: 'POST',
+        headers: authHeaders(adminLoginBody.access_token),
+        body: JSON.stringify({ propertyId: listingBody.data.id, action: 'publish' }),
+      },
+      env
+    );
+
+    expect(moderation.status).toBe(200);
+
+    // Both conditions met — now boarders can find it.
+    expect(await publicTitles()).toContain('Flow House');
+
     const publicRooms = await app.request(
       'http://localhost/api/rooms/public?search=Flow%20House',
       {},
@@ -245,6 +320,36 @@ describe('phase 7 flow smoke test', () => {
     expect(publicRoomsBody.data.properties.some(property => property.title === 'Flow House')).toBe(
       true
     );
+
+    // Unpublishing now genuinely hides an approved listing (`edit-listing-property-info`
+    // D17) — before this pass the public queries ignored the landlord's status.
+    const unpublish = await app.request(
+      `http://localhost/api/landlord/listings/${listingBody.data.id}`,
+      {
+        method: 'PUT',
+        headers: authHeaders(landlordSignupBody.access_token),
+        body: JSON.stringify({ status: 'hidden' }),
+      },
+      env
+    );
+
+    expect(unpublish.status).toBe(200);
+    expect(await publicTitles()).not.toContain('Flow House');
+
+    // …and publishing it again is instant: the admin's approval survives the round
+    // trip rather than resetting to pending review (D11).
+    const republish = await app.request(
+      `http://localhost/api/landlord/listings/${listingBody.data.id}`,
+      {
+        method: 'PUT',
+        headers: authHeaders(landlordSignupBody.access_token),
+        body: JSON.stringify({ status: 'available' }),
+      },
+      env
+    );
+
+    expect(republish.status).toBe(200);
+    expect(await publicTitles()).toContain('Flow House');
 
     const boarderSignup = await app.request(
       'http://localhost/api/auth/register',

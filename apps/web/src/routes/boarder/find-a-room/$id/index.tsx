@@ -1,30 +1,13 @@
-import { createFileRoute } from '@tanstack/react-router';
-import { useQuery } from '@tanstack/react-query';
-import { RoomDetailView } from '../../../../components/rooms/RoomDetailView';
-import { ErrorState } from '../../../../components/ui/ErrorState';
-import { Spinner } from '../../../../components/ui/Spinner';
-import { getRoomDetail } from '../../../../lib/api/public';
+import { createFileRoute, redirect } from '@tanstack/react-router';
 
+/**
+ * The in-shell listing detail was a duplicate of the public `/rooms/$id` page
+ * (spec `boarder-find-a-room-redirect`). Only the apply/tour routes below this
+ * layout still render inside the boarder shell; a direct visit to the detail
+ * itself redirects to the public page before the shell renders.
+ */
 export const Route = createFileRoute('/boarder/find-a-room/$id/')({
-  component: FindARoomDetailPage,
+  beforeLoad: ({ params }) => {
+    throw redirect({ to: '/rooms/$id', params: { id: params.id }, replace: true });
+  },
 });
-
-function FindARoomDetailPage() {
-  const { id } = Route.useParams();
-  const detail = useQuery({
-    queryKey: ['listing', Number(id)],
-    queryFn: () => getRoomDetail(Number(id)),
-  });
-
-  if (detail.isLoading) return <Spinner />;
-  if (detail.error) return <ErrorState message={detail.error.message} />;
-  if (!detail.data) return null;
-
-  return (
-    <RoomDetailView
-      listing={detail.data.data}
-      showSave
-      applyTo={`/boarder/find-a-room/${id}/apply`}
-    />
-  );
-}

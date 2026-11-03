@@ -16,7 +16,7 @@ Haven Space is a boarding house platform for boarders, landlords, and admins.
 
 The PHP `functions/` backend has been removed. The active API lives in [workers/api](./workers/api).
 
-Payments and messages are intentionally deferred for now. The Worker returns `501 FEATURE_DEFERRED` for those route groups until they are implemented.
+Payments and messages are intentionally deferred for now. Their route groups are not registered on the Worker, so they return the standard `404` until they are implemented.
 
 ## Setup
 

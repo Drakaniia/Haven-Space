@@ -90,7 +90,7 @@ function BoarderOnboardingPage() {
   const totalSteps = 2;
 
   return (
-    <RoleShell title="Onboarding" nav={BOARDER_NAV} onboardingIncomplete>
+    <RoleShell nav={BOARDER_NAV} onboardingIncomplete>
       <WizardLayout currentStep={step - 1} totalSteps={totalSteps} title="Complete your profile">
         {step === 1 ? (
           <StepProfile data={profile} onChange={setProfile} saving={saving} onNext={handleNext} />

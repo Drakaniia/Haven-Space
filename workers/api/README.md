@@ -2,7 +2,7 @@
 
 TypeScript Cloudflare Worker replacement for the existing PHP API.
 
-This package is now the active backend. The former PHP `functions/` backend has been removed; payment and message route groups are intentionally deferred and currently return explicit `501 FEATURE_DEFERRED` TODO responses.
+This package is now the active backend. The former PHP `functions/` backend has been removed; payment and message route groups are intentionally deferred and are not registered, so they fall through to the standard `404`.
 
 ## Commands
 
@@ -101,6 +101,7 @@ they are not PHP files and do not require a PHP runtime.
 - `POST /api/boarder/update-onboarding`
 - `GET /api/boarder/tenancy`
 - `POST /api/boarder/leave-request`
+- `POST /api/boarder/leave-now`
 - `GET /api/boarder/applications`
 - `POST /api/boarder/applications`
 - `GET /api/boarder/applications/:id`
@@ -115,14 +116,15 @@ they are not PHP files and do not require a PHP runtime.
 - `PATCH /api/notifications/:id/read`
 - `PATCH /api/notifications/read-all`
 - `DELETE /api/notifications/:id`
-- `TODO /api/payments/*` returns `501 FEATURE_DEFERRED`
-- `TODO /api/messages/*` returns `501 FEATURE_DEFERRED`
+- `TODO /api/payments/*` not registered — returns `404`
+- `TODO /api/messages/*` not registered — returns `404`
 - `GET /api/landlord/applications`
 - `GET /api/landlord/applications/:id`
 - `PATCH /api/landlord/applications/:id/status`
 - `GET /api/landlord/dashboard-stats`
 - `GET /api/landlord/dashboard-stats`
 - `GET /api/landlord/dashboard/stats`
+- `GET /api/landlord/activity?from=...&to=...&propertyId=...&types=...&limit=...&offset=...`
 - `GET /api/landlord/boarders?propertyId=...`
 - `GET /api/landlord/boarders?propertyId=...`
 - `POST /api/landlord/approve-leave-request`
@@ -161,8 +163,13 @@ they are not PHP files and do not require a PHP runtime.
 - `PUT /api/landlord/rooms?id=...`
 - `DELETE /api/landlord/rooms?id=...`
 - `DELETE /api/landlord/rooms?id=...`
+- `GET /api/landlord/verification`
+- `POST /api/landlord/verification/documents`
+- `DELETE /api/landlord/verification/documents/:documentType`
+- `POST /api/landlord/verification/submit`
 - `GET /api/admin/landlords?status=...`
 - `GET /api/admin/landlords?status=...`
+- `GET /api/admin/landlords?id=...`
 - `POST /api/admin/landlords`
 - `POST /api/admin/landlords`
 - `GET /api/admin/summary`

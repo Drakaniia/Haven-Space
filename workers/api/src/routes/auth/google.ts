@@ -39,8 +39,7 @@ import {
   redirectResponse,
   requireGoogleConfig,
   userHashPayload,
-  boarderRedirectPath,
-  redirectPathForUser,
+  resolvePostAuthPath,
   oauthAction,
   oauthRole,
   authErrorRedirect,
@@ -114,6 +113,10 @@ export async function formatUserResponse(db: D1Database, user: UserAccountRow) {
     account_status: user.account_status,
     avatar_url: user.avatar_url,
     phone_number: user.phone_number,
+    // Settings decides Google vs password from these; the hash and Google ID
+    // never leave the server (spec `settings-signin-method`).
+    has_password: Boolean(user.password_hash),
+    google_connected: Boolean(user.google_id),
     verification_status:
       user.role === 'landlord' ? (user.is_verified ? 'approved' : 'pending') : null,
   };
@@ -433,7 +436,7 @@ export async function handleGoogleCallback(c: Context<{ Bindings: Env }>): Promi
 
       const { accessToken, refreshToken } = await authTokens(user, c.env.JWT_SECRET);
       const formattedUser = await formatUserResponse(db, user);
-      const redirectPath = safeRedirectPath(state?.redirect) ?? redirectPathForUser(formattedUser);
+      const redirectPath = resolvePostAuthPath(formattedUser, state?.redirect);
       const redirectUrl = new URL(redirectPath, `${origin}/`);
       // Carried so the frontend's global OAuth hash handler can send the user
       // back to the page they started from (e.g. /haven-ai) instead of the

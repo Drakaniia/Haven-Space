@@ -1,3 +1,4 @@
+import { paymentSummariesForApplications, type BoarderPaymentSnapshot } from './payments';
 import { accessiblePropertyClause } from './property-access';
 
 export interface LandlordBoarderRow {
@@ -15,8 +16,11 @@ export interface LandlordBoarderRow {
   move_in_date: string | null;
   application_message: string | null;
   leave_request_status: string | null;
+  leave_request_date: string | null;
   intended_leave_date: string | null;
   leave_request_reason: string | null;
+  approved_at: string | null;
+  approved_by_name: string | null;
 }
 
 export interface LandlordBoarderListItem {
@@ -35,11 +39,16 @@ export interface LandlordBoarderListItem {
   application_message: string | null;
   status: string;
   leave_request_status: string;
+  leave_request_date: string | null;
   intended_leave_date: string | null;
   leave_request_reason: string | null;
   payment_status: string;
   payment_due_day: number;
   last_payment_date: string | null;
+  /** Open charges on this application; a non-zero amount blocks leave approval. */
+  outstanding_amount: number;
+  approved_at: string | null;
+  approved_by_name: string | null;
 }
 
 export interface BoarderUserIdentityRow {
@@ -88,7 +97,15 @@ function boarderStatus(row: LandlordBoarderRow): string {
   return 'active';
 }
 
-export function formatLandlordBoarder(row: LandlordBoarderRow): LandlordBoarderListItem {
+/**
+ * `payment` comes from the real ledger (spec `payments-feature` F5). Without a
+ * snapshot — a tenancy that never generated charges — the row reports `none`
+ * rather than claiming the rent is paid.
+ */
+export function formatLandlordBoarder(
+  row: LandlordBoarderRow,
+  payment?: BoarderPaymentSnapshot
+): LandlordBoarderListItem {
   return {
     id: Number(row.id),
     application_id: Number(row.application_id),
@@ -105,11 +122,15 @@ export function formatLandlordBoarder(row: LandlordBoarderRow): LandlordBoarderL
     application_message: row.application_message ?? null,
     status: boarderStatus(row),
     leave_request_status: row.leave_request_status ?? 'none',
+    leave_request_date: row.leave_request_date ?? null,
     intended_leave_date: row.intended_leave_date ?? null,
     leave_request_reason: row.leave_request_reason ?? null,
-    payment_status: 'paid',
-    payment_due_day: 15,
-    last_payment_date: null,
+    payment_status: payment?.payment_status ?? 'none',
+    payment_due_day: payment?.payment_due_day ?? 0,
+    last_payment_date: payment?.last_payment_date ?? null,
+    outstanding_amount: payment?.outstanding_total ?? 0,
+    approved_at: row.approved_at ?? null,
+    approved_by_name: row.approved_by_name ?? null,
   };
 }
 
@@ -136,8 +157,11 @@ export async function listLandlordBoarders(
           app.created_at AS move_in_date,
           app.message AS application_message,
           app.leave_request_status,
+          app.leave_request_date,
           app.intended_leave_date,
-          app.leave_request_reason
+          app.leave_request_reason,
+          app.approved_at,
+          app.approved_by_name
         FROM applications app
         JOIN users u ON app.boarder_id = u.id
         JOIN rooms r ON app.room_id = r.id
@@ -152,7 +176,13 @@ export async function listLandlordBoarders(
     .bind(propertyId)
     .all<LandlordBoarderRow>();
 
-  return (result.results ?? []).map(formatLandlordBoarder);
+  const rows = result.results ?? [];
+  const summaries = await paymentSummariesForApplications(
+    db,
+    rows.map(row => Number(row.application_id))
+  );
+
+  return rows.map(row => formatLandlordBoarder(row, summaries.get(Number(row.application_id))));
 }
 
 function insertedId(result: D1Result, label: string): number {

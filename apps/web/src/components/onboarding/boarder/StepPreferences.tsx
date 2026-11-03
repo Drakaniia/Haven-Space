@@ -64,7 +64,7 @@ export function StepPreferences({
           onChange={e => set({ locations: e.target.value })}
         />
       </Field>
-      {error ? <p className="text-sm text-red-600">{error}</p> : null}
+      {error ? <p className="text-sm text-error-ink">{error}</p> : null}
       <div className="flex items-center justify-end gap-3">
         <Button type="button" variant="ghost" onClick={onSkip} disabled={saving}>
           Skip for now

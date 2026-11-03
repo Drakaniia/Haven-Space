@@ -5,12 +5,14 @@ import { Protected } from '../../components/auth/Protected';
 import { RoleShell } from '../../components/layout/RoleShell';
 import { Button } from '../../components/ui/Button';
 import { Card } from '../../components/ui/Card';
+import { ConfirmDialog } from '../../components/ui/ConfirmDialog';
 import { EmptyState } from '../../components/ui/EmptyState';
 import { ErrorState } from '../../components/ui/ErrorState';
 import { Field, SelectInput, TextArea, TextInput } from '../../components/ui/Field';
-import { Icon } from '../../components/ui/Icon';
+import { PageHeader } from '../../components/ui/PageHeader';
 import { Modal } from '../../components/ui/Modal';
 import { Spinner } from '../../components/ui/Spinner';
+import { StatusBadge } from '../../components/ui/StatusBadge';
 import { ToastStack, useToasts } from '../../components/ui/Toast';
 import { ApiRequestError } from '../../lib/api/http';
 import {
@@ -54,6 +56,7 @@ function AnnouncementsPage() {
   const [modalOpen, setModalOpen] = useState(false);
   const [form, setForm] = useState<AnnouncementForm>(EMPTY_FORM);
   const [error, setError] = useState<string | null>(null);
+  const [pendingDelete, setPendingDelete] = useState<LandlordAnnouncement | null>(null);
 
   const announcements = useQuery({
     queryKey: ['landlord-announcements'],
@@ -93,6 +96,7 @@ function AnnouncementsPage() {
     mutationFn: (id: number) => deleteAnnouncement(token!, id),
     onSuccess: () => {
       void queryClient.invalidateQueries({ queryKey: ['landlord-announcements'] });
+      setPendingDelete(null);
       push({ tone: 'success', message: 'Announcement deleted.' });
     },
     onError: err =>
@@ -126,7 +130,7 @@ function AnnouncementsPage() {
   const list = announcements.data?.data.announcements ?? [];
 
   return (
-    <RoleShell title="Announcements" nav={LANDLORD_NAV}>
+    <RoleShell nav={LANDLORD_NAV}>
       <ToastStack toasts={toasts} onDismiss={dismiss} />
       {error ? (
         <div className="mb-4">
@@ -134,16 +138,11 @@ function AnnouncementsPage() {
         </div>
       ) : null}
 
-      <div className="mb-5 flex flex-wrap items-center justify-between gap-4">
-        <div className="flex items-center gap-3">
-          <Icon name="announcement" size={28} />
-          <div>
-            <h2 className="text-2xl font-bold text-ink">Announcements</h2>
-            <p className="text-sm text-gray-ink">Reach your boarders with updates.</p>
-          </div>
-        </div>
-        <Button onClick={openCreate}>+ New announcement</Button>
-      </div>
+      <PageHeader
+        icon="announcement"
+        title="Announcements"
+        actions={<Button onClick={openCreate}>+ New announcement</Button>}
+      />
 
       {announcements.isLoading ? (
         <Spinner />
@@ -151,50 +150,46 @@ function AnnouncementsPage() {
         <ErrorState message={announcements.error.message} />
       ) : list.length === 0 ? (
         <EmptyState
+          icon="announcement"
           title="No announcements"
           description="Create an announcement to reach your boarders."
+          action={<Button onClick={openCreate}>+ New announcement</Button>}
         />
       ) : (
-        <div className="flex flex-col gap-3">
+        <div className="flex flex-col gap-4">
           {list.map(announcement => (
             <Card key={announcement.id}>
-              <div className="flex items-center justify-between gap-3">
-                <div>
-                  <div className="flex items-center gap-2">
-                    <h2 className="font-semibold">{announcement.title}</h2>
+              <div className="flex items-start justify-between gap-4">
+                <div className="min-w-0">
+                  <div className="flex flex-wrap items-center gap-2">
+                    <h2 className="font-semibold tracking-tight text-ink">{announcement.title}</h2>
                     {announcement.priority === 'high' ? (
-                      <span className="rounded-full bg-red-100 px-2 py-0.5 text-xs text-red-700">
-                        High priority
-                      </span>
+                      <StatusBadge status="high" label="High priority" />
                     ) : null}
                   </div>
-                  <p className="text-sm text-gray-ink">
+                  <p className="mt-1 text-sm text-gray-ink">
                     {announcement.category} · {announcement.priority} priority ·{' '}
                     {announcement.target_property}
                   </p>
-                  <p className="mt-1 text-sm">{announcement.description}</p>
-                  <p className="mt-1 text-xs text-gray-ink">
+                  <p className="mt-2 text-sm">{announcement.description}</p>
+                  <p className="mt-2 text-xs text-gray-ink">
                     {announcement.view_count} view(s) ·{' '}
                     {announcement.publish_date
                       ? new Date(announcement.publish_date).toLocaleDateString()
                       : ''}
                   </p>
                 </div>
-                <div className="flex shrink-0 gap-2">
-                  <button
-                    type="button"
-                    className="text-sm text-primary hover:underline"
-                    onClick={() => openEdit(announcement)}
-                  >
+                <div className="flex shrink-0 flex-wrap gap-1">
+                  <Button variant="ghost" size="sm" onClick={() => openEdit(announcement)}>
                     Edit
-                  </button>
-                  <button
-                    type="button"
-                    className="text-sm text-red-600 hover:underline"
-                    onClick={() => remove.mutate(announcement.id)}
+                  </Button>
+                  <Button
+                    variant="dangerGhost"
+                    size="sm"
+                    onClick={() => setPendingDelete(announcement)}
                   >
                     Delete
-                  </button>
+                  </Button>
                 </div>
               </div>
             </Card>
@@ -225,7 +220,7 @@ function AnnouncementsPage() {
               onChange={e => setForm(f => ({ ...f, description: e.target.value }))}
             />
           </Field>
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-2 gap-4">
             <Field label="Category" htmlFor="category">
               <SelectInput
                 id="category"
@@ -256,6 +251,23 @@ function AnnouncementsPage() {
           </Button>
         </form>
       </Modal>
+
+      {/* Deleting an announcement is irreversible, so it confirms (R22). */}
+      <ConfirmDialog
+        open={pendingDelete !== null}
+        title="Delete announcement"
+        message={
+          <>
+            Delete <strong>{pendingDelete?.title}</strong>? This cannot be undone.
+          </>
+        }
+        confirmLabel="Delete announcement"
+        busy={remove.isPending}
+        onConfirm={() => {
+          if (pendingDelete) remove.mutate(pendingDelete.id);
+        }}
+        onCancel={() => setPendingDelete(null)}
+      />
     </RoleShell>
   );
 }

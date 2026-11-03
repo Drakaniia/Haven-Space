@@ -26,7 +26,7 @@ function HomePage() {
       <LogoCloud />
 
       {/* What is Haven Space */}
-      <section className="bg-white">
+      <section className="bg-surface">
         <div className="mx-auto max-w-4xl px-4 py-16 text-center">
           <span className="text-xs font-bold uppercase tracking-widest text-primary">
             What is Haven Space

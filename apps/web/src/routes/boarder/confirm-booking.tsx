@@ -8,12 +8,13 @@ import { Card } from '../../components/ui/Card';
 import { EmptyState } from '../../components/ui/EmptyState';
 import { ErrorState } from '../../components/ui/ErrorState';
 import { Field, SelectInput } from '../../components/ui/Field';
+import { PageHeader } from '../../components/ui/PageHeader';
 import { Spinner } from '../../components/ui/Spinner';
 import { ApiRequestError } from '../../lib/api/http';
 import { confirmApplication, getAcceptedApplications } from '../../lib/api/boarder';
 import { useAuth } from '../../lib/auth-context';
-import { BOARDER_NAV } from '../../lib/nav';
 import { setPendingToast } from '../../lib/toast';
+import { BOARDER_STATUS_KEY, useBoarderNav } from '../../lib/use-boarder-nav';
 
 export const Route = createFileRoute('/boarder/confirm-booking')({
   component: () => (
@@ -25,6 +26,7 @@ export const Route = createFileRoute('/boarder/confirm-booking')({
 
 function ConfirmBookingPage() {
   const { token } = useAuth();
+  const nav = useBoarderNav();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const [paymentMethod, setPaymentMethod] = useState('gcash');
@@ -38,9 +40,13 @@ function ConfirmBookingPage() {
 
   const confirm = useMutation({
     mutationFn: (applicationId: number) => confirmApplication(token!, applicationId, paymentMethod),
-    onSuccess: () => {
+    onSuccess: async () => {
       void queryClient.invalidateQueries({ queryKey: ['accepted'] });
       void queryClient.invalidateQueries({ queryKey: ['tenancy'] });
+      // Await the live-status refresh before navigating: /boarder/tenancy is
+      // gated, and navigating on a stale 'accepted' value would flash the
+      // "Not available yet" screen at a freshly-confirmed boarder (spec R15).
+      await queryClient.invalidateQueries({ queryKey: [BOARDER_STATUS_KEY] });
       setPendingToast('success', 'Booking confirmed!');
       void navigate({ to: '/boarder/tenancy' });
     },
@@ -51,7 +57,8 @@ function ConfirmBookingPage() {
   const acceptedList = accepted.data?.data ?? [];
 
   return (
-    <RoleShell title="Confirm your booking" nav={BOARDER_NAV}>
+    <RoleShell nav={nav}>
+      <PageHeader title="Confirm your booking" />
       {error ? (
         <div className="mb-4">
           <ErrorState message={error} />

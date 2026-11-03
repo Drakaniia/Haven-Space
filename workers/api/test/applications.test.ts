@@ -684,6 +684,9 @@ describe('application read routes', () => {
           { first: boarderUser },
           { first: acceptedApplication },
           { run: { success: true, meta: { last_row_id: 0, changes: 1 }, results: [] } },
+          // Schedule generation reads the tenancy; `null` means no schedule is
+          // created here (the payments suite covers generation proper).
+          { first: null },
           { run: { success: true, meta: { last_row_id: 0, changes: 1 }, results: [] } },
           { run: { success: true, meta: { last_row_id: 0, changes: 1 }, results: [] } },
           { run: { success: true, meta: { last_row_id: 0, changes: 2 }, results: [] } },
@@ -703,6 +706,7 @@ describe('application read routes', () => {
       [7],
       [20],
       ['cash', 20],
+      [20],
       [100],
       ['accepted', 7],
       ['cancelled', 7, 20, 'pending', 'accepted'],

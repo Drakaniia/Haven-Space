@@ -11,13 +11,13 @@ export interface WizardLayoutProps {
 
 export function WizardLayout({ currentStep, totalSteps, title, children }: WizardLayoutProps) {
   return (
-    <div className="flex flex-col w-full max-w-3xl mx-auto min-h-[400px] p-6 sm:p-8 bg-white rounded-2xl shadow-sm border border-gray-100">
+    <div className="flex flex-col w-full max-w-3xl mx-auto min-h-[400px] p-6 sm:p-8 bg-surface rounded-2xl shadow-sm border border-border">
       <div className="mb-8 w-full">
         <Stepper currentStep={currentStep} totalSteps={totalSteps} />
       </div>
 
       <div className="mb-8">
-        <h1 className="text-3xl font-bold text-gray-900 tracking-tight">{title}</h1>
+        <h1 className="text-3xl font-bold text-ink tracking-tight">{title}</h1>
       </div>
 
       <div className="relative flex-1 flex flex-col overflow-hidden">

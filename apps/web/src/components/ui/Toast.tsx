@@ -102,7 +102,7 @@ export function Toast({
   const styles = TONE_STYLES[tone];
 
   return (
-    <div className="toast-in pointer-events-auto relative flex w-full items-center gap-3 overflow-hidden rounded-xl border border-gray-200 bg-white py-3 pl-4 pr-2.5 shadow-pop">
+    <div className="toast-in pointer-events-auto relative flex w-full items-center gap-3 overflow-hidden rounded-xl border border-border bg-surface py-3 pl-4 pr-2.5 shadow-pop">
       {/* Colored left accent bar */}
       <span aria-hidden="true" className={`absolute inset-y-0 left-0 w-1 ${styles.bar}`} />
       <span className={`shrink-0 ${styles.icon}`}>
@@ -122,7 +122,7 @@ export function Toast({
         type="button"
         aria-label="Dismiss notification"
         onClick={onDismiss}
-        className="shrink-0 rounded-full p-1 text-muted transition hover:bg-gray-100 hover:text-ink"
+        className="shrink-0 rounded-full p-1 text-muted transition hover:bg-subtle hover:text-ink"
       >
         <svg
           viewBox="0 0 24 24"

@@ -12,7 +12,7 @@ import {
   authErrorSearch,
   googleAuthorizeUrl,
   handleOAuthHash,
-  redirectPathForUser,
+  resolvePostAuthPath,
 } from '../../lib/oauth';
 
 export const Route = createFileRoute('/auth/login')({
@@ -29,11 +29,12 @@ function LoginPage() {
   const [googleAccount, setGoogleAccount] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
+  const [googleLoading, setGoogleLoading] = useState(false);
 
   // Handle the Google OAuth `#auth=` callback hash if present.
   useEffect(() => {
     const user = handleOAuthHash();
-    if (user) void navigate({ to: redirect ?? redirectPathForUser(user) });
+    if (user) void navigate({ to: resolvePostAuthPath(user, redirect) });
   }, [navigate, redirect]);
 
   async function handleEmailBlur() {
@@ -53,7 +54,7 @@ function LoginPage() {
     try {
       const user = await login(email.trim(), password);
       setPendingToast('success', `Welcome back, ${user.first_name}!`);
-      void navigate({ to: redirect ?? redirectPathForUser(user) });
+      void navigate({ to: resolvePostAuthPath(user, redirect) });
     } catch (err) {
       setError(
         err instanceof ApiRequestError ? err.message : 'An error occurred. Please try again.'
@@ -80,8 +81,16 @@ function LoginPage() {
       {error ? <ErrorState message={error} /> : null}
 
       <GoogleButton
+        loading={googleLoading}
         onClick={() => {
-          window.location.href = googleAuthorizeUrl('login', 'boarder', redirect);
+          setGoogleLoading(true);
+          setError(null);
+          try {
+            window.location.href = googleAuthorizeUrl('login', 'boarder', redirect);
+            window.setTimeout(() => setGoogleLoading(false), 4000);
+          } catch {
+            setGoogleLoading(false);
+          }
         }}
       />
       <AuthDivider />

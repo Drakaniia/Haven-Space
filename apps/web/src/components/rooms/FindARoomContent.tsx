@@ -11,6 +11,7 @@ import type {
 import { EmptyState } from '../ui/EmptyState';
 import { ErrorState } from '../ui/ErrorState';
 import { Spinner } from '../ui/Spinner';
+import { MapModal } from './MapModal';
 
 const DEFAULT_FILTERS: PublicListingsFilters = { sort_by: 'newest', limit: 20, offset: 0 };
 
@@ -42,33 +43,35 @@ const AMENITY_OPTIONS = [
   'Security',
 ];
 
+// Values must match the filenames in apps/web/public/assets/svg exactly — the
+// dev server and Cloudflare Pages are case-sensitive, so a wrong name 404s the icon.
 const AMENITY_ICONS: Record<string, string> = {
-  wifi: 'wifi',
+  wifi: 'wfifi',
   'Air conditioning': 'aircon',
   ac: 'aircon',
   furnished: 'furnished',
   parking: 'parking',
-  laundry: 'laundry',
-  kitchen: 'kitchen',
+  laundry: 'Laundry',
+  kitchen: 'Kitchen',
   cctv: 'cctv',
   security: 'shieldCheck',
 };
 
-function amenityIcon(amenity: string): string {
+export function amenityIcon(amenity: string): string {
   const key = amenity.toLowerCase();
   return AMENITY_ICONS[key] ?? AMENITY_ICONS[amenity] ?? 'checkSimple';
 }
 
 function Badge({ type }: { type: string }) {
   const styles: Record<string, string> = {
-    verified: 'bg-primary text-white',
+    verified: 'bg-primary-strong text-white',
     new: 'bg-green-400 text-white',
     promo: 'bg-pink-600 text-white',
   };
   return (
     <span
       className={`inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-[0.7rem] font-bold uppercase tracking-wide ${
-        styles[type] ?? 'bg-gray-700 text-white'
+        styles[type] ?? 'bg-gray-ink text-white'
       }`}
     >
       {type === 'verified' ? (
@@ -96,7 +99,7 @@ function PropertyCard({
 
   return (
     <li
-      className={`group overflow-hidden rounded-2xl bg-white shadow-card transition-all duration-300 hover:-translate-y-1 hover:shadow-pop ${
+      className={`group overflow-hidden rounded-2xl bg-surface shadow-card transition-all duration-300 hover:-translate-y-1 hover:shadow-pop ${
         listView ? 'grid sm:grid-cols-[320px_1fr]' : ''
       }`}
     >
@@ -116,7 +119,7 @@ function PropertyCard({
           type="button"
           aria-label={favorite ? 'Remove from saved' : 'Save this property'}
           onClick={() => setFavorite(f => !f)}
-          className="absolute right-4 top-4 flex h-10 w-10 items-center justify-center rounded-full bg-white/95 shadow-card transition-transform hover:scale-110"
+          className="absolute right-4 top-4 flex h-10 w-10 items-center justify-center rounded-full bg-surface/95 shadow-card transition-transform hover:scale-110"
         >
           <img
             src="/assets/svg/bookmark.svg"
@@ -191,7 +194,7 @@ function PropertyCard({
             {available ? 'Available Now' : 'No Availability'}
           </span>
         </div>
-        <div className="mt-4 flex items-center justify-between border-t border-gray-200 pt-4">
+        <div className="mt-4 flex items-center justify-between border-t border-border pt-4">
           <p className="flex items-baseline gap-1">
             <span className="text-xl font-bold text-primary">
               ₱{property.price.toLocaleString()}
@@ -201,7 +204,7 @@ function PropertyCard({
           <Link
             to={detailTo}
             params={{ id: String(property.id) }}
-            className="inline-flex items-center gap-2 rounded-lg bg-primary px-4 py-2 text-sm font-semibold text-white transition-all hover:bg-primary-dark"
+            className="inline-flex items-center gap-2 rounded-lg bg-primary-strong px-4 py-2 text-sm font-semibold text-white transition-all hover:bg-primary-hover"
           >
             View Details
             <img
@@ -233,6 +236,9 @@ export function FindARoomContent({
   const [amenitiesOpen, setAmenitiesOpen] = useState(false);
   const [view, setView] = useState<'grid' | 'list'>('grid');
   const [searchInput, setSearchInput] = useState('');
+  // The map opens in place so a visitor never loses their filters or scroll position
+  // (spec `find-a-room-map-modal` D1/D6).
+  const [mapOpen, setMapOpen] = useState(false);
 
   const query = useQuery({
     queryKey: ['rooms', filters],
@@ -319,7 +325,7 @@ export function FindARoomContent({
 
           {/* Search box */}
           <form
-            className="mt-8 flex items-center gap-2 rounded-2xl bg-white p-2 shadow-pop"
+            className="mt-8 flex items-center gap-2 rounded-2xl bg-surface p-2 shadow-pop"
             onSubmit={e => {
               e.preventDefault();
               runSearch();
@@ -341,7 +347,7 @@ export function FindARoomContent({
             />
             <button
               type="submit"
-              className="inline-flex items-center gap-2 rounded-xl bg-primary px-5 py-2.5 text-sm font-semibold text-white transition-all hover:bg-primary-dark"
+              className="inline-flex items-center gap-2 rounded-xl bg-primary-strong px-5 py-2.5 text-sm font-semibold text-white transition-all hover:bg-primary-hover"
             >
               Search
               <img
@@ -352,14 +358,15 @@ export function FindARoomContent({
                 className="shrink-0"
               />
             </button>
-            <Link
-              to="/maps"
+            <button
+              type="button"
+              onClick={() => setMapOpen(true)}
               className="inline-flex items-center gap-2 rounded-xl border border-primary px-4 py-2.5 text-sm font-semibold text-primary transition-all hover:bg-mint"
               title="View Map"
             >
               <img src="/assets/svg/maps.svg" alt="" width={20} height={20} className="shrink-0" />
               Map
-            </Link>
+            </button>
           </form>
 
           {/* Location chips */}
@@ -398,7 +405,7 @@ export function FindARoomContent({
       </section>
 
       {/* ================= FILTER BAR ================= */}
-      <div className="sticky top-0 z-40 border-b border-gray-200 bg-white shadow-sm">
+      <div className="sticky top-0 z-40 border-b border-border bg-surface shadow-sm">
         <div className="mx-auto flex max-w-7xl flex-wrap items-end gap-6 px-4 py-4">
           {/* Price range */}
           <div className="flex min-w-[9rem] flex-col gap-2">
@@ -415,7 +422,7 @@ export function FindARoomContent({
             <select
               value={priceRange}
               onChange={e => applyPriceRange(e.target.value)}
-              className="cursor-pointer rounded-lg border border-gray-200 px-3 py-2 text-sm text-ink outline-none transition-colors hover:border-primary focus:border-primary focus:ring-2 focus:ring-primary/10"
+              className="cursor-pointer rounded-lg border border-border px-3 py-2 text-sm text-ink outline-none transition-colors hover:border-primary focus:border-primary focus:ring-2 focus:ring-primary/10"
             >
               {PRICE_OPTIONS.map(option => (
                 <option key={option.value} value={option.value}>
@@ -434,7 +441,7 @@ export function FindARoomContent({
             <select
               value={roomType}
               onChange={e => setRoomType(e.target.value)}
-              className="cursor-pointer rounded-lg border border-gray-200 px-3 py-2 text-sm text-ink outline-none transition-colors hover:border-primary focus:border-primary focus:ring-2 focus:ring-primary/10"
+              className="cursor-pointer rounded-lg border border-border px-3 py-2 text-sm text-ink outline-none transition-colors hover:border-primary focus:border-primary focus:ring-2 focus:ring-primary/10"
             >
               {TYPE_OPTIONS.map(option => (
                 <option key={option.value} value={option.value}>
@@ -460,7 +467,7 @@ export function FindARoomContent({
               <button
                 type="button"
                 onClick={() => setAmenitiesOpen(o => !o)}
-                className="flex w-full items-center justify-between gap-2 rounded-lg border border-gray-200 px-3 py-2 text-sm text-ink transition-colors hover:border-primary"
+                className="flex w-full items-center justify-between gap-2 rounded-lg border border-border px-3 py-2 text-sm text-ink transition-colors hover:border-primary"
               >
                 {selectedAmenities.length > 0
                   ? `${selectedAmenities.length} selected`
@@ -474,7 +481,7 @@ export function FindARoomContent({
                 />
               </button>
               {amenitiesOpen ? (
-                <div className="absolute left-0 top-full z-50 mt-2 flex min-w-[14rem] flex-col gap-1 rounded-xl border border-gray-200 bg-white p-3 shadow-pop">
+                <div className="absolute left-0 top-full z-50 mt-2 flex min-w-[14rem] flex-col gap-1 rounded-xl border border-border bg-surface p-3 shadow-pop">
                   {AMENITY_OPTIONS.map(amenity => (
                     <label
                       key={amenity}
@@ -484,7 +491,7 @@ export function FindARoomContent({
                         type="checkbox"
                         checked={selectedAmenities.includes(amenity)}
                         onChange={() => toggleAmenity(amenity)}
-                        className="h-4 w-4 accent-[#4a7c23]"
+                        className="h-4 w-4 accent-[var(--color-primary)]"
                       />
                       {amenity}
                     </label>
@@ -507,7 +514,7 @@ export function FindARoomContent({
               Distance
             </label>
             <select
-              className="cursor-pointer rounded-lg border border-gray-200 px-3 py-2 text-sm text-ink outline-none transition-colors hover:border-primary focus:border-primary focus:ring-2 focus:ring-primary/10"
+              className="cursor-pointer rounded-lg border border-border px-3 py-2 text-sm text-ink outline-none transition-colors hover:border-primary focus:border-primary focus:ring-2 focus:ring-primary/10"
               defaultValue="any"
             >
               <option value="any">Any Distance</option>
@@ -522,7 +529,7 @@ export function FindARoomContent({
           <button
             type="button"
             onClick={resetFilters}
-            className="ml-auto inline-flex items-center gap-2 rounded-lg border border-gray-200 px-4 py-2 text-sm font-medium text-gray-ink transition-colors hover:border-gray-400 hover:text-ink"
+            className="ml-auto inline-flex items-center gap-2 rounded-lg border border-border px-4 py-2 text-sm font-medium text-gray-ink transition-colors hover:border-border-strong hover:text-ink"
           >
             <img src="/assets/svg/history.svg" alt="" width={16} height={16} className="shrink-0" />
             Reset
@@ -531,14 +538,14 @@ export function FindARoomContent({
 
         {/* Active filter tags */}
         {selectedAmenities.length > 0 || priceRange !== 'any' || roomType !== 'any' ? (
-          <div className="mx-auto flex max-w-7xl flex-wrap items-center gap-2 border-t border-gray-200 px-4 py-3">
+          <div className="mx-auto flex max-w-7xl flex-wrap items-center gap-2 border-t border-border px-4 py-3">
             {priceRange !== 'any' ? (
               <span className="inline-flex items-center gap-1.5 rounded-full bg-mint px-3 py-1 text-xs font-medium text-primary-dark">
                 {PRICE_OPTIONS.find(o => o.value === priceRange)?.label}
                 <button
                   type="button"
                   onClick={() => applyPriceRange('any')}
-                  className="flex h-4 w-4 items-center justify-center rounded-full bg-primary/20 text-[0.6rem] hover:bg-primary hover:text-white"
+                  className="flex h-4 w-4 items-center justify-center rounded-full bg-primary-strong/20 text-[0.6rem] hover:bg-primary-strong hover:text-white"
                   aria-label="Remove price filter"
                 >
                   ✕
@@ -551,7 +558,7 @@ export function FindARoomContent({
                 <button
                   type="button"
                   onClick={() => setRoomType('any')}
-                  className="flex h-4 w-4 items-center justify-center rounded-full bg-primary/20 text-[0.6rem] hover:bg-primary hover:text-white"
+                  className="flex h-4 w-4 items-center justify-center rounded-full bg-primary-strong/20 text-[0.6rem] hover:bg-primary-strong hover:text-white"
                   aria-label="Remove type filter"
                 >
                   ✕
@@ -567,7 +574,7 @@ export function FindARoomContent({
                 <button
                   type="button"
                   onClick={() => toggleAmenity(amenity)}
-                  className="flex h-4 w-4 items-center justify-center rounded-full bg-primary/20 text-[0.6rem] hover:bg-primary hover:text-white"
+                  className="flex h-4 w-4 items-center justify-center rounded-full bg-primary-strong/20 text-[0.6rem] hover:bg-primary-strong hover:text-white"
                   aria-label={`Remove ${amenity} filter`}
                 >
                   ✕
@@ -595,8 +602,8 @@ export function FindARoomContent({
                 onClick={() => setView('grid')}
                 className={`flex h-10 w-10 items-center justify-center rounded-lg border transition-colors ${
                   view === 'grid'
-                    ? 'border-primary bg-primary text-white'
-                    : 'border-gray-200 bg-white hover:border-primary'
+                    ? 'border-primary bg-primary-strong text-white'
+                    : 'border-border bg-surface hover:border-primary'
                 }`}
               >
                 <img
@@ -613,8 +620,8 @@ export function FindARoomContent({
                 onClick={() => setView('list')}
                 className={`flex h-10 w-10 items-center justify-center rounded-lg border transition-colors ${
                   view === 'list'
-                    ? 'border-primary bg-primary text-white'
-                    : 'border-gray-200 bg-white hover:border-primary'
+                    ? 'border-primary bg-primary-strong text-white'
+                    : 'border-border bg-surface hover:border-primary'
                 }`}
               >
                 <img
@@ -631,7 +638,7 @@ export function FindARoomContent({
               <select
                 value={filters.sort_by ?? 'newest'}
                 onChange={e => setFilters(f => ({ ...f, sort_by: e.target.value }))}
-                className="cursor-pointer rounded-lg border border-gray-200 px-3 py-2 text-sm text-ink outline-none transition-colors hover:border-primary focus:border-primary focus:ring-2 focus:ring-primary/10"
+                className="cursor-pointer rounded-lg border border-border px-3 py-2 text-sm text-ink outline-none transition-colors hover:border-primary focus:border-primary focus:ring-2 focus:ring-primary/10"
               >
                 <option value="recommended">Recommended</option>
                 <option value="price-low">Price: Low to High</option>
@@ -663,7 +670,7 @@ export function FindARoomContent({
             <button
               type="button"
               onClick={resetFilters}
-              className="mt-6 rounded-full bg-primary px-6 py-3 text-sm font-semibold text-white transition-colors hover:bg-primary-dark"
+              className="mt-6 rounded-full bg-primary-strong px-6 py-3 text-sm font-semibold text-white transition-colors hover:bg-primary-hover"
             >
               Clear All Filters
             </button>
@@ -689,7 +696,7 @@ export function FindARoomContent({
                 <button
                   type="button"
                   onClick={loadMore}
-                  className="inline-flex items-center gap-3 rounded-xl border-2 border-primary bg-white px-8 py-4 text-base font-semibold text-primary transition-all hover:-translate-y-0.5 hover:bg-primary hover:text-white hover:shadow-lg"
+                  className="inline-flex items-center gap-3 rounded-xl border-2 border-primary bg-surface px-8 py-4 text-base font-semibold text-primary transition-all hover:-translate-y-0.5 hover:bg-primary-strong hover:text-white hover:shadow-lg"
                 >
                   <img
                     src="/assets/svg/history.svg"
@@ -705,6 +712,7 @@ export function FindARoomContent({
           </>
         )}
       </div>
+      <MapModal open={mapOpen} onClose={() => setMapOpen(false)} />
     </div>
   );
 }

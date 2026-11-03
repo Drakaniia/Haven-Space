@@ -1,5 +1,6 @@
 import { setStoredAuth } from './auth-store';
 import { getApiBaseUrl } from './config';
+import { BROWSE_LISTINGS_PATH } from './routes';
 import type { AuthUser } from './types';
 
 /**
@@ -80,8 +81,34 @@ function boarderRedirectPath(user: AuthUser): string {
     case 'new':
     case 'browsing':
     default:
-      return '/boarder/find-a-room';
+      return BROWSE_LISTINGS_PATH;
   }
+}
+
+/**
+ * Final destination after authenticating. An explicit (sanitized) `redirect`
+ * wins, but only when it is reachable for the user's role: a landlord or admin
+ * who authenticates from a link into another role's area (e.g. a boarder's
+ * apply form reached from a public listing) would otherwise be dropped onto a
+ * route their own `Protected` guard immediately bounces them out of.
+ */
+export function resolvePostAuthPath(user: AuthUser, redirect?: string | null): string {
+  const fallback = redirectPathForUser(user);
+  const safe = sanitizeRedirect(redirect);
+  if (!safe || isForeignRolePath(user.role, safe)) return fallback;
+
+  return safe;
+}
+
+/**
+ * True when `path` is inside another role's area (e.g. a landlord holding a
+ * `/boarder/...` return path). Public paths are never foreign.
+ */
+export function isForeignRolePath(role: AuthUser['role'], path: string): boolean {
+  if (path.startsWith('/boarder')) return role !== 'boarder';
+  if (path.startsWith('/landlord')) return role !== 'landlord';
+  if (path.startsWith('/admin')) return role !== 'admin';
+  return false;
 }
 
 /**

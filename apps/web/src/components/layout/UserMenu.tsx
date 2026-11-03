@@ -1,16 +1,12 @@
 import { Link, useNavigate } from '@tanstack/react-router';
 import { useEffect, useRef, useState } from 'react';
 import { useAuth } from '../../lib/auth-context';
+import { accountHomeEntry } from '../../lib/nav';
 import type { AuthUser } from '../../lib/types';
 import { setPendingToast } from '../../lib/toast';
+import { useBoarderStatus } from '../../lib/use-boarder-nav';
 import { Avatar } from '../ui/Avatar';
 import { Icon } from '../ui/Icon';
-
-function roleHome(role: AuthUser['role']): string {
-  if (role === 'admin') return '/admin';
-  if (role === 'landlord') return '/landlord';
-  return '/boarder';
-}
 
 function roleSettings(role: AuthUser['role']): string | null {
   if (role === 'admin') return null; // admin has no settings page
@@ -22,6 +18,11 @@ export function UserMenu() {
   const navigate = useNavigate();
   const [open, setOpen] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
+  // Only boarders have a status-dependent home; skip the extra `/auth/me` call
+  // for the other roles. Shares the shell's query key, so it usually costs
+  // nothing extra on boarder pages.
+  const isBoarder = user?.role === 'boarder';
+  const boarderStatus = useBoarderStatus({ enabled: isBoarder });
 
   useEffect(() => {
     if (!open) return;
@@ -49,6 +50,7 @@ export function UserMenu() {
   if (!user) return null;
 
   const settingsPath = roleSettings(user.role);
+  const home = accountHomeEntry(user.role, isBoarder ? boarderStatus : undefined);
   const fullName = [user.first_name, user.last_name].filter(Boolean).join(' ');
 
   return (
@@ -60,7 +62,7 @@ export function UserMenu() {
         aria-label={`Account menu for ${fullName}`}
         onClick={() => setOpen(value => !value)}
         className={`flex items-center gap-2 rounded-full border py-1 pl-1 pr-2 transition-colors ${
-          open ? 'border-primary bg-mint' : 'border-gray-200 hover:bg-mint/60'
+          open ? 'border-primary bg-mint' : 'border-border hover:bg-mint/60'
         }`}
       >
         <Avatar user={user} size={30} />
@@ -75,9 +77,9 @@ export function UserMenu() {
       {open ? (
         <div
           role="menu"
-          className="menu-pop absolute right-0 z-40 mt-2 w-56 origin-top-right rounded-xl border border-gray-200 bg-white py-1.5 shadow-pop"
+          className="menu-pop absolute right-0 z-40 mt-2 w-56 origin-top-right rounded-xl border border-border bg-surface py-1.5 shadow-pop"
         >
-          <div className="border-b border-gray-100 px-4 py-3">
+          <div className="border-b border-border px-4 py-3">
             <div className="flex items-center gap-3">
               <Avatar user={user} size={40} />
               <div className="min-w-0">
@@ -90,20 +92,20 @@ export function UserMenu() {
 
           <div className="py-1">
             <Link
-              to={roleHome(user.role)}
+              to={home.to}
               role="menuitem"
               onClick={() => setOpen(false)}
-              className="flex items-center gap-2.5 px-4 py-2 text-sm text-gray-700 hover:bg-mint/60 hover:text-primary"
+              className="flex items-center gap-2.5 px-4 py-2 text-sm text-gray-ink hover:bg-mint/60 hover:text-primary"
             >
               <Icon name="home" size={16} className="shrink-0" />
-              Dashboard
+              {home.label}
             </Link>
             {settingsPath ? (
               <Link
                 to={settingsPath}
                 role="menuitem"
                 onClick={() => setOpen(false)}
-                className="flex items-center gap-2.5 px-4 py-2 text-sm text-gray-700 hover:bg-mint/60 hover:text-primary"
+                className="flex items-center gap-2.5 px-4 py-2 text-sm text-gray-ink hover:bg-mint/60 hover:text-primary"
               >
                 <Icon name="settings" size={16} className="shrink-0" />
                 Profile &amp; settings
@@ -111,7 +113,7 @@ export function UserMenu() {
             ) : null}
           </div>
 
-          <div className="border-t border-gray-100 py-1">
+          <div className="border-t border-border py-1">
             <button
               type="button"
               role="menuitem"

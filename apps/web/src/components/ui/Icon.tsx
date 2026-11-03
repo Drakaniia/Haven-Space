@@ -2,6 +2,8 @@ const ICON_FILES: Record<string, string> = {
   home: 'dashboard.svg',
   chat: 'messages.svg',
   announcement: 'announcement.svg',
+  notification: 'notification.svg',
+  shield: 'shield.svg',
   payment: 'payment.svg',
   search: 'search.svg',
   settings: 'settings.svg',

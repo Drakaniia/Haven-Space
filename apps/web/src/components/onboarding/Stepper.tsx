@@ -15,7 +15,7 @@ export function Stepper({ currentStep, totalSteps }: StepperProps) {
         return (
           <div
             key={index}
-            className="h-2 flex-1 rounded-full bg-gray-100 overflow-hidden relative"
+            className="h-2 flex-1 rounded-full bg-subtle overflow-hidden relative"
             role="progressbar"
             aria-valuenow={isActive ? 100 : isCompleted ? 100 : 0}
             aria-valuemin={0}

@@ -193,7 +193,9 @@ describe('room routes', () => {
             address: '123 Mabini St',
             city: 'Manila',
             province: 'Metro Manila',
-            price: 4500,
+            // Spec D10: the headline price is the cheapest room (4200), not the
+            // property's own price field (4500).
+            price: 4200,
             latitude: 14.5995,
             longitude: 120.9842,
             rating: 4.5,
@@ -215,6 +217,8 @@ describe('room routes', () => {
                 room_name: 'Single',
                 type: 'Single',
                 capacity: 1,
+                occupied: 0,
+                free_slots: 1,
                 status: 'available',
                 availability: 'Available',
                 description: 'Window room',
@@ -228,6 +232,8 @@ describe('room routes', () => {
                 room_name: 'Shared',
                 type: 'Shared',
                 capacity: 2,
+                occupied: 0,
+                free_slots: 2,
                 status: 'occupied',
                 availability: 'Occupied',
                 description: 'Shared room',
@@ -265,8 +271,70 @@ describe('room routes', () => {
     expect(response.status).toBe(200);
     expect(body.data.limit).toBe(50);
     expect(body.data.offset).toBe(3);
-    expect(capturedBinds[0]).toEqual(['%cebu%', '%cebu%', '%cebu%', 1000, 5000]);
-    expect(capturedBinds[1]).toEqual(['%cebu%', '%cebu%', '%cebu%', 1000, 5000, 50, 3]);
+    expect(capturedBinds[0]).toEqual([
+      '%cebu%',
+      '%cebu%',
+      '%cebu%',
+      '%cebu%',
+      '%cebu%',
+      1000,
+      5000,
+    ]);
+    expect(capturedBinds[1]).toEqual([
+      '%cebu%',
+      '%cebu%',
+      '%cebu%',
+      '%cebu%',
+      '%cebu%',
+      1000,
+      5000,
+      50,
+      3,
+    ]);
+  });
+
+  it('matches popular-location search values against city and province', async () => {
+    // Regression: the popular-location chips send "City, Province" (e.g. "Sampaloc, Manila"),
+    // which previously matched no row because the search only looked at title/address/description.
+    const capturedBinds: unknown[][] = [];
+    const response = await app.request(
+      'http://localhost/api/rooms/public?search=Sampaloc%2C%20Manila',
+      {},
+      createSequenceEnv(
+        [{ first: { total_count: 0 } }, { all: [] }, { all: [] }, { all: [] }, { all: [] }],
+        capturedBinds
+      )
+    );
+
+    expect(response.status).toBe(200);
+    expect(capturedBinds[0]).toEqual([
+      '%Sampaloc%',
+      '%Sampaloc%',
+      '%Sampaloc%',
+      '%Sampaloc%',
+      '%Sampaloc%',
+      '%Manila%',
+      '%Manila%',
+      '%Manila%',
+      '%Manila%',
+      '%Manila%',
+    ]);
+  });
+
+  it('ignores comma-only search values', async () => {
+    const capturedBinds: unknown[][] = [];
+    const response = await app.request(
+      'http://localhost/api/rooms/public?search=,,',
+      {},
+      createSequenceEnv(
+        [{ first: { total_count: 0 } }, { all: [] }, { all: [] }, { all: [] }, { all: [] }],
+        capturedBinds
+      )
+    );
+
+    expect(response.status).toBe(200);
+    // No terms → no search clause, so nothing is bound for the where clause.
+    expect(capturedBinds[0]).toEqual([]);
   });
 
   it('returns room detail with the PHP response envelope', async () => {
@@ -337,7 +405,8 @@ describe('room routes', () => {
         address: '123 Mabini St',
         city: 'Manila',
         province: 'Metro Manila',
-        price: 4500,
+        // Same headline rule as the browse list (spec D10).
+        price: 5000,
         latitude: 14.5995,
         longitude: 120.9842,
         propertyType: 'boarding-house',
@@ -368,6 +437,8 @@ describe('room routes', () => {
             deposit: 1000,
             status: 'available',
             capacity: 1,
+            occupied: 0,
+            freeSlots: 1,
             description: 'Bright private room',
             size: 12,
             images: ['/uploads/room-a1.jpg'],

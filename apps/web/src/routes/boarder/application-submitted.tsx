@@ -3,12 +3,17 @@ import { Protected } from '../../components/auth/Protected';
 import { RoleShell } from '../../components/layout/RoleShell';
 import { Card } from '../../components/ui/Card';
 import { Icon } from '../../components/ui/Icon';
-import { BOARDER_NAV } from '../../lib/nav';
+import { useBoarderNav } from '../../lib/use-boarder-nav';
 
 export const Route = createFileRoute('/boarder/application-submitted')({
-  component: () => (
+  component: ApplicationSubmittedPage,
+});
+
+function ApplicationSubmittedPage() {
+  const nav = useBoarderNav();
+  return (
     <Protected role="boarder">
-      <RoleShell title="Application submitted" nav={BOARDER_NAV}>
+      <RoleShell nav={nav}>
         <Card className="mx-auto max-w-lg py-10 text-center">
           <span className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-mint">
             <Icon name="shieldCheck" size={28} />
@@ -19,12 +24,12 @@ export const Route = createFileRoute('/boarder/application-submitted')({
           </p>
           <Link
             to="/boarder/applications"
-            className="mt-5 inline-block rounded-full bg-primary px-6 py-2.5 text-sm font-semibold text-white hover:bg-primary-dark"
+            className="mt-5 inline-block rounded-full bg-primary-strong px-6 py-2.5 text-sm font-semibold text-white hover:bg-primary-hover"
           >
             View your applications
           </Link>
         </Card>
       </RoleShell>
     </Protected>
-  ),
-});
+  );
+}

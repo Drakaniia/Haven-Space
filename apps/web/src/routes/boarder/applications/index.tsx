@@ -10,6 +10,7 @@ import { ToastStack, useToasts } from '../../../components/ui/Toast';
 import { ApiRequestError } from '../../../lib/api/http';
 import { deleteApplication, getApplications } from '../../../lib/api/boarder';
 import { useAuth } from '../../../lib/auth-context';
+import { BOARDER_STATUS_KEY } from '../../../lib/use-boarder-nav';
 import type { ApplicationSummary } from '../../../lib/types';
 
 export const Route = createFileRoute('/boarder/applications/')({
@@ -35,6 +36,8 @@ function ApplicationsPage() {
     mutationFn: (id: number) => deleteApplication(token!, id),
     onSuccess: () => {
       void queryClient.invalidateQueries({ queryKey: ['applications'] });
+      // Withdrawing can change boarder_status — keep the nav/gates fresh (R13).
+      void queryClient.invalidateQueries({ queryKey: [BOARDER_STATUS_KEY] });
       push({ tone: 'success', message: 'Application withdrawn.' });
     },
     onError: (err: Error) =>
@@ -50,8 +53,7 @@ function ApplicationsPage() {
       <div className="mb-6 flex items-center gap-3">
         <Icon name="application" size={28} />
         <div>
-          <h2 className="text-2xl font-bold text-ink">My applications</h2>
-          <p className="text-sm text-gray-ink">Track the rooms you&apos;ve applied to.</p>
+          <h1 className="text-2xl font-bold tracking-tight text-ink">My applications</h1>
         </div>
       </div>
       {applications.isLoading ? (
@@ -98,7 +100,7 @@ function ApplicationsPage() {
                 row.status === 'accepted' || row.status === 'pending' ? (
                   <button
                     type="button"
-                    className="text-sm text-red-600 hover:underline disabled:opacity-50"
+                    className="text-sm text-error-ink hover:underline disabled:opacity-50"
                     disabled={withdraw.isPending}
                     onClick={() => withdraw.mutate(row.id)}
                   >

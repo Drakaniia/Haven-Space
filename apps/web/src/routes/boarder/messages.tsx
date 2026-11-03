@@ -1,26 +1,28 @@
-import { createFileRoute } from '@tanstack/react-router';
+import { createFileRoute, Outlet } from '@tanstack/react-router';
 import { Protected } from '../../components/auth/Protected';
 import { RoleShell } from '../../components/layout/RoleShell';
-import { EmptyState } from '../../components/ui/EmptyState';
-import { Icon } from '../../components/ui/Icon';
-import { BOARDER_NAV } from '../../lib/nav';
+import { useBoarderNav } from '../../lib/use-boarder-nav';
 
+/**
+ * Layout for the `/boarder/messages` subtree (spec `messages-feature-review`
+ * D12/D14).
+ *
+ * No `RequireTenancy`: the listing's *Contact Landlord* CTA is reachable by a
+ * boarder who has never applied, so a confirmed tenancy cannot be the gate (F4).
+ * Everyone else on the surface keeps their existing gates.
+ */
 export const Route = createFileRoute('/boarder/messages')({
-  component: () => (
+  component: BoarderMessagesLayout,
+});
+
+function BoarderMessagesLayout() {
+  const nav = useBoarderNav();
+
+  return (
     <Protected role="boarder">
-      <RoleShell title="Messages" nav={BOARDER_NAV}>
-        <div className="mb-5 flex items-center gap-3">
-          <Icon name="chat" size={28} />
-          <div>
-            <h2 className="text-2xl font-bold text-ink">Messages</h2>
-            <p className="text-sm text-gray-ink">Chat with your landlord.</p>
-          </div>
-        </div>
-        <EmptyState
-          title="Messages coming soon"
-          description="In-app messaging with landlords is on the roadmap."
-        />
+      <RoleShell nav={nav}>
+        <Outlet />
       </RoleShell>
     </Protected>
-  ),
-});
+  );
+}

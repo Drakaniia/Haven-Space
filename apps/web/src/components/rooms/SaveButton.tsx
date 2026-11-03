@@ -30,8 +30,8 @@ export function SaveButton({ propertyId }: { propertyId: number }) {
       disabled={toggle.isPending || saved.isLoading}
       className={`rounded-md border px-4 py-2 text-sm font-medium disabled:opacity-60 ${
         isSaved
-          ? 'border-primary bg-primary text-white'
-          : 'border-gray-300 bg-white text-gray-ink hover:bg-gray-50'
+          ? 'border-primary bg-primary-strong text-white'
+          : 'border-border-strong bg-surface text-gray-ink hover:bg-subtle'
       }`}
     >
       {isSaved ? 'Saved ✓' : 'Save listing'}

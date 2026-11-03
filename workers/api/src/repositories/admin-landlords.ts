@@ -1,3 +1,12 @@
+import {
+  getVerificationProfile,
+  isVerificationComplete,
+  listVerificationDocuments,
+  missingVerificationDocumentTypes,
+  type VerificationDocumentRecord,
+  type VerificationStatus,
+} from './landlord-verification';
+
 export interface AdminLandlordRow {
   id: number;
   first_name: string;
@@ -16,8 +25,33 @@ export interface LandlordLocationRow {
   longitude: number | null;
 }
 
+export interface AdminLandlordDocumentRow {
+  document_type: string;
+  file_name: string;
+  file_size: number | null;
+  file_type: string | null;
+  file_url: string;
+  uploaded_at: string;
+}
+
 export interface AdminLandlordDetailRow extends AdminLandlordRow {
   property_locations: LandlordLocationRow[];
+  verification_status: VerificationStatus;
+  verification_note: string | null;
+  documents_complete: boolean;
+  missing_documents: string[];
+  documents: AdminLandlordDocumentRow[];
+}
+
+function toAdminDocument(document: VerificationDocumentRecord): AdminLandlordDocumentRow {
+  return {
+    document_type: document.document_type,
+    file_name: document.file_name,
+    file_size: document.file_size,
+    file_type: document.file_type,
+    file_url: document.file_url,
+    uploaded_at: document.uploaded_at,
+  };
 }
 
 function clampLimit(value: string | undefined): number {
@@ -124,9 +158,20 @@ export async function getAdminLandlordDetail(
     .bind(landlordId)
     .all<LandlordLocationRow>();
 
+  // One extra round trip for the verification bundle: the admin review modal is a
+  // single fetch, and the approve gate is computed server-side so the client cannot
+  // disagree with what the decision endpoint enforces.
+  const documents = await listVerificationDocuments(db, landlordId);
+  const profile = await getVerificationProfile(db, landlordId);
+
   return {
     ...landlord,
     property_locations: locations.results ?? [],
+    verification_status: profile.verification_status,
+    verification_note: profile.note,
+    documents_complete: isVerificationComplete(documents),
+    missing_documents: missingVerificationDocumentTypes(documents),
+    documents: documents.map(toAdminDocument),
   };
 }
 

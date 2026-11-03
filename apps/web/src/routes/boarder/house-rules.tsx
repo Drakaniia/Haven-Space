@@ -1,9 +1,10 @@
 import { createFileRoute } from '@tanstack/react-router';
+import { RequireTenancy } from '../../components/boarder/FeatureGate';
 import { Protected } from '../../components/auth/Protected';
 import { RoleShell } from '../../components/layout/RoleShell';
 import { Card } from '../../components/ui/Card';
 import { Icon } from '../../components/ui/Icon';
-import { BOARDER_NAV } from '../../lib/nav';
+import { useBoarderNav } from '../../lib/use-boarder-nav';
 
 export const Route = createFileRoute('/boarder/house-rules')({
   component: () => (
@@ -110,50 +111,52 @@ const SECTIONS: { title: string; rules: { title: string; body: string }[] }[] = 
 ];
 
 function HouseRulesPage() {
+  const nav = useBoarderNav();
   return (
-    <RoleShell title="House Rules & Handbook" nav={BOARDER_NAV}>
-      <div className="mb-6 flex items-center gap-3">
-        <Icon name="book" size={28} />
-        <div>
-          <h2 className="text-2xl font-bold text-ink">House Rules & Handbook</h2>
-          <p className="text-sm text-gray-ink">
-            Everything you need to know about living at your boarding house.
-          </p>
+    <RoleShell nav={nav}>
+      <RequireTenancy>
+        <div className="mb-6 flex items-center gap-3">
+          <Icon name="book" size={28} />
+          <div>
+            <h1 className="text-2xl font-bold tracking-tight text-ink">
+              House Rules &amp; Handbook
+            </h1>
+          </div>
         </div>
-      </div>
-      <div className="flex flex-col gap-6">
-        {SECTIONS.map((section, sectionIndex) => (
-          <Card key={section.title}>
-            <h2 className="flex items-center gap-2 text-lg font-semibold">
-              <span className="flex h-7 w-7 items-center justify-center rounded-full bg-mint text-sm font-bold text-primary">
-                {sectionIndex + 1}
-              </span>
-              {section.title}
-            </h2>
-            <ul className="mt-3 flex flex-col gap-4">
-              {section.rules.map((rule, ruleIndex) => (
-                <li key={rule.title} className="flex gap-3">
-                  <span className="mt-0.5 shrink-0 text-sm font-semibold text-primary">
-                    {sectionIndex + 1}.{ruleIndex + 1}
-                  </span>
-                  <div>
-                    <h3 className="font-medium">{rule.title}</h3>
-                    <p className="mt-0.5 text-sm text-gray-ink">{rule.body}</p>
-                  </div>
-                </li>
-              ))}
-            </ul>
-          </Card>
-        ))}
+        <div className="flex flex-col gap-6">
+          {SECTIONS.map((section, sectionIndex) => (
+            <Card key={section.title}>
+              <h2 className="flex items-center gap-2 text-lg font-semibold">
+                <span className="flex h-7 w-7 items-center justify-center rounded-full bg-mint text-sm font-bold text-primary">
+                  {sectionIndex + 1}
+                </span>
+                {section.title}
+              </h2>
+              <ul className="mt-3 flex flex-col gap-4">
+                {section.rules.map((rule, ruleIndex) => (
+                  <li key={rule.title} className="flex gap-3">
+                    <span className="mt-0.5 shrink-0 text-sm font-semibold text-primary">
+                      {sectionIndex + 1}.{ruleIndex + 1}
+                    </span>
+                    <div>
+                      <h3 className="font-medium">{rule.title}</h3>
+                      <p className="mt-0.5 text-sm text-gray-ink">{rule.body}</p>
+                    </div>
+                  </li>
+                ))}
+              </ul>
+            </Card>
+          ))}
 
-        <Card className="border-l-4 border-primary">
-          <h2 className="text-lg font-semibold">Acknowledgment</h2>
-          <p className="mt-2 text-sm text-gray-ink">
-            By continuing to reside at the property you agree to follow these house rules. Please
-            direct any questions or concerns to your landlord or property management.
-          </p>
-        </Card>
-      </div>
+          <Card className="border-l-4 border-primary">
+            <h2 className="text-lg font-semibold">Acknowledgment</h2>
+            <p className="mt-2 text-sm text-gray-ink">
+              By continuing to reside at the property you agree to follow these house rules. Please
+              direct any questions or concerns to your landlord or property management.
+            </p>
+          </Card>
+        </div>
+      </RequireTenancy>
     </RoleShell>
   );
 }

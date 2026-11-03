@@ -3,3 +3,6 @@ dist
 .output
 .dev.vars
 .wrangler
+
+# Wrangler generated types — regenerate with `bun run cf-typegen`
+worker-configuration.d.ts

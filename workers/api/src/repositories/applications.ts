@@ -55,6 +55,8 @@ export interface ApplicationRoomRow {
   id: number;
   property_id: number;
   status: string;
+  capacity: number | null;
+  occupied: number | null;
 }
 
 export interface ExistingApplicationRow {
@@ -190,7 +192,7 @@ export async function findApplicationRoom(
   return await db
     .prepare(
       `
-        SELECT id, property_id, status
+        SELECT id, property_id, status, capacity, occupied
         FROM rooms
         WHERE id = ?
         LIMIT 1
@@ -200,16 +202,45 @@ export async function findApplicationRoom(
     .first<ApplicationRoomRow>();
 }
 
+/**
+ * Occupancy is a delta model (spec `create-listing-room-details` D7/D8): a
+ * confirmed booking adds one occupant, an approved leave removes one, and the
+ * room only leaves `available` once every slot is taken. A landlord's manual
+ * correction on the room edit page is preserved because these statements adjust
+ * the stored count instead of recomputing it.
+ */
 export async function occupyRoom(db: D1Database, roomId: number): Promise<void> {
   await db
-    .prepare("UPDATE rooms SET status = 'occupied', updated_at = CURRENT_TIMESTAMP WHERE id = ?")
+    .prepare(
+      `
+        UPDATE rooms
+        SET occupied = occupied + 1,
+            status = CASE
+              WHEN occupied + 1 >= capacity AND status != 'maintenance' THEN 'occupied'
+              ELSE status
+            END,
+            updated_at = CURRENT_TIMESTAMP
+        WHERE id = ?
+      `
+    )
     .bind(roomId)
     .run();
 }
 
 export async function freeRoom(db: D1Database, roomId: number): Promise<void> {
   await db
-    .prepare("UPDATE rooms SET status = 'available', updated_at = CURRENT_TIMESTAMP WHERE id = ?")
+    .prepare(
+      `
+        UPDATE rooms
+        SET occupied = MAX(occupied - 1, 0),
+            status = CASE
+              WHEN status = 'occupied' AND occupied - 1 < capacity THEN 'available'
+              ELSE status
+            END,
+            updated_at = CURRENT_TIMESTAMP
+        WHERE id = ?
+      `
+    )
     .bind(roomId)
     .run();
 }

@@ -7,7 +7,7 @@ import { Button } from '../../components/ui/Button';
 import { Card } from '../../components/ui/Card';
 import { EmptyState } from '../../components/ui/EmptyState';
 import { ErrorState } from '../../components/ui/ErrorState';
-import { Icon } from '../../components/ui/Icon';
+import { PageHeader } from '../../components/ui/PageHeader';
 import { Spinner } from '../../components/ui/Spinner';
 import { StatusBadge } from '../../components/ui/StatusBadge';
 import { acceptInvitation, getInvitations, rejectInvitation } from '../../lib/api/landlord';
@@ -80,24 +80,16 @@ function InvitationsPage() {
   const busy = accept.isPending || reject.isPending;
 
   return (
-    <RoleShell title="Invitations" nav={LANDLORD_NAV}>
-      <div className="mb-5 flex items-center gap-3">
-        <Icon name="document" size={28} />
-        <div>
-          <h2 className="text-2xl font-bold text-ink">Invitations</h2>
-          <p className="text-sm text-gray-ink">
-            Property access invitations sent to you by the Haven Space Admin.
-          </p>
-        </div>
-      </div>
+    <RoleShell nav={LANDLORD_NAV}>
+      <PageHeader icon="document" title="Invitations" />
 
       {notice ? (
-        <div className="mb-4 rounded-md border border-mint bg-mint/40 px-4 py-2 text-sm">
+        <div className="mb-4 rounded-xl border border-mint bg-mint/40 px-4 py-3 text-sm">
           {notice}
         </div>
       ) : null}
       {error ? (
-        <div className="mb-4 rounded-md border border-red-200 bg-red-50 px-4 py-2 text-sm text-red-700">
+        <div className="mb-4 rounded-xl border border-error-border bg-error-tint px-4 py-3 text-sm text-error-ink">
           {error}
         </div>
       ) : null}
@@ -108,7 +100,7 @@ function InvitationsPage() {
         <ErrorState message={invitations.error.message} />
       ) : (
         <>
-          <h3 className="mb-3 font-semibold text-ink">Pending</h3>
+          <h3 className="mb-3 text-lg font-semibold tracking-tight text-ink">Pending</h3>
           {pending && pending.length > 0 ? (
             <div className="space-y-4">
               {pending.map(invitation => (
@@ -125,7 +117,9 @@ function InvitationsPage() {
             <EmptyState title="No pending invitations" />
           )}
 
-          <h3 className="mb-3 mt-8 font-semibold text-ink">Past invitations</h3>
+          <h3 className="mb-3 mt-10 text-lg font-semibold tracking-tight text-ink">
+            Past invitations
+          </h3>
           {history && history.length > 0 ? (
             <div className="space-y-3">
               {history.map(invitation => (

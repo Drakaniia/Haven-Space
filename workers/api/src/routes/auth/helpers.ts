@@ -182,12 +182,28 @@ export function isLocalhostOrigin(value: string): boolean {
   }
 }
 
+export function isHavenSpacePagesOrigin(value: string): boolean {
+  try {
+    const { hostname } = new URL(value);
+    return hostname === 'haven-space.pages.dev' || hostname.endsWith('.haven-space.pages.dev');
+  } catch {
+    return false;
+  }
+}
+
 export function allowFrontendOrigin(
   env: Env,
   requestedOrigin: string,
   allowedOrigins: string[]
 ): boolean {
   if (allowedOrigins.includes(requestedOrigin)) {
+    return true;
+  }
+
+  if (
+    isHavenSpacePagesOrigin(requestedOrigin) &&
+    allowedOrigins.some(origin => isHavenSpacePagesOrigin(origin))
+  ) {
     return true;
   }
 
@@ -288,6 +304,14 @@ export function userHashPayload(
   );
 }
 
+/**
+ * Public browse page, where boarders without an application start. Mirrors
+ * `BROWSE_LISTINGS_PATH` in `apps/web/src/lib/routes.ts` — the boarder shell's
+ * own copy of the grid was retired and `/boarder/find-a-room` now redirects
+ * there (spec `boarder-find-a-room-redirect`).
+ */
+export const browseListingsPath = '/find-a-room';
+
 export function boarderRedirectPath(user: Record<string, unknown>): string {
   const status = String(user.boarder_status || user.boarderStatus || 'new');
 
@@ -303,7 +327,7 @@ export function boarderRedirectPath(user: Record<string, unknown>): string {
     case 'new':
     case 'browsing':
     default:
-      return '/boarder/find-a-room';
+      return browseListingsPath;
   }
 }
 
@@ -317,4 +341,28 @@ export function redirectPathForUser(user: Record<string, unknown>): string {
     default:
       return boarderRedirectPath(user);
   }
+}
+
+/**
+ * Final destination after a Google login. An explicit (sanitized) `redirect`
+ * wins, but only when it is reachable for the user's role — a landlord or admin
+ * authenticating from a link into another role's area (e.g. a boarder's apply
+ * form reached from a public listing) must not be dropped onto a route their
+ * guard immediately bounces them out of. Mirrors `resolvePostAuthPath` in
+ * `apps/web/src/lib/oauth.ts`.
+ */
+export function resolvePostAuthPath(
+  user: Record<string, unknown>,
+  redirect: string | null | undefined
+): string {
+  const fallback = redirectPathForUser(user);
+  const safe = safeRedirectPath(redirect);
+  if (!safe) return fallback;
+
+  const role = String(user.role ?? '');
+  if (role !== 'boarder' && safe.startsWith('/boarder')) return fallback;
+  if (role !== 'landlord' && safe.startsWith('/landlord')) return fallback;
+  if (role !== 'admin' && safe.startsWith('/admin')) return fallback;
+
+  return safe;
 }

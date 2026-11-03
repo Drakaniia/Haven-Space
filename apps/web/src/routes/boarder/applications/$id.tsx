@@ -1,6 +1,7 @@
 import { createFileRoute, Link, useNavigate } from '@tanstack/react-router';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useState } from 'react';
+import { MessageButton } from '../../../components/messages/MessageButton';
 import { Button } from '../../../components/ui/Button';
 import { Card } from '../../../components/ui/Card';
 import { ErrorState } from '../../../components/ui/ErrorState';
@@ -10,6 +11,7 @@ import { StatusBadge } from '../../../components/ui/StatusBadge';
 import { ApiRequestError } from '../../../lib/api/http';
 import { confirmApplication, deleteApplication, getApplication } from '../../../lib/api/boarder';
 import { useAuth } from '../../../lib/auth-context';
+import { BOARDER_STATUS_KEY } from '../../../lib/use-boarder-nav';
 import { setPendingToast } from '../../../lib/toast';
 
 export const Route = createFileRoute('/boarder/applications/$id')({
@@ -33,6 +35,9 @@ function ApplicationDetailPage() {
   const confirm = useMutation({
     mutationFn: () => confirmApplication(token!, Number(id), paymentMethod),
     onSuccess: () => {
+      // Confirming the booking flips boarder_status to 'confirmed' — refresh it
+      // so the sidebar expands to the full nav immediately (spec R15).
+      void queryClient.invalidateQueries({ queryKey: [BOARDER_STATUS_KEY] });
       setPendingToast('success', 'Booking confirmed!');
       void navigate({ to: '/boarder/confirm-booking' });
     },
@@ -44,6 +49,7 @@ function ApplicationDetailPage() {
     mutationFn: () => deleteApplication(token!, Number(id)),
     onSuccess: () => {
       void queryClient.invalidateQueries({ queryKey: ['applications'] });
+      void queryClient.invalidateQueries({ queryKey: [BOARDER_STATUS_KEY] });
       setPendingToast('success', 'Application withdrawn.');
       void navigate({ to: '/boarder/applications' });
     },
@@ -84,6 +90,16 @@ function ApplicationDetailPage() {
         </p>
         <p className="text-sm text-gray-ink">{app.property_address}</p>
         {app.message ? <p className="mt-3 rounded-md bg-cream p-3 text-sm">{app.message}</p> : null}
+        {/* One thread per pair, whatever the application's status: this is the
+            boarder's way to talk about it without e-mail (spec D17/R17). */}
+        <div className="mt-4">
+          <MessageButton
+            role="boarder"
+            counterpartId={app.landlord_id}
+            propertyId={app.property_id}
+            label="Message landlord"
+          />
+        </div>
       </Card>
 
       {isAccepted ? (

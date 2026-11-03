@@ -1,3 +1,4 @@
+import { mutedRecipientIds } from './notification-preferences';
 import { accessiblePropertyClause } from './property-access';
 
 export interface AnnouncementRow {
@@ -71,7 +72,15 @@ export interface AnnouncementInput {
 // they created it, or it targets a property they own/share, or it is a global
 // (untargeted) announcement from a landlord whose property they can access.
 // Consumes five `?` binds, all bound to the landlord id.
-function manageableAnnouncementClause(announcementRef: string): string {
+/**
+ * The "can this landlord manage this announcement" predicate: their own
+ * announcements, ones targeted at a property they can access, or the global ones
+ * belonging to a landlord whose properties they can access.
+ *
+ * Exported so the calendar aggregates exactly the announcements the
+ * announcements page would list for them (spec `landlord-calendar` §3.1).
+ */
+export function manageableAnnouncementClause(announcementRef: string): string {
   return `(
     ${announcementRef}.landlord_id = ?
     OR EXISTS (
@@ -490,8 +499,15 @@ export async function createAnnouncementNotifications(
   title: string
 ): Promise<void> {
   const metadata = JSON.stringify({ announcement_id: announcementId, landlord_id: landlordId });
+  // One query for the whole fan-out: muting is per user and the defaults (row
+  // absent) are announcements-on (spec `settings-signin-method` §7.3).
+  const muted = await mutedRecipientIds(db, boarderIds, 'announcements');
 
   for (const boarderId of boarderIds) {
+    if (muted.has(Number(boarderId))) {
+      continue;
+    }
+
     await db
       .prepare(
         `

@@ -6,7 +6,7 @@ import { LANDLORD_NAV } from '../../lib/nav';
 export const Route = createFileRoute('/landlord/listings')({
   component: () => (
     <Protected role="landlord">
-      <RoleShell title="Listings" nav={LANDLORD_NAV}>
+      <RoleShell nav={LANDLORD_NAV}>
         <Outlet />
       </RoleShell>
     </Protected>

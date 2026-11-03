@@ -44,7 +44,7 @@ function RoomDetailPage() {
           <p className="mt-2 text-gray-ink">This listing may have been removed or never existed.</p>
           <Link
             to="/find-a-room"
-            className="mt-6 inline-block rounded-full bg-primary px-6 py-3 text-sm font-semibold text-white hover:bg-primary-dark"
+            className="mt-6 inline-block rounded-full bg-primary-strong px-6 py-3 text-sm font-semibold text-white hover:bg-primary-hover"
           >
             Browse rooms
           </Link>

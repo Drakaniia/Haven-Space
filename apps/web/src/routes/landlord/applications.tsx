@@ -3,11 +3,12 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useState } from 'react';
 import { Protected } from '../../components/auth/Protected';
 import { RoleShell } from '../../components/layout/RoleShell';
+import { MessageButton } from '../../components/messages/MessageButton';
 import { Button } from '../../components/ui/Button';
 import { DataTable } from '../../components/ui/DataTable';
 import { EmptyState } from '../../components/ui/EmptyState';
 import { ErrorState } from '../../components/ui/ErrorState';
-import { Icon } from '../../components/ui/Icon';
+import { PageHeader } from '../../components/ui/PageHeader';
 import { Spinner } from '../../components/ui/Spinner';
 import { StatusBadge } from '../../components/ui/StatusBadge';
 import { ToastStack, useToasts } from '../../components/ui/Toast';
@@ -51,71 +52,90 @@ function ApplicationsPage() {
       setError(err instanceof ApiRequestError ? err.message : 'Failed to update application.'),
   });
 
-  if (applications.isLoading) return <Spinner />;
-  if (applications.error) return <ErrorState message={applications.error.message} />;
-  if (!applications.data || applications.data.data.length === 0) {
-    return <EmptyState title="No applications" description="Boarder applications appear here." />;
-  }
+  const rows = applications.data?.data ?? [];
 
+  // The shell stays mounted through every state: loading/error/empty used to
+  // return before `RoleShell`, so the sidebar and topbar vanished and popped
+  // back in (R24).
   return (
-    <RoleShell title="Applications" nav={LANDLORD_NAV}>
+    <RoleShell nav={LANDLORD_NAV}>
       <ToastStack toasts={toasts} onDismiss={dismiss} />
+      <PageHeader icon="application" title="Applications" />
+
       {error ? (
         <div className="mb-4">
           <ErrorState message={error} />
         </div>
       ) : null}
-      <div className="mb-5 flex items-center gap-3">
-        <Icon name="application" size={28} />
-        <div>
-          <h2 className="text-2xl font-bold text-ink">Applications</h2>
-          <p className="text-sm text-gray-ink">Review and respond to boarder applications.</p>
-        </div>
-      </div>
-      <DataTable<ApplicationSummary>
-        rows={applications.data.data}
-        keyFor={row => row.id}
-        columns={[
-          {
-            header: 'Property',
-            cell: row => row.property_title,
-          },
-          {
-            header: 'Room',
-            cell: row => `${row.room_title} · ₱${row.room_price.toLocaleString()}`,
-          },
-          {
-            header: 'Boarder',
-            cell: row => `${row.first_name} ${row.last_name}`,
-          },
-          {
-            header: 'Status',
-            cell: row => <StatusBadge status={String(row.status)} />,
-          },
-          {
-            header: 'Actions',
-            cell: row =>
-              row.status === 'pending' ? (
-                <div className="flex gap-2">
-                  <Button
-                    className="px-2 py-1 text-xs"
-                    onClick={() => patchStatus.mutate({ id: row.id, status: 'accepted' })}
-                    disabled={patchStatus.isPending}
-                  >
-                    Accept
-                  </Button>
-                  <Button
-                    className="bg-red-600 px-2 py-1 text-xs hover:bg-red-700"
-                    onClick={() => patchStatus.mutate({ id: row.id, status: 'rejected' })}
-                    disabled={patchStatus.isPending}
-                  >
-                    Reject
-                  </Button>
+
+      {applications.isLoading ? (
+        <Spinner />
+      ) : applications.error ? (
+        <ErrorState message={applications.error.message} />
+      ) : rows.length === 0 ? (
+        <EmptyState
+          icon="application"
+          title="No applications"
+          description="Boarder applications appear here."
+        />
+      ) : (
+        <DataTable<ApplicationSummary>
+          rows={rows}
+          keyFor={row => row.id}
+          columns={[
+            {
+              header: 'Property',
+              cell: row => row.property_title,
+            },
+            {
+              header: 'Room',
+              cell: row => `${row.room_title} · ₱${row.room_price.toLocaleString()}`,
+            },
+            {
+              header: 'Boarder',
+              cell: row => `${row.first_name} ${row.last_name}`,
+            },
+            {
+              header: 'Status',
+              cell: row => <StatusBadge status={String(row.status)} />,
+            },
+            {
+              header: 'Actions',
+              // Every application can be discussed, whatever its status — the
+              // thread is independent of the application's outcome (D17/D19),
+              // and the landlord's counterpart is the boarder's user id (R17).
+              cell: row => (
+                <div className="flex flex-wrap gap-2">
+                  {row.status === 'pending' ? (
+                    <>
+                      <Button
+                        size="sm"
+                        onClick={() => patchStatus.mutate({ id: row.id, status: 'accepted' })}
+                        disabled={patchStatus.isPending}
+                      >
+                        Accept
+                      </Button>
+                      <Button
+                        size="sm"
+                        variant="danger"
+                        onClick={() => patchStatus.mutate({ id: row.id, status: 'rejected' })}
+                        disabled={patchStatus.isPending}
+                      >
+                        Reject
+                      </Button>
+                    </>
+                  ) : null}
+                  <MessageButton
+                    role="landlord"
+                    counterpartId={row.boarder_id}
+                    propertyId={row.property_id}
+                  />
                 </div>
-              ) : null,
-          },
-        ]}
-      />
+              ),
+            },
+          ]}
+        />
+      )}
     </RoleShell>
   );
 }

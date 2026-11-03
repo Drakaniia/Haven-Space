@@ -102,7 +102,7 @@ function OurStoryPage() {
             <div className="mt-6 flex flex-wrap gap-3">
               <Link
                 to="/auth/choose"
-                className="rounded-full bg-primary px-6 py-3 text-sm font-semibold text-white hover:bg-primary-dark"
+                className="rounded-full bg-primary-strong px-6 py-3 text-sm font-semibold text-white hover:bg-primary-hover"
               >
                 Join Our Community
               </Link>
@@ -123,7 +123,7 @@ function OurStoryPage() {
       </section>
 
       {/* Beginnings */}
-      <section className="bg-white">
+      <section className="bg-surface">
         <div className="mx-auto flex max-w-7xl flex-col items-center gap-10 px-4 py-16 md:flex-row md:py-20">
           <div className="max-w-xl">
             <SectionBadge>2023</SectionBadge>
@@ -134,15 +134,15 @@ function OurStoryPage() {
               for friends quickly grew into a mission to revolutionize student housing.
             </p>
             <div className="mt-6 grid grid-cols-3 gap-4">
-              <div className="rounded-xl border border-gray-200 bg-cream p-4 text-center">
+              <div className="rounded-xl border border-border bg-cream p-4 text-center">
                 <div className="text-2xl font-bold text-primary">1</div>
                 <div className="mt-1 text-sm text-gray-ink">Founder&apos;s Vision</div>
               </div>
-              <div className="rounded-xl border border-gray-200 bg-cream p-4 text-center">
+              <div className="rounded-xl border border-border bg-cream p-4 text-center">
                 <div className="text-2xl font-bold text-primary">50+</div>
                 <div className="mt-1 text-sm text-gray-ink">Early Adopters</div>
               </div>
-              <div className="rounded-xl border border-gray-200 bg-cream p-4 text-center">
+              <div className="rounded-xl border border-border bg-cream p-4 text-center">
                 <div className="text-2xl font-bold text-primary">100%</div>
                 <div className="mt-1 text-sm text-gray-ink">Organic Growth</div>
               </div>
@@ -176,7 +176,7 @@ function OurStoryPage() {
                 }`}
               >
                 <div className="w-24 shrink-0 text-center">
-                  <div className="inline-flex h-16 w-16 items-center justify-center rounded-full bg-primary text-lg font-bold text-white">
+                  <div className="inline-flex h-16 w-16 items-center justify-center rounded-full bg-primary-strong text-lg font-bold text-white">
                     {item.year}
                   </div>
                 </div>
@@ -204,7 +204,7 @@ function OurStoryPage() {
       </section>
 
       {/* Values */}
-      <section className="bg-white">
+      <section className="bg-surface">
         <div className="mx-auto max-w-7xl px-4 py-16 md:py-20">
           <div className="mb-12 text-center">
             <SectionBadge>Core Values</SectionBadge>
@@ -218,7 +218,7 @@ function OurStoryPage() {
             {VALUES.map(value => (
               <div
                 key={value.title}
-                className="rounded-xl border border-gray-200 bg-cream p-6 text-center shadow-card"
+                className="rounded-xl border border-border bg-cream p-6 text-center shadow-card"
               >
                 <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-mint">
                   <img
@@ -245,7 +245,7 @@ function OurStoryPage() {
       </section>
 
       {/* Impact */}
-      <section className="bg-primary-dark">
+      <section className="bg-primary-hover">
         <div className="mx-auto max-w-7xl px-4 py-16 text-center">
           <span className="inline-block rounded-full bg-white/10 px-3 py-1 text-xs font-bold uppercase tracking-widest text-mint">
             Our Impact
@@ -282,7 +282,7 @@ function OurStoryPage() {
             <div className="mt-6 flex flex-wrap gap-3">
               <Link
                 to="/auth/choose"
-                className="rounded-full bg-primary px-6 py-3 text-sm font-semibold text-white hover:bg-primary-dark"
+                className="rounded-full bg-primary-strong px-6 py-3 text-sm font-semibold text-white hover:bg-primary-hover"
               >
                 Find Your Haven
               </Link>

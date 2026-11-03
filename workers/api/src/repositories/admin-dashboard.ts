@@ -1,3 +1,5 @@
+import { listPropertyCoverPhotos } from './landlord-properties/properties-photos.js';
+
 export interface AdminSummary {
   counts: {
     users_total: number;
@@ -35,6 +37,15 @@ export interface AdminPropertyRow {
   landlord_first: string;
   landlord_last: string;
   landlord_email: string;
+  /** Card facts for `landlord-properties-card-layout` D21 (additive keys). */
+  created_at: string;
+  address: string | null;
+  city: string | null;
+  province: string | null;
+  rooms_count: number;
+  occupied_rooms: number;
+  monthly_revenue: number;
+  cover_photo: string | null;
 }
 
 export interface AdminApplicationRow {
@@ -44,6 +55,7 @@ export interface AdminApplicationRow {
   boarder_first: string;
   boarder_last: string;
   boarder_email: string;
+  landlord_id: number;
   landlord_first: string;
   landlord_last: string;
   room_title: string | null;
@@ -241,49 +253,54 @@ export async function listAdminProperties(
   db: D1Database,
   moderationStatus: string | null
 ): Promise<AdminPropertyRow[]> {
-  const rows = moderationStatus
-    ? await db
-        .prepare(
-          `
-        SELECT
-          p.id,
-          p.title,
-          p.price,
-          p.listing_moderation_status,
-          u.first_name AS landlord_first,
-          u.last_name AS landlord_last,
-          u.email AS landlord_email
-        FROM properties p
-        JOIN users u ON p.landlord_id = u.id
-        WHERE p.listing_moderation_status = ?
-          AND p.deleted_at IS NULL
-        ORDER BY p.created_at DESC
-        LIMIT 100
+  // One statement for both queues — the moderation filter is the only difference.
+  // `? IS NULL OR` keeps the unfiltered branch without duplicating the SELECT.
+  //
+  // The card facts (rooms, occupancy, revenue, address, created date) and the
+  // batched cover-photo lookup are `landlord-properties-card-layout` D21; the
+  // added keys are purely additive for existing consumers.
+  const rows = await db
+    .prepare(
       `
-        )
-        .bind(moderationStatus)
-        .all<AdminPropertyRow>()
-    : await db
-        .prepare(
-          `
         SELECT
           p.id,
           p.title,
           p.price,
           p.listing_moderation_status,
+          p.created_at,
+          a.address_line_1 AS address,
+          a.city,
+          a.province,
           u.first_name AS landlord_first,
           u.last_name AS landlord_last,
-          u.email AS landlord_email
+          u.email AS landlord_email,
+          COUNT(DISTINCT r.id) AS rooms_count,
+          COALESCE(SUM(CASE WHEN r.status = 'occupied' THEN 1 ELSE 0 END), 0) AS occupied_rooms,
+          COALESCE(SUM(CASE WHEN r.status = 'occupied' THEN r.price ELSE 0 END), 0) AS monthly_revenue
         FROM properties p
         JOIN users u ON p.landlord_id = u.id
+        LEFT JOIN addresses a ON p.address_id = a.id
+        LEFT JOIN rooms r ON p.id = r.property_id
+          AND r.deleted_at IS NULL
         WHERE p.deleted_at IS NULL
+          AND (? IS NULL OR p.listing_moderation_status = ?)
+        GROUP BY p.id
         ORDER BY p.created_at DESC
         LIMIT 100
       `
-        )
-        .all<AdminPropertyRow>();
+    )
+    .bind(moderationStatus, moderationStatus)
+    .all<AdminPropertyRow>();
+  const properties = rows.results ?? [];
+  const covers = await listPropertyCoverPhotos(
+    db,
+    properties.map(property => Number(property.id))
+  );
 
-  return rows.results;
+  return properties.map(property => ({
+    ...property,
+    cover_photo: covers.get(Number(property.id)) ?? null,
+  }));
 }
 
 export async function updateAdminPropertyModeration(
@@ -344,6 +361,7 @@ export async function getAdminApplications(db: D1Database): Promise<{
           bf.first_name AS boarder_first,
           bf.last_name AS boarder_last,
           bf.email AS boarder_email,
+          lf.id AS landlord_id,
           lf.first_name AS landlord_first,
           lf.last_name AS landlord_last,
           r.title AS room_title
@@ -436,6 +454,92 @@ export async function updateAdminApplicationStatus(
     .run();
 
   return result.meta.changes ?? 0;
+}
+
+export interface AdminAuditLogEntry {
+  id: number;
+  actor_id: number;
+  actor_name: string | null;
+  actor_email: string | null;
+  entity: string;
+  action: string;
+  ids: number[];
+  created_at: string;
+}
+
+interface AdminAuditLogRow {
+  id: number;
+  actor_id: number;
+  actor_name: string | null;
+  actor_email: string | null;
+  entity: string;
+  action: string;
+  ids_json: string;
+  created_at: string;
+}
+
+/**
+ * Read side of the admin audit trail. The table existed since migration 0017 and
+ * was only ever written to (BUG-10), so admins could not see who did what.
+ */
+export async function listAdminAuditLog(
+  db: D1Database,
+  input: { limit?: string; offset?: string } = {}
+): Promise<{ data: AdminAuditLogEntry[]; meta: { total: number; limit: number; offset: number } }> {
+  const limit = normalizeLimit(input.limit);
+  const offset = normalizeOffset(input.offset);
+
+  const total = await db
+    .prepare('SELECT COUNT(*) AS total FROM admin_audit_log')
+    .bind()
+    .first<{ total: number }>();
+
+  const rows = await db
+    .prepare(
+      `
+        SELECT
+          a.id,
+          a.actor_id,
+          a.entity,
+          a.action,
+          a.ids_json,
+          a.created_at,
+          trim(u.first_name || ' ' || u.last_name) AS actor_name,
+          u.email AS actor_email
+        FROM admin_audit_log a
+        LEFT JOIN users u ON u.id = a.actor_id
+        ORDER BY a.id DESC
+        LIMIT ? OFFSET ?
+      `
+    )
+    .bind(limit, offset)
+    .all<AdminAuditLogRow>();
+
+  const data = (rows.results ?? []).map((row): AdminAuditLogEntry => {
+    let ids: number[] = [];
+
+    try {
+      const parsed = JSON.parse(row.ids_json) as unknown;
+      if (Array.isArray(parsed)) {
+        ids = parsed.map(Number).filter(Number.isFinite);
+      }
+    } catch {
+      // malformed row: surface it as an empty id list rather than failing the page
+    }
+
+    return {
+      id: Number(row.id),
+      actor_id: Number(row.actor_id),
+      actor_name: row.actor_name ?? null,
+      actor_email: row.actor_email ?? null,
+      entity: row.entity,
+      action: row.action,
+      ids,
+      created_at: row.created_at,
+    };
+  });
+
+  return { data, meta: { total: total?.total ?? data.length, limit, offset } };
 }
 
 export async function insertAdminAuditLog(

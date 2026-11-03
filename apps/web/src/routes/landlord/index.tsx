@@ -2,12 +2,24 @@ import { createFileRoute, Link } from '@tanstack/react-router';
 import { useQuery } from '@tanstack/react-query';
 import { Protected } from '../../components/auth/Protected';
 import { RoleShell } from '../../components/layout/RoleShell';
-import { Card } from '../../components/ui/Card';
+import {
+  ActionCenterCard,
+  ActionCenterCardSkeleton,
+} from '../../components/landlord/dashboard/ActionCenterCard';
+import {
+  DashboardStatCards,
+  DashboardStatCardsSkeleton,
+} from '../../components/landlord/dashboard/DashboardStatCards';
+import { MyPropertiesCard } from '../../components/landlord/dashboard/MyPropertiesCard';
+import { RecentActivityCard } from '../../components/landlord/dashboard/RecentActivityCard';
+import { RevenueTrendCard } from '../../components/landlord/dashboard/RevenueTrendCard';
+import { buttonClasses } from '../../components/ui/Button';
 import { ErrorState } from '../../components/ui/ErrorState';
-import { Icon } from '../../components/ui/Icon';
-import { Spinner } from '../../components/ui/Spinner';
-import { getDashboardStats } from '../../lib/api/landlord';
+import { PageHeader } from '../../components/ui/PageHeader';
+import { getLandlordActivity } from '../../lib/api/activity';
+import { getDashboardStats, getProperties } from '../../lib/api/landlord';
 import { useAuth } from '../../lib/auth-context';
+import { maintenanceRequests, revenueTrend } from '../../lib/fixtures/dashboard';
 import { LANDLORD_NAV } from '../../lib/nav';
 
 export const Route = createFileRoute('/landlord/')({
@@ -18,146 +30,120 @@ export const Route = createFileRoute('/landlord/')({
   ),
 });
 
-function StatCard({
-  label,
-  value,
-  sub,
-  icon,
-}: {
-  label: string;
-  value: string;
-  sub?: string;
-  icon: string;
-}) {
-  return (
-    <Card className="flex items-start gap-3">
-      <Icon name={icon} size={24} className="shrink-0" />
-      <div className="min-w-0">
-        <p className="text-sm text-gray-ink">{label}</p>
-        <p className="mt-1 text-2xl font-bold text-ink">{value}</p>
-        {sub ? <p className="mt-1 text-sm text-gray-ink">{sub}</p> : null}
-      </div>
-    </Card>
-  );
-}
-
 function LandlordDashboard() {
   const { token, user } = useAuth();
+
   const stats = useQuery({
     queryKey: ['dashboard'],
     queryFn: () => getDashboardStats(token!),
     enabled: Boolean(token),
   });
 
+  const properties = useQuery({
+    queryKey: ['landlord-properties'],
+    queryFn: () => getProperties(token!),
+    enabled: Boolean(token),
+  });
+
+  const activity = useQuery({
+    queryKey: ['landlord-activity', 'recent'],
+    queryFn: () => getLandlordActivity(token!, { limit: 4 }),
+    enabled: Boolean(token),
+  });
+
+  const propertyList = properties.data?.data.properties ?? [];
+  const pendingApplications = propertyList.reduce(
+    (total, property) => total + Number(property.pending_applications ?? 0),
+    0
+  );
+  // On error the property count is unknown; keep the chart (its fixtures) rather
+  // than showing a misleading "no properties" empty state.
+  const hasProperties = properties.isLoading || properties.isError ? true : propertyList.length > 0;
+  const maintenance = properties.data ? (hasProperties ? maintenanceRequests : 0) : null;
+  const statData = stats.data?.data;
+
+  const attention =
+    properties.data && statData
+      ? pendingApplications +
+        (maintenance ?? 0) +
+        statData.payment_alerts.due_soon +
+        statData.renewals.upcoming_count
+      : null;
+
+  const subtitle =
+    attention === null
+      ? undefined
+      : attention === 0
+      ? 'You have nothing that needs attention today.'
+      : `You have ${attention} ${attention === 1 ? 'thing' : 'things'} that need attention today.`;
+
   return (
-    <RoleShell title="Landlord dashboard" nav={LANDLORD_NAV}>
+    <RoleShell nav={LANDLORD_NAV}>
       {user?.verification_status === 'pending' ? (
-        <div className="mb-6 flex flex-wrap items-center justify-between gap-3 rounded-lg border border-amber-200 bg-amber-50 px-4 py-3">
-          <p className="text-sm text-amber-800">
+        <div className="mb-6 flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-warning-border bg-warning-tint px-5 py-4">
+          <p className="text-sm text-warning-ink">
             Your account is pending verification. You can browse the dashboard, but your listings
             won&apos;t be visible to boarders until your identity is verified.
           </p>
           <Link
             to="/landlord/verification"
-            className="rounded-full bg-amber-800 px-4 py-1.5 text-sm font-semibold text-white hover:brightness-90"
+            className={buttonClasses({ size: 'sm', variant: 'warning' })}
           >
             Complete verification
           </Link>
         </div>
       ) : null}
 
-      {/* Greeting */}
-      <div className="mb-6 flex flex-wrap items-center justify-between gap-4">
-        <div>
-          <h2 className="text-2xl font-bold text-ink">
-            {user?.first_name ? `Welcome back, ${user.first_name}` : 'Welcome back'}
-          </h2>
-          <p className="mt-1 text-sm text-gray-ink">
-            Manage your properties, boarders, and applications.
-          </p>
-        </div>
-        <Link
-          to="/landlord/listings/create"
-          className="rounded-full bg-primary px-5 py-2.5 text-sm font-semibold text-white hover:bg-primary-dark"
-        >
-          + Create listing
-        </Link>
-      </div>
+      <PageHeader
+        title={user?.first_name ? `Welcome back, ${user.first_name}` : 'Welcome back'}
+        subtitle={subtitle}
+        actions={
+          <Link to="/landlord/listings/create" className={buttonClasses()}>
+            + Create listing
+          </Link>
+        }
+      />
 
       {stats.isLoading ? (
-        <Spinner />
+        <DashboardStatCardsSkeleton />
       ) : stats.error ? (
         <ErrorState message={stats.error.message} />
-      ) : stats.data ? (
-        <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-4">
-          <StatCard
-            label="Occupancy"
-            value={`${stats.data.data.occupancy.rate.toFixed(0)}%`}
-            sub={`${stats.data.data.occupancy.occupied_rooms} of ${stats.data.data.occupancy.total_rooms} rooms`}
-            icon="analytics"
-          />
-          <StatCard
-            label="Monthly revenue"
-            value={`₱${stats.data.data.revenue.monthly.toLocaleString()}`}
-            sub={`${stats.data.data.revenue.trend >= 0 ? '+' : ''}${
-              stats.data.data.revenue.trend
-            }% vs last month`}
-            icon="payment"
-          />
-          <StatCard
-            label="Upcoming renewals"
-            value={String(stats.data.data.renewals.upcoming_count)}
-            sub={stats.data.data.renewals.period}
-            icon="calendar"
-          />
-          <StatCard
-            label="Payment alerts"
-            value={String(
-              stats.data.data.payment_alerts.due_soon + stats.data.data.payment_alerts.overdue
-            )}
-            sub={`${stats.data.data.payment_alerts.due_soon} due soon · ${stats.data.data.payment_alerts.overdue} overdue`}
-            icon="flag"
-          />
-        </div>
-      ) : null}
+      ) : !statData ? null : (
+        <DashboardStatCards data={statData} />
+      )}
 
-      <div className="mt-8 grid grid-cols-1 gap-4 md:grid-cols-3">
-        <Card className="flex items-center justify-between">
-          <div>
-            <p className="font-semibold text-ink">My listings</p>
-            <p className="text-sm text-gray-ink">Edit your properties and rooms</p>
-          </div>
-          <Link
-            to="/landlord/listings"
-            className="rounded-full border-2 border-primary px-4 py-1.5 text-sm font-semibold text-primary hover:bg-mint"
-          >
-            Manage
-          </Link>
-        </Card>
-        <Card className="flex items-center justify-between">
-          <div>
-            <p className="font-semibold text-ink">Applications</p>
-            <p className="text-sm text-gray-ink">Review boarder applications</p>
-          </div>
-          <Link
-            to="/landlord/applications"
-            className="rounded-full border-2 border-primary px-4 py-1.5 text-sm font-semibold text-primary hover:bg-mint"
-          >
-            Review
-          </Link>
-        </Card>
-        <Card className="flex items-center justify-between">
-          <div>
-            <p className="font-semibold text-ink">Boarders</p>
-            <p className="text-sm text-gray-ink">Manage your tenants</p>
-          </div>
-          <Link
-            to="/landlord/boarders"
-            className="rounded-full border-2 border-primary px-4 py-1.5 text-sm font-semibold text-primary hover:bg-mint"
-          >
-            Manage
-          </Link>
-        </Card>
+      <div className="mt-5 grid grid-cols-1 gap-5 lg:grid-cols-3">
+        <div className="lg:col-span-2">
+          <RevenueTrendCard points={revenueTrend()} hasProperties={hasProperties} />
+        </div>
+        <div className="lg:col-span-1">
+          {stats.isLoading || properties.isLoading ? (
+            <ActionCenterCardSkeleton />
+          ) : (
+            <ActionCenterCard
+              counts={{
+                applications: properties.data ? pendingApplications : null,
+                maintenance,
+                rentDue: statData?.payment_alerts.due_soon ?? null,
+                renewals: statData?.renewals.upcoming_count ?? null,
+              }}
+            />
+          )}
+        </div>
+      </div>
+
+      <div className="mt-5 grid grid-cols-1 gap-5 md:grid-cols-2">
+        <MyPropertiesCard
+          properties={properties.data ? propertyList : undefined}
+          isLoading={properties.isLoading}
+          error={properties.error?.message}
+          onRetry={() => void properties.refetch()}
+        />
+        <RecentActivityCard
+          events={activity.data?.data.events}
+          isLoading={activity.isLoading}
+          error={activity.error?.message}
+        />
       </div>
     </RoleShell>
   );

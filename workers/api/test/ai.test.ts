@@ -219,7 +219,11 @@ describe('ai chat response limits', () => {
     const retry = await postChat(env, { message: 'Hi' });
 
     expect(retry.status).toBe(200);
-    expect(await retry.json()).toEqual({ success: true, response: 'Mock answer' });
+    expect(await retry.json()).toEqual({
+      success: true,
+      response: 'Mock answer',
+      property_count: 0,
+    });
     expect(usageCookieValue(retry)).toContain('.');
   });
 
@@ -319,7 +323,11 @@ describe('ai chat response limits', () => {
     const tampered = await postChat(env, { cookie: 'not-a-real-jwt' });
 
     expect(tampered.status).toBe(200);
-    expect(await tampered.json()).toEqual({ success: true, response: 'Mock answer' });
+    expect(await tampered.json()).toEqual({
+      success: true,
+      response: 'Mock answer',
+      property_count: 0,
+    });
     // A fresh guest cookie is issued.
     expect(jwtPayload(usageCookieValue(tampered) as string)).toMatchObject({ kind: 'guest' });
   });
@@ -359,13 +367,21 @@ describe('gemini model validity (regression for AI_PROVIDER_ERROR)', () => {
     let requestedUrl = '';
     const savedFetch = globalThis.fetch;
     globalThis.fetch = (async (input: RequestInfo | URL, init?: RequestInit) => {
-      const url = typeof input === 'string' ? input : input instanceof URL ? input.href : (input as Request).url;
+      const url =
+        typeof input === 'string'
+          ? input
+          : input instanceof URL
+          ? input.href
+          : (input as Request).url;
       if (url.startsWith('https://generativelanguage.googleapis.com/v1beta/models/')) {
         requestedUrl = url;
-        return new Response(JSON.stringify({ candidates: [{ content: { parts: [{ text: 'Mock answer' }] } }] }), {
-          status: 200,
-          headers: { 'Content-Type': 'application/json' },
-        });
+        return new Response(
+          JSON.stringify({ candidates: [{ content: { parts: [{ text: 'Mock answer' }] } }] }),
+          {
+            status: 200,
+            headers: { 'Content-Type': 'application/json' },
+          }
+        );
       }
       return savedFetch(input as RequestInfo, init);
     }) as typeof fetch;
@@ -390,17 +406,29 @@ describe('gemini model validity (regression for AI_PROVIDER_ERROR)', () => {
     let requestedUrl = '';
     const savedFetch = globalThis.fetch;
     globalThis.fetch = (async (input: RequestInfo | URL, init?: RequestInit) => {
-      const url = typeof input === 'string' ? input : input instanceof URL ? input.href : (input as Request).url;
+      const url =
+        typeof input === 'string'
+          ? input
+          : input instanceof URL
+          ? input.href
+          : (input as Request).url;
       if (url.startsWith('https://generativelanguage.googleapis.com/v1beta/models/')) {
         requestedUrl = url;
         const encoder = new TextEncoder();
         const stream = new ReadableStream({
           start(controller) {
-            controller.enqueue(encoder.encode('data: {"candidates":[{"content":{"parts":[{"text":"Mock stream"}]}}]}\n\n'));
+            controller.enqueue(
+              encoder.encode(
+                'data: {"candidates":[{"content":{"parts":[{"text":"Mock stream"}]}}]}\n\n'
+              )
+            );
             controller.close();
           },
         });
-        return new Response(stream, { status: 200, headers: { 'Content-Type': 'text/event-stream' } });
+        return new Response(stream, {
+          status: 200,
+          headers: { 'Content-Type': 'text/event-stream' },
+        });
       }
       return savedFetch(input as RequestInfo, init);
     }) as typeof fetch;
@@ -434,20 +462,33 @@ describe('gemini model validity (regression for AI_PROVIDER_ERROR)', () => {
     const calls: string[] = [];
     const savedFetch = globalThis.fetch;
     globalThis.fetch = (async (input: RequestInfo | URL) => {
-      const url = typeof input === 'string' ? input : input instanceof URL ? input.href : (input as Request).url;
+      const url =
+        typeof input === 'string'
+          ? input
+          : input instanceof URL
+          ? input.href
+          : (input as Request).url;
       if (url.startsWith('https://generativelanguage.googleapis.com/v1beta/models/')) {
         calls.push(url);
         if (url.includes('gemini-3.6-flash')) {
-          return new Response(JSON.stringify({ error: { message: 'models/gemini-3.6-flash is not found', code: 404 } }), {
-            status: 404,
-            headers: { 'Content-Type': 'application/json' },
-          });
+          return new Response(
+            JSON.stringify({
+              error: { message: 'models/gemini-3.6-flash is not found', code: 404 },
+            }),
+            {
+              status: 404,
+              headers: { 'Content-Type': 'application/json' },
+            }
+          );
         }
         if (url.includes('gemini-3.5-flash')) {
-          return new Response(JSON.stringify({ candidates: [{ content: { parts: [{ text: 'Fallback answer' }] } }] }), {
-            status: 200,
-            headers: { 'Content-Type': 'application/json' },
-          });
+          return new Response(
+            JSON.stringify({ candidates: [{ content: { parts: [{ text: 'Fallback answer' }] } }] }),
+            {
+              status: 200,
+              headers: { 'Content-Type': 'application/json' },
+            }
+          );
         }
       }
       return savedFetch(input as RequestInfo);
@@ -474,7 +515,12 @@ describe('gemini model validity (regression for AI_PROVIDER_ERROR)', () => {
     const calls: string[] = [];
     const savedFetch = globalThis.fetch;
     globalThis.fetch = (async (input: RequestInfo | URL) => {
-      const url = typeof input === 'string' ? input : input instanceof URL ? input.href : (input as Request).url;
+      const url =
+        typeof input === 'string'
+          ? input
+          : input instanceof URL
+          ? input.href
+          : (input as Request).url;
       if (url.startsWith('https://generativelanguage.googleapis.com/v1beta/models/')) {
         calls.push(url);
         if (url.includes('gemini-3.6-flash')) {
@@ -484,11 +530,18 @@ describe('gemini model validity (regression for AI_PROVIDER_ERROR)', () => {
           const encoder = new TextEncoder();
           const stream = new ReadableStream({
             start(controller) {
-              controller.enqueue(encoder.encode('data: {"candidates":[{"content":{"parts":[{"text":"Fallback stream"}]}}]}\n\n'));
+              controller.enqueue(
+                encoder.encode(
+                  'data: {"candidates":[{"content":{"parts":[{"text":"Fallback stream"}]}}]}\n\n'
+                )
+              );
               controller.close();
             },
           });
-          return new Response(stream, { status: 200, headers: { 'Content-Type': 'text/event-stream' } });
+          return new Response(stream, {
+            status: 200,
+            headers: { 'Content-Type': 'text/event-stream' },
+          });
         }
       }
       return savedFetch(input as RequestInfo);

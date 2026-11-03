@@ -12,6 +12,11 @@ export interface UserProfileRow {
   boarder_status: string | null;
   city: string | null;
   province: string | null;
+  /** 1 when the account has a real password hash (Google signups store ''). */
+  has_password: number;
+  /** 1 when the account is linked to a Google identity. */
+  google_connected: number;
+  password_updated_at: string | null;
   created_at: string;
   updated_at: string;
 }
@@ -84,6 +89,9 @@ export async function findUserProfileById(
           u.email_verified,
           u.account_status,
           u.boarder_status,
+          CASE WHEN u.password_hash <> '' THEN 1 ELSE 0 END AS has_password,
+          CASE WHEN u.google_id IS NOT NULL THEN 1 ELSE 0 END AS google_connected,
+          u.password_updated_at,
           lp.city,
           lp.province,
           u.created_at,
@@ -222,6 +230,7 @@ export async function updatePasswordHash(
       `
         UPDATE users
         SET password_hash = ?,
+            password_updated_at = CURRENT_TIMESTAMP,
             updated_at = CURRENT_TIMESTAMP
         WHERE id = ?
           AND deleted_at IS NULL

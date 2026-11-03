@@ -1,5 +1,6 @@
-import { createFileRoute, Link } from '@tanstack/react-router';
+import { createFileRoute, Link, useNavigate } from '@tanstack/react-router';
 import { useQuery } from '@tanstack/react-query';
+import { useEffect } from 'react';
 import { Protected } from '../../components/auth/Protected';
 import { RoleShell } from '../../components/layout/RoleShell';
 import { Card } from '../../components/ui/Card';
@@ -7,7 +8,9 @@ import { Icon } from '../../components/ui/Icon';
 import { Spinner } from '../../components/ui/Spinner';
 import { getAcceptedApplications, getTenancy } from '../../lib/api/boarder';
 import { useAuth } from '../../lib/auth-context';
-import { BOARDER_NAV } from '../../lib/nav';
+import { getBoarderNav } from '../../lib/nav';
+import { BROWSE_LISTINGS_PATH } from '../../lib/routes';
+import { useBoarderStatus } from '../../lib/use-boarder-nav';
 
 export const Route = createFileRoute('/boarder/')({
   component: () => (
@@ -19,6 +22,9 @@ export const Route = createFileRoute('/boarder/')({
 
 function BoarderDashboard() {
   const { token, user } = useAuth();
+  const navigate = useNavigate();
+  const status = useBoarderStatus();
+  const nav = getBoarderNav(status);
   const tenancy = useQuery({
     queryKey: ['tenancy'],
     queryFn: () => getTenancy(token!),
@@ -33,19 +39,27 @@ function BoarderDashboard() {
   const tenancyData = tenancy.data?.data;
   const acceptedCount = accepted.data?.data.length ?? 0;
 
+  // Spec R9: the dashboard is tenancy-scoped — non-confirmed boarders are
+  // redirected to Applications instead of seeing a dashboard for a home they
+  // don't have yet.
+  useEffect(() => {
+    if (status !== 'confirmed') void navigate({ to: '/boarder/applications', replace: true });
+  }, [status, navigate]);
+
+  if (status !== 'confirmed') return null;
+
   return (
-    <RoleShell title="Boarder dashboard" nav={BOARDER_NAV}>
+    <RoleShell nav={nav}>
       {/* Greeting */}
       <div className="mb-6 flex flex-wrap items-center justify-between gap-4">
         <div>
-          <h2 className="text-2xl font-bold text-ink">
+          <h1 className="text-2xl font-bold tracking-tight text-ink">
             Welcome home{user?.first_name ? `, ${user.first_name}` : ''}
-          </h2>
-          <p className="mt-1 text-sm text-gray-ink">Manage your tenancy and utilities.</p>
+          </h1>
         </div>
         <Link
           to="/boarder/payments/pay"
-          className="rounded-full bg-primary px-5 py-2.5 text-sm font-semibold text-white hover:bg-primary-dark"
+          className="rounded-full bg-primary-strong px-5 py-2.5 text-sm font-semibold text-white hover:bg-primary-hover"
         >
           Pay rent
         </Link>
@@ -69,7 +83,7 @@ function BoarderDashboard() {
             ) : (
               <>
                 <p className="font-semibold text-ink">No active tenancy</p>
-                <Link to="/boarder/find-a-room" className="text-sm text-primary hover:underline">
+                <Link to={BROWSE_LISTINGS_PATH} className="text-sm text-primary hover:underline">
                   Find a room
                 </Link>
               </>

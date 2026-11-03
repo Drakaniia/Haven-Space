@@ -31,6 +31,7 @@
   "author": "Haven Space Team",
   "license": "MIT",
   "devDependencies": {
-    "prettier": "^2.8.8"
+    "prettier": "^2.8.8",
+    "wrangler": "^4.151.3"
   }
 }

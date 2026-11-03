@@ -56,19 +56,3 @@ export function clearStoredAuth(): void {
   localStorage.removeItem('haven_state');
   notifyAuthChanged();
 }
-
-export function tokenExpiry(token: string): number | null {
-  const parts = token.split('.');
-  if (parts.length !== 3) return null;
-  try {
-    const payload = JSON.parse(atob(parts[1].replace(/-/g, '+').replace(/_/g, '/')));
-    return typeof payload.exp === 'number' ? payload.exp : null;
-  } catch {
-    return null;
-  }
-}
-
-export function isTokenExpired(token: string): boolean {
-  const exp = tokenExpiry(token);
-  return exp === null ? false : Date.now() / 1000 > exp;
-}

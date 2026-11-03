@@ -3,14 +3,22 @@ import { Sidebar, type NavItem } from './Sidebar';
 import { Topbar } from './Topbar';
 import { RestrictionBanner } from '../shared/RestrictionBanner';
 
+/**
+ * Role shell: pinned sidebar, floating topbar, one scrolling content column.
+ *
+ * No `title` prop — the topbar carries breadcrumbs and each page names itself
+ * with a `PageHeader` (`landlord-apple-ui-restructure` D7/D10/R8).
+ *
+ * The right column must never gain an `overflow` value and neither may any
+ * ancestor: `main` has to stay part of the page's own scroll container, or the
+ * `lg:sticky` pins on the sidebar and the topbar silently stop working.
+ */
 export function RoleShell({
-  title,
   nav = [],
   children,
   onboardingIncomplete,
   onboardingSkipped,
 }: {
-  title: string;
   nav?: NavItem[];
   children: ReactNode;
   onboardingIncomplete?: boolean;
@@ -20,11 +28,9 @@ export function RoleShell({
     <div className="flex min-h-screen bg-cream">
       {nav.length > 0 && <Sidebar nav={nav} />}
       <div className="flex min-w-0 flex-1 flex-col">
-        <Topbar title={title} />
-        {/* soft scroll-edge fade under the floating topbar */}
-        <div className="pointer-events-none sticky top-[57px] z-20 h-4 bg-gradient-to-b from-black/[0.04] to-transparent" />
-        <main className="flex-1 px-6 pb-10 pt-2">
-          <div className="mx-auto max-w-[1200px]">
+        <Topbar />
+        <main className="flex-1 px-6 pb-16 pt-6 lg:px-10">
+          <div className="mx-auto max-w-[1280px]">
             <RestrictionBanner
               isIncomplete={onboardingIncomplete}
               isSkipped={onboardingSkipped}

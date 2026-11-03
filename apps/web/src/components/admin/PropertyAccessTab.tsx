@@ -49,6 +49,12 @@ export function PropertyAccessTab({ token }: { token: string }) {
   } | null>(null);
   const [removalData, setRemovalData] = useState<LandlordCreatedData | null>(null);
   const [removalLoading, setRemovalLoading] = useState(false);
+  /** Invitation awaiting confirmation before it is revoked. */
+  const [revokeTarget, setRevokeTarget] = useState<{
+    id: number;
+    name: string;
+    email: string;
+  } | null>(null);
 
   const invalidate = () => {
     void queryClient.invalidateQueries({ queryKey: ['admin', 'property-access'] });
@@ -95,6 +101,9 @@ export function PropertyAccessTab({ token }: { token: string }) {
   });
 
   const revokeInvite = useMutation({
+    // Closing on settle keeps the dialog up — and its confirm button busy — until
+    // the request actually finishes, rather than closing optimistically.
+    onSettled: () => setRevokeTarget(null),
     mutationFn: (invitationId: number) => revokePropertyAccessInvitation(token, invitationId),
     onSuccess: result => {
       setNotice(result.message);
@@ -194,10 +203,12 @@ export function PropertyAccessTab({ token }: { token: string }) {
   return (
     <div className="space-y-6">
       {notice ? (
-        <div className="rounded-md border border-mint bg-mint/40 px-4 py-2 text-sm">{notice}</div>
+        <div className="rounded-xl border border-success-border bg-success-tint px-4 py-3 text-sm text-success-ink">
+          {notice}
+        </div>
       ) : null}
       {error ? (
-        <div className="rounded-md border border-red-200 bg-red-50 px-4 py-2 text-sm text-red-700">
+        <div className="rounded-xl border border-error-border bg-error-tint px-4 py-3 text-sm text-error-ink">
           {error}
         </div>
       ) : null}
@@ -302,7 +313,7 @@ export function PropertyAccessTab({ token }: { token: string }) {
               <div>
                 <p className="mb-2 text-sm font-semibold text-ink">Authorized landlords</p>
                 {row.authorized_landlords.length > 0 ? (
-                  <ul className="divide-y divide-gray-100">
+                  <ul className="divide-y divide-border">
                     {row.authorized_landlords.map(landlord => (
                       <li
                         key={landlord.id}
@@ -334,7 +345,7 @@ export function PropertyAccessTab({ token }: { token: string }) {
               <div>
                 <p className="mb-2 text-sm font-semibold text-ink">Pending invitations</p>
                 {row.pending_invitations.length > 0 ? (
-                  <ul className="divide-y divide-gray-100">
+                  <ul className="divide-y divide-border">
                     {row.pending_invitations.map(invitation => (
                       <li
                         key={invitation.id}
@@ -351,7 +362,13 @@ export function PropertyAccessTab({ token }: { token: string }) {
                           variant="outline"
                           className="text-xs"
                           disabled={revokeInvite.isPending}
-                          onClick={() => revokeInvite.mutate(invitation.id)}
+                          onClick={() =>
+                            setRevokeTarget({
+                              id: invitation.id,
+                              name: invitation.invitee_name,
+                              email: invitation.invitee_email,
+                            })
+                          }
                         >
                           Revoke
                         </Button>
@@ -368,6 +385,21 @@ export function PropertyAccessTab({ token }: { token: string }) {
       ) : (
         <EmptyState title="No properties found" />
       )}
+
+      {/* Revoking an invitation is irreversible for the invitee, so it confirms first (R26). */}
+      <ConfirmDialog
+        open={revokeTarget !== null}
+        title={`Revoke invitation for ${revokeTarget?.name ?? ''}?`}
+        message={`${
+          revokeTarget?.email ?? ''
+        } will no longer be able to accept access to this property.`}
+        confirmLabel="Revoke invitation"
+        busy={revokeInvite.isPending}
+        onConfirm={() => {
+          if (revokeTarget) revokeInvite.mutate(revokeTarget.id);
+        }}
+        onCancel={() => setRevokeTarget(null)}
+      />
 
       <ConfirmDialog
         open={removal !== null}

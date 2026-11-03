@@ -1,8 +1,7 @@
 import { createFileRoute, Link, useNavigate } from '@tanstack/react-router';
-import { useMutation, useQuery } from '@tanstack/react-query';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useMemo, useState, type FormEvent } from 'react';
 import { Protected } from '../../../../components/auth/Protected';
-import { RoleShell } from '../../../../components/layout/RoleShell';
 import { Button } from '../../../../components/ui/Button';
 import { ErrorState } from '../../../../components/ui/ErrorState';
 import { Field, SelectInput, TextArea, TextInput } from '../../../../components/ui/Field';
@@ -12,7 +11,7 @@ import { ApiRequestError } from '../../../../lib/api/http';
 import { createApplication } from '../../../../lib/api/boarder';
 import { getRoomDetail } from '../../../../lib/api/public';
 import { useAuth } from '../../../../lib/auth-context';
-import { BOARDER_NAV } from '../../../../lib/nav';
+import { BOARDER_STATUS_KEY } from '../../../../lib/use-boarder-nav';
 
 const TIME_SLOTS = [
   'Morning (9:00 AM – 12:00 PM)',
@@ -44,6 +43,7 @@ function TourPage() {
   const { room: initialRoom } = Route.useSearch();
   const { token } = useAuth();
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
   const [roomId, setRoomId] = useState(initialRoom);
   const [date, setDate] = useState('');
   const [timeSlot, setTimeSlot] = useState('');
@@ -78,7 +78,11 @@ function TourPage() {
         message,
       });
     },
-    onSuccess: () => setSent(true),
+    onSuccess: () => {
+      // A tour request creates an application — refresh the live status too (R13).
+      void queryClient.invalidateQueries({ queryKey: [BOARDER_STATUS_KEY] });
+      setSent(true);
+    },
     onError: err =>
       setError(err instanceof ApiRequestError ? err.message : 'Failed to send tour request.'),
   });
@@ -120,7 +124,7 @@ function TourPage() {
             sent to {listing.landlord.name}. They&apos;ll confirm the schedule shortly, and
             you&apos;ll be notified of their response.
           </p>
-          <div className="mt-6 rounded-2xl bg-white p-5 text-left shadow-card">
+          <div className="mt-6 rounded-2xl bg-surface p-5 text-left shadow-card">
             <h3 className="text-sm font-semibold text-ink">Your request</h3>
             <dl className="mt-3 space-y-2 text-sm">
               <div className="flex justify-between gap-4">
@@ -136,12 +140,12 @@ function TourPage() {
           <div className="mt-6 flex flex-col justify-center gap-3 sm:flex-row">
             <Link
               to="/boarder/applications"
-              className="inline-flex items-center justify-center gap-2 rounded-full bg-primary px-6 py-2.5 text-sm font-semibold text-white hover:bg-primary-dark"
+              className="inline-flex items-center justify-center gap-2 rounded-full bg-primary-strong px-6 py-2.5 text-sm font-semibold text-white hover:bg-primary-hover"
             >
               View your applications
             </Link>
             <Link
-              to="/boarder/find-a-room/$id"
+              to="/rooms/$id"
               params={{ id }}
               className="inline-flex items-center justify-center gap-2 rounded-full border-2 border-primary px-6 py-2.5 text-sm font-semibold text-primary hover:bg-mint"
             >
@@ -152,7 +156,7 @@ function TourPage() {
       ) : (
         <div className="mx-auto max-w-3xl">
           <Link
-            to="/boarder/find-a-room/$id"
+            to="/rooms/$id"
             params={{ id }}
             className="mb-4 inline-flex items-center gap-1.5 text-sm text-primary hover:underline"
           >
@@ -161,11 +165,8 @@ function TourPage() {
           </Link>
 
           <h1 className="text-2xl font-bold text-ink">Schedule a Tour</h1>
-          <p className="mt-1 text-gray-ink">
-            Pick a time that works for you and {listing.landlord.name} will confirm your visit.
-          </p>
 
-          <div className="mt-5 flex flex-col gap-4 rounded-2xl bg-white p-5 shadow-card sm:flex-row">
+          <div className="mt-5 flex flex-col gap-4 rounded-2xl bg-surface p-5 shadow-card sm:flex-row">
             <div className="h-36 w-full shrink-0 overflow-hidden rounded-xl bg-mint/40 sm:h-[120px] sm:w-[160px]">
               <img
                 src={listing.coverImage || '/assets/images/placeholder-room.svg'}
@@ -191,7 +192,7 @@ function TourPage() {
             </div>
           </div>
 
-          <form className="mt-5 rounded-2xl bg-white p-6 shadow-card" onSubmit={handleSubmit}>
+          <form className="mt-5 rounded-2xl bg-surface p-6 shadow-card" onSubmit={handleSubmit}>
             <Field label="Room to visit" htmlFor="tour-room">
               <SelectInput
                 id="tour-room"

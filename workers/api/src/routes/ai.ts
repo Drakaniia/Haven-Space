@@ -35,170 +35,6 @@ interface ChatMessage {
   content: string;
 }
 
-const ROOM_KEYWORDS = [
-  'room',
-  'rooms',
-  'boarding',
-  'dorm',
-  'dormitory',
-  'rent',
-  'rental',
-  'property',
-  'listing',
-  'apartment',
-  'bedspace',
-  'ac',
-  'wifi',
-  'price',
-  'find',
-  'search',
-  'near',
-  'budget',
-  'monthly',
-  'under',
-  'pesos',
-  'php',
-];
-
-const STOPWORDS = new Set([
-  'the',
-  'a',
-  'an',
-  'to',
-  'in',
-  'and',
-  'or',
-  'of',
-  'at',
-  'for',
-  'with',
-  'me',
-  'my',
-  'i',
-  'we',
-  'you',
-  'your',
-  'is',
-  'are',
-  'it',
-  'that',
-  'this',
-  'these',
-  'those',
-  'under',
-  'near',
-  'nearby',
-  'below',
-  'around',
-  'show',
-  'shows',
-  'want',
-  'looking',
-  'look',
-  'list',
-  'listing',
-  'listings',
-  'available',
-  'good',
-  'cheap',
-  'affordable',
-  'apartment',
-  'dorm',
-  'dormitory',
-  'monthly',
-  'rent',
-  'rental',
-  'rents',
-  'per',
-  'month',
-  'please',
-  'can',
-  'how',
-  'much',
-  'do',
-  'does',
-  'need',
-  'pesos',
-  'php',
-  'less',
-  'than',
-  'like',
-  'some',
-  'any',
-  'anyone',
-  'have',
-  'has',
-  'had',
-  'there',
-  'they',
-  'their',
-  'find',
-  'room',
-  'rooms',
-  'boarding',
-  'house',
-  'houses',
-  'budget',
-  'max',
-  'maximum',
-  'minimum',
-  'yes',
-  'no',
-  'several',
-  'about',
-  'tell',
-  'what',
-  'which',
-  'where',
-  'who',
-  'when',
-  'why',
-  'would',
-  'could',
-  'get',
-  'give',
-  'recommend',
-  'suggest',
-  'options',
-  'option',
-  'place',
-  'places',
-  'spot',
-  'staying',
-  'stay',
-]);
-
-function looksLikeRoomSearch(message: string): boolean {
-  const lower = message.toLowerCase();
-  return ROOM_KEYWORDS.some(keyword => lower.includes(keyword));
-}
-
-function parseMaxPrice(message: string): number | null {
-  const patterns = [
-    /₱\s*(\d[\d,]*)/i,
-    /(\d[\d,]*)\s*(?:pesos?|php|₱)/i,
-    /(?:under|below|less than|max(?:imum)?|budget of?)\s+(\d[\d,]*)/i,
-  ];
-  for (const pattern of patterns) {
-    const match = message.match(pattern);
-    if (match) {
-      return Number(match[1].replace(/,/g, ''));
-    }
-  }
-  return null;
-}
-
-function parseSearchPhrase(message: string): string {
-  const words = message
-    .toLowerCase()
-    .replace(/[^\p{L}\p{N}\s]/gu, ' ')
-    .split(/\s+/)
-    .filter(
-      word => word.length >= 3 && !STOPWORDS.has(word) && !/^\d{2,}(?:,\d{3})*$/.test(word) // skip prices/amounts — handled by parseMaxPrice
-    );
-  return [...new Set(words)].slice(0, 4).join(' ');
-}
-
 interface RoomListing {
   property_id: number;
   property_title: string;
@@ -209,33 +45,7 @@ interface RoomListing {
   available_rooms: number;
 }
 
-async function fetchRoomContext(
-  db: D1Database,
-  message: string
-): Promise<{ listings: RoomListing[]; searched: boolean }> {
-  if (!looksLikeRoomSearch(message)) {
-    return { listings: [], searched: false };
-  }
-
-  const maxPrice = parseMaxPrice(message);
-  const searchPhrase = parseSearchPhrase(message);
-
-  const conditions = ['p.deleted_at IS NULL', "p.listing_moderation_status = 'published'"];
-  const params: Array<string | number> = [];
-
-  if (maxPrice !== null) {
-    conditions.push('p.price <= ?');
-    params.push(maxPrice);
-  }
-
-  if (searchPhrase) {
-    conditions.push(
-      '(p.title LIKE ? OR a.address_line_1 LIKE ? OR a.city LIKE ? OR p.description LIKE ?)'
-    );
-    const term = `%${searchPhrase}%`;
-    params.push(term, term, term, term);
-  }
-
+async function fetchRoomContext(db: D1Database): Promise<RoomListing[]> {
   const sql = `
     SELECT p.id AS property_id, p.title AS property_title, p.price,
            a.city, a.province, a.address_line_1,
@@ -244,22 +54,20 @@ async function fetchRoomContext(
            ) AS available_rooms
     FROM properties p
     LEFT JOIN addresses a ON a.id = p.address_id
-    WHERE ${conditions.join(' AND ')}
+    WHERE p.deleted_at IS NULL
+      AND p.listing_moderation_status = 'published'
+      -- Both axes (edit-listing-property-info D17/R13): answers must never mention
+      -- a listing the landlord has unpublished or left as a draft.
+      AND p.status IN ('available', 'active')
     ORDER BY p.price ASC
     LIMIT ${MAX_LISTINGS}
   `;
 
   try {
-    const result = await db
-      .prepare(sql)
-      .bind(...params)
-      .all<RoomListing>();
-    return {
-      listings: (result.results ?? []) as RoomListing[],
-      searched: true,
-    };
+    const result = await db.prepare(sql).all<RoomListing>();
+    return (result.results ?? []) as RoomListing[];
   } catch {
-    return { listings: [], searched: true };
+    return [];
   }
 }
 
@@ -352,13 +160,10 @@ function isHighDemand(detail: string): boolean {
   return lower.includes('high demand') || lower.includes('503') || lower.includes('unavailable');
 }
 
-function buildFallbackResponse(
-  userMessage: string,
-  roomContext: { listings: RoomListing[]; searched: boolean }
-): string {
-  if (roomContext.listings.length > 0) {
+function buildFallbackResponse(userMessage: string, listings: RoomListing[]): string {
+  if (listings.length > 0) {
     return `Haven AI is temporarily running in offline mode due to a regional AI limitation, but I can still help!\n\n${formatRoomContext(
-      roomContext.listings
+      listings
     )}\n\nYou asked: "${userMessage}" — you can view these listings on the Find a Room page. If you need help with payments, maintenance, or tenancy, let me know and I'll point you to the right place in the app.`;
   }
   return `Haven AI is temporarily running in offline mode due to a regional AI limitation, but I'm still here to help! You asked: "${userMessage}"\n\nTry browsing Find a Room for listings, or ask about payments, maintenance requests, or tenancy — I can guide you to the right page in the app.`;
@@ -707,21 +512,17 @@ aiRoutes.post('/api/ai/chat', async c => {
     }
   }
 
-  let roomContext: { listings: RoomListing[]; searched: boolean } = {
-    listings: [],
-    searched: false,
-  };
+  let listings: RoomListing[] = [];
   try {
-    const db = requireD1(c.env);
-    roomContext = await fetchRoomContext(db, message);
+    listings = await fetchRoomContext(requireD1(c.env));
   } catch {
     // DB unavailable — fall back to plain chat
   }
 
   const messages: ChatMessage[] = [{ role: 'system', content: SYSTEM_PROMPT }];
 
-  if (roomContext.listings.length > 0) {
-    messages.push({ role: 'system', content: formatRoomContext(roomContext.listings) });
+  if (listings.length > 0) {
+    messages.push({ role: 'system', content: formatRoomContext(listings) });
   }
 
   if (Array.isArray(body.history)) {
@@ -741,8 +542,8 @@ aiRoutes.post('/api/ai/chat', async c => {
 
   messages.push({ role: 'user', content: message });
 
-  const propertyCount = roomContext.searched ? roomContext.listings.length : 0;
-  const fallbackMessage = buildFallbackResponse(message, roomContext);
+  const propertyCount = listings.length;
+  const fallbackMessage = buildFallbackResponse(message, listings);
 
   if (body.stream === true) {
     return streamGeminiChat(apiKey, messages, propertyCount, usageCookie, fallbackMessage);
@@ -753,7 +554,7 @@ aiRoutes.post('/api/ai/chat', async c => {
     const result = jsonResponse({
       success: true,
       response,
-      ...(roomContext.searched ? { property_count: roomContext.listings.length } : {}),
+      property_count: listings.length,
     });
     if (usageCookie) {
       result.headers.append('Set-Cookie', usageCookie);
@@ -764,7 +565,7 @@ aiRoutes.post('/api/ai/chat', async c => {
       const result = jsonResponse({
         success: true,
         response: fallbackMessage,
-        ...(roomContext.searched ? { property_count: roomContext.listings.length } : {}),
+        property_count: listings.length,
       });
       if (usageCookie) result.headers.append('Set-Cookie', usageCookie);
       return result;

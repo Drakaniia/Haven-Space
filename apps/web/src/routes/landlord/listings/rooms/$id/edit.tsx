@@ -1,11 +1,12 @@
 import { createFileRoute, Link, useNavigate, useSearch } from '@tanstack/react-router';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useState, type FormEvent } from 'react';
+import { VerificationNotice } from '../../../../../components/landlord/VerificationNotice';
 import { Button } from '../../../../../components/ui/Button';
 import { Card } from '../../../../../components/ui/Card';
 import { ErrorState } from '../../../../../components/ui/ErrorState';
-import { Icon } from '../../../../../components/ui/Icon';
 import { Field, SelectInput, TextArea, TextInput } from '../../../../../components/ui/Field';
+import { PageHeader } from '../../../../../components/ui/PageHeader';
 import { Spinner } from '../../../../../components/ui/Spinner';
 import { ApiRequestError } from '../../../../../lib/api/http';
 import { getRooms, updateRoom, uploadRoomPhotos } from '../../../../../lib/api/landlord';
@@ -15,6 +16,8 @@ import { ToastStack, useToasts } from '../../../../../components/ui/Toast';
 
 interface RoomEditSearch {
   propertyId?: string;
+  /** Which surface opened this editor, so saving returns to it (defaults to listing). */
+  from?: 'rooms' | 'listing';
 }
 
 export const Route = createFileRoute('/landlord/listings/rooms/$id/edit')({
@@ -23,14 +26,17 @@ export const Route = createFileRoute('/landlord/listings/rooms/$id/edit')({
       typeof search.propertyId === 'string' || typeof search.propertyId === 'number'
         ? String(search.propertyId)
         : undefined,
+    from: search.from === 'rooms' || search.from === 'listing' ? search.from : undefined,
   }),
   component: EditRoomPage,
 });
 
 function EditRoomPage() {
   const { id } = Route.useParams();
-  const { propertyId } = useSearch({ from: '/landlord/listings/rooms/$id/edit' });
-  const { token } = useAuth();
+  const { propertyId, from } = useSearch({ from: '/landlord/listings/rooms/$id/edit' });
+  const { token, user } = useAuth();
+  // Unverified landlords cannot save room edits (API returns 403) — see BUG-09.
+  const needsVerification = !user?.is_verified;
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const [error, setError] = useState<string | null>(null);
@@ -40,6 +46,10 @@ function EditRoomPage() {
 
   const roomId = Number(id);
   const propertyIdNumber = propertyId ? Number(propertyId) : null;
+  // Reached from the property rooms page, this editor lives under the listing
+  // path only because that is where its file-based route sits; saving must send
+  // the landlord back to the property's rooms, not the listing edit form.
+  const openedFromRooms = from === 'rooms';
 
   const rooms = useQuery({
     queryKey: ['landlord-rooms', propertyIdNumber],
@@ -56,6 +66,7 @@ function EditRoomPage() {
     deposit: '',
     status: 'available',
     capacity: '1',
+    occupied: '0',
     description: '',
     size: '',
   });
@@ -69,6 +80,7 @@ function EditRoomPage() {
       deposit: String(room.deposit ?? 0),
       status: room.status ?? 'available',
       capacity: String(room.capacity ?? 1),
+      occupied: String(room.occupied ?? 0),
       description: room.description ?? '',
       size: room.size == null ? '' : String(room.size),
     });
@@ -82,15 +94,21 @@ function EditRoomPage() {
         price: Number(form.price),
         deposit: Number(form.deposit),
         capacity: Number(form.capacity),
+        occupied: Number(form.occupied),
         size: form.size === '' ? undefined : Number(form.size),
       }),
     onSuccess: () => {
       void queryClient.invalidateQueries({ queryKey: ['landlord-rooms', propertyIdNumber] });
       setPendingToast('success', 'Room updated.');
-      void navigate({
-        to: '/landlord/listings/$id/edit',
-        params: { id: String(propertyIdNumber) },
-      });
+      void (openedFromRooms
+        ? navigate({
+            to: '/landlord/properties/$id/rooms',
+            params: { id: String(propertyIdNumber) },
+          })
+        : navigate({
+            to: '/landlord/listings/$id/edit',
+            params: { id: String(propertyIdNumber) },
+          }));
     },
     onError: err =>
       setError(err instanceof ApiRequestError ? err.message : 'Failed to update room.'),
@@ -119,6 +137,9 @@ function EditRoomPage() {
 
   function handleSubmit(e: FormEvent) {
     e.preventDefault();
+
+    if (needsVerification) return;
+
     setError(null);
     submit.mutate();
   }
@@ -145,19 +166,15 @@ function EditRoomPage() {
       ) : (
         <div>
           <Link
-            to="/landlord/listings/$id/edit"
+            to={openedFromRooms ? '/landlord/properties/$id/rooms' : '/landlord/listings/$id/edit'}
             params={{ id: String(propertyIdNumber) }}
             className="mb-4 inline-block text-sm text-primary hover:underline"
           >
-            ← Back to listing
+            {openedFromRooms ? '← Back to rooms' : '← Back to listing'}
           </Link>
-          <div className="mb-5 flex items-center gap-3">
-            <Icon name="book" size={28} />
-            <div>
-              <h1 className="text-2xl font-bold text-ink">Edit room {room.room_number}</h1>
-              <p className="text-sm text-gray-ink">Update this room's details and photos.</p>
-            </div>
-          </div>
+          <PageHeader icon="book" title={`Edit room ${room.room_number}`} />
+
+          {needsVerification ? <VerificationNotice /> : null}
 
           {error ? (
             <div className="mb-4">
@@ -166,8 +183,8 @@ function EditRoomPage() {
           ) : null}
 
           <Card>
-            <form className="flex flex-col gap-4" onSubmit={handleSubmit}>
-              <div className="grid grid-cols-2 gap-3">
+            <form className="flex flex-col gap-5" onSubmit={handleSubmit}>
+              <div className="grid grid-cols-2 gap-4">
                 <Field label="Room number" htmlFor="room_number">
                   <TextInput
                     id="room_number"
@@ -183,13 +200,14 @@ function EditRoomPage() {
                     onChange={e => set('room_type', e.target.value)}
                   >
                     <option value="">Select type</option>
-                    <option value="single">Single</option>
+                    <option value="private">Private</option>
                     <option value="shared">Shared</option>
+                    <option value="dorm">Dorm</option>
                   </SelectInput>
                 </Field>
               </div>
 
-              <div className="grid grid-cols-2 gap-3">
+              <div className="grid grid-cols-2 gap-4">
                 <Field label="Monthly rent (₱)" htmlFor="price">
                   <TextInput
                     id="price"
@@ -211,15 +229,28 @@ function EditRoomPage() {
                 </Field>
               </div>
 
-              <div className="grid grid-cols-3 gap-3">
+              <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
                 <Field label="Capacity" htmlFor="capacity">
                   <TextInput
                     id="capacity"
                     type="number"
                     min={1}
+                    max={10}
                     required
                     value={form.capacity}
                     onChange={e => set('capacity', e.target.value)}
+                  />
+                </Field>
+                {/* Occupancy is a booking-driven count (confirmed booking +1,
+                    approved leave -1) that the landlord can correct here. */}
+                <Field label="Occupied now" htmlFor="occupied">
+                  <TextInput
+                    id="occupied"
+                    type="number"
+                    min={0}
+                    max={Number(form.capacity) || 10}
+                    value={form.occupied}
+                    onChange={e => set('occupied', e.target.value)}
                   />
                 </Field>
                 <Field label="Size (m²)" htmlFor="size">
@@ -244,6 +275,11 @@ function EditRoomPage() {
                 </Field>
               </div>
 
+              <p className="text-xs text-gray-ink">
+                {Math.max(Number(form.capacity) - Number(form.occupied), 0)} of {form.capacity || 1}{' '}
+                slots free for boarders.
+              </p>
+
               <Field label="Description" htmlFor="description">
                 <TextArea
                   id="description"
@@ -253,19 +289,23 @@ function EditRoomPage() {
                 />
               </Field>
 
-              <Button type="submit" disabled={submit.isPending}>
-                {submit.isPending ? 'Saving…' : 'Save changes'}
+              <Button type="submit" disabled={submit.isPending || needsVerification}>
+                {needsVerification
+                  ? 'Verify your account to save'
+                  : submit.isPending
+                  ? 'Saving…'
+                  : 'Save changes'}
               </Button>
             </form>
 
             <section className="mt-8">
-              <h2 className="text-lg font-semibold">Photos</h2>
+              <h2 className="text-lg font-semibold tracking-tight">Photos</h2>
               {photoError ? (
                 <div className="mt-2">
                   <ErrorState message={photoError} />
                 </div>
               ) : null}
-              <label className="mt-3 block cursor-pointer rounded-md border border-dashed border-gray-300 p-4 text-center text-sm hover:bg-gray-50">
+              <label className="mt-3 block cursor-pointer rounded-xl border border-dashed border-border-strong p-4 text-center text-sm transition-colors hover:bg-subtle">
                 {uploading ? 'Uploading…' : 'Choose photos to upload (jpg/png/webp, max 5 MB each)'}
                 <input
                   type="file"
@@ -278,13 +318,10 @@ function EditRoomPage() {
               {room.photos.length > 0 ? (
                 <ul className="mt-3 grid grid-cols-3 gap-2">
                   {room.photos.map(photo => (
-                    <li
-                      key={photo.id}
-                      className="overflow-hidden rounded-md border border-gray-200"
-                    >
+                    <li key={photo.id} className="overflow-hidden rounded-xl border border-border">
                       <img src={photo.photo_url} alt="" className="h-24 w-full object-cover" />
                       {photo.is_cover ? (
-                        <span className="block bg-primary py-0.5 text-center text-xs text-white">
+                        <span className="block bg-primary-strong py-0.5 text-center text-xs text-white">
                           Cover
                         </span>
                       ) : null}

@@ -27,7 +27,7 @@ export function LogoCloud() {
         <span className="font-semibold">Used by the leaders.</span>
       </h2>
       <div
-        className="h-px w-full max-w-5xl bg-gray-200"
+        className="h-px w-full max-w-5xl bg-subtle"
         style={{
           WebkitMaskImage: 'linear-gradient(to right, transparent, black, transparent)',
           maskImage: 'linear-gradient(to right, transparent, black, transparent)',
@@ -46,7 +46,7 @@ export function LogoCloud() {
         </div>
       </div>
       <div
-        className="h-px w-full max-w-5xl bg-gray-200"
+        className="h-px w-full max-w-5xl bg-subtle"
         style={{
           WebkitMaskImage: 'linear-gradient(to right, transparent, black, transparent)',
           maskImage: 'linear-gradient(to right, transparent, black, transparent)',

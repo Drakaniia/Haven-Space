@@ -39,13 +39,13 @@ export function StepVerification({
       <label className="block">
         <span className="mb-1 block text-sm font-medium">Stripe Connect account ID</span>
         <input
-          className="w-full rounded-xl border border-gray-300 bg-white/50 px-4 py-2.5 focus:border-primary focus:outline-none"
+          className="w-full rounded-xl border border-border-strong bg-surface/50 px-4 py-2.5 focus:border-primary focus:outline-none"
           placeholder="acct_..."
           value={data.stripeConnectId}
           onChange={e => set({ stripeConnectId: e.target.value })}
         />
       </label>
-      {error ? <p className="text-sm text-red-600">{error}</p> : null}
+      {error ? <p className="text-sm text-error-ink">{error}</p> : null}
       <div className="flex items-center justify-end gap-3">
         <Button type="button" variant="ghost" onClick={onSkip} disabled={saving}>
           Skip for now

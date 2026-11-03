@@ -48,7 +48,7 @@ export function FAQSection() {
   const visible = tab === 'all' ? FAQS : FAQS.filter(faq => faq.category === tab);
 
   return (
-    <section className="bg-[#f8f9fa]">
+    <section className="bg-subtle">
       <div className="mx-auto max-w-6xl px-4 py-20">
         <div className="mb-12 text-left">
           <span className="mb-4 inline-block rounded-full bg-mint px-4 py-2 text-xs font-semibold uppercase tracking-widest text-primary">
@@ -64,7 +64,7 @@ export function FAQSection() {
         <div className="grid gap-8 lg:grid-cols-3">
           {/* Left — image + CTA */}
           <div className="lg:col-span-1 lg:sticky lg:top-8">
-            <div className="overflow-hidden rounded-lg bg-white">
+            <div className="overflow-hidden rounded-lg bg-surface">
               <img
                 src="/assets/images/public/costumer_support.png"
                 alt="Customer support representative"
@@ -77,7 +77,7 @@ export function FAQSection() {
                 </p>
                 <a
                   href="mailto:support@havenspace.app"
-                  className="inline-block rounded-full bg-primary px-6 py-3 text-sm font-semibold text-white hover:bg-primary-dark"
+                  className="inline-block rounded-full bg-primary-strong px-6 py-3 text-sm font-semibold text-white hover:bg-primary-hover"
                 >
                   Contact us
                 </a>
@@ -87,7 +87,7 @@ export function FAQSection() {
 
           {/* Right — tabs + accordion */}
           <div className="flex flex-col gap-4 lg:col-span-2">
-            <div className="mb-2 flex flex-wrap gap-2 border-b border-gray-200">
+            <div className="mb-2 flex flex-wrap gap-2 border-b border-border">
               {TABS.map(item => (
                 <button
                   key={item.key}
@@ -104,7 +104,7 @@ export function FAQSection() {
                 >
                   {item.label}
                   {tab === item.key ? (
-                    <span className="absolute inset-x-0 -bottom-px h-0.5 rounded-t bg-primary" />
+                    <span className="absolute inset-x-0 -bottom-px h-0.5 rounded-t bg-primary-strong" />
                   ) : null}
                 </button>
               ))}
@@ -114,7 +114,7 @@ export function FAQSection() {
               return (
                 <div
                   key={faq.question}
-                  className="overflow-hidden rounded-xl bg-white shadow-[0_2px_8px_rgba(0,0,0,0.06)]"
+                  className="overflow-hidden rounded-xl bg-surface shadow-[0_2px_8px_rgba(0,0,0,0.06)]"
                 >
                   <button
                     type="button"

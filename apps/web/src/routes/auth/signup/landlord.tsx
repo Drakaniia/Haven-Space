@@ -20,7 +20,8 @@ import {
   authErrorSearch,
   googleAuthorizeUrl,
   handleOAuthHash,
-  redirectPathForUser,
+  isForeignRolePath,
+  resolvePostAuthPath,
 } from '../../../lib/oauth';
 import { isPhilippinePhone } from '../../../lib/validation';
 
@@ -59,10 +60,11 @@ function LandlordSignupPage() {
   });
   const [error, setError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
+  const [googleLoading, setGoogleLoading] = useState(false);
 
   useEffect(() => {
     const user = handleOAuthHash();
-    if (user) void navigate({ to: redirect ?? redirectPathForUser(user) });
+    if (user) void navigate({ to: resolvePostAuthPath(user, redirect) });
   }, [navigate, redirect]);
 
   function set<K extends keyof typeof form>(key: K, value: string) {
@@ -102,7 +104,13 @@ function LandlordSignupPage() {
         idType: form.idType,
         idNumber: form.idNumber.trim(),
       });
-      void navigate({ to: redirect ?? '/landlord/verification' });
+      // Landlords continue to verification, unless a return path sent them here.
+      void navigate({
+        to:
+          redirect && !isForeignRolePath('landlord', redirect)
+            ? redirect
+            : '/landlord/verification',
+      });
     } catch (err) {
       setError(
         err instanceof ApiRequestError ? err.message : 'An error occurred. Please try again.'
@@ -116,7 +124,6 @@ function LandlordSignupPage() {
     <AuthSplitLayout
       title="Create your landlord account"
       subtitle="This information helps us verify your account and connect you with potential boarders."
-      image="/assets/images/public/signup_lower_left.png"
       footer={
         <p className="text-center">
           Already have an account?{' '}
@@ -130,8 +137,16 @@ function LandlordSignupPage() {
       {error ? <ErrorState message={error} /> : null}
 
       <GoogleButton
+        loading={googleLoading}
         onClick={() => {
-          window.location.href = googleAuthorizeUrl('signup', 'landlord', redirect);
+          setGoogleLoading(true);
+          setError(null);
+          try {
+            window.location.href = googleAuthorizeUrl('signup', 'landlord', redirect);
+            window.setTimeout(() => setGoogleLoading(false), 4000);
+          } catch {
+            setGoogleLoading(false);
+          }
         }}
       />
       <AuthDivider />
@@ -198,7 +213,7 @@ function LandlordSignupPage() {
           </Field>
         </div>
 
-        <div className="my-2 border-t border-gray-100" />
+        <div className="my-2 border-t border-border" />
 
         <Field label="Business / Property name" htmlFor="businessName">
           <TextInput
@@ -258,7 +273,7 @@ function LandlordSignupPage() {
           </Field>
         </div>
 
-        <div className="my-2 border-t border-gray-100" />
+        <div className="my-2 border-t border-border" />
         <p className="text-sm font-medium">Verification information</p>
         <p className="text-xs text-gray-ink">
           Required for account verification and will not be shown to boarders.

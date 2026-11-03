@@ -97,7 +97,7 @@ function LandlordOnboardingPage() {
   const totalSteps = 3;
 
   return (
-    <RoleShell title="Onboarding" nav={LANDLORD_NAV} onboardingIncomplete>
+    <RoleShell nav={LANDLORD_NAV} onboardingIncomplete>
       <WizardLayout currentStep={step - 1} totalSteps={totalSteps} title="Get set up to host">
         {step === 1 ? (
           <StepProfile data={profile} onChange={setProfile} saving={saving} onNext={handleNext} />

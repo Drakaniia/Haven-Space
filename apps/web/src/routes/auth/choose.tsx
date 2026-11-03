@@ -16,7 +16,6 @@ function ChoosePage() {
     <AuthSplitLayout
       title="Join Haven Space"
       subtitle="Choose how you want to get started"
-      image="/assets/images/public/signup_lower_left.png"
       footer={
         <p className="text-center">
           Already have an account?{' '}
@@ -30,7 +29,7 @@ function ChoosePage() {
         <Link
           to="/auth/signup"
           search={{ redirect }}
-          className="flex items-center gap-4 rounded-xl border-2 border-primary bg-white px-4 py-4 text-left hover:bg-mint"
+          className="flex items-center gap-4 rounded-xl border-2 border-primary bg-surface px-4 py-4 text-left hover:bg-mint"
         >
           <Icon name="search" size={28} className="shrink-0" />
           <span>
@@ -41,7 +40,7 @@ function ChoosePage() {
         <Link
           to="/auth/signup/landlord"
           search={{ redirect }}
-          className="flex items-center gap-4 rounded-xl border-2 border-gray-200 bg-white px-4 py-4 text-left hover:border-primary hover:bg-mint"
+          className="flex items-center gap-4 rounded-xl border-2 border-border bg-surface px-4 py-4 text-left hover:border-primary hover:bg-mint"
         >
           <Icon name="buildingOffice" size={28} className="shrink-0" />
           <span>

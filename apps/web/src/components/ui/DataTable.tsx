@@ -1,4 +1,5 @@
 import { Fragment, useEffect, useRef, useState, type ReactNode } from 'react';
+import { Icon } from './Icon';
 
 export interface Column<T> {
   header: string;
@@ -37,7 +38,7 @@ function AppleCheckbox({
           'motion-reduce:transition-none',
           checked
             ? 'border-[#007AFF] bg-[#007AFF] text-white shadow-sm scale-100'
-            : 'border-gray-300 bg-white hover:border-gray-400 active:scale-[0.96]',
+            : 'border-border-strong bg-surface active:scale-[0.96]',
         ].join(' ')}
       >
         <svg
@@ -88,12 +89,12 @@ export function DataTable<T>({
   const someSelected = selectable && !allSelected && allIds.some(id => selectedIds?.has(id));
 
   return (
-    <div className="overflow-x-auto rounded-lg border border-gray-200 bg-white">
+    <div className="overflow-x-auto rounded-2xl border border-border bg-surface shadow-card">
       <table className="w-full text-left text-sm">
         <thead>
-          <tr className="border-b border-gray-200 bg-mint/50">
+          <tr className="border-b border-border bg-mint/50">
             {selectable ? (
-              <th className="w-10 px-3 py-2">
+              <th className="w-12 px-4 py-3">
                 <AppleCheckbox
                   checked={Boolean(allSelected)}
                   indeterminate={Boolean(someSelected)}
@@ -103,12 +104,12 @@ export function DataTable<T>({
               </th>
             ) : null}
             {expandable ? (
-              <th className="w-10 px-2 py-2" aria-hidden="true">
+              <th className="w-12 px-3 py-3" aria-hidden="true">
                 <span className="sr-only">Expand</span>
               </th>
             ) : null}
             {columns.map(column => (
-              <th key={column.header} className="px-4 py-2 font-semibold">
+              <th key={column.header} className="px-4 py-3 font-semibold">
                 {column.header}
               </th>
             ))}
@@ -123,12 +124,12 @@ export function DataTable<T>({
             return (
               <Fragment key={key}>
                 <tr
-                  className={`border-b border-gray-100 transition-colors ${
-                    isSelected ? 'bg-[#E8F0FF]/60' : 'hover:bg-gray-50/60'
+                  className={`border-b border-border transition-colors ${
+                    isSelected ? 'bg-info-tint/60' : 'hover:bg-subtle/60'
                   }`}
                 >
                   {selectable ? (
-                    <td className="px-3 py-2">
+                    <td className="px-4 py-3.5">
                       <AppleCheckbox
                         checked={isSelected}
                         ariaLabel={`Select row ${key}`}
@@ -137,29 +138,36 @@ export function DataTable<T>({
                     </td>
                   ) : null}
                   {expandable ? (
-                    <td className="px-2 py-2">
+                    <td className="px-3 py-3.5">
+                      {/* Real control with a hit area and press feedback, not a bare text glyph (R12/R21). */}
                       <button
                         type="button"
                         aria-expanded={isOpen}
                         aria-label={isOpen ? `Collapse rows for ${key}` : `Expand rows for ${key}`}
                         onClick={() => toggle(key)}
-                        className="rounded p-1 text-gray-ink transition-colors hover:bg-gray-100"
+                        className="flex h-7 w-7 items-center justify-center rounded-full text-gray-ink transition-all duration-100 ease-out hover:bg-subtle active:scale-[0.94] motion-reduce:transition-none"
                       >
-                        {isOpen ? '▾' : '▸'}
+                        <Icon
+                          name="chevronDown"
+                          size={14}
+                          className={`transition-transform duration-150 ease-settle ${
+                            isOpen ? 'rotate-0' : '-rotate-90'
+                          } motion-reduce:transition-none`}
+                        />
                       </button>
                     </td>
                   ) : null}
                   {columns.map(column => (
-                    <td key={column.header} className="px-4 py-2">
+                    <td key={column.header} className="px-4 py-3.5">
                       {column.cell(row)}
                     </td>
                   ))}
                 </tr>
                 {expandable && isOpen ? (
-                  <tr className="border-b border-gray-100 bg-gray-50/50">
+                  <tr className="border-b border-border bg-subtle/50">
                     <td />
                     {selectable ? <td /> : null}
-                    <td colSpan={columns.length} className="px-4 py-3">
+                    <td colSpan={columns.length} className="px-4 py-4">
                       {expandable(row)}
                     </td>
                   </tr>
