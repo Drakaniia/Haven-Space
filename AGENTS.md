@@ -66,8 +66,10 @@ bun install --cwd apps/web
 The `haven-space` Pages project uses Cloudflare's **git integration** (connected to this GitHub
 repo): every pull request gets a Cloudflare preview build with a comment + check, and every push
 to `main` deploys to production — no `wrangler pages deploy` in CI needed. The Pages project's
-git build settings are: build command `bun run pages:ci`, output dir `apps/web/dist/pages`
-(assembled by `scripts/build/build-pages.mjs`). CI requires the
+git build settings are: build command `bun scripts/build-pages.mjs` (a forwarding shim — the
+project's config still points at the assembler's pre-move path), output dir `apps/web/dist/pages`.
+`bun run pages:ci` runs the whole build the way Pages does and is the command the project should
+be repointed at. CI requires the
 `CLOUDFLARE_API_TOKEN` and `CLOUDFLARE_ACCOUNT_ID` repository secrets for the API Worker deploy.
 
 ## Development Conventions

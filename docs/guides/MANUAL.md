@@ -82,11 +82,12 @@ work as a fallback. CI (`.github/workflows/deploy.yml`) only deploys the `haven-
 on push to `main`; it needs the `CLOUDFLARE_API_TOKEN` and `CLOUDFLARE_ACCOUNT_ID` repository
 secrets.
 
-The Pages project's git build settings (build command `bun run pages:ci`, output dir
-`apps/web/dist/pages`) are configured so that any git-triggered or dashboard build also produces
-the correct `_worker.js` + assets deployment. `pages:ci` installs from the committed lockfile,
-verifies every declared dependency resolved, builds, and assembles the bundle — so run it locally
-to reproduce a Pages build exactly (`bun run pages:ci`).
+The Pages project's git build settings are build command `bun scripts/build-pages.mjs` and output
+dir `apps/web/dist/pages`. That paths is a forwarding shim to `scripts/build/build-pages.mjs`, kept
+because removing it broke every build until the shim was restored — do not delete it while the
+project's build command still points at the old location. `bun run pages:ci` installs from the
+committed lockfile, verifies every declared dependency is present, builds and assembles the bundle,
+so run it locally to reproduce a Pages build exactly; repointing the project at it is the end state.
 
 After changing `APP_ORIGIN` in `workers/api/wrangler.jsonc`, redeploy the Worker:
 
