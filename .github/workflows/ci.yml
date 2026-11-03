@@ -46,5 +46,11 @@ jobs:
       - name: Build web
         run: bun run web:build
 
+      # Runs the same entry point the Cloudflare Pages git build uses, so a build
+      # failure is visible in this workflow's logs instead of only in the Pages
+      # dashboard.
+      - name: Assemble Pages bundle
+        run: bun run pages:build
+
       - name: Lint (Prettier)
         run: bun run format:check

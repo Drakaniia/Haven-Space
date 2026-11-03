@@ -5,27 +5,39 @@
  *
  * The web app is built by Vite + `@cloudflare/vite-plugin` in Worker mode, which
  * produces:
- *   - apps/web/dist/server/index.js  -> the SSR module worker entry
- *   - apps/web/dist/server/assets/   -> lazy server chunks imported by the worker
- *   - apps/web/dist/client/assets/   -> the hashed client bundles (JS/CSS/images)
+ *   - the SSR module worker entry  -> `dist/server/index.js`
+ *   - lazy server chunks           -> `dist/server/assets/`
+ *   - hashed client bundles        -> `dist/client/assets/`
+ *
+ * Those locations have moved between plugin releases (the entry used to be
+ * `dist/index.js`), so this script locates them instead of trusting one layout,
+ * and prints the actual `dist` tree when it cannot — a Cloudflare Pages build log
+ * is the only place that output is visible.
  *
  * Pages "advanced mode" deployments need a `_worker.js` at the deployment root
- * plus the static assets alongside it. This script assembles those into
+ * plus the static assets alongside it, so this assembles them into
  * `apps/web/dist/pages/` (git-ignored via `dist/`), merging the server and
  * client asset dirs under a single `/assets` prefix (the same layout as the
- * current production deployment), the directory used by:
- *   - `bun run pages:build` / the app `deploy` script
- *   - the Pages project's git build settings (build command + destination dir)
- *   - the GitHub Actions deploy workflow
+ * current production deployment). That directory is used by:
+ *   - `bun run pages:build` / `bun run pages:ci`
+ *   - the Pages project's git build settings (build command + output dir)
  *
  * `_routes.json` routes every request through the worker except `/assets/*`,
  * which Pages serves statically (the built worker does not use the ASSETS
  * binding, so without this the hashed bundles would be invisible to it).
  *
  * Usage (from the repo root, after `bun run web:build`):
- *   bun scripts/build-pages.mjs
+ *   bun scripts/build/build-pages.mjs
  */
-import { cpSync, existsSync, mkdirSync, rmSync, writeFileSync } from 'node:fs';
+import {
+  cpSync,
+  existsSync,
+  mkdirSync,
+  readdirSync,
+  rmSync,
+  statSync,
+  writeFileSync,
+} from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
@@ -33,33 +45,48 @@ const ROOT = join(dirname(fileURLToPath(import.meta.url)), '../..');
 const DIST = join(ROOT, 'apps', 'web', 'dist');
 const OUT = join(DIST, 'pages');
 
-const workerEntry = join(DIST, 'server', 'index.js');
-const serverAssets = join(DIST, 'server', 'assets');
-const clientAssets = join(DIST, 'client', 'assets');
+const WORKER_ENTRY_CANDIDATES = [
+  'server/index.js',
+  'index.js',
+  'server/server.js',
+  'server/_worker.js',
+];
+const ASSET_DIR_CANDIDATES = ['server/assets', 'client/assets', 'assets'];
 
-if (!existsSync(workerEntry)) {
-  console.error(
-    `Missing ${join(
-      'apps',
-      'web',
-      'dist',
-      'server',
-      'index.js'
-    )} — run \`bun run web:build\` first.`
-  );
+function listTree(dir, depth = 0) {
+  if (!existsSync(dir)) return `${dir} does not exist`;
+  const lines = [`${dir}/`];
+  for (const name of readdirSync(dir).sort()) {
+    const path = join(dir, name);
+    const isDir = statSync(path).isDirectory();
+    lines.push(`${'  '.repeat(depth + 1)}${name}${isDir ? '/' : ''}`);
+    if (isDir && depth < 1) {
+      for (const child of readdirSync(path).sort().slice(0, 5)) {
+        lines.push(`${'  '.repeat(depth + 2)}${child}`);
+      }
+    }
+  }
+  return lines.join('\n');
+}
+
+function fail(message) {
+  console.error(`\n✗ ${message}`);
+  console.error('\nBuild output was:\n' + listTree(DIST));
   process.exit(1);
 }
-if (!existsSync(serverAssets) || !existsSync(clientAssets)) {
-  console.error(
-    `Missing ${join('apps', 'web', 'dist', 'server', 'assets')} or ${join(
-      'apps',
-      'web',
-      'dist',
-      'client',
-      'assets'
-    )} — run \`bun run web:build\` first.`
+
+const workerEntry = WORKER_ENTRY_CANDIDATES.map((p) => join(DIST, p)).find(existsSync);
+const assetDirs = ASSET_DIR_CANDIDATES.map((p) => join(DIST, p)).filter(existsSync);
+
+if (!workerEntry) {
+  fail(
+    `Could not find the SSR worker entry in apps/web/dist (looked for ${WORKER_ENTRY_CANDIDATES.join(', ')}) — run \`bun run web:build\` first.`
   );
-  process.exit(1);
+}
+if (assetDirs.length === 0) {
+  fail(
+    `Could not find any built assets in apps/web/dist (looked for ${ASSET_DIR_CANDIDATES.join(', ')}) — run \`bun run web:build\` first.`
+  );
 }
 
 rmSync(OUT, { recursive: true, force: true });
@@ -68,12 +95,18 @@ mkdirSync(join(OUT, 'assets'), { recursive: true });
 cpSync(workerEntry, join(OUT, '_worker.js'));
 // The worker's `./assets/...` imports (lazy server chunks) must resolve during
 // bundling, and the browser loads the client bundles from /assets, so merge both.
-cpSync(serverAssets, join(OUT, 'assets'), { recursive: true });
-cpSync(clientAssets, join(OUT, 'assets'), { recursive: true });
+for (const dir of assetDirs) {
+  cpSync(dir, join(OUT, 'assets'), { recursive: true });
+}
 
 writeFileSync(
   join(OUT, '_routes.json'),
   JSON.stringify({ version: 1, include: ['/*'], exclude: ['/assets/*'] }, null, 2) + '\n'
 );
 
-console.log(`Pages bundle ready at ${join('apps', 'web', 'dist', 'pages')}`);
+console.log(
+  `Pages bundle ready at ${join('apps', 'web', 'dist', 'pages')} ` +
+    `(worker: ${workerEntry.slice(DIST.length + 1)}, assets: ${assetDirs
+      .map((d) => d.slice(DIST.length + 1))
+      .join(' + ')})`
+);
