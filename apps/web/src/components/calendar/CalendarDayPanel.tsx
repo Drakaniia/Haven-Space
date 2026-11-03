@@ -2,7 +2,7 @@ import { Link } from '@tanstack/react-router';
 
 import { Card } from '../ui/Card';
 import { Icon } from '../ui/Icon';
-import { StatusBadge } from '../ui/StatusBadge';
+import { StatusBadge, statusTone } from '../ui/StatusBadge';
 import { buttonClasses, Button } from '../ui/Button';
 import { formatPeso } from '../../lib/payments';
 import type { CalendarEvent } from '../../lib/types';
@@ -22,7 +22,7 @@ export function CalendarDayPanel({
 }: {
   date: string;
   events: CalendarEvent[];
-  onApproveLeave: (event: CalendarEvent) => void;
+  onApproveLeave?: (event: CalendarEvent) => void;
 }) {
   const summary = daySummary(events);
   const hasMoney = events.some(event => event.family === 'money');
@@ -32,109 +32,136 @@ export function CalendarDayPanel({
   );
 
   return (
-    <Card className="lg:sticky lg:top-4" padding="p-4">
-      <div className="flex items-baseline justify-between gap-2">
-        <h2 className="text-base font-semibold tracking-tight text-ink">{formatDayLabel(date)}</h2>
-        <span className="text-xs text-gray-ink">
-          {events.length === 1 ? '1 event' : `${events.length} events`}
-        </span>
-      </div>
-
-      {events.length === 0 ? (
-        <p className="mt-3 text-sm text-gray-ink">Nothing scheduled.</p>
-      ) : (
-        <>
-          {hasMoney ? (
-            <div className="mt-3 flex flex-wrap items-center gap-x-6 gap-y-1 rounded-xl bg-subtle px-3 py-2">
-              <span className="text-xs text-gray-ink">
-                Due <span className="font-semibold text-ink">{formatPeso(summary.due)}</span>
-              </span>
-              <span className="text-xs text-gray-ink">
-                Collected{' '}
-                <span className="font-semibold text-ink">{formatPeso(summary.collected)}</span>
-              </span>
-              {summary.overdueCount > 0 ? (
-                <span className="text-xs text-error-ink">{summary.overdueCount} overdue</span>
-              ) : null}
-            </div>
-          ) : null}
-
-          <ul className="mt-3 space-y-3">
-            {events.map(event => (
-              <li key={event.id} className="border-b border-border pb-3 last:border-0 last:pb-0">
-                <div className="flex items-start gap-2">
-                  <Icon name={eventIcon(event)} size={16} className="mt-0.5 shrink-0" />
-                  <div className="min-w-0 flex-1">
-                    <div className="flex flex-wrap items-center gap-2">
-                      <p className="text-sm font-medium text-ink">{eventLabel(event)}</p>
-                      <StatusBadge status={event.status} />
-                    </div>
-                    {event.approximate ? (
-                      <p className="text-xs text-gray-ink">Accepted date is approximate</p>
-                    ) : null}
-                    <p className="mt-0.5 text-xs text-gray-ink">
-                      {[event.room?.name, event.property?.name].filter(Boolean).join(' · ') || '—'}
-                    </p>
-                    {/* Approval is blocked while anything is unsettled, so the
-                        amount rides on the leave row instead of only surfacing
-                        in the dialog (spec `approve-leave-request` §5.3). */}
-                    {(event.type === 'leave_requested' || event.type === 'tenancy_move_out') &&
-                    (event.outstanding_amount ?? 0) > 0 ? (
-                      <p className="mt-0.5 text-xs font-medium text-warning-ink">
-                        {formatPeso(event.outstanding_amount ?? 0)} due
-                      </p>
-                    ) : null}
-                    {event.amount !== null ? (
-                      <p className="text-sm font-semibold text-ink">{formatPeso(event.amount)}</p>
-                    ) : null}
-                    <div className="mt-1 flex flex-wrap items-center gap-3">
-                      <Link
-                        to={event.link.to}
-                        className="inline-flex text-xs font-semibold text-primary underline"
-                      >
-                        {event.link.label}
-                      </Link>
-                      {event.status === 'pending' &&
-                      event.application_id !== null &&
-                      (event.type === 'leave_requested' || event.type === 'tenancy_move_out') ? (
-                        <Button variant="outline" size="sm" onClick={() => onApproveLeave(event)}>
-                          Approve
-                        </Button>
-                      ) : null}
-                    </div>
-                  </div>
-                </div>
-              </li>
-            ))}
-          </ul>
-        </>
-      )}
-
-      {hasMoney || hasApplications || hasLeave ? (
-        <div className="mt-4 flex flex-wrap gap-2">
-          {hasMoney ? (
-            <Link to="/landlord/payments/record" className={buttonClasses({ size: 'sm' })}>
-              Record payment
-            </Link>
-          ) : null}
-          {hasApplications ? (
-            <Link
-              to="/landlord/applications"
-              className={buttonClasses({ size: 'sm', variant: 'outline' })}
-            >
-              Review application
-            </Link>
-          ) : null}
-          {hasLeave ? (
-            <Link
-              to="/landlord/boarders"
-              className={buttonClasses({ size: 'sm', variant: 'outline' })}
-            >
-              Review leave request
-            </Link>
-          ) : null}
+    <Card className="lg:sticky lg:top-24" padding="p-0">
+      <section aria-label="Selected day">
+        <div className="flex items-baseline justify-between gap-3 border-b border-border px-5 py-4">
+          <h2 className="font-display text-lg font-medium tracking-[-0.015em] text-ink">
+            {formatDayLabel(date)}
+          </h2>
+          <span className="shrink-0 text-xs font-medium text-gray-ink">
+            {events.length === 1 ? '1 event' : `${events.length} events`}
+          </span>
         </div>
-      ) : null}
+
+        {events.length === 0 ? (
+          <p className="px-5 py-5 text-sm text-gray-ink">Nothing scheduled.</p>
+        ) : (
+          <>
+            {hasMoney ? (
+              <dl className="grid grid-cols-2 border-b border-border bg-cream/60">
+                <div className="px-5 py-3">
+                  <dt className="text-xs text-gray-ink">Due</dt>
+                  <dd className="mt-0.5 text-sm font-semibold tabular text-ink">
+                    {formatPeso(summary.due)}
+                  </dd>
+                </div>
+                <div className="border-l border-border px-5 py-3">
+                  <dt className="text-xs text-gray-ink">Collected</dt>
+                  <dd className="mt-0.5 text-sm font-semibold tabular text-success-ink">
+                    {formatPeso(summary.collected)}
+                  </dd>
+                </div>
+                {summary.overdueCount > 0 ? (
+                  <div className="col-span-2 border-t border-border px-5 py-2">
+                    <dt className="sr-only">Overdue charges</dt>
+                    <dd className="text-xs font-semibold text-error-ink">
+                      {summary.overdueCount} overdue
+                    </dd>
+                  </div>
+                ) : null}
+              </dl>
+            ) : null}
+
+            <ul className="divide-y divide-border">
+              {events.map(event => {
+                const isLeave =
+                  event.type === 'leave_requested' || event.type === 'tenancy_move_out';
+
+                return (
+                  <li key={event.id} className="flex items-start gap-3 px-5 py-3.5">
+                    <span
+                      aria-hidden="true"
+                      className={`mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-lg ${statusTone(
+                        event.status
+                      )}`}
+                    >
+                      <Icon name={eventIcon(event)} size={14} />
+                    </span>
+                    <div className="min-w-0 flex-1">
+                      <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
+                        <p className="text-sm font-semibold text-ink">{eventLabel(event)}</p>
+                        <StatusBadge status={event.status} />
+                      </div>
+                      <p className="mt-0.5 text-xs text-gray-ink">
+                        {[event.room?.name, event.property?.name].filter(Boolean).join(' · ') ||
+                          '—'}
+                      </p>
+                      {event.approximate ? (
+                        <p className="text-xs text-muted">Accepted date is approximate</p>
+                      ) : null}
+                      {/* Approval is blocked while anything is unsettled, so the
+                          amount rides on the leave row instead of only surfacing
+                          in the dialog (spec `approve-leave-request` §5.3). */}
+                      {isLeave && (event.outstanding_amount ?? 0) > 0 ? (
+                        <p className="mt-0.5 text-xs font-semibold text-warning-ink">
+                          {formatPeso(event.outstanding_amount ?? 0)} due
+                        </p>
+                      ) : null}
+                      {event.amount !== null ? (
+                        <p className="mt-1 text-sm font-semibold tabular text-ink">
+                          {formatPeso(event.amount)}
+                        </p>
+                      ) : null}
+                      <div className="mt-2 flex flex-wrap items-center gap-3">
+                        <Link
+                          to={event.link.to}
+                          className="inline-flex rounded-sm text-xs font-semibold text-primary underline-offset-2 hover:underline"
+                        >
+                          {event.link.label}
+                        </Link>
+                        {onApproveLeave &&
+                        event.status === 'pending' &&
+                        event.application_id !== null &&
+                        isLeave ? (
+                          <Button variant="outline" size="sm" onClick={() => onApproveLeave(event)}>
+                            Approve
+                          </Button>
+                        ) : null}
+                      </div>
+                    </div>
+                  </li>
+                );
+              })}
+            </ul>
+          </>
+        )}
+
+        {hasMoney || hasApplications || hasLeave ? (
+          <div className="flex flex-wrap gap-2 border-t border-border bg-subtle/40 px-5 py-3.5">
+            {hasMoney ? (
+              <Link to="/landlord/payments/record" className={buttonClasses({ size: 'sm' })}>
+                Record payment
+              </Link>
+            ) : null}
+            {hasApplications ? (
+              <Link
+                to="/landlord/applications"
+                className={buttonClasses({ size: 'sm', variant: 'outline' })}
+              >
+                Review application
+              </Link>
+            ) : null}
+            {hasLeave ? (
+              <Link
+                to="/landlord/boarders"
+                className={buttonClasses({ size: 'sm', variant: 'outline' })}
+              >
+                Review leave request
+              </Link>
+            ) : null}
+          </div>
+        ) : null}
+      </section>
     </Card>
   );
 }

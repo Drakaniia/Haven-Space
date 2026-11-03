@@ -5,15 +5,57 @@ import type { ToastItem } from '../../lib/toast';
 export type PushToast = (toast: Omit<ToastItem, 'id'>) => void;
 
 /**
- * Locale date for table cells — unchanged from the pre-restructure surface.
+ * Parse an API timestamp.
  *
- * `PropertyAccessTab` formats its history with a time component instead; that
- * inconsistency is recorded in the spec's open questions and deliberately left
- * alone (`admin-apple-ui-restructure` R49).
+ * D1 writes `CURRENT_TIMESTAMP` as `YYYY-MM-DD HH:MM:SS` in UTC with no zone
+ * marker, which `new Date()` would read as *local* time — shifting every audit
+ * entry by the viewer's offset and, near midnight, onto the wrong day. Those are
+ * read as UTC; anything else (ISO strings) is passed through.
  */
+export function parseTimestamp(value: string): Date {
+  const sqlite = /^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}$/.test(value);
+  return new Date(sqlite ? `${value.replace(' ', 'T')}Z` : value);
+}
+
+/** Locale date for table cells. Unparseable values are shown as sent. */
 export function formatDate(value: string): string {
-  const date = new Date(value);
+  const date = parseTimestamp(value);
   return Number.isNaN(date.getTime()) ? value : date.toLocaleDateString();
+}
+
+/** Locale time of day ("3:04 PM"), for log entries grouped under a day heading. */
+export function formatTime(value: string): string {
+  const date = parseTimestamp(value);
+  return Number.isNaN(date.getTime())
+    ? ''
+    : date.toLocaleTimeString(undefined, { hour: 'numeric', minute: '2-digit' });
+}
+
+/** Local calendar-day key (`2026-11-03`) used to group log entries. */
+export function dayKey(value: string): string {
+  const date = parseTimestamp(value);
+  if (Number.isNaN(date.getTime())) return value;
+  const m = String(date.getMonth() + 1).padStart(2, '0');
+  const d = String(date.getDate()).padStart(2, '0');
+  return `${date.getFullYear()}-${m}-${d}`;
+}
+
+/** "Today", "Yesterday", or a full local date for a day key. */
+export function dayLabel(value: string, now = new Date()): string {
+  const date = parseTimestamp(value);
+  if (Number.isNaN(date.getTime())) return value;
+  const key = dayKey(value);
+  const today = dayKey(now.toISOString());
+  const yesterday = new Date(now);
+  yesterday.setDate(now.getDate() - 1);
+  if (key === today) return 'Today';
+  if (key === dayKey(yesterday.toISOString())) return 'Yesterday';
+  return date.toLocaleDateString(undefined, {
+    weekday: 'long',
+    month: 'long',
+    day: 'numeric',
+    year: date.getFullYear() === now.getFullYear() ? undefined : 'numeric',
+  });
 }
 
 /**
@@ -40,18 +82,15 @@ export function sectionHeading(section: AdminSectionKey): { title: string; icon:
  *
  * `Record<AdminSectionKey, string>` so a new section cannot be added without
  * giving it a subtitle — that is the only place section copy can go missing.
- *
- * These eight lines are the *only* new copy in the whole restructure
- * (`admin-apple-ui-restructure` D6/D22/R14); the Overview line is the surface's
- * existing lead paragraph carried over verbatim.
+ * Each line says what the admin *does* here, not just what the list contains.
  */
 export const SECTION_SUBTITLES: Record<AdminSectionKey, string> = {
-  overview: 'Platform overview — accounts, listings, and applications.',
-  users: 'Every account on the platform — boarders, landlords and admins.',
-  properties: 'Listings submitted for moderation and their current status.',
+  overview: 'What is waiting for an admin, then how the platform is doing.',
+  users: 'Every account on the platform. Suspend, ban or reactivate access.',
+  properties: 'Review listings before they go live, and act on flagged ones.',
   applications: 'Boarder applications across all properties.',
-  landlords: 'Verify landlord accounts and review their documents.',
+  landlords: 'Review landlord documents and approve or reject verification.',
   'property-access': "Grant and revoke a landlord's access to a property.",
-  settings: 'Platform-wide configuration values.',
+  settings: 'Platform-wide configuration. Changes apply as soon as they are saved.',
   audit: 'Every administrative action, newest first.',
 };

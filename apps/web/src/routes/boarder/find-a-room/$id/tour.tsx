@@ -1,12 +1,14 @@
-import { createFileRoute, Link, useNavigate } from '@tanstack/react-router';
+import { createFileRoute, Link } from '@tanstack/react-router';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useMemo, useState, type FormEvent } from 'react';
-import { Protected } from '../../../../components/auth/Protected';
-import { Button } from '../../../../components/ui/Button';
+import { FlowSkeleton, FlowSteps, ListingSummary } from '../../../../components/rooms/BookingFlow';
+import { cleanRoomType, formatPrice, isRoomAvailable } from '../../../../components/rooms/detail-helpers';
+import { Button, buttonClasses } from '../../../../components/ui/Button';
+import { Card } from '../../../../components/ui/Card';
 import { ErrorState } from '../../../../components/ui/ErrorState';
 import { Field, SelectInput, TextArea, TextInput } from '../../../../components/ui/Field';
 import { Icon } from '../../../../components/ui/Icon';
-import { Spinner } from '../../../../components/ui/Spinner';
+import { PageHeader } from '../../../../components/ui/PageHeader';
 import { ApiRequestError } from '../../../../lib/api/http';
 import { createApplication } from '../../../../lib/api/boarder';
 import { getRoomDetail } from '../../../../lib/api/public';
@@ -20,11 +22,27 @@ const TIME_SLOTS = [
   'Evening (6:00 PM – 8:00 PM)',
 ];
 
+const TOUR_STEPS = [{ label: 'Choose a place' }, { label: 'Pick a time' }, { label: 'Landlord confirms' }];
+
 function tomorrow(): string {
   const date = new Date();
   date.setDate(date.getDate() + 1);
   return date.toISOString().slice(0, 10);
 }
+
+/** `2026-11-12` → `Thursday, 12 November 2026`, falling back to the raw value. */
+function readableDate(value: string): string {
+  const date = new Date(`${value}T00:00:00`);
+  if (Number.isNaN(date.getTime())) return value;
+  return date.toLocaleDateString(undefined, {
+    weekday: 'long',
+    day: 'numeric',
+    month: 'long',
+    year: 'numeric',
+  });
+}
+
+type TourErrors = { date?: string; time?: string };
 
 export const Route = createFileRoute('/boarder/find-a-room/$id/tour')({
   validateSearch: (search: Record<string, unknown>) => ({
@@ -42,12 +60,12 @@ function TourPage() {
   const { id } = Route.useParams();
   const { room: initialRoom } = Route.useSearch();
   const { token } = useAuth();
-  const navigate = useNavigate();
   const queryClient = useQueryClient();
   const [roomId, setRoomId] = useState(initialRoom);
   const [date, setDate] = useState('');
   const [timeSlot, setTimeSlot] = useState('');
   const [notes, setNotes] = useState('');
+  const [fieldErrors, setFieldErrors] = useState<TourErrors>({});
   const [error, setError] = useState<string | null>(null);
   const [sent, setSent] = useState(false);
 
@@ -88,182 +106,197 @@ function TourPage() {
   });
 
   const listing = detail.data?.data;
-  const availableRooms = useMemo(
-    () => (listing?.rooms ?? []).filter(room => (room.status ?? '').toLowerCase() !== 'occupied'),
-    [listing]
-  );
+  // The same availability rule as the listing page, so a room chosen there is always offered here.
+  const availableRooms = useMemo(() => (listing?.rooms ?? []).filter(isRoomAvailable), [listing]);
+  const selectedRoom = availableRooms.find(room => String(room.id) === roomId) ?? null;
 
   function handleSubmit(e: FormEvent) {
     e.preventDefault();
     setError(null);
-    if (!date) {
-      setError('Choose a preferred date for your tour.');
-      return;
-    }
-    if (!timeSlot) {
-      setError('Choose a preferred time slot.');
+    const next: TourErrors = {};
+    if (!date) next.date = 'Choose a preferred date for your tour.';
+    if (!timeSlot) next.time = 'Choose a preferred time slot.';
+    setFieldErrors(next);
+    if (next.date || next.time) {
+      document.getElementById(next.date ? 'tour-date' : 'tour-time')?.focus();
       return;
     }
     submit.mutate();
   }
 
-  return (
-    <div className="mx-auto max-w-3xl">
-      {detail.isLoading ? (
-        <Spinner />
-      ) : detail.error ? (
-        <ErrorState message={detail.error.message} />
-      ) : !listing ? null : sent ? (
-        <div className="mx-auto max-w-lg py-8 text-center">
-          <span className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-mint">
-            <Icon name="calendarDays" size={32} className="text-primary" />
-          </span>
-          <h1 className="mt-5 text-2xl font-bold text-ink">Tour request sent!</h1>
-          <p className="mt-2 text-gray-ink">
-            Your tour request for <strong className="text-ink">{listing.title}</strong> has been
-            sent to {listing.landlord.name}. They&apos;ll confirm the schedule shortly, and
-            you&apos;ll be notified of their response.
-          </p>
-          <div className="mt-6 rounded-2xl bg-surface p-5 text-left shadow-card">
-            <h3 className="text-sm font-semibold text-ink">Your request</h3>
-            <dl className="mt-3 space-y-2 text-sm">
-              <div className="flex justify-between gap-4">
-                <dt className="text-gray-ink">Preferred date</dt>
-                <dd className="font-medium text-ink">{date}</dd>
-              </div>
-              <div className="flex justify-between gap-4">
-                <dt className="text-gray-ink">Preferred time</dt>
-                <dd className="font-medium text-ink">{timeSlot}</dd>
-              </div>
-            </dl>
-          </div>
-          <div className="mt-6 flex flex-col justify-center gap-3 sm:flex-row">
-            <Link
-              to="/boarder/applications"
-              className="inline-flex items-center justify-center gap-2 rounded-full bg-primary-strong px-6 py-2.5 text-sm font-semibold text-white hover:bg-primary-hover"
-            >
-              View your applications
-            </Link>
-            <Link
-              to="/rooms/$id"
-              params={{ id }}
-              className="inline-flex items-center justify-center gap-2 rounded-full border-2 border-primary px-6 py-2.5 text-sm font-semibold text-primary hover:bg-mint"
-            >
-              Back to property
-            </Link>
-          </div>
-        </div>
-      ) : (
-        <div className="mx-auto max-w-3xl">
-          <Link
-            to="/rooms/$id"
-            params={{ id }}
-            className="mb-4 inline-flex items-center gap-1.5 text-sm text-primary hover:underline"
-          >
-            <Icon name="chevronLeft" size={14} />
-            Back to {listing.title}
-          </Link>
+  if (detail.isLoading) return <FlowSkeleton />;
+  if (detail.error) {
+    return (
+      <ErrorState
+        message="We couldn't load this listing."
+        hint={detail.error.message}
+        action={
+          <Button variant="outline" size="sm" onClick={() => void detail.refetch()}>
+            Try again
+          </Button>
+        }
+      />
+    );
+  }
+  if (!listing) return null;
 
-          <h1 className="text-2xl font-bold text-ink">Schedule a Tour</h1>
-
-          <div className="mt-5 flex flex-col gap-4 rounded-2xl bg-surface p-5 shadow-card sm:flex-row">
-            <div className="h-36 w-full shrink-0 overflow-hidden rounded-xl bg-mint/40 sm:h-[120px] sm:w-[160px]">
-              <img
-                src={listing.coverImage || '/assets/images/placeholder-room.svg'}
-                alt={listing.title}
-                className="h-full w-full object-cover"
-                onError={e => {
-                  e.currentTarget.src = '/assets/images/placeholder-room.svg';
-                }}
-              />
-            </div>
-            <div className="min-w-0 flex-1">
-              <h2 className="truncate text-lg font-bold text-ink">{listing.title}</h2>
-              <p className="mt-1 flex items-center gap-1 text-sm text-gray-ink">
-                <Icon name="location" size={15} className="shrink-0" />
-                <span className="truncate">
-                  {[listing.address, listing.city, listing.province].filter(Boolean).join(', ')}
-                </span>
-              </p>
-              <p className="mt-2 text-sm font-bold text-primary">
-                {`₱${listing.price.toLocaleString()}`}
-                <span className="font-normal text-gray-ink">/month</span>
-              </p>
-            </div>
-          </div>
-
-          <form className="mt-5 rounded-2xl bg-surface p-6 shadow-card" onSubmit={handleSubmit}>
-            <Field label="Room to visit" htmlFor="tour-room">
-              <SelectInput
-                id="tour-room"
-                name="tour-room"
-                value={roomId}
-                onChange={e => setRoomId(e.target.value)}
-              >
-                <option value="">Whole property (no specific room)</option>
-                {availableRooms.map(room => (
-                  <option key={room.id} value={room.id}>
-                    {room.roomNumber || room.roomType} — ₱{room.price.toLocaleString()}/mo
-                  </option>
-                ))}
-              </SelectInput>
-            </Field>
-
-            <Field label="Preferred date" htmlFor="tour-date">
-              <TextInput
-                id="tour-date"
-                type="date"
-                name="tour-date"
-                min={tomorrow()}
-                required
-                value={date}
-                onChange={e => setDate(e.target.value)}
-              />
-            </Field>
-
-            <Field label="Preferred time" htmlFor="tour-time">
-              <SelectInput
-                id="tour-time"
-                name="tour-time"
-                value={timeSlot}
-                onChange={e => setTimeSlot(e.target.value)}
-              >
-                <option value="">Select a time slot</option>
-                {TIME_SLOTS.map(slot => (
-                  <option key={slot} value={slot}>
-                    {slot}
-                  </option>
-                ))}
-              </SelectInput>
-            </Field>
-
-            <Field label="Notes for the landlord (optional)" htmlFor="tour-notes">
-              <TextArea
-                id="tour-notes"
-                name="tour-notes"
-                rows={3}
-                placeholder="Anything the landlord should know before your visit…"
-                value={notes}
-                onChange={e => setNotes(e.target.value)}
-              />
-            </Field>
-
-            {error ? (
-              <div className="mb-4">
-                <ErrorState message={error} />
-              </div>
-            ) : null}
-
-            <Button type="submit" disabled={submit.isPending}>
-              {submit.isPending ? 'Sending request…' : 'Request Tour'}
-            </Button>
-            <p className="mt-3 text-xs text-gray-ink">
-              Your request is sent to the landlord and will appear in your applications.
-              They&apos;ll confirm the schedule once they respond.
+  if (sent) {
+    return (
+      <div className="mx-auto max-w-xl py-4">
+        <Card padding="p-6 sm:p-8">
+          <div className="rise-in text-center">
+            <span className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-mint text-primary">
+              <Icon name="calendarDays" size={28} />
+            </span>
+            <h1 className="mt-5 font-display text-[1.875rem] font-medium leading-tight tracking-[-0.02em] text-ink">
+              Tour request sent
+            </h1>
+            <p className="mx-auto mt-2 max-w-md text-gray-ink">
+              {listing.landlord.name || 'The landlord'} will confirm a time for your visit to{' '}
+              <strong className="font-semibold text-ink">{listing.title}</strong>. You&apos;ll get a
+              notification when they reply.
             </p>
-          </form>
-        </div>
-      )}
+          </div>
+          <dl className="mt-6 divide-y divide-border rounded-xl border border-border text-sm">
+            <SummaryLine label="Room" value={selectedRoom ? cleanRoomType(selectedRoom) + (selectedRoom.roomNumber ? ` · ${selectedRoom.roomNumber}` : '') : 'Whole property'} />
+            <SummaryLine label="Preferred date" value={readableDate(date)} />
+            <SummaryLine label="Preferred time" value={timeSlot} />
+          </dl>
+          <div className="mt-6 flex flex-col gap-2.5 sm:flex-row sm:justify-center">
+            <Link to="/boarder/applications" className={buttonClasses()}>
+              Track it in Applications
+            </Link>
+            <Link to="/rooms/$id" params={{ id }} className={buttonClasses({ variant: 'outline' })}>
+              Back to the listing
+            </Link>
+          </div>
+        </Card>
+      </div>
+    );
+  }
+
+  return (
+    <div>
+      <Link
+        to="/rooms/$id"
+        params={{ id }}
+        className="mb-5 inline-flex items-center gap-1 text-sm font-medium text-primary hover:underline"
+      >
+        <Icon name="chevronLeft" size={14} />
+        Back to {listing.title}
+      </Link>
+
+      <div className="mb-6">
+        <FlowSteps steps={TOUR_STEPS} current={1} />
+      </div>
+
+      <PageHeader
+        title="Request a tour"
+        subtitle="Pick a day and time that suits you. The landlord confirms the visit before it's booked."
+      />
+
+      <div className="grid grid-cols-1 items-start gap-8 lg:grid-cols-[minmax(0,1fr)_360px]">
+        <aside className="lg:sticky lg:top-24 lg:col-start-2 lg:row-start-1" aria-label="You're visiting">
+          <ListingSummary listing={listing} room={selectedRoom} />
+        </aside>
+
+        <form
+          noValidate
+          className="lg:col-start-1 lg:row-start-1"
+          onSubmit={handleSubmit}
+          aria-describedby="tour-note"
+        >
+          <Card padding="p-5 sm:p-6">
+            <div className="flex flex-col gap-5">
+              <Field label="Room to visit" htmlFor="tour-room">
+                <SelectInput
+                  id="tour-room"
+                  name="tour-room"
+                  value={roomId}
+                  onChange={e => setRoomId(e.target.value)}
+                >
+                  <option value="">Whole property (no specific room)</option>
+                  {availableRooms.map(room => (
+                    <option key={room.id} value={room.id}>
+                      {cleanRoomType(room)}
+                      {room.roomNumber ? ` · ${room.roomNumber}` : ''} — {formatPrice(room.price)}/mo
+                    </option>
+                  ))}
+                </SelectInput>
+              </Field>
+
+              <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
+                <Field label="Preferred date" htmlFor="tour-date" error={fieldErrors.date}>
+                  <TextInput
+                    id="tour-date"
+                    type="date"
+                    name="tour-date"
+                    min={tomorrow()}
+                    required
+                    aria-invalid={Boolean(fieldErrors.date)}
+                    value={date}
+                    onChange={e => {
+                      setDate(e.target.value);
+                      if (fieldErrors.date) setFieldErrors(f => ({ ...f, date: undefined }));
+                    }}
+                  />
+                </Field>
+
+                <Field label="Preferred time" htmlFor="tour-time" error={fieldErrors.time}>
+                  <SelectInput
+                    id="tour-time"
+                    name="tour-time"
+                    aria-invalid={Boolean(fieldErrors.time)}
+                    value={timeSlot}
+                    onChange={e => {
+                      setTimeSlot(e.target.value);
+                      if (fieldErrors.time) setFieldErrors(f => ({ ...f, time: undefined }));
+                    }}
+                  >
+                    <option value="">Select a time slot</option>
+                    {TIME_SLOTS.map(slot => (
+                      <option key={slot} value={slot}>
+                        {slot}
+                      </option>
+                    ))}
+                  </SelectInput>
+                </Field>
+              </div>
+
+              <Field label="Notes for the landlord (optional)" htmlFor="tour-notes">
+                <TextArea
+                  id="tour-notes"
+                  name="tour-notes"
+                  rows={3}
+                  placeholder="Anything the landlord should know before your visit…"
+                  value={notes}
+                  onChange={e => setNotes(e.target.value)}
+                />
+              </Field>
+
+              {error ? <ErrorState message={error} /> : null}
+
+              <div className="flex flex-col-reverse gap-3 border-t border-border pt-5 sm:flex-row sm:items-center sm:justify-between">
+                <p id="tour-note" className="text-sm text-gray-ink">
+                  Your request appears in Applications while you wait.
+                </p>
+                <Button type="submit" size="lg" disabled={submit.isPending}>
+                  {submit.isPending ? 'Sending request…' : 'Send tour request'}
+                </Button>
+              </div>
+            </div>
+          </Card>
+        </form>
+      </div>
+    </div>
+  );
+}
+
+function SummaryLine({ label, value }: { label: string; value: string }) {
+  return (
+    <div className="flex items-baseline justify-between gap-4 px-4 py-3">
+      <dt className="text-gray-ink">{label}</dt>
+      <dd className="text-right font-medium text-ink">{value}</dd>
     </div>
   );
 }

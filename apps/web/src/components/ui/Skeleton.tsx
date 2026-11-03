@@ -4,7 +4,7 @@ export function Skeleton({ className = '', ...props }: HTMLAttributes<HTMLDivEle
   return (
     <div
       aria-hidden="true"
-      className={`animate-pulse rounded-md bg-subtle ${className}`}
+      className={`animate-pulse rounded-lg bg-subtle ${className}`}
       {...props}
     />
   );

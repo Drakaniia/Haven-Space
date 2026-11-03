@@ -5,6 +5,7 @@ import { Button } from '../ui/Button';
 import { Drawer } from '../ui/Drawer';
 import { ErrorState } from '../ui/ErrorState';
 import { Field, TextArea } from '../ui/Field';
+import { Icon } from '../ui/Icon';
 import { Modal } from '../ui/Modal';
 import { Skeleton } from '../ui/Skeleton';
 import { StatusBadge } from '../ui/StatusBadge';
@@ -97,6 +98,8 @@ export function ReviewPaymentDrawer({
   const monthName = detail ? monthLabel(detail.due_date.slice(0, 7)).split(' ')[0] : '';
   const underpaid = pending && detail ? pending.amount < detail.total_due : false;
   const overpaid = pending && detail ? pending.amount > detail.total_due : false;
+  const exact = pending && detail ? pending.amount === detail.total_due : false;
+  const shown = pending ?? settled;
 
   return (
     <>
@@ -113,6 +116,9 @@ export function ReviewPaymentDrawer({
         footer={
           pending ? (
             <div className="flex flex-col gap-3">
+              <p className="text-sm text-gray-ink">
+                Check the amount and reference before approving.
+              </p>
               <div className="flex flex-wrap items-center gap-2">
                 <Button
                   disabled={underpaid || approve.isPending || reject.isPending}
@@ -177,57 +183,72 @@ export function ReviewPaymentDrawer({
               />
             </div>
 
-            {pending || settled ? (
-              <dl className="grid grid-cols-2 gap-4">
-                <div>
-                  <dt className="text-xs uppercase tracking-wide text-gray-ink">Amount</dt>
-                  <dd className="mt-1 text-xl font-semibold text-ink">
-                    {formatPeso((pending ?? settled)!.amount)}
-                  </dd>
+            {shown ? (
+              <div className="rounded-2xl border border-border bg-cream/60">
+                <div className="px-4 pb-3 pt-4">
+                  <p className="text-xs font-medium text-gray-ink">Amount sent</p>
+                  <p className="mt-1 font-display text-[2rem] font-medium leading-none tracking-[-0.02em] tabular text-ink">
+                    {formatPeso(shown.amount)}
+                  </p>
+                  {pending && detail ? (
+                    <p
+                      className={`mt-2 flex items-center gap-1.5 text-sm ${
+                        exact ? 'text-success-ink' : underpaid ? 'text-error-ink' : 'text-warning-ink'
+                      }`}
+                    >
+                      {exact ? <Icon name="check" size={14} className="shrink-0" /> : null}
+                      {exact
+                        ? `Matches the ${formatPeso(detail.total_due)} due`
+                        : `Charge total ${formatPeso(detail.total_due)}`}
+                    </p>
+                  ) : null}
                 </div>
-                <div>
-                  <dt className="text-xs uppercase tracking-wide text-gray-ink">Method</dt>
-                  <dd className="mt-1 text-sm text-ink">
-                    {paymentMethodLabel(
-                      (pending ?? settled)!.payment_method,
-                      detail?.payment_method_label
-                    )}
-                  </dd>
-                </div>
-                <div>
-                  <dt className="text-xs uppercase tracking-wide text-gray-ink">Reference</dt>
-                  <dd className="mt-1 text-sm text-ink">
-                    {(pending ?? settled)!.reference_number || '—'}
-                  </dd>
-                </div>
-                <div>
-                  <dt className="text-xs uppercase tracking-wide text-gray-ink">Submitted</dt>
-                  <dd className="mt-1 text-sm text-ink">
-                    {formatDateTime((pending ?? settled)!.created_at)}
-                  </dd>
-                </div>
-              </dl>
+                <dl className="grid grid-cols-2 gap-x-4 gap-y-3 border-t border-border px-4 py-3">
+                  <div className="min-w-0">
+                    <dt className="text-xs font-medium text-gray-ink">Method</dt>
+                    <dd className="mt-0.5 text-sm font-medium text-ink">
+                      {paymentMethodLabel(shown.payment_method, detail?.payment_method_label)}
+                    </dd>
+                  </div>
+                  <div className="min-w-0">
+                    <dt className="text-xs font-medium text-gray-ink">Reference</dt>
+                    <dd className="mt-0.5 break-all font-mono text-sm text-ink">
+                      {shown.reference_number || '—'}
+                    </dd>
+                  </div>
+                  <div className="col-span-2">
+                    <dt className="text-xs font-medium text-gray-ink">Submitted</dt>
+                    <dd className="mt-0.5 text-sm text-ink">{formatDateTime(shown.created_at)}</dd>
+                  </div>
+                </dl>
+              </div>
             ) : null}
 
             {overpaid && detail ? (
-              <p className="text-sm text-warning-ink">
-                Overpaid by {formatPeso((pending?.amount ?? 0) - detail.total_due)}.
+              <p className="rounded-xl border border-warning-border bg-warning-tint px-4 py-3 text-sm text-warning-ink">
+                Overpaid by {formatPeso((pending?.amount ?? 0) - detail.total_due)}. Approving
+                settles this charge; agree with the tenant how the extra is handled.
               </p>
             ) : null}
 
             <div>
-              <h3 className="text-sm font-semibold text-ink">Payment proof</h3>
-              {pending?.proof_url || settled?.proof_url ? (
+              <div className="flex items-baseline justify-between gap-3">
+                <h3 className="text-sm font-semibold text-ink">Payment proof</h3>
+                {shown?.proof_url ? (
+                  <span className="text-xs text-muted">Opens full size in a new tab</span>
+                ) : null}
+              </div>
+              {shown?.proof_url ? (
                 <a
-                  href={(pending ?? settled)?.proof_url ?? '#'}
+                  href={shown.proof_url}
                   target="_blank"
                   rel="noreferrer"
-                  className="mt-2 flex items-center justify-center rounded-xl border border-border bg-subtle/40 p-3"
+                  className="mt-2 flex items-center justify-center rounded-xl border border-border bg-subtle/50 p-3 transition-colors duration-150 hover:border-border-strong"
                 >
                   <img
-                    src={(pending ?? settled)?.proof_url ?? ''}
+                    src={shown.proof_url}
                     alt={`Payment proof from ${detail?.boarder_name ?? row.boarder_name}`}
-                    className="max-h-64 w-auto object-contain"
+                    className="max-h-80 w-auto rounded-md object-contain"
                   />
                 </a>
               ) : (
@@ -239,9 +260,6 @@ export function ReviewPaymentDrawer({
 
             {pending ? (
               <>
-                <p className="text-sm text-gray-ink">
-                  Check the amount and reference before approving.
-                </p>
                 {underpaid && detail ? (
                   <p className="rounded-xl border border-error-border bg-error-tint px-4 py-3 text-sm text-error-ink">
                     The tenant submitted {formatPeso(pending.amount)} of the{' '}

@@ -1,6 +1,7 @@
 import { useEffect, useRef } from 'react';
 import { Link } from '@tanstack/react-router';
 
+import { Icon } from '../ui/Icon';
 import { StatusBadge } from '../ui/StatusBadge';
 import { formatPeso } from '../../lib/payments';
 import type { CalendarEvent } from '../../lib/types';
@@ -76,12 +77,12 @@ export function CalendarEventPopover({
       role="dialog"
       tabIndex={-1}
       aria-label={eventLabel(event)}
-      className={`absolute top-full z-30 mt-1 w-72 rounded-2xl border border-border bg-surface p-3 text-left shadow-pop outline-none ${
-        align === 'left' ? 'left-0' : 'right-0'
+      className={`menu-pop fixed inset-x-4 bottom-4 z-40 rounded-2xl border border-border bg-surface p-4 text-left shadow-pop outline-none sm:absolute sm:inset-x-auto sm:bottom-auto sm:top-full sm:z-30 sm:mt-1.5 sm:w-72 ${
+        align === 'left' ? 'sm:left-0 sm:origin-top-left' : 'sm:right-0 sm:origin-top-right'
       }`}
     >
-      <div className="flex items-start justify-between gap-2">
-        <div>
+      <div className="flex items-start justify-between gap-3">
+        <div className="min-w-0">
           <p className="text-sm font-semibold text-ink">{eventLabel(event)}</p>
           <p className="mt-0.5 text-xs text-gray-ink">
             {formatShortDayLabel(event.date)} · {eventTypeLabel(event)}
@@ -91,13 +92,13 @@ export function CalendarEventPopover({
         <StatusBadge status={event.status} />
       </div>
 
-      {party ? <p className="mt-2 text-xs text-gray-ink">{party}</p> : null}
+      {party ? <p className="mt-2.5 text-xs text-gray-ink">{party}</p> : null}
 
       {event.amount !== null ? (
-        <p className="mt-2 text-sm font-semibold text-ink">
+        <p className="mt-2.5 font-display text-xl font-medium tracking-[-0.01em] tabular text-ink">
           {formatPeso(event.amount)}
           {event.late_fee ? (
-            <span className="ml-1 text-xs font-normal text-warning-ink">
+            <span className="ml-1.5 font-sans text-xs font-normal text-warning-ink">
               (incl. {formatPeso(event.late_fee)} late fee)
             </span>
           ) : null}
@@ -106,7 +107,7 @@ export function CalendarEventPopover({
 
       {event.period_start && event.period_end ? (
         <p className="text-xs text-gray-ink">
-          {event.period_start} → {event.period_end}
+          Covers {formatShortDayLabel(event.period_start)} – {formatShortDayLabel(event.period_end)}
         </p>
       ) : null}
 
@@ -118,12 +119,15 @@ export function CalendarEventPopover({
         <p className="mt-1 text-xs text-gray-ink">{event.description}</p>
       ) : null}
 
-      <Link
-        to={event.link.to}
-        className="mt-3 inline-flex text-sm font-semibold text-primary underline"
-      >
-        {event.link.label}
-      </Link>
+      <div className="mt-3 border-t border-border pt-3">
+        <Link
+          to={event.link.to}
+          className="inline-flex items-center gap-1 rounded-sm text-sm font-semibold text-primary underline-offset-2 hover:underline"
+        >
+          {event.link.label}
+          <Icon name="chevronRight" size={14} />
+        </Link>
+      </div>
     </div>
   );
 }

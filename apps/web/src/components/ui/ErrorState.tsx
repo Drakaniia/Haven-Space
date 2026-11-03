@@ -19,9 +19,9 @@ export function ErrorState({
   action?: ReactNode;
 }) {
   return (
-    <div className="rounded-xl border border-error-border bg-error-tint p-4 text-error-ink">
-      <p>{message}</p>
-      {hint ? <p className="mt-1 text-sm opacity-80">{hint}</p> : null}
+    <div role="alert" className="rounded-2xl border border-error-border bg-error-tint px-5 py-4 text-error-ink">
+      <p className="font-semibold">{message}</p>
+      {hint ? <p className="mt-1 text-sm leading-relaxed opacity-85">{hint}</p> : null}
       {action ? <div className="mt-3">{action}</div> : null}
     </div>
   );

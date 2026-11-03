@@ -3,6 +3,8 @@ import { createServerFn } from '@tanstack/react-start';
 import { env } from 'cloudflare:workers';
 import { PublicLayout } from '../../components/layout/PublicLayout';
 import { RoomDetailView } from '../../components/rooms/RoomDetailView';
+import { buttonClasses } from '../../components/ui/Button';
+import { EmptyState } from '../../components/ui/EmptyState';
 import { getRoomDetail, getSimilarRooms } from '../../lib/api/public';
 import type { ListingDetailResponse, SimilarPropertiesResponse } from '../../lib/types';
 
@@ -39,16 +41,20 @@ function RoomDetailPage() {
   if (!data.found) {
     return (
       <PublicLayout>
-        <main className="mx-auto max-w-4xl p-6 text-center">
-          <h1 className="text-2xl font-bold">Room not found</h1>
-          <p className="mt-2 text-gray-ink">This listing may have been removed or never existed.</p>
-          <Link
-            to="/find-a-room"
-            className="mt-6 inline-block rounded-full bg-primary-strong px-6 py-3 text-sm font-semibold text-white hover:bg-primary-hover"
-          >
-            Browse rooms
-          </Link>
-        </main>
+        {/* PublicLayout already renders the page's <main>; this is a section inside it. */}
+        <section className="mx-auto max-w-2xl px-4 py-16 sm:py-24">
+          <h1 className="sr-only">Listing not found</h1>
+          <EmptyState
+            icon="search"
+            title="This listing isn't available"
+            description="It may have been unpublished by the landlord or removed. Other rooms are still open."
+            action={
+              <Link to="/find-a-room" className={buttonClasses()}>
+                Browse rooms
+              </Link>
+            }
+          />
+        </section>
       </PublicLayout>
     );
   }

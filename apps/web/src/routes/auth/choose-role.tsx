@@ -1,10 +1,12 @@
 import { Link, createFileRoute, useNavigate, useSearch } from '@tanstack/react-router';
 import { useEffect, useRef, useState, type FormEvent } from 'react';
+import { AuthAlert, AuthStatus } from '../../components/auth/AuthAlert';
 import { AuthSplitLayout } from '../../components/auth/AuthSplitLayout';
-import { Button } from '../../components/ui/Button';
-import { ErrorState } from '../../components/ui/ErrorState';
+import { FormSection } from '../../components/auth/FormSection';
+import { RoleChoice, type RoleValue } from '../../components/auth/RoleChoice';
+import { Button, buttonClasses } from '../../components/ui/Button';
 import { Field, TextArea, TextInput } from '../../components/ui/Field';
-import { Icon } from '../../components/ui/Icon';
+import { Spinner } from '../../components/ui/Spinner';
 import { useAuth } from '../../lib/auth-context';
 import { setPendingToast } from '../../lib/toast';
 import {
@@ -32,7 +34,12 @@ function ChooseRolePage() {
   const [pending, setPending] = useState<{ token: string; session: GooglePendingSession } | null>(
     null
   );
+  // False until the pending-session hash has been read, so the "expired" state can't flash
+  // for a frame before a perfectly valid session is picked up.
+  const [ready, setReady] = useState(false);
   const [step, setStep] = useState<Step>('role');
+  const [role, setRole] = useState<RoleValue | null>(null);
+  const [roleMissing, setRoleMissing] = useState(false);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [details, setDetails] = useState({
@@ -52,6 +59,7 @@ function ChooseRolePage() {
       setPending(pending);
       clearGooglePendingHash();
     }
+    setReady(true);
   }, []);
 
   const session = pending?.session;
@@ -93,6 +101,16 @@ function ChooseRolePage() {
     }
   }
 
+  function handleRoleSubmit(e: FormEvent) {
+    e.preventDefault();
+    if (!role) {
+      setRoleMissing(true);
+      return;
+    }
+    if (role === 'boarder') void finish({ role: 'boarder' });
+    else setStep('landlord-details');
+  }
+
   async function handleLandlordSubmit(e: FormEvent) {
     e.preventDefault();
     await finish({
@@ -106,194 +124,237 @@ function ChooseRolePage() {
   }
 
   const banner = searchError ?? error;
+  const expired = ready && !session;
 
   return (
     <AuthSplitLayout
       title={
-        session?.link
+        expired
+          ? 'This sign-in link has expired'
+          : session?.link
           ? 'Link your Google account'
           : step === 'landlord-details'
           ? 'Finish your landlord account'
           : 'Choose how to continue'
       }
       subtitle={
-        session?.link
-          ? `An account already exists for ${session.email}.`
-          : step === 'landlord-details'
-          ? 'These details are optional — you can complete them later from your dashboard.'
-          : 'Welcome to Haven Space — almost there!'
+        !ready ? undefined : expired ? (
+          'Start again from the login page to continue with Google.'
+        ) : session?.link ? (
+          <>
+            An account already exists for{' '}
+            <span className="font-semibold text-ink">{session.email}</span>.
+          </>
+        ) : step === 'landlord-details' ? (
+          'These details are optional. You can complete them later from your dashboard.'
+        ) : (
+          <>
+            Signed in with Google as{' '}
+            <span className="font-semibold text-ink">{session?.email}</span>. One last step.
+          </>
+        )
       }
       footer={
-        <p className="text-center">
+        <p>
           Prefer a different option?{' '}
-          <Link to="/auth/login" className="text-primary hover:underline">
+          <Link
+            to="/auth/login"
+            className="font-semibold text-primary underline-offset-4 hover:underline"
+          >
             Back to login
           </Link>
         </p>
       }
     >
-      {banner ? (
-        <div className="mb-4">
-          <ErrorState message={banner} />
-        </div>
-      ) : null}
+      {banner ? <AuthAlert title={banner} /> : null}
 
-      {!session ? (
-        <div className="flex flex-col gap-4">
-          <ErrorState message="This Google sign-in session has expired or is invalid. Please try signing in again." />
-          <Link to="/auth/login" className="text-center text-primary hover:underline">
-            Go to login
-          </Link>
+      {!ready ? (
+        <div className="flex items-center gap-3 text-sm text-gray-ink" role="status">
+          <Spinner />
+          Checking your Google sign-in…
         </div>
+      ) : !session ? (
+        <AuthStatus
+          tone="error"
+          icon="clock"
+          actions={
+            <Link to="/auth/login" className={buttonClasses({ size: 'lg', className: 'w-full' })}>
+              Go to login
+            </Link>
+          }
+        >
+          This Google sign-in session has expired or is invalid. Please try signing in again.
+        </AuthStatus>
       ) : session.link ? (
-        <div className="flex flex-col gap-4">
-          <div className="rounded-md bg-mint p-4 text-sm">
-            An account already exists for <span className="font-semibold">{session.email}</span>.
-            Link Google sign-in so you can log in with Google next time? Your role and account
-            details will stay the same.
+        <div className="flex flex-col gap-6">
+          <AuthAlert tone="info" className="" title="Use Google to log in next time">
+            Linking adds Google as a sign-in method for{' '}
+            <span className="font-semibold">{session.email}</span>. Your role and account details
+            stay the same.
+          </AuthAlert>
+          <div className="flex flex-col gap-3">
+            <Button
+              type="button"
+              size="lg"
+              className="w-full"
+              disabled={busy}
+              onClick={() => void finish({})}
+            >
+              {busy ? 'Linking…' : 'Link Google account'}
+            </Button>
+            <Link
+              to="/auth/login"
+              className={buttonClasses({ variant: 'ghost', size: 'lg', className: 'w-full' })}
+            >
+              Cancel and use my password
+            </Link>
           </div>
-          <Button type="button" disabled={busy} onClick={() => void finish({})}>
-            {busy ? 'Linking…' : 'Link Google account'}
-          </Button>
-          <Link to="/auth/login" className="text-center text-sm text-primary hover:underline">
-            Cancel — use email and password instead
-          </Link>
         </div>
       ) : step === 'landlord-details' ? (
-        <form className="flex flex-col gap-4" onSubmit={handleLandlordSubmit}>
-          <div className="grid grid-cols-2 gap-3">
-            <Field label="First name" htmlFor="landlordFirstName">
+        <form className="flex flex-col gap-9" onSubmit={handleLandlordSubmit}>
+          <FormSection title="Your account">
+            <div className="grid grid-cols-1 gap-5 min-[400px]:grid-cols-2 min-[400px]:gap-3">
+              <Field label="First name" htmlFor="landlordFirstName">
+                <TextInput
+                  id="landlordFirstName"
+                  name="firstName"
+                  autoComplete="given-name"
+                  defaultValue={session.firstName}
+                />
+              </Field>
+              <Field label="Last name" htmlFor="landlordLastName">
+                <TextInput
+                  id="landlordLastName"
+                  name="lastName"
+                  autoComplete="family-name"
+                  defaultValue={session.lastName}
+                />
+              </Field>
+            </div>
+
+            <Field label="Email" htmlFor="landlordEmail">
               <TextInput
-                id="landlordFirstName"
-                name="firstName"
-                autoComplete="given-name"
-                defaultValue={session.firstName}
+                id="landlordEmail"
+                type="email"
+                name="email"
+                autoComplete="email"
+                readOnly
+                disabled
+                value={session.email}
               />
             </Field>
-            <Field label="Last name" htmlFor="landlordLastName">
+          </FormSection>
+
+          <FormSection
+            title="Your boarding house"
+            description="Optional for now. Boarders see this on your listings."
+          >
+            <Field label="Business / property name" htmlFor="businessName">
               <TextInput
-                id="landlordLastName"
-                name="lastName"
-                autoComplete="family-name"
-                defaultValue={session.lastName}
+                id="businessName"
+                name="businessName"
+                placeholder="e.g. Haven Dormitory"
+                autoComplete="organization"
+                value={details.businessName}
+                onChange={e => setDetails(d => ({ ...d, businessName: e.target.value }))}
               />
             </Field>
-          </div>
 
-          <Field label="Email" htmlFor="landlordEmail">
-            <TextInput
-              id="landlordEmail"
-              type="email"
-              name="email"
-              autoComplete="email"
-              readOnly
-              disabled
-              value={session.email}
-            />
-          </Field>
-
-          <Field label="Business / Property name" htmlFor="businessName">
-            <TextInput
-              id="businessName"
-              name="businessName"
-              placeholder="e.g., Haven Dormitory, ABC Boarding House"
-              value={details.businessName}
-              onChange={e => setDetails(d => ({ ...d, businessName: e.target.value }))}
-            />
-          </Field>
-
-          <Field label="Brief description" htmlFor="businessDescription">
-            <TextArea
-              id="businessDescription"
-              name="businessDescription"
-              placeholder="Tell boarders about your property… (optional)"
-              rows={3}
-              maxLength={500}
-              value={details.businessDescription}
-              onChange={e => setDetails(d => ({ ...d, businessDescription: e.target.value }))}
-            />
-          </Field>
-
-          <div className="grid grid-cols-2 gap-3">
-            <Field label="City" htmlFor="city">
-              <TextInput
-                id="city"
-                name="city"
-                placeholder="e.g., Quezon City"
-                value={details.city}
-                onChange={e => setDetails(d => ({ ...d, city: e.target.value }))}
+            <Field label="Brief description" htmlFor="businessDescription">
+              <TextArea
+                id="businessDescription"
+                name="businessDescription"
+                placeholder="What makes your place a good home?"
+                rows={3}
+                maxLength={500}
+                value={details.businessDescription}
+                onChange={e => setDetails(d => ({ ...d, businessDescription: e.target.value }))}
               />
             </Field>
-            <Field label="Province" htmlFor="province">
+
+            <div className="grid grid-cols-1 gap-5 min-[400px]:grid-cols-2 min-[400px]:gap-3">
+              <Field label="City" htmlFor="city">
+                <TextInput
+                  id="city"
+                  name="city"
+                  placeholder="e.g. Quezon City"
+                  autoComplete="address-level2"
+                  value={details.city}
+                  onChange={e => setDetails(d => ({ ...d, city: e.target.value }))}
+                />
+              </Field>
+              <Field label="Province" htmlFor="province">
+                <TextInput
+                  id="province"
+                  name="province"
+                  placeholder="e.g. Metro Manila"
+                  autoComplete="address-level1"
+                  value={details.province}
+                  onChange={e => setDetails(d => ({ ...d, province: e.target.value }))}
+                />
+              </Field>
+            </div>
+
+            <Field label="Contact number" htmlFor="phoneNumber">
               <TextInput
-                id="province"
-                name="province"
-                placeholder="e.g., Metro Manila"
-                value={details.province}
-                onChange={e => setDetails(d => ({ ...d, province: e.target.value }))}
+                id="phoneNumber"
+                type="tel"
+                name="phoneNumber"
+                placeholder="0917 123 4567"
+                autoComplete="tel"
+                inputMode="tel"
+                value={details.phoneNumber}
+                onChange={e => setDetails(d => ({ ...d, phoneNumber: e.target.value }))}
               />
             </Field>
-          </div>
-
-          <Field label="Contact number" htmlFor="phoneNumber">
-            <TextInput
-              id="phoneNumber"
-              type="tel"
-              name="phoneNumber"
-              placeholder="+63 9XX XXX XXXX"
-              value={details.phoneNumber}
-              onChange={e => setDetails(d => ({ ...d, phoneNumber: e.target.value }))}
-            />
-          </Field>
-
-          <p className="text-xs text-gray-ink">
-            Your account will be created right away — verification can be completed later from your
-            dashboard.
-          </p>
+          </FormSection>
 
           <div className="flex flex-col gap-3">
-            <Button type="submit" disabled={busy}>
-              {busy ? 'Creating account…' : 'Create landlord account'}
-            </Button>
-            <button
-              type="button"
-              className="text-sm text-gray-ink hover:text-primary"
-              onClick={() => setStep('role')}
-            >
-              ← Back
-            </button>
+            <p className="text-sm text-gray-ink">
+              Your account is created right away. Verification can be completed later from your
+              dashboard.
+            </p>
+            <div className="flex flex-col-reverse gap-3 sm:flex-row">
+              <Button
+                type="button"
+                variant="outline"
+                size="lg"
+                className="sm:w-auto"
+                disabled={busy}
+                onClick={() => setStep('role')}
+              >
+                Back
+              </Button>
+              <Button type="submit" size="lg" className="sm:flex-1" disabled={busy}>
+                {busy ? 'Creating account…' : 'Create landlord account'}
+              </Button>
+            </div>
           </div>
         </form>
       ) : (
-        <div className="flex flex-col gap-3">
-          <button
-            type="button"
+        <form className="flex flex-col gap-6" onSubmit={handleRoleSubmit}>
+          <RoleChoice
+            value={role}
             disabled={busy}
-            onClick={() => void finish({ role: 'boarder' })}
-            className="flex items-center gap-4 rounded-xl border-2 border-primary bg-surface px-4 py-4 text-left hover:bg-mint"
-          >
-            <Icon name="search" size={28} className="shrink-0" />
-            <span>
-              <span className="block font-semibold text-ink">Boarder</span>
-              <span className="block text-sm text-gray-ink">I&apos;m looking for a room</span>
-            </span>
-          </button>
-          <button
-            type="button"
-            disabled={busy}
-            onClick={() => setStep('landlord-details')}
-            className="flex items-center gap-4 rounded-xl border-2 border-border bg-surface px-4 py-4 text-left hover:border-primary hover:bg-mint"
-          >
-            <Icon name="buildingOffice" size={28} className="shrink-0" />
-            <span>
-              <span className="block font-semibold text-ink">Landlord</span>
-              <span className="block text-sm text-gray-ink">I rent out rooms</span>
-            </span>
-          </button>
-          {busy ? (
-            <p className="text-center text-sm text-gray-ink">Creating your account…</p>
+            describedBy={roleMissing ? 'role-missing' : undefined}
+            onChange={value => {
+              setRole(value);
+              setRoleMissing(false);
+            }}
+          />
+          {roleMissing ? (
+            <p id="role-missing" role="alert" className="-mt-3 text-sm text-error-ink">
+              Choose Boarder or Landlord to continue.
+            </p>
           ) : null}
-        </div>
+          <Button type="submit" size="lg" className="w-full" disabled={busy}>
+            {busy
+              ? 'Creating your account…'
+              : role === 'boarder'
+              ? 'Create boarder account'
+              : 'Continue'}
+          </Button>
+        </form>
       )}
     </AuthSplitLayout>
   );

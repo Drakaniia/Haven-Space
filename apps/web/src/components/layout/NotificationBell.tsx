@@ -1,6 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { Link } from '@tanstack/react-router';
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { notificationThreadId } from '../../lib/messages';
 import {
   deleteNotification,
@@ -11,7 +11,6 @@ import {
 } from '../../lib/api/notifications';
 import { acceptInvitation, rejectInvitation } from '../../lib/api/landlord';
 import { useAuth } from '../../lib/auth-context';
-import { Button } from '../ui/Button';
 
 function invitationIdFromMetadata(metadata: unknown): number | null {
   if (!metadata || typeof metadata !== 'object' || Array.isArray(metadata)) {
@@ -57,7 +56,25 @@ function formatWhen(value: string): string {
 export function NotificationBell() {
   const { token, user } = useAuth();
   const [open, setOpen] = useState(false);
+  const containerRef = useRef<HTMLDivElement>(null);
   const queryClient = useQueryClient();
+
+  // A popover closes the way people expect: a click outside it, or Escape.
+  useEffect(() => {
+    if (!open) return;
+    function onPointerDown(event: PointerEvent) {
+      if (!containerRef.current?.contains(event.target as Node)) setOpen(false);
+    }
+    function onKeyDown(event: KeyboardEvent) {
+      if (event.key === 'Escape') setOpen(false);
+    }
+    document.addEventListener('pointerdown', onPointerDown);
+    document.addEventListener('keydown', onKeyDown);
+    return () => {
+      document.removeEventListener('pointerdown', onPointerDown);
+      document.removeEventListener('keydown', onKeyDown);
+    };
+  }, [open]);
 
   const unread = useQuery({
     queryKey: ['notifications', 'unread'],
@@ -106,12 +123,16 @@ export function NotificationBell() {
   const unreadCount = unread.data?.data.unread_count ?? 0;
 
   return (
-    <div className="relative">
+    <div ref={containerRef} className="relative">
       <button
         type="button"
         aria-label={`Notifications${unreadCount ? ` (${unreadCount} unread)` : ''}`}
+        aria-expanded={open}
+        aria-haspopup="dialog"
         onClick={() => setOpen(value => !value)}
-        className="relative rounded-md p-2 text-gray-ink hover:bg-subtle"
+        className={`relative flex h-10 w-10 items-center justify-center rounded-xl transition-colors active:scale-[0.96] ${
+          open ? 'bg-surface text-ink' : 'text-gray-ink hover:bg-surface hover:text-ink'
+        }`}
       >
         <svg
           className="h-5 w-5"
@@ -127,20 +148,26 @@ export function NotificationBell() {
           />
         </svg>
         {unreadCount > 0 ? (
-          <span className="absolute -right-0.5 -top-0.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-error px-1 text-[10px] font-bold text-white">
+          <span className="absolute right-1 top-1 flex h-4 min-w-4 items-center justify-center rounded-full bg-clay px-1 text-[10px] font-bold leading-none text-white ring-2 ring-cream">
             {unreadCount > 9 ? '9+' : unreadCount}
           </span>
         ) : null}
       </button>
 
       {open ? (
-        <div className="absolute right-0 z-40 mt-2 w-96 max-w-[90vw] rounded-lg border border-border bg-surface shadow-lg">
+        <div
+          role="dialog"
+          aria-label="Notifications"
+          className="menu-pop absolute -right-12 z-40 mt-2 w-[min(24rem,calc(100vw-2rem))] overflow-hidden rounded-2xl border border-border bg-surface shadow-pop sm:right-0"
+        >
           <div className="flex items-center justify-between border-b border-border px-4 py-3">
-            <p className="font-semibold">Notifications</p>
+            <p className="font-display text-lg font-medium tracking-[-0.01em] text-ink">
+              Notifications
+            </p>
             {unreadCount > 0 ? (
               <button
                 type="button"
-                className="text-sm text-primary hover:underline disabled:opacity-50"
+                className="rounded-lg px-2 py-1 text-sm font-semibold text-primary hover:bg-mint disabled:opacity-50"
                 onClick={() => markAll.mutate()}
                 disabled={markAll.isPending}
               >
@@ -154,7 +181,7 @@ export function NotificationBell() {
           ) : list.error ? (
             <p className="px-4 py-6 text-center text-sm text-error-ink">{list.error.message}</p>
           ) : list.data && list.data.data.length > 0 ? (
-            <ul className="max-h-80 divide-y divide-border overflow-y-auto">
+            <ul className="max-h-[26rem] divide-y divide-border overflow-y-auto overscroll-contain">
               {list.data.data.map(notification => {
                 const invitationId =
                   notification.type === 'property_invitation'
@@ -175,7 +202,18 @@ export function NotificationBell() {
                     : null;
 
                 return (
-                  <li key={notification.id} className="flex items-start gap-3 px-4 py-3">
+                  <li
+                    key={notification.id}
+                    className={`relative flex items-start gap-3 px-4 py-3.5 ${
+                      notification.is_read ? '' : 'bg-mint/35'
+                    }`}
+                  >
+                    {!notification.is_read ? (
+                      <span
+                        aria-hidden="true"
+                        className="absolute left-1.5 top-5 h-1.5 w-1.5 rounded-full bg-primary"
+                      />
+                    ) : null}
                     <div className="min-w-0 flex-1">
                       {threadId !== null ? (
                         <Link
@@ -232,7 +270,7 @@ export function NotificationBell() {
                           <button
                             type="button"
                             disabled={respondInvitation.isPending}
-                            className="rounded-full border border-border-strong px-3 py-1 text-xs font-medium text-gray-ink transition-colors hover:bg-subtle disabled:opacity-50"
+                            className="rounded-lg border border-border-strong px-3 py-1.5 text-xs font-semibold text-ink transition-colors hover:bg-subtle disabled:opacity-50"
                             onClick={() =>
                               respondInvitation.mutate({ invitationId, action: 'reject' })
                             }
@@ -242,7 +280,7 @@ export function NotificationBell() {
                           <button
                             type="button"
                             disabled={respondInvitation.isPending}
-                            className="rounded-full bg-primary-strong px-3 py-1 text-xs font-semibold text-white transition-colors hover:bg-primary-hover disabled:opacity-50"
+                            className="rounded-lg bg-primary-strong px-3 py-1.5 text-xs font-semibold text-white transition-colors hover:bg-primary-hover disabled:opacity-50"
                             onClick={() =>
                               respondInvitation.mutate({ invitationId, action: 'accept' })
                             }
@@ -258,7 +296,7 @@ export function NotificationBell() {
                           type="button"
                           aria-label="Mark as read"
                           title="Mark as read"
-                          className="text-xs text-primary hover:underline"
+                          className="rounded-md px-1.5 py-1 text-xs font-medium text-primary hover:bg-mint"
                           onClick={() => markOne.mutate(notification.id)}
                         >
                           Read
@@ -268,7 +306,7 @@ export function NotificationBell() {
                         type="button"
                         aria-label="Delete notification"
                         title="Delete"
-                        className="text-xs text-error-ink hover:underline"
+                        className="rounded-md px-1.5 py-1 text-xs font-medium text-gray-ink hover:bg-error-tint hover:text-error-ink"
                         onClick={() => remove.mutate(notification.id)}
                       >
                         Delete
@@ -279,16 +317,13 @@ export function NotificationBell() {
               })}
             </ul>
           ) : (
-            <p className="px-4 py-6 text-center text-sm text-gray-ink">You're all caught up.</p>
-          )}
-
-          {list.data && list.data.data.length > 0 ? (
-            <div className="border-t border-border px-4 py-2">
-              <Button type="button" className="w-full text-sm" onClick={() => setOpen(false)}>
-                Close
-              </Button>
+            <div className="px-6 py-10 text-center">
+              <p className="font-display text-lg font-medium text-ink">You&apos;re all caught up</p>
+              <p className="mt-1 text-sm text-gray-ink">
+                New messages, payment updates and invitations will show up here.
+              </p>
             </div>
-          ) : null}
+          )}
         </div>
       ) : null}
     </div>

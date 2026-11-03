@@ -21,9 +21,13 @@ export function Field({
 }) {
   return (
     <label className="block" htmlFor={htmlFor}>
-      <span className="mb-1 block text-sm font-medium text-ink">{label}</span>
+      <span className="mb-1.5 block text-sm font-semibold text-ink">{label}</span>
       {children}
-      {error ? <span className="mt-1 block text-sm text-error-ink">{error}</span> : null}
+      {error ? (
+        <span role="alert" className="mt-1.5 block text-sm text-error-ink">
+          {error}
+        </span>
+      ) : null}
     </label>
   );
 }
@@ -37,7 +41,7 @@ export function Field({
 // gives a rejected field a red border once the user has actually interacted with
 // it (unlike `:invalid`, which fires on untouched `required` fields at load).
 const inputClasses =
-  'w-full rounded-xl border border-border-strong bg-surface px-3 py-2 text-base text-ink transition-colors focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 user-invalid:border-error-ink user-invalid:ring-2 user-invalid:ring-error-tint';
+  'w-full rounded-xl border border-border-strong bg-surface px-3.5 py-2.5 text-base text-ink shadow-[inset_0_1px_1px_rgb(28_32_25/0.04)] transition-[border-color,box-shadow] duration-150 placeholder:text-muted hover:border-[#b9af98] focus:border-primary focus:outline-none focus:ring-4 focus:ring-primary/15 disabled:cursor-not-allowed disabled:bg-subtle disabled:text-gray-ink user-invalid:border-error-ink user-invalid:ring-4 user-invalid:ring-error-tint';
 
 // `className` is *appended* so a caller can add to the shared look instead of
 // silently replacing it (the pre-existing spread order dropped every base class).

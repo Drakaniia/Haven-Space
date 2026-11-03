@@ -30,7 +30,7 @@ export function LandlordPropertyCards({ token, empty }: { token: string; empty: 
   });
 
   if (properties.isLoading) {
-    return <PropertyCardSkeletonList />;
+    return <PropertyCardSkeletonList layout="tile" count={3} />;
   }
 
   if (properties.error) {
@@ -44,10 +44,12 @@ export function LandlordPropertyCards({ token, empty }: { token: string; empty: 
   }
 
   return (
-    <PropertyCardList>
+    <PropertyCardList layout="tile">
       {rows.map(property => (
         <PropertyCard
           key={property.id}
+          layout="tile"
+          occupancy={{ occupied: property.occupied_rooms, total: property.total_rooms }}
           title={property.name}
           propertyId={property.id}
           imageUrl={property.photos[0] ?? null}

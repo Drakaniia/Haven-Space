@@ -65,17 +65,25 @@ function Fact({ label, children }: { label: string; children: ReactNode }) {
 
 function StatTile({ label, value }: { label: string; value: number }) {
   return (
-    <div className="min-w-[8rem] flex-1 rounded-xl bg-subtle px-4 py-3 sm:flex-none sm:min-w-[10rem]">
-      <p className="text-xs text-gray-ink">{label}</p>
-      <p className="mt-1 text-2xl font-bold text-ink">{value}</p>
+    <div className="min-w-0 rounded-xl bg-cream px-4 py-3">
+      <p className="text-xs font-medium text-gray-ink">{label}</p>
+      <p className="mt-1 font-display text-[1.75rem] font-medium leading-none tracking-[-0.02em] text-ink tabular">
+        {value}
+      </p>
     </div>
+  );
+}
+
+function CardTitle({ children }: { children: ReactNode }) {
+  return (
+    <h2 className="font-display text-xl font-medium tracking-[-0.015em] text-ink">{children}</h2>
   );
 }
 
 export function PropertyDetailsCard({ detail }: { detail: LandlordPropertyDetail }) {
   return (
     <Card>
-      <h2 className="text-base font-semibold tracking-tight text-ink">Property details</h2>
+      <CardTitle>Property details</CardTitle>
 
       <dl className="mt-4 grid grid-cols-1 gap-x-6 gap-y-4 sm:grid-cols-2">
         <Fact label="Property type">{propertyTypeLabel(detail.type)}</Fact>
@@ -109,7 +117,7 @@ export function PublicListingCard({ detail }: { detail: LandlordPropertyDetail }
   return (
     <Card>
       <div className="flex flex-wrap items-start justify-between gap-3">
-        <h2 className="text-base font-semibold tracking-tight text-ink">Public listing</h2>
+        <CardTitle>Public listing</CardTitle>
         <StatusBadge
           status={detail.listing_moderation_status}
           label={moderationPill(detail.listing_moderation_status).label}
@@ -117,7 +125,11 @@ export function PublicListingCard({ detail }: { detail: LandlordPropertyDetail }
       </div>
 
       <dl className="mt-4 grid grid-cols-1 gap-x-6 gap-y-4 sm:grid-cols-2">
-        <Fact label="Monthly rent">{formatPeso(detail.monthlyPayment)}</Fact>
+        <Fact label="Monthly rent">
+          <span className="font-display text-lg font-medium text-clay tabular">
+            {formatPeso(detail.monthlyPayment)}
+          </span>
+        </Fact>
         <Fact label="Amenities">{amenitiesLabel(detail.amenities)}</Fact>
       </dl>
 
@@ -126,11 +138,12 @@ export function PublicListingCard({ detail }: { detail: LandlordPropertyDetail }
         and unpublishing live on the Edit listing form's Listing status section, so
         this card only offers the way there.
       */}
-      <div className="mt-4 flex flex-wrap items-center gap-2 border-t border-border pt-4">
+      <div className="mt-4 flex flex-wrap items-center justify-between gap-2 border-t border-border pt-4">
+        <p className="text-sm text-gray-ink">Name, pricing, photos and publishing.</p>
         <Link
           to="/landlord/listings/$id/edit"
           params={{ id: String(detail.id) }}
-          className={buttonClasses()}
+          className={buttonClasses({ variant: 'outline' })}
         >
           Edit listing
         </Link>
@@ -141,12 +154,20 @@ export function PublicListingCard({ detail }: { detail: LandlordPropertyDetail }
 
 export function RoomSummaryCard({ detail }: { detail: LandlordPropertyDetail }) {
   const populated = hasRooms(detail.total_rooms);
+  const total = Number(detail.total_rooms ?? 0);
+  const occupied = Math.min(Number(detail.occupied_rooms ?? 0), total);
+  const rate = total > 0 ? Math.round((occupied / total) * 100) : 0;
 
   return (
     <Card>
       <div className="flex flex-wrap items-start justify-between gap-4">
         <div className="min-w-0">
-          <h2 className="text-base font-semibold tracking-tight text-ink">Room summary</h2>
+          <CardTitle>Room summary</CardTitle>
+          <p className="mt-1 text-sm text-gray-ink">
+            {populated
+              ? `${rate}% occupied across ${total} ${total === 1 ? 'room' : 'rooms'}.`
+              : 'Rooms are what boarders apply for.'}
+          </p>
         </div>
         <Link
           to="/landlord/properties/$id/rooms"
@@ -157,7 +178,20 @@ export function RoomSummaryCard({ detail }: { detail: LandlordPropertyDetail }) 
         </Link>
       </div>
 
-      <div className="mt-4 flex flex-wrap gap-3">
+      {populated ? (
+        <div
+          role="progressbar"
+          aria-label={`${detail.name} occupancy`}
+          aria-valuemin={0}
+          aria-valuemax={100}
+          aria-valuenow={rate}
+          className="mt-4 h-2 overflow-hidden rounded-full bg-subtle"
+        >
+          <div className="h-full rounded-full bg-primary-strong" style={{ width: `${rate}%` }} />
+        </div>
+      ) : null}
+
+      <div className="mt-4 grid grid-cols-2 gap-3 sm:max-w-md">
         <StatTile
           label="Available rooms"
           value={availableRooms(detail.total_rooms, detail.occupied_rooms)}

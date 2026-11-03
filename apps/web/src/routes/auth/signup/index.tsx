@@ -1,12 +1,12 @@
 import { Link, createFileRoute, useNavigate, useSearch } from '@tanstack/react-router';
 import { useEffect, useState, type FormEvent } from 'react';
+import { AuthAlert } from '../../../components/auth/AuthAlert';
 import {
   AuthDivider,
   AuthSplitLayout,
   GoogleButton,
 } from '../../../components/auth/AuthSplitLayout';
 import { Button } from '../../../components/ui/Button';
-import { ErrorState } from '../../../components/ui/ErrorState';
 import { Field, PasswordInput, TextInput } from '../../../components/ui/Field';
 import { ApiRequestError } from '../../../lib/api/http';
 import { useAuth } from '../../../lib/auth-context';
@@ -22,6 +22,8 @@ export const Route = createFileRoute('/auth/signup/')({
   component: BoarderSignupPage,
 });
 
+type FieldErrors = Partial<Record<'password' | 'confirm', string>>;
+
 function BoarderSignupPage() {
   const { error: searchError, redirect } = useSearch({ from: '/auth/signup/' });
   const { register } = useAuth();
@@ -32,6 +34,7 @@ function BoarderSignupPage() {
   const [password, setPassword] = useState('');
   const [confirm, setConfirm] = useState('');
   const [error, setError] = useState<string | null>(null);
+  const [fieldErrors, setFieldErrors] = useState<FieldErrors>({});
   const [submitting, setSubmitting] = useState(false);
   const [googleLoading, setGoogleLoading] = useState(false);
 
@@ -43,13 +46,14 @@ function BoarderSignupPage() {
   async function handleSubmit(e: FormEvent) {
     e.preventDefault();
     setError(null);
+    setFieldErrors({});
 
     if (password !== confirm) {
-      setError('Passwords do not match');
+      setFieldErrors({ confirm: 'Passwords do not match' });
       return;
     }
     if (password.length < 8) {
-      setError('Password must be at least 8 characters long');
+      setFieldErrors({ password: 'Password must be at least 8 characters long' });
       return;
     }
 
@@ -72,24 +76,48 @@ function BoarderSignupPage() {
     }
   }
 
+  // Confirm-field feedback as soon as the user has typed enough to compare.
+  const liveMismatch =
+    confirm.length > 0 && confirm.length >= password.length && confirm !== password
+      ? 'Passwords do not match'
+      : null;
+
   return (
     <AuthSplitLayout
-      title="Create your account"
-      subtitle="Sign up as a boarder to find your next home."
+      title="Create your boarder account"
+      subtitle="Find a room near school or work, apply in minutes and keep your stay in one place."
       footer={
-        <p className="text-center">
-          Already have an account?{' '}
-          <Link to="/auth/login" className="text-primary hover:underline">
-            Log in
-          </Link>
-        </p>
+        <div className="flex flex-col gap-2">
+          <p>
+            Already have an account?{' '}
+            <Link
+              to="/auth/login"
+              search={{ redirect }}
+              className="font-semibold text-primary underline-offset-4 hover:underline"
+            >
+              Log in
+            </Link>
+          </p>
+          <p>
+            Renting out rooms instead?{' '}
+            <Link
+              to="/auth/signup/landlord"
+              search={{ redirect }}
+              className="font-semibold text-primary underline-offset-4 hover:underline"
+            >
+              Create a landlord account
+            </Link>
+          </p>
+        </div>
       }
     >
-      {searchError ? <ErrorState message={searchError} /> : null}
-      {error ? <ErrorState message={error} /> : null}
+      {searchError ? <AuthAlert title={searchError} /> : null}
+      {error ? <AuthAlert title={error} /> : null}
 
       <GoogleButton
+        label="Sign up with Google"
         loading={googleLoading}
+        disabled={submitting}
         onClick={() => {
           setGoogleLoading(true);
           setError(null);
@@ -103,8 +131,8 @@ function BoarderSignupPage() {
       />
       <AuthDivider />
 
-      <form className="flex flex-col gap-4" onSubmit={handleSubmit}>
-        <div className="grid grid-cols-2 gap-3">
+      <form className="flex flex-col gap-5" onSubmit={handleSubmit}>
+        <div className="grid grid-cols-1 gap-5 min-[400px]:grid-cols-2 min-[400px]:gap-3">
           <Field label="First name" htmlFor="firstName">
             <TextInput
               id="firstName"
@@ -132,40 +160,67 @@ function BoarderSignupPage() {
             id="email"
             type="email"
             name="email"
+            placeholder="you@example.com"
             autoComplete="email"
+            inputMode="email"
             required
             value={email}
             onChange={e => setEmail(e.target.value)}
           />
         </Field>
 
-        <Field label="Password" htmlFor="password">
-          <PasswordInput
-            id="password"
-            name="password"
-            autoComplete="new-password"
-            placeholder="8 or more characters"
-            required
-            minLength={8}
-            value={password}
-            onChange={e => setPassword(e.target.value)}
-          />
-        </Field>
+        <div>
+          <Field label="Password" htmlFor="password" error={fieldErrors.password}>
+            <PasswordInput
+              id="password"
+              name="password"
+              autoComplete="new-password"
+              placeholder="8 or more characters"
+              required
+              minLength={8}
+              aria-describedby="password-hint"
+              aria-invalid={fieldErrors.password ? true : undefined}
+              value={password}
+              onChange={e => {
+                setPassword(e.target.value);
+                if (fieldErrors.password) setFieldErrors(f => ({ ...f, password: undefined }));
+              }}
+            />
+          </Field>
+          {!fieldErrors.password ? (
+            <p id="password-hint" className="mt-1.5 text-sm text-muted">
+              Use at least 8 characters.
+            </p>
+          ) : null}
+        </div>
 
-        <Field label="Confirm password" htmlFor="confirm">
+        <Field
+          label="Confirm password"
+          htmlFor="confirm"
+          error={fieldErrors.confirm ?? liveMismatch}
+        >
           <PasswordInput
             id="confirm"
             name="confirm"
             autoComplete="new-password"
             required
             minLength={8}
+            aria-invalid={fieldErrors.confirm || liveMismatch ? true : undefined}
             value={confirm}
-            onChange={e => setConfirm(e.target.value)}
+            onChange={e => {
+              setConfirm(e.target.value);
+              if (fieldErrors.confirm) setFieldErrors(f => ({ ...f, confirm: undefined }));
+            }}
           />
         </Field>
 
-        <Button type="submit" disabled={submitting}>
-          {submitting ? 'Creating account…' : 'Sign up'}
+        <Button
+          type="submit"
+          size="lg"
+          className="mt-1 w-full"
+          disabled={submitting || googleLoading}
+        >
+          {submitting ? 'Creating your account…' : 'Create account'}
         </Button>
       </form>
     </AuthSplitLayout>

@@ -1,143 +1,80 @@
-import { useState } from 'react';
+import { Icon } from '../ui/Icon';
 
+/**
+ * Plain answers to the questions people actually ask before signing up. Every answer describes what
+ * the app does today (verification documents, payment logging, the Haven AI limits), not a promise.
+ */
 const FAQS = [
   {
-    category: 'getting-started',
-    question: 'How do I find boarding houses near me?',
+    question: 'How do I find a boarding house near me?',
     answer:
-      'Simply use our interactive map or search feature to browse verified boarding houses in your preferred location. Filter by price, amenities, and availability to find your perfect match.',
+      'Open Find a room and search by area, school or property name, then narrow it down by price and room type. The map shows the same listings by location. Browsing does not need an account.',
   },
   {
-    category: 'features',
-    question: 'Are the landlords verified?',
+    question: 'How are landlords checked?',
     answer:
-      'Yes! All landlords on Haven Space go through a verification process. We ensure they are legitimate property owners or authorized managers before they can list their properties on our platform.',
+      'Before a landlord can publish or change a listing, they upload a government-issued ID, proof that they own the property, a business permit and a selfie holding their ID. An admin reviews those documents and approves the account by hand.',
   },
   {
-    category: 'billing',
-    question: 'Is my payment information secure?',
+    question: 'Can I see the room before I apply?',
     answer:
-      'Absolutely. We use industry-standard encryption and secure payment processing to protect your financial information. Your payment data is never shared with third parties.',
+      'Yes. Request a tour from the listing and the landlord will confirm a time. We recommend visiting in person before you send an application.',
   },
   {
-    category: 'features',
-    question: 'Can I schedule a viewing before booking?',
+    question: 'Does Haven Space take my rent money?',
     answer:
-      'Yes! You can request a viewing directly through the property listing. Many landlords offer virtual tours or in-person visits so you can see the space before committing.',
+      'No. You pay your landlord directly by GCash, bank transfer or cash, the same way you would without us. Haven keeps the record: you log the payment with its reference, and your landlord confirms it.',
   },
   {
-    category: 'support',
-    question: 'What if I have issues with my boarding house?',
+    question: 'What is Haven AI, and is it free?',
     answer:
-      'Our platform includes a built-in messaging system and maintenance request feature. You can communicate directly with your landlord, and our support team is available to help resolve any disputes.',
+      'Haven AI is an assistant that answers questions about listings and how the app works. Visitors can ask one question without an account; signed-in boarders get ten a day. It can make mistakes, so check anything important with the landlord.',
   },
-];
-
-const TABS = [
-  { key: 'all', label: 'All' },
-  { key: 'getting-started', label: 'Getting Started' },
-  { key: 'features', label: 'Features' },
-  { key: 'billing', label: 'Billing' },
-  { key: 'support', label: 'Support' },
+  {
+    question: 'What if something goes wrong with my landlord?',
+    answer:
+      'Start with a message in the app so there is a written record. If you cannot sort it out together, Haven admins can step in on listing, application and payment disputes.',
+  },
 ];
 
 export function FAQSection() {
-  const [tab, setTab] = useState('all');
-  const [openIndex, setOpenIndex] = useState<number | null>(0);
-
-  const visible = tab === 'all' ? FAQS : FAQS.filter(faq => faq.category === tab);
-
   return (
-    <section className="bg-subtle">
-      <div className="mx-auto max-w-6xl px-4 py-20">
-        <div className="mb-12 text-left">
-          <span className="mb-4 inline-block rounded-full bg-mint px-4 py-2 text-xs font-semibold uppercase tracking-widest text-primary">
-            FAQ
-          </span>
-          <h2 className="mb-4 text-4xl font-extrabold text-ink">Frequently Asked Questions</h2>
-          <p className="max-w-2xl text-lg leading-relaxed text-gray-ink">
-            Everything you need to know about Haven Space, from finding rooms to secure payments and
-            trusted landlords.
+    <section aria-labelledby="faq-title" className="border-t border-border bg-surface">
+      <div className="mx-auto grid max-w-7xl gap-10 px-4 py-20 sm:px-6 lg:grid-cols-[minmax(0,4fr)_minmax(0,8fr)] lg:gap-16 lg:px-8 lg:py-28">
+        <div className="lg:sticky lg:top-28 lg:self-start">
+          <p className="kicker">Questions</p>
+          <h2 id="faq-title" className="display-lg mt-3 text-ink">
+            Before you sign up
+          </h2>
+          <p className="mt-5 max-w-sm leading-relaxed text-gray-ink">
+            Something we have not covered? Write to us and a real person will reply.
           </p>
+          <a
+            href="mailto:support@havenspace.app"
+            className="mt-4 inline-flex text-sm font-semibold text-primary underline decoration-primary/40 underline-offset-4 transition-colors hover:decoration-primary"
+          >
+            support@havenspace.app
+          </a>
         </div>
 
-        <div className="grid gap-8 lg:grid-cols-3">
-          {/* Left — image + CTA */}
-          <div className="lg:col-span-1 lg:sticky lg:top-8">
-            <div className="overflow-hidden rounded-lg bg-surface">
-              <img
-                src="/assets/images/public/costumer_support.png"
-                alt="Customer support representative"
-                className="block w-full"
-              />
-              <div className="p-6">
-                <p className="mb-4 font-semibold text-ink">
-                  Any other questions?{' '}
-                  <span className="font-normal text-gray-ink">We have the answers.</span>
-                </p>
-                <a
-                  href="mailto:support@havenspace.app"
-                  className="inline-block rounded-full bg-primary-strong px-6 py-3 text-sm font-semibold text-white hover:bg-primary-hover"
-                >
-                  Contact us
-                </a>
-              </div>
-            </div>
-          </div>
-
-          {/* Right — tabs + accordion */}
-          <div className="flex flex-col gap-4 lg:col-span-2">
-            <div className="mb-2 flex flex-wrap gap-2 border-b border-border">
-              {TABS.map(item => (
-                <button
-                  key={item.key}
-                  type="button"
-                  onClick={() => {
-                    setTab(item.key);
-                    setOpenIndex(null);
-                  }}
-                  className={`relative whitespace-nowrap px-4 py-3 text-sm transition-colors ${
-                    tab === item.key
-                      ? 'font-semibold text-ink'
-                      : 'font-medium text-gray-ink hover:text-ink'
-                  }`}
-                >
-                  {item.label}
-                  {tab === item.key ? (
-                    <span className="absolute inset-x-0 -bottom-px h-0.5 rounded-t bg-primary-strong" />
-                  ) : null}
-                </button>
-              ))}
-            </div>
-            {visible.map((faq, index) => {
-              const isOpen = openIndex === index;
-              return (
-                <div
-                  key={faq.question}
-                  className="overflow-hidden rounded-xl bg-surface shadow-[0_2px_8px_rgba(0,0,0,0.06)]"
-                >
-                  <button
-                    type="button"
-                    aria-expanded={isOpen}
-                    onClick={() => setOpenIndex(isOpen ? null : index)}
-                    className="flex w-full items-center justify-between px-6 py-5 text-left"
-                  >
-                    <span className="flex-1 pr-4 font-semibold text-ink">{faq.question}</span>
-                    <span
-                      className={`text-xl text-gray-ink transition-transform ${
-                        isOpen ? 'rotate-45 text-primary' : ''
-                      }`}
-                    >
-                      +
-                    </span>
-                  </button>
-                  {isOpen ? (
-                    <p className="px-6 pb-5 text-sm leading-relaxed text-gray-ink">{faq.answer}</p>
-                  ) : null}
-                </div>
-              );
-            })}
-          </div>
+        <div className="border-t border-border">
+          {FAQS.map((faq, index) => (
+            <details
+              key={faq.question}
+              open={index === 0}
+              className="group border-b border-border"
+            >
+              <summary className="flex cursor-pointer list-none items-start justify-between gap-6 rounded-lg py-5 text-left [&::-webkit-details-marker]:hidden">
+                <span className="font-display text-lg font-medium leading-snug tracking-[-0.01em] text-ink sm:text-xl">
+                  {faq.question}
+                </span>
+                <span className="mt-1 flex h-7 w-7 shrink-0 items-center justify-center rounded-full border border-border-strong text-gray-ink transition-[transform,color,border-color] duration-200 ease-out group-open:rotate-45 group-open:border-primary group-open:text-primary motion-reduce:transition-none">
+                  <Icon name="plus" size={14} />
+                </span>
+              </summary>
+              <p className="max-w-2xl pb-6 pr-12 leading-relaxed text-gray-ink">{faq.answer}</p>
+            </details>
+          ))}
         </div>
       </div>
     </section>

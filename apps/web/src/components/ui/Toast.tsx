@@ -1,11 +1,11 @@
 import { useCallback, useEffect, useRef, useState, type ReactNode } from 'react';
 import { usePendingToast, type ToastItem, type ToastTone } from '../../lib/toast';
 
-const TONE_STYLES: Record<ToastTone, { bar: string; icon: string }> = {
-  success: { bar: 'bg-success', icon: 'text-success' },
-  error: { bar: 'bg-error', icon: 'text-error' },
-  info: { bar: 'bg-info', icon: 'text-info' },
-  warning: { bar: 'bg-warning', icon: 'text-warning' },
+const TONE_STYLES: Record<ToastTone, { icon: string }> = {
+  success: { icon: 'bg-success-tint text-success-ink' },
+  error: { icon: 'bg-error-tint text-error-ink' },
+  info: { icon: 'bg-info-tint text-info-ink' },
+  warning: { icon: 'bg-warning-tint text-warning-ink' },
 };
 
 /**
@@ -102,10 +102,10 @@ export function Toast({
   const styles = TONE_STYLES[tone];
 
   return (
-    <div className="toast-in pointer-events-auto relative flex w-full items-center gap-3 overflow-hidden rounded-xl border border-border bg-surface py-3 pl-4 pr-2.5 shadow-pop">
-      {/* Colored left accent bar */}
-      <span aria-hidden="true" className={`absolute inset-y-0 left-0 w-1 ${styles.bar}`} />
-      <span className={`shrink-0 ${styles.icon}`}>
+    <div className="toast-in pointer-events-auto relative flex w-full items-center gap-3 overflow-hidden rounded-2xl border border-border bg-surface py-2.5 pl-2.5 pr-2 shadow-pop">
+      <span
+        className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-xl ${styles.icon}`}
+      >
         <ToneIcon tone={tone} />
       </span>
       <p className="min-w-0 flex-1 text-sm font-medium text-ink">{message}</p>
@@ -113,7 +113,7 @@ export function Toast({
         <button
           type="button"
           onClick={action.onClick}
-          className="shrink-0 rounded-full px-2 py-1 text-xs font-semibold text-primary hover:bg-mint"
+          className="shrink-0 rounded-lg px-2.5 py-1.5 text-xs font-semibold text-primary hover:bg-mint"
         >
           {action.label}
         </button>
@@ -122,7 +122,7 @@ export function Toast({
         type="button"
         aria-label="Dismiss notification"
         onClick={onDismiss}
-        className="shrink-0 rounded-full p-1 text-muted transition hover:bg-subtle hover:text-ink"
+        className="shrink-0 rounded-full p-1.5 text-muted transition-colors hover:bg-subtle hover:text-ink"
       >
         <svg
           viewBox="0 0 24 24"

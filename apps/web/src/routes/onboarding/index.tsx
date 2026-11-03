@@ -27,8 +27,11 @@ function OnboardingDispatcher() {
   }, [isHydrated, isAuthenticated, user, navigate]);
 
   return (
-    <div className="flex min-h-screen items-center justify-center">
-      <Spinner />
+    <div className="paper-grain flex min-h-screen items-center justify-center px-5">
+      <div role="status" className="flex flex-col items-center gap-4 text-center">
+        <Spinner />
+        <p className="text-sm text-gray-ink">Getting your setup ready…</p>
+      </div>
     </div>
   );
 }

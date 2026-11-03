@@ -107,11 +107,11 @@ export function Breadcrumbs() {
           return (
             <Fragment key={crumb.to ?? crumb.label}>
               {index > 0 ? (
-                <li aria-hidden="true" className="shrink-0 text-muted">
+                <li aria-hidden="true" className="hidden shrink-0 text-muted sm:block">
                   <Icon name="chevronRight" size={14} />
                 </li>
               ) : null}
-              <li className="min-w-0">
+              <li className={isLast ? 'min-w-0' : 'hidden min-w-0 sm:block'}>
                 {isLast ? (
                   <span aria-current="page" className="block truncate font-semibold text-ink">
                     {crumb.label}
@@ -141,20 +141,39 @@ export function Breadcrumbs() {
  * hard `border-b` divider (apple-design §12). The underlay is a child of this
  * element, so it never needs a hardcoded topbar height.
  *
- * Pinned at `lg` and up only, mirroring the sidebar's `lg` pin; below that it
- * stays in the page flow and nothing changes.
+ * Pinned at every size. Below `lg` the sidebar is hidden, so the bar also
+ * carries the menu button that opens the navigation drawer (`onOpenNav`).
  */
-export function Topbar() {
+export function Topbar({ onOpenNav }: { onOpenNav?: () => void } = {}) {
   return (
-    <header className="chrome-topbar relative flex h-16 shrink-0 items-center justify-between gap-4 px-6 lg:sticky lg:top-0 lg:z-30">
-      <Breadcrumbs />
-      <div className="flex shrink-0 items-center gap-3">
+    <header className="chrome-topbar sticky top-0 z-30 flex h-16 shrink-0 items-center justify-between gap-3 px-4 sm:px-6 lg:px-10">
+      <div className="flex min-w-0 items-center gap-2">
+        {onOpenNav ? (
+          <button
+            type="button"
+            aria-label="Open navigation"
+            onClick={onOpenNav}
+            className="-ml-1.5 flex h-10 w-10 shrink-0 items-center justify-center rounded-xl text-ink transition-colors hover:bg-subtle active:scale-[0.96] lg:hidden"
+          >
+            <svg viewBox="0 0 20 20" width="20" height="20" aria-hidden="true" fill="none">
+              <path
+                d="M3 6h14M3 10h14M3 14h9"
+                stroke="currentColor"
+                strokeWidth="1.6"
+                strokeLinecap="round"
+              />
+            </svg>
+          </button>
+        ) : null}
+        <Breadcrumbs />
+      </div>
+      <div className="flex shrink-0 items-center gap-2 sm:gap-3">
         <NotificationBell />
         <UserMenu />
       </div>
       <span
         aria-hidden="true"
-        className="chrome-scroll-edge pointer-events-none absolute inset-x-0 top-full hidden h-6 lg:block"
+        className="chrome-scroll-edge pointer-events-none absolute inset-x-0 top-full h-6"
       />
     </header>
   );

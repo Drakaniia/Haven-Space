@@ -56,7 +56,7 @@ function MonthNavButton({
       type="button"
       aria-label={label}
       onClick={onClick}
-      className="rounded-full border border-border bg-surface p-1.5 transition-colors hover:bg-subtle active:scale-[0.97]"
+      className="flex h-9 w-9 items-center justify-center rounded-lg text-gray-ink transition-[background-color,color,transform] duration-150 hover:bg-subtle hover:text-ink active:scale-[0.94] motion-reduce:active:scale-100"
     >
       <Icon name={icon} size={16} />
     </button>
@@ -163,23 +163,31 @@ export function LandlordCalendar() {
 
   return (
     <>
-      <PageHeader title="Calendar" />
+      <PageHeader
+        title="Calendar"
+        subtitle="Rent due dates, move-ins and move-outs, and application milestones across your properties."
+      />
 
-      <div className="mb-4 flex flex-col gap-3 lg:flex-row lg:items-end lg:justify-between">
-        <div className="flex items-center gap-2">
-          <MonthNavButton
-            label="Previous month"
-            icon="chevronLeft"
-            onClick={() => setMonthKey(current => shiftMonth(current, -1))}
-          />
-          <p className="min-w-40 text-center text-base font-semibold tracking-tight text-ink">
+      <div className="mb-4 flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
+        <div className="flex flex-wrap items-center gap-3">
+          <h2
+            aria-live="polite"
+            className="min-w-[11ch] font-display text-2xl font-medium tracking-[-0.02em] text-ink"
+          >
             {monthLabelOf(monthKey)}
-          </p>
-          <MonthNavButton
-            label="Next month"
-            icon="chevronRight"
-            onClick={() => setMonthKey(current => shiftMonth(current, 1))}
-          />
+          </h2>
+          <div className="flex items-center rounded-xl border border-border bg-surface p-0.5 shadow-card">
+            <MonthNavButton
+              label="Previous month"
+              icon="chevronLeft"
+              onClick={() => setMonthKey(current => shiftMonth(current, -1))}
+            />
+            <MonthNavButton
+              label="Next month"
+              icon="chevronRight"
+              onClick={() => setMonthKey(current => shiftMonth(current, 1))}
+            />
+          </div>
           <Button
             variant="outline"
             size="sm"
@@ -196,7 +204,7 @@ export function LandlordCalendar() {
           <div
             role="group"
             aria-label="Filter events by family"
-            className="flex flex-wrap items-center gap-2"
+            className="flex w-full items-center gap-0.5 overflow-x-auto rounded-xl bg-subtle p-1 sm:w-auto"
           >
             {FAMILY_FILTERS.map(option => (
               <button
@@ -204,10 +212,10 @@ export function LandlordCalendar() {
                 type="button"
                 aria-pressed={family === option.value}
                 onClick={() => setFamily(option.value)}
-                className={`inline-flex min-h-9 items-center rounded-full border px-3 text-sm font-medium transition-colors ${
+                className={`inline-flex h-8 flex-1 items-center justify-center whitespace-nowrap rounded-lg px-3 text-sm font-semibold transition-[background-color,color,box-shadow] duration-150 sm:flex-none ${
                   family === option.value
-                    ? 'border-primary-strong bg-primary-strong text-white'
-                    : 'border-border bg-surface text-gray-ink hover:bg-subtle'
+                    ? 'bg-surface text-ink shadow-card'
+                    : 'text-gray-ink hover:text-ink'
                 }`}
               >
                 {option.label}
@@ -252,7 +260,11 @@ export function LandlordCalendar() {
         <ErrorState
           message={calendar.error.message}
           hint="The calendar reads the same data as your ledger and applications pages, so this is usually a connection or migration problem."
-          action={<Button onClick={() => void calendar.refetch()}>Try again</Button>}
+          action={
+            <Button variant="outline" size="sm" onClick={() => void calendar.refetch()}>
+              Try again
+            </Button>
+          }
         />
       ) : (
         <>
@@ -263,7 +275,7 @@ export function LandlordCalendar() {
             truncated={data!.truncated}
           />
 
-          <div className="grid grid-cols-1 gap-4 lg:grid-cols-[minmax(0,1fr)_20rem]">
+          <div className="grid grid-cols-1 items-start gap-6 lg:grid-cols-[minmax(0,1fr)_21rem]">
             <CalendarMonthGrid
               monthKey={monthKey}
               today={data!.today}

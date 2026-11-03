@@ -12,6 +12,7 @@ import {
 } from '../../lib/api/payments';
 import {
   PAYMENT_METHODS,
+  formatPaymentDate,
   formatPeso,
   isChargeOpen,
   methodNeedsReceipt,
@@ -96,6 +97,30 @@ export function RecordPaymentModal({
     (!needsReference || reference.trim().length > 0) &&
     (method !== 'other' || methodLabel.trim().length > 0);
 
+  // The one thing still standing between the landlord and the button, said
+  // plainly instead of leaving a disabled control to be puzzled over.
+  const missing = !applicationId
+    ? 'Choose a boarder.'
+    : history.isLoading
+      ? null
+      : charges.length === 0
+        ? null
+        : selected.length === 0
+          ? 'Tick at least one charge that was paid.'
+          : method === 'other' && methodLabel.trim().length === 0
+            ? 'Name the payment method.'
+            : needsReference && reference.trim().length === 0
+              ? 'Add the reference or transaction ID.'
+              : needsReceipt && file === null
+                ? 'Attach a receipt — only cash can be recorded without one.'
+                : null;
+  const boarderName =
+    boarders.find(row => row.application_id === applicationId)?.boarder_name ?? 'this boarder';
+  const methodName =
+    method === 'other'
+      ? methodLabel.trim() || 'another method'
+      : (PAYMENT_METHODS.find(option => option.value === method)?.label ?? method);
+
   const submit = async () => {
     if (!applicationId || selected.length === 0) {
       return;
@@ -157,19 +182,25 @@ export function RecordPaymentModal({
 
         {history.isLoading ? <Spinner /> : null}
 
-        <fieldset className="rounded-xl border border-border p-3">
-          <legend className="px-1 text-sm text-gray-ink">Charges to settle in full</legend>
-          {charges.length === 0 ? (
-            <p className="text-sm text-gray-ink">This boarder has no open charges.</p>
+        <fieldset>
+          <legend className="mb-1.5 text-sm font-semibold text-ink">Charges to settle in full</legend>
+          {history.isLoading ? null : charges.length === 0 ? (
+            <p className="rounded-xl border border-dashed border-border-strong px-4 py-4 text-sm text-gray-ink">
+              This boarder has no open charges. Nothing needs recording right now.
+            </p>
           ) : (
-            <ul className="flex flex-col gap-2">
+            <ul className="divide-y divide-border overflow-hidden rounded-xl border border-border">
               {charges.map(charge => (
                 <li key={charge.id}>
-                  <label className="flex items-center justify-between gap-3 text-sm">
-                    <span className="flex items-center gap-2">
+                  <label
+                    className={`flex cursor-pointer items-center justify-between gap-3 px-3.5 py-3 text-sm transition-colors duration-100 ${
+                      selected.includes(charge.id) ? 'bg-mint/50' : 'bg-surface hover:bg-cream'
+                    }`}
+                  >
+                    <span className="flex min-w-0 items-center gap-2.5">
                       <input
                         type="checkbox"
-                        className="h-4 w-4 rounded border-border"
+                        className="h-4 w-4 shrink-0 rounded border-border-strong accent-[var(--color-primary-strong)]"
                         checked={selected.includes(charge.id)}
                         onChange={event =>
                           setSelected(current =>
@@ -179,9 +210,18 @@ export function RecordPaymentModal({
                           )
                         }
                       />
-                      <span className="text-ink">{charge.description || charge.charge_type}</span>
+                      <span className="min-w-0">
+                        <span className="block truncate font-medium text-ink">
+                          {charge.description || charge.charge_type}
+                        </span>
+                        <span className="block text-xs text-gray-ink">
+                          Due {formatPaymentDate(charge.due_date)}
+                        </span>
+                      </span>
                     </span>
-                    <span className="font-medium text-ink">{formatPeso(charge.total_due)}</span>
+                    <span className="font-semibold tabular text-ink">
+                      {formatPeso(charge.total_due)}
+                    </span>
                   </label>
                 </li>
               ))}
@@ -257,7 +297,7 @@ export function RecordPaymentModal({
             id="record-proof"
             type="file"
             accept="image/jpeg,image/png,image/gif,image/webp"
-            className="block w-full text-sm text-gray-ink"
+            className="block w-full rounded-xl border border-dashed border-border-strong bg-surface px-3 py-2.5 text-sm text-gray-ink file:mr-3 file:rounded-lg file:border-0 file:bg-mint file:px-3 file:py-1.5 file:text-sm file:font-semibold file:text-primary-dark"
             onChange={event => setFile(event.target.files?.[0] ?? null)}
           />
         </Field>
@@ -271,12 +311,27 @@ export function RecordPaymentModal({
           />
         </Field>
 
-        <div className="flex justify-end gap-2">
+        {canSubmit ? (
+          <div className="rounded-xl border border-success-border bg-success-tint px-4 py-3 text-sm text-success-ink">
+            <p className="font-semibold">
+              {`You are recording ${formatPeso(total)} from ${boarderName}.`}
+            </p>
+            <p className="mt-1">
+              {`${selected.length} ${selected.length === 1 ? 'charge' : 'charges'} will be marked paid, by ${methodName}${
+                paidDate ? ` on ${formatPaymentDate(paidDate)}` : ''
+              }.${nextDue ? ` The next due date becomes ${formatPaymentDate(nextDue)}.` : ''}`}
+            </p>
+          </div>
+        ) : missing ? (
+          <p className="text-sm text-gray-ink">{missing}</p>
+        ) : null}
+
+        <div className="flex flex-col-reverse gap-2 border-t border-border pt-4 sm:flex-row sm:justify-end">
           <Button variant="ghost" onClick={onClose}>
             Cancel
           </Button>
           <Button disabled={!canSubmit || busy} onClick={() => void submit()}>
-            {busy ? 'Recording…' : 'Record payment'}
+            {busy ? 'Recording…' : total > 0 ? `Record ${formatPeso(total)}` : 'Record payment'}
           </Button>
         </div>
       </div>

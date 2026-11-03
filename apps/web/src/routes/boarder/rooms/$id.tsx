@@ -3,9 +3,10 @@ import { useQuery } from '@tanstack/react-query';
 import { RequireTenancy } from '../../../components/boarder/FeatureGate';
 import { Protected } from '../../../components/auth/Protected';
 import { RoleShell } from '../../../components/layout/RoleShell';
+import { RoomDetailSkeleton } from '../../../components/rooms/BookingFlow';
 import { RoomDetailView } from '../../../components/rooms/RoomDetailView';
+import { Button } from '../../../components/ui/Button';
 import { ErrorState } from '../../../components/ui/ErrorState';
-import { Spinner } from '../../../components/ui/Spinner';
 import { getRoomDetail } from '../../../lib/api/public';
 import { useBoarderNav } from '../../../lib/use-boarder-nav';
 
@@ -29,9 +30,17 @@ function RoomDetailPage() {
     <RoleShell nav={nav}>
       <RequireTenancy>
         {detail.isLoading ? (
-          <Spinner />
+          <RoomDetailSkeleton />
         ) : detail.error ? (
-          <ErrorState message={detail.error.message} />
+          <ErrorState
+            message="We couldn't load this listing."
+            hint={detail.error.message}
+            action={
+              <Button variant="outline" size="sm" onClick={() => void detail.refetch()}>
+                Try again
+              </Button>
+            }
+          />
         ) : detail.data ? (
           <RoomDetailView listing={detail.data.data} />
         ) : null}

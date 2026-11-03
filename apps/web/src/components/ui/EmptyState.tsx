@@ -20,15 +20,17 @@ export function EmptyState({
   action?: ReactNode;
 }) {
   return (
-    <div className="rounded-2xl border border-dashed border-border-strong bg-surface/60 p-10 text-center">
+    <div className="rounded-2xl border border-dashed border-border-strong bg-surface/70 px-6 py-12 text-center">
       {icon ? (
-        <span className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-full bg-mint">
+        <span className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-2xl bg-mint text-primary">
           <Icon name={icon} size={24} />
         </span>
       ) : null}
-      <p className="font-semibold text-ink">{title}</p>
-      {description ? <p className="mt-1 text-sm text-gray-ink">{description}</p> : null}
-      {action ? <div className="mt-5 flex justify-center">{action}</div> : null}
+      <p className="font-display text-xl font-medium tracking-[-0.01em] text-ink">{title}</p>
+      {description ? (
+        <p className="mx-auto mt-2 max-w-md text-sm leading-relaxed text-gray-ink">{description}</p>
+      ) : null}
+      {action ? <div className="mt-6 flex justify-center">{action}</div> : null}
     </div>
   );
 }

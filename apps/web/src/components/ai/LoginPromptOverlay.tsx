@@ -1,5 +1,6 @@
 import { Link } from '@tanstack/react-router';
 import { useEffect, useRef } from 'react';
+import { buttonClasses } from '../ui/Button';
 import { Icon } from '../ui/Icon';
 
 interface LoginPromptOverlayProps {
@@ -50,66 +51,45 @@ export function LoginPromptOverlay({ open, redirect, onNotNow }: LoginPromptOver
       aria-modal="true"
       aria-labelledby="login-prompt-title"
       aria-describedby="login-prompt-description"
-      className="modal-fade fixed inset-0 z-50 flex items-center justify-center bg-ink/50 p-4 backdrop-blur-[2px]"
+      className="modal-fade fixed inset-0 z-50 flex items-end justify-center bg-ink/40 p-4 sm:items-center"
       onClick={onNotNow}
     >
       <div
-        className="modal-pop relative w-full max-w-md overflow-hidden rounded-3xl bg-surface shadow-2xl ring-1 ring-ink/5"
+        className="modal-pop w-full max-w-md rounded-[20px] border border-border bg-surface p-6 shadow-pop sm:p-8"
         onClick={event => event.stopPropagation()}
       >
-        {/* Soft mint glow behind the badge */}
-        <div
-          aria-hidden="true"
-          className="pointer-events-none absolute -top-20 left-1/2 h-48 w-72 -translate-x-1/2 rounded-full bg-mint blur-3xl"
-        />
+        <span className="flex h-11 w-11 items-center justify-center rounded-xl bg-mint text-primary">
+          <Icon name="sparkles" size={22} />
+        </span>
 
-        <div className="relative flex flex-col items-center px-8 pb-7 pt-9 text-center">
-          <div className="relative">
-            <span
-              aria-hidden="true"
-              className="absolute inset-0 -m-1.5 rounded-2xl bg-primary-strong/10"
-            />
-            <div className="relative flex h-14 w-14 items-center justify-center rounded-2xl bg-gradient-to-br from-primary-strong to-primary-hover text-white shadow-pop">
-              <Icon name="sparkles" size={26} />
-            </div>
-          </div>
+        <h2 id="login-prompt-title" className="display-md mt-5 text-ink">
+          Log in to keep chatting
+        </h2>
+        <p id="login-prompt-description" className="mt-3 leading-relaxed text-gray-ink">
+          You have used your one free Haven AI question. Log in or create an account to keep going.
+          Your conversation will be right where you left it.
+        </p>
 
-          <h2
-            id="login-prompt-title"
-            className="mt-5 text-xl font-extrabold tracking-tight text-ink"
+        <div className="mt-7 flex flex-col gap-3">
+          <Link
+            ref={loginRef}
+            to="/auth/login"
+            search={{ redirect }}
+            className={buttonClasses({ size: 'lg', className: 'w-full' })}
           >
-            Log in to keep chatting
-          </h2>
-          <p
-            id="login-prompt-description"
-            className="mt-2 max-w-xs text-sm leading-relaxed text-gray-ink"
+            Log in
+          </Link>
+          <Link
+            to="/auth/choose"
+            search={{ redirect }}
+            className={buttonClasses({ variant: 'outline', size: 'lg', className: 'w-full' })}
           >
-            You&apos;ve used your one free Haven AI question. Log in or sign up for unlimited chat —
-            your conversation will pick up right where you left off.
-          </p>
-
-          <div className="mt-7 flex w-full flex-col gap-3">
-            <Link
-              ref={loginRef}
-              to="/auth/login"
-              search={{ redirect }}
-              className="w-full rounded-full bg-primary-strong px-4 py-3 text-sm font-semibold text-white shadow-sm transition hover:bg-primary-hover focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
-            >
-              Log in
-            </Link>
-            <Link
-              to="/auth/choose"
-              search={{ redirect }}
-              className="w-full rounded-full border-2 border-primary bg-surface px-4 py-3 text-sm font-semibold text-primary transition hover:bg-mint focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
-            >
-              Sign up
-            </Link>
-          </div>
-
+            Create an account
+          </Link>
           <button
             type="button"
             onClick={onNotNow}
-            className="mt-5 text-sm font-medium text-muted transition hover:text-ink focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
+            className={buttonClasses({ variant: 'ghost', size: 'md', className: 'w-full' })}
           >
             Not now
           </button>

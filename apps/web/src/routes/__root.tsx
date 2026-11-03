@@ -26,6 +26,7 @@ export const Route = createRootRoute({
       { name: 'viewport', content: 'width=device-width, initial-scale=1' },
       // Always light mode — never follow the device's dark-mode preference.
       { name: 'color-scheme', content: 'light' },
+      { name: 'theme-color', content: '#f6f2e9' },
       { title: 'Haven Space' },
     ],
     links: [
@@ -40,7 +41,7 @@ export const Route = createRootRoute({
       },
       {
         rel: 'stylesheet',
-        href: 'https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap',
+        href: 'https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght,SOFT,WONK@0,9..144,400..700,0..100,0..1;1,9..144,400..700,0..100,0..1&family=Hanken+Grotesk:wght@400;500;600;700;800&display=swap',
       },
       { rel: 'stylesheet', href: appCss },
     ],
@@ -51,19 +52,34 @@ export const Route = createRootRoute({
 
 function NotFoundPage() {
   return (
-    <div className="flex min-h-screen flex-col items-center justify-center gap-4 bg-cream px-6 text-center">
-      <p className="text-6xl font-extrabold text-primary">404</p>
-      <h1 className="text-2xl font-bold text-ink">Page not found</h1>
-      <p className="max-w-md text-sm text-gray-ink">
-        The page you&apos;re looking for doesn&apos;t exist or may have been moved.
-      </p>
-      <Link
-        to="/"
-        className="mt-2 rounded-full bg-primary-strong px-6 py-2.5 text-sm font-semibold text-white hover:bg-primary-hover"
-      >
-        ← Back to home
-      </Link>
-    </div>
+    <main className="paper-grain flex min-h-screen flex-col items-center justify-center px-6 text-center">
+      <div className="rise-in flex max-w-md flex-col items-center">
+        <Link to="/" className="mb-10 flex items-center gap-2">
+          <img src="/assets/images/Haven_Space_Logo.png" alt="" className="h-8 w-8 object-contain" />
+          <span className="font-display text-lg font-semibold text-ink">Haven Space</span>
+        </Link>
+        <p className="display-xl text-primary">404</p>
+        <h1 className="display-md mt-4 text-ink">This door doesn&apos;t open.</h1>
+        <p className="mt-3 text-base leading-relaxed text-gray-ink">
+          The page you&apos;re looking for doesn&apos;t exist or has moved. Let&apos;s get you
+          back somewhere familiar.
+        </p>
+        <div className="mt-8 flex flex-wrap justify-center gap-3">
+          <Link
+            to="/"
+            className="inline-flex items-center rounded-xl bg-primary-strong px-5 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-primary-hover active:scale-[0.97]"
+          >
+            Back to home
+          </Link>
+          <Link
+            to="/find-a-room"
+            className="inline-flex items-center rounded-xl border border-border-strong bg-surface px-5 py-2.5 text-sm font-semibold text-ink transition-colors hover:bg-subtle active:scale-[0.97]"
+          >
+            Browse rooms
+          </Link>
+        </div>
+      </div>
+    </main>
   );
 }
 
@@ -121,7 +137,7 @@ function RootComponent() {
 
 function RootDocument({ children }: Readonly<{ children: ReactNode }>) {
   return (
-    <html lang="en" className="bg-cream text-ink">
+    <html lang="en" className="bg-cream text-ink antialiased">
       <head>
         <HeadContent />
       </head>

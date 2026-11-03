@@ -117,6 +117,137 @@ export function adminFacts(property: AdminPropertyRow): PropertyFact[] {
   ];
 }
 
+/** Status pill that floats on the photo: a dot plus the word, never colour alone. */
+function PhotoPill({ pill }: { pill: CardPill }) {
+  return (
+    <span className="inline-flex items-center gap-1.5 rounded-md bg-surface/92 px-2 py-0.5 text-xs font-semibold text-ink shadow-card">
+      <span className={`h-1.5 w-1.5 rounded-full ${pill.dot}`} aria-hidden="true" />
+      {pill.label}
+    </span>
+  );
+}
+
+function CardPhoto({ imageUrl, className }: { imageUrl?: string | null; className: string }) {
+  return (
+    <div className={`relative shrink-0 overflow-hidden bg-mint ${className}`}>
+      {imageUrl ? (
+        <img src={imageUrl} alt="" loading="lazy" className="h-full w-full object-cover" />
+      ) : (
+        <span
+          aria-hidden="true"
+          className="flex h-full w-full flex-col items-center justify-center gap-1.5 text-primary"
+        >
+          <Icon name="buildingOffice" size={28} />
+          <span className="text-xs font-medium text-primary-dark">No photo yet</span>
+        </span>
+      )}
+    </div>
+  );
+}
+
+/**
+ * Photo-led tile for the landlord's own grid. The photo carries the status; the
+ * body leads with name and address, then how full the house is (a bar, not just
+ * a sentence), then the remaining facts in a compact two-column list.
+ */
+function PropertyTile({
+  title,
+  propertyId,
+  imageUrl,
+  pill,
+  badge,
+  address,
+  facts,
+  note,
+  occupancy,
+}: {
+  title: string;
+  propertyId?: number;
+  imageUrl?: string | null;
+  pill: CardPill;
+  badge?: string;
+  address: string;
+  facts: PropertyFact[];
+  note?: string;
+  occupancy?: { occupied: number; total: number };
+}) {
+  const total = Math.max(Number(occupancy?.total ?? 0), 0);
+  const occupied = Math.max(Number(occupancy?.occupied ?? 0), 0);
+  const ratio = total > 0 ? Math.min(occupied / total, 1) : 0;
+  // The occupancy fact is drawn as the bar; the rest stay as a list.
+  const listed = facts.filter(fact => fact.icon !== 'users');
+  const occupancyFact = facts.find(fact => fact.icon === 'users');
+
+  return (
+    <li className="press-card relative flex flex-col overflow-hidden rounded-2xl border border-border/80 bg-surface shadow-card focus-within:ring-2 focus-within:ring-primary/30">
+      <div className="relative">
+        <CardPhoto imageUrl={imageUrl} className="aspect-[16/10] w-full" />
+        <div className="absolute inset-x-3 top-3 flex items-start justify-between gap-2">
+          <PhotoPill pill={pill} />
+          {badge ? (
+            <span className="rounded-md bg-warning-tint px-2 py-0.5 text-xs font-semibold text-warning-ink shadow-card">
+              {badge}
+            </span>
+          ) : null}
+        </div>
+      </div>
+
+      <div className="flex flex-1 flex-col gap-3 p-4">
+        <div className="min-w-0">
+          <h3 className="line-clamp-2 font-display text-lg font-medium leading-snug tracking-[-0.01em] text-ink">
+            {propertyId ? (
+              <Link
+                to="/landlord/properties/$id"
+                params={{ id: String(propertyId) }}
+                className="after:absolute after:inset-0 hover:text-primary focus-visible:outline-none"
+              >
+                {title}
+              </Link>
+            ) : (
+              title
+            )}
+          </h3>
+          <p className="mt-1 flex items-center gap-1 text-sm text-gray-ink">
+            <Icon name="pin" size={14} className="shrink-0" />
+            <span className="truncate">{address}</span>
+          </p>
+        </div>
+
+        {occupancyFact ? (
+          <div>
+            <div className="flex items-center justify-between gap-2 text-xs">
+              <span className="font-semibold text-ink">{occupancyFact.label}</span>
+              {total > 0 ? (
+                <span className="text-gray-ink tabular">{Math.round(ratio * 100)}%</span>
+              ) : null}
+            </div>
+            <div aria-hidden="true" className="mt-1.5 h-1.5 overflow-hidden rounded-full bg-subtle">
+              <div
+                className="h-full rounded-full bg-primary-strong"
+                style={{ width: `${ratio * 100}%` }}
+              />
+            </div>
+          </div>
+        ) : null}
+
+        <ul
+          aria-label={`Facts for ${title}`}
+          className="mt-auto grid grid-cols-2 gap-x-3 gap-y-1.5 border-t border-border pt-3 text-xs text-gray-ink"
+        >
+          {listed.map(fact => (
+            <li key={fact.label} className="flex min-w-0 items-center gap-1.5">
+              <Icon name={fact.icon} size={13} className="shrink-0 text-muted" />
+              <span className="truncate tabular">{fact.label}</span>
+            </li>
+          ))}
+        </ul>
+
+        {note ? <p className="text-xs text-muted">{note}</p> : null}
+      </div>
+    </li>
+  );
+}
+
 export function PropertyCard({
   title,
   propertyId,
@@ -129,7 +260,13 @@ export function PropertyCard({
   actions,
   selection,
   rooms,
+  layout = 'row',
+  occupancy,
 }: {
+  /** `row` (default) is the wide admin moderation card; `tile` is the landlord grid. */
+  layout?: 'row' | 'tile';
+  /** Tile only: draws the occupancy fact as a bar. */
+  occupancy?: { occupied: number; total: number };
   title: string;
   /** Landlord surfaces only: makes the title the card's stretched link (D13).
       Points at the property **detail** page, not the edit form (D3/R1). */
@@ -147,30 +284,39 @@ export function PropertyCard({
   selection?: { checked: boolean; onChange: (checked: boolean) => void; label: string };
   rooms?: { id: string; open: boolean; onToggle: () => void; content: ReactNode };
 }) {
+  if (layout === 'tile') {
+    return (
+      <PropertyTile
+        title={title}
+        propertyId={propertyId}
+        imageUrl={imageUrl}
+        pill={pill}
+        badge={badge}
+        address={address}
+        facts={facts}
+        note={note}
+        occupancy={occupancy}
+      />
+    );
+  }
+
   return (
-    <li className="relative rounded-2xl border border-border bg-surface shadow-card transition-shadow focus-within:ring-2 focus-within:ring-primary/30 hover:shadow-pop">
+    <li className="press-card relative rounded-2xl border border-border/80 bg-surface shadow-card focus-within:ring-2 focus-within:ring-primary/30">
       <div className="flex flex-col gap-3 p-3 sm:flex-row sm:gap-4 sm:p-4">
-        <div className="relative h-40 w-full shrink-0 overflow-hidden rounded-xl bg-mint sm:h-[104px] sm:w-[104px]">
-          {imageUrl ? (
-            <img src={imageUrl} alt="" className="h-full w-full object-cover" />
-          ) : (
-            <span
-              aria-hidden="true"
-              className="flex h-full w-full items-center justify-center text-primary"
-            >
-              <Icon name="buildingOffice" size={28} />
-            </span>
-          )}
-          <span className="absolute left-2 top-2 inline-flex items-center gap-1.5 rounded-full bg-white/85 px-2 py-0.5 text-[11px] font-medium text-ink shadow-sm backdrop-blur">
-            <span className={`h-1.5 w-1.5 rounded-full ${pill.dot}`} aria-hidden="true" />
-            {pill.label}
+        <div className="relative shrink-0">
+          <CardPhoto
+            imageUrl={imageUrl}
+            className="h-40 w-full rounded-xl sm:h-[112px] sm:w-[136px]"
+          />
+          <span className="absolute left-2 top-2">
+            <PhotoPill pill={pill} />
           </span>
         </div>
 
         <div className="flex min-w-0 flex-1 flex-col gap-2">
           <div className="flex items-start justify-between gap-3">
             <div className="min-w-0">
-              <h3 className="line-clamp-2 text-[15px] font-semibold text-ink">
+              <h3 className="line-clamp-2 font-display text-[1.0625rem] font-medium leading-snug text-ink">
                 {propertyId ? (
                   // Stretched link: the card is clickable, the controls below sit
                   // above this layer (R14/D13).
@@ -191,7 +337,7 @@ export function PropertyCard({
               </p>
             </div>
             {badge ? (
-              <span className="inline-flex shrink-0 items-center rounded-full bg-warning-tint px-2.5 py-0.5 text-xs font-medium text-warning-ink">
+              <span className="inline-flex shrink-0 items-center rounded-md bg-warning-tint px-2 py-0.5 text-xs font-semibold text-warning-ink">
                 {badge}
               </span>
             ) : null}
@@ -213,9 +359,9 @@ export function PropertyCard({
             {facts.map(fact => (
               <li
                 key={fact.label}
-                className="inline-flex items-center gap-1.5 rounded-lg border border-border px-2.5 py-1 text-xs text-gray-ink"
+                className="inline-flex items-center gap-1.5 rounded-lg bg-cream px-2.5 py-1 text-xs text-gray-ink tabular"
               >
-                <Icon name={fact.icon} size={13} className="shrink-0" />
+                <Icon name={fact.icon} size={13} className="shrink-0 text-muted" />
                 {fact.label}
               </li>
             ))}
@@ -231,7 +377,7 @@ export function PropertyCard({
                   aria-expanded={rooms.open}
                   aria-controls={rooms.id}
                   onClick={rooms.onToggle}
-                  className="flex min-h-9 items-center gap-1.5 rounded-full border border-border px-3 text-xs font-medium text-gray-ink transition-colors hover:bg-subtle active:scale-[0.97] motion-reduce:transition-none"
+                  className="flex min-h-9 items-center gap-1.5 rounded-lg border border-border px-3 text-xs font-medium text-gray-ink transition-[background-color,transform] hover:bg-subtle active:scale-[0.97] motion-reduce:transition-none"
                 >
                   <Icon
                     name="chevronDown"
@@ -258,13 +404,52 @@ export function PropertyCard({
   );
 }
 
-/** Independent toggles, collapsed by default (D12). */
-export function PropertyCardList({ children }: { children: ReactNode }) {
-  return <ul className="flex flex-col gap-3">{children}</ul>;
+const TILE_GRID = 'grid grid-cols-1 gap-5 sm:grid-cols-2 xl:grid-cols-3';
+
+/** Independent toggles, collapsed by default (D12). `tile` lays the cards out as a grid. */
+export function PropertyCardList({
+  children,
+  layout = 'row',
+}: {
+  children: ReactNode;
+  layout?: 'row' | 'tile';
+}) {
+  return <ul className={layout === 'tile' ? TILE_GRID : 'flex flex-col gap-3'}>{children}</ul>;
 }
 
 /** Loading state (D26) — same footprint as a real card, so nothing jumps. */
-export function PropertyCardSkeletonList({ count = 4 }: { count?: number }) {
+export function PropertyCardSkeletonList({
+  count = 4,
+  layout = 'row',
+}: {
+  count?: number;
+  layout?: 'row' | 'tile';
+}) {
+  if (layout === 'tile') {
+    return (
+      <ul className={TILE_GRID} aria-hidden="true">
+        {Array.from({ length: count }, (_, index) => (
+          <li
+            key={index}
+            className="overflow-hidden rounded-2xl border border-border/80 bg-surface shadow-card"
+          >
+            <Skeleton className="aspect-[16/10] w-full rounded-none" />
+            <div className="space-y-3 p-4">
+              <Skeleton className="h-5 w-2/3" />
+              <Skeleton className="h-3 w-1/2" />
+              <Skeleton className="h-1.5 w-full rounded-full" />
+              <div className="grid grid-cols-2 gap-2 border-t border-border pt-3">
+                {Array.from({ length: 4 }, (_, chip) => (
+                  <Skeleton key={chip} className="h-3 w-20" />
+                ))}
+              </div>
+            </div>
+          </li>
+        ))}
+      </ul>
+    );
+  }
+
   return (
     <ul className="flex flex-col gap-3" aria-hidden="true">
       {Array.from({ length: count }, (_, index) => (

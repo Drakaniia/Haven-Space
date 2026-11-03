@@ -1,8 +1,8 @@
 import { Link, createFileRoute, useNavigate, useSearch } from '@tanstack/react-router';
 import { useEffect, useState, type FormEvent } from 'react';
+import { AuthAlert } from '../../components/auth/AuthAlert';
 import { AuthDivider, AuthSplitLayout, GoogleButton } from '../../components/auth/AuthSplitLayout';
 import { Button } from '../../components/ui/Button';
-import { ErrorState } from '../../components/ui/ErrorState';
 import { Field, PasswordInput, TextInput } from '../../components/ui/Field';
 import { ApiRequestError } from '../../lib/api/http';
 import { checkEmail } from '../../lib/api/auth';
@@ -64,78 +64,104 @@ function LoginPage() {
     }
   }
 
+  function startGoogle() {
+    setGoogleLoading(true);
+    setError(null);
+    try {
+      window.location.href = googleAuthorizeUrl('login', 'boarder', redirect);
+      window.setTimeout(() => setGoogleLoading(false), 4000);
+    } catch {
+      setGoogleLoading(false);
+    }
+  }
+
+  const busy = submitting || googleLoading;
+
   return (
     <AuthSplitLayout
-      title="Welcome Back!"
-      subtitle="We're excited to see you again. Please enter your details to continue."
+      title="Welcome back"
+      subtitle="Log in to pick up where you left off."
       footer={
-        <p className="text-center">
-          Don&apos;t have an account?{' '}
-          <Link to="/auth/choose" className="text-primary hover:underline">
-            Sign up
+        <p>
+          New to Haven Space?{' '}
+          <Link
+            to="/auth/choose"
+            search={{ redirect }}
+            className="font-semibold text-primary underline-offset-4 hover:underline"
+          >
+            Create an account
           </Link>
         </p>
       }
     >
-      {searchError ? <ErrorState message={searchError} /> : null}
-      {error ? <ErrorState message={error} /> : null}
+      {searchError ? <AuthAlert title={searchError} /> : null}
+      {error ? <AuthAlert title={error} /> : null}
 
-      <GoogleButton
-        loading={googleLoading}
-        onClick={() => {
-          setGoogleLoading(true);
-          setError(null);
-          try {
-            window.location.href = googleAuthorizeUrl('login', 'boarder', redirect);
-            window.setTimeout(() => setGoogleLoading(false), 4000);
-          } catch {
-            setGoogleLoading(false);
-          }
-        }}
-      />
+      <GoogleButton loading={googleLoading} disabled={submitting} onClick={startGoogle} />
       <AuthDivider />
 
-      <form className="flex flex-col gap-4" onSubmit={handleSubmit}>
+      <form className="flex flex-col gap-5" onSubmit={handleSubmit}>
         <Field label="Email" htmlFor="email">
           <TextInput
             id="email"
             type="email"
             name="email"
-            placeholder="Enter your email"
+            placeholder="you@example.com"
             autoComplete="email"
+            inputMode="email"
             required
             value={email}
-            onChange={e => setEmail(e.target.value)}
+            onChange={e => {
+              setEmail(e.target.value);
+              if (googleAccount) setGoogleAccount(false);
+            }}
             onBlur={handleEmailBlur}
           />
         </Field>
 
         {googleAccount ? (
-          <div className="rounded-md bg-mint p-3 text-sm">
-            This account was created with Google. Please sign in with the Google button above.
-          </div>
+          <AuthAlert
+            tone="info"
+            className=""
+            title="This account signs in with Google"
+            action={
+              <button
+                type="button"
+                onClick={startGoogle}
+                disabled={busy}
+                className="font-semibold text-primary underline underline-offset-4 disabled:opacity-60"
+              >
+                Continue with Google
+              </button>
+            }
+          >
+            It was created with Google, so there’s no password to enter here.
+          </AuthAlert>
         ) : (
-          <Field label="Password" htmlFor="password">
-            <PasswordInput
-              id="password"
-              name="password"
-              placeholder="Enter your password"
-              autoComplete="current-password"
-              required
-              value={password}
-              onChange={e => setPassword(e.target.value)}
-            />
-          </Field>
+          <div className="relative">
+            <Field label="Password" htmlFor="password">
+              <PasswordInput
+                id="password"
+                name="password"
+                placeholder="Your password"
+                autoComplete="current-password"
+                required
+                value={password}
+                onChange={e => setPassword(e.target.value)}
+              />
+            </Field>
+            {/* Sits on the label row, but outside the <label> so it stays its own control. */}
+            <Link
+              to="/auth/forgot-password"
+              className="absolute right-0 top-0 text-sm font-semibold text-primary underline-offset-4 hover:underline"
+            >
+              Forgot password?
+            </Link>
+          </div>
         )}
 
-        <div className="text-right">
-          <Link to="/auth/forgot-password" className="text-sm text-primary hover:underline">
-            Forgot password?
-          </Link>
-        </div>
-
-        <Button type="submit" disabled={submitting}>
-          {submitting ? 'Logging in…' : 'Login'}
+        <Button type="submit" size="lg" className="mt-1 w-full" disabled={busy || googleAccount}>
+          {submitting ? 'Logging in…' : 'Log in'}
         </Button>
       </form>
     </AuthSplitLayout>

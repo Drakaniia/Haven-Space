@@ -36,21 +36,37 @@ import {
  * by the route (D2).
  */
 
-/** The picture's white bordered stat card (D23) — local, not `PropertyOverview`'s tile. */
-function StatCard({ label, value }: { label: string; value: string }) {
+/**
+ * Status dot per stat — the same tones the room pills use (`StatusBadge`), shown
+ * as a small dot so the row reads calm: colour hints, the label says it.
+ */
+const STAT_DOT: Record<string, string> = {
+  total: 'bg-border-strong',
+  occupied: 'bg-warning',
+  available: 'bg-success',
+  tenants: 'bg-primary',
+};
+
+/** The bordered stat card (D23) — local, not `PropertyOverview`'s tile. */
+function StatCard({ label, value, tone }: { label: string; value: string; tone: string }) {
   return (
-    <div className="rounded-2xl border border-border bg-surface px-4 py-3 shadow-card">
-      <p className="text-xs text-gray-ink">{label}</p>
-      <p className="mt-1 text-2xl font-bold text-ink">{value}</p>
+    <div className="rounded-2xl border border-border/80 bg-surface px-4 py-3.5 shadow-card">
+      <p className="flex items-center gap-2 text-xs font-medium text-gray-ink">
+        <span aria-hidden="true" className={`h-2 w-2 rounded-full ${STAT_DOT[tone]}`} />
+        {label}
+      </p>
+      <p className="mt-1.5 font-display text-[1.75rem] font-medium leading-none tracking-[-0.02em] text-ink tabular">
+        {value}
+      </p>
     </div>
   );
 }
 
 function pillClasses(active: boolean): string {
-  return `inline-flex min-h-9 items-center gap-1.5 rounded-full border px-3 text-sm font-medium transition-colors ${
+  return `inline-flex min-h-9 items-center gap-2 rounded-lg border px-3 text-sm font-medium transition-[background-color,border-color,color] duration-150 ${
     active
-      ? 'border-primary-strong bg-primary-strong text-white'
-      : 'border-border bg-surface text-gray-ink hover:bg-subtle'
+      ? 'border-primary/40 bg-mint text-primary-dark'
+      : 'border-border bg-surface text-gray-ink hover:border-border-strong hover:text-ink'
   }`;
 }
 
@@ -115,12 +131,16 @@ export function PropertyRoomsGrid({
 
       <section>
         <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-4">
-          <StatCard label="Total rooms" value={String(stats.total)} />
-          <StatCard label="Occupied rooms" value={String(stats.occupiedRooms)} />
-          <StatCard label="Available rooms" value={String(stats.availableRooms)} />
+          <StatCard label="Total rooms" value={String(stats.total)} tone="total" />
+          <StatCard label="Occupied rooms" value={String(stats.occupiedRooms)} tone="occupied" />
+          <StatCard
+            label="Available rooms"
+            value={String(stats.availableRooms)}
+            tone="available"
+          />
           {/* Labelled in full so the number reads unambiguously as the property's
               total tenants over its total capacity (D11, relabelled on request). */}
-          <StatCard label="Tenants / capacity" value={stats.occupancyLabel} />
+          <StatCard label="Tenants / capacity" value={stats.occupancyLabel} tone="tenants" />
         </div>
 
         {rooms.isLoading ? (
@@ -142,7 +162,7 @@ export function PropertyRoomsGrid({
           </div>
         ) : (
           <>
-            <div className="mt-6 flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
+            <div className="mt-8 flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
               <div
                 role="group"
                 aria-label="Filter rooms by status"
@@ -157,14 +177,20 @@ export function PropertyRoomsGrid({
                     className={pillClasses(filter === option.value)}
                   >
                     {option.label}
-                    <span className="tabular-nums">{counts[option.value]}</span>
+                    <span
+                      className={`min-w-5 rounded-full px-1.5 text-center text-xs font-semibold tabular-nums ${
+                        filter === option.value ? 'bg-surface text-primary-dark' : 'bg-subtle text-gray-ink'
+                      }`}
+                    >
+                      {counts[option.value]}
+                    </span>
                   </button>
                 ))}
               </div>
 
               <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
                 <div className="relative">
-                  <span className="pointer-events-none absolute inset-y-0 left-3 flex items-center">
+                  <span className="pointer-events-none absolute inset-y-0 left-3 flex items-center text-muted">
                     <Icon name="search" size={16} />
                   </span>
                   <TextInput
@@ -209,7 +235,7 @@ export function PropertyRoomsGrid({
             ) : null}
 
             {visible.length === 0 ? (
-              <p className="mt-6 text-sm text-gray-ink">
+              <p className="mt-6 rounded-2xl border border-dashed border-border-strong bg-surface/70 px-5 py-8 text-center text-sm text-gray-ink">
                 {search.trim()
                   ? `No rooms match “${search.trim()}”.`
                   : `No ${filter} rooms on this property.`}{' '}

@@ -1,4 +1,4 @@
-import type { ReactNode } from 'react';
+import { useCallback, useState, type ReactNode } from 'react';
 import { Sidebar, type NavItem } from './Sidebar';
 import { Topbar } from './Topbar';
 import { RestrictionBanner } from '../shared/RestrictionBanner';
@@ -24,13 +24,23 @@ export function RoleShell({
   onboardingIncomplete?: boolean;
   onboardingSkipped?: boolean;
 }) {
+  const [navOpen, setNavOpen] = useState(false);
+  const closeNav = useCallback(() => setNavOpen(false), []);
+  const hasNav = nav.length > 0;
+
   return (
     <div className="flex min-h-screen bg-cream">
-      {nav.length > 0 && <Sidebar nav={nav} />}
+      <a
+        href="#main-content"
+        className="sr-only z-[60] rounded-lg bg-ink px-4 py-2 text-sm font-semibold text-cream focus:not-sr-only focus:fixed focus:left-4 focus:top-4"
+      >
+        Skip to content
+      </a>
+      {hasNav && <Sidebar nav={nav} mobileOpen={navOpen} onMobileClose={closeNav} />}
       <div className="flex min-w-0 flex-1 flex-col">
-        <Topbar />
-        <main className="flex-1 px-6 pb-16 pt-6 lg:px-10">
-          <div className="mx-auto max-w-[1280px]">
+        <Topbar onOpenNav={hasNav ? () => setNavOpen(true) : undefined} />
+        <main id="main-content" className="flex-1 px-4 pb-20 pt-6 sm:px-6 lg:px-10 lg:pt-8">
+          <div className="mx-auto max-w-[1240px]">
             <RestrictionBanner
               isIncomplete={onboardingIncomplete}
               isSkipped={onboardingSkipped}

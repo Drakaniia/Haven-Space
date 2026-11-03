@@ -1,37 +1,63 @@
 import { type ReactNode } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion, AnimatePresence, useReducedMotion } from 'framer-motion';
 import { Stepper } from './Stepper';
 
 export interface WizardLayoutProps {
+  /** Zero-based index of the current step. */
   currentStep: number;
   totalSteps: number;
   title: string;
+  /** Short step names, used by the indicator ("Step 2 of 3 · Property"). */
+  steps?: string[];
+  /** One line under the title saying what this step is for. */
+  description?: ReactNode;
+  /** Banner above the step's form (e.g. a failed save). */
+  alert?: ReactNode;
   children: ReactNode;
 }
 
-export function WizardLayout({ currentStep, totalSteps, title, children }: WizardLayoutProps) {
+/**
+ * Onboarding wizard frame: indicator and title on the canvas, the step's form on one card.
+ *
+ * Nothing here may set `overflow`: each step's `WizardActions` bar is `sticky` to the bottom of
+ * the viewport on phones, and an overflow ancestor would silently disable that.
+ */
+export function WizardLayout({
+  currentStep,
+  totalSteps,
+  title,
+  steps,
+  description,
+  alert,
+  children,
+}: WizardLayoutProps) {
+  const reduceMotion = useReducedMotion();
+
   return (
-    <div className="flex flex-col w-full max-w-3xl mx-auto min-h-[400px] p-6 sm:p-8 bg-surface rounded-2xl shadow-sm border border-border">
-      <div className="mb-8 w-full">
-        <Stepper currentStep={currentStep} totalSteps={totalSteps} />
-      </div>
+    <div className="mx-auto flex w-full max-w-2xl flex-col">
+      <header className="mb-6 sm:mb-8">
+        <Stepper currentStep={currentStep} totalSteps={totalSteps} labels={steps} />
+        <h1 className="mt-6 font-display text-[1.75rem] font-medium leading-[1.1] tracking-[-0.02em] text-ink sm:text-[2.125rem]">
+          {title}
+        </h1>
+        {description ? (
+          <p className="mt-2 max-w-xl text-[0.9375rem] leading-relaxed text-gray-ink">
+            {description}
+          </p>
+        ) : null}
+      </header>
 
-      <div className="mb-8">
-        <h1 className="text-3xl font-bold text-ink tracking-tight">{title}</h1>
-      </div>
+      {alert ? <div className="mb-4">{alert}</div> : null}
 
-      <div className="relative flex-1 flex flex-col overflow-hidden">
+      <div className="rounded-2xl border border-border/80 bg-surface px-5 pt-6 shadow-card sm:px-8 sm:pb-8 sm:pt-8">
         <AnimatePresence mode="wait" initial={false}>
           <motion.div
             key={currentStep}
-            initial={{ opacity: 0, x: 20 }}
-            animate={{ opacity: 1, x: 0 }}
-            exit={{ opacity: 0, x: -20 }}
-            transition={{
-              duration: 0.3,
-              ease: [0.25, 0.1, 0.25, 1.0],
-            }}
-            className="flex-1 flex flex-col"
+            initial={reduceMotion ? { opacity: 0 } : { opacity: 0, y: 8 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={reduceMotion ? { opacity: 0 } : { opacity: 0, y: -4 }}
+            transition={{ duration: 0.22, ease: [0.22, 1, 0.36, 1] }}
+            className="flex flex-col"
           >
             {children}
           </motion.div>

@@ -142,7 +142,7 @@ export function Modal({
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             transition={{ duration: 0.2 }}
-            className="fixed inset-0 bg-black/20 backdrop-blur-md"
+            className="fixed inset-0 bg-ink/35 backdrop-blur-[3px]"
             onClick={onClose}
           />
           <motion.div
@@ -152,18 +152,23 @@ export function Modal({
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.95, y: 10 }}
             transition={{ type: 'spring', bounce: 0, duration: 0.4 }}
-            className={`relative w-full ${SIZES[size]} max-h-[90vh] overflow-y-auto rounded-2xl border border-white/20 bg-surface/90 p-6 shadow-pop backdrop-blur-xl`}
+            role="dialog"
+            aria-modal="true"
+            aria-label={title}
+            className={`relative w-full ${SIZES[size]} max-h-[90vh] overflow-y-auto overscroll-contain rounded-[20px] border border-border/70 bg-surface p-6 shadow-pop sm:p-7`}
             onClick={e => e.stopPropagation()}
           >
-            <div className="mb-4 flex items-center justify-between">
-              <h2 className="text-xl font-semibold tracking-tight">{title}</h2>
+            <div className="mb-5 flex items-start justify-between gap-4">
+              <h2 className="font-display text-[1.375rem] font-medium leading-tight tracking-[-0.015em] text-ink">
+                {title}
+              </h2>
               <button
                 type="button"
                 aria-label="Close"
                 onClick={onClose}
-                className="rounded-full p-1.5 hover:bg-ink/5 active:scale-[0.97] transition-all duration-100 ease-out"
+                className="-mr-1.5 -mt-1 rounded-full p-2 text-gray-ink transition-[background-color,transform] duration-100 ease-out hover:bg-subtle hover:text-ink active:scale-[0.94]"
               >
-                <Icon name="x" className="h-5 w-5" />
+                <Icon name="close" size={18} />
               </button>
             </div>
             {children}

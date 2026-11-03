@@ -47,6 +47,8 @@ function PropertyRoomsPage() {
       <PropertyDetailHeader
         propertyId={detail.id}
         name={detail.name}
+        imageUrl={detail.photos?.[0] ?? null}
+        subtitle="Filter by status, search by room number, and edit or remove a room from its card."
         trailTail="Rooms"
         action={<Button onClick={() => setAddRoomOpen(true)}>+ Add room</Button>}
       />

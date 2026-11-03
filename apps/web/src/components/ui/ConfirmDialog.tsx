@@ -66,20 +66,23 @@ export function ConfirmDialog({
       aria-modal="true"
       aria-labelledby="confirm-dialog-title"
       aria-describedby="confirm-dialog-message"
-      className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4"
+      className="modal-fade fixed inset-0 z-50 flex items-end justify-center bg-ink/35 p-4 backdrop-blur-[3px] sm:items-center"
       onClick={busy ? undefined : onCancel}
     >
       <div
-        className="w-full max-w-md rounded-2xl border border-border bg-surface p-6 shadow-pop"
+        className="modal-pop w-full max-w-md rounded-[20px] border border-border/70 bg-surface p-6 shadow-pop"
         onClick={event => event.stopPropagation()}
       >
-        <h2 id="confirm-dialog-title" className="text-lg font-semibold text-ink">
+        <h2
+          id="confirm-dialog-title"
+          className="font-display text-xl font-medium tracking-[-0.015em] text-ink"
+        >
           {title}
         </h2>
-        <div id="confirm-dialog-message" className="mt-2 text-sm text-gray-ink">
+        <div id="confirm-dialog-message" className="mt-2 text-sm leading-relaxed text-gray-ink">
           {message}
         </div>
-        <div className="mt-6 flex justify-end gap-3">
+        <div className="mt-6 flex flex-col-reverse gap-2 sm:flex-row sm:justify-end sm:gap-3">
           <Button type="button" variant="ghost" onClick={onCancel} disabled={busy}>
             {cancelLabel}
           </Button>

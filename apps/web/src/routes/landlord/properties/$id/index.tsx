@@ -27,7 +27,17 @@ import {
 } from '../../../../lib/property-tabs';
 import { publicDetailPath } from '../../../../lib/routes';
 import { setPendingToast } from '../../../../lib/toast';
-import { formatCardDate } from '../../../../components/properties/PropertyCard';
+import {
+  formatCardDate,
+  propertyAddress,
+  roomsLabel,
+} from '../../../../components/properties/PropertyCard';
+import { Icon } from '../../../../components/ui/Icon';
+import {
+  isFullProperty,
+  listingStatusPill,
+  listingStatusTone,
+} from '../../../../lib/listing-status';
 
 export const Route = createFileRoute('/landlord/properties/$id/')({
   // Non-throwing, like the admin console's `toAdminSectionKey`: an absent or
@@ -105,17 +115,46 @@ function PropertyDetailPage() {
       <PropertyDetailHeader
         propertyId={detail.id}
         name={detail.name}
+        imageUrl={detail.photos?.[0] ?? null}
+        meta={
+          <>
+            <span className="inline-flex items-center gap-1.5">
+              <StatusBadge
+                status={listingStatusTone(detail.status, detail.listing_moderation_status)}
+                label={listingStatusPill(detail.status, detail.listing_moderation_status).label}
+              />
+              {isFullProperty(detail.total_rooms, detail.occupied_rooms) ? (
+                <StatusBadge status="full" label="Full" />
+              ) : null}
+            </span>
+            <span className="inline-flex min-w-0 items-center gap-1">
+              <Icon name="pin" size={14} className="shrink-0 text-muted" />
+              <span className="truncate">{propertyAddress(detail)}</span>
+            </span>
+            <span className="tabular">{roomsLabel(Number(detail.total_rooms ?? 0))}</span>
+          </>
+        }
         action={
-          // The public page lives outside the landlord shell, so it opens beside
-          // this one rather than replacing it (D17/R12).
-          <a
-            href={publicDetailPath(detail.id)}
-            target="_blank"
-            rel="noreferrer"
-            className={buttonClasses()}
-          >
-            Preview listing
-          </a>
+          <>
+            {/* The public page lives outside the landlord shell, so it opens
+                beside this one rather than replacing it (D17/R12). */}
+            <a
+              href={publicDetailPath(detail.id)}
+              target="_blank"
+              rel="noreferrer"
+              className={buttonClasses({ variant: 'outline' })}
+            >
+              Preview listing
+              <span className="sr-only"> (opens in a new tab)</span>
+            </a>
+            <Link
+              to="/landlord/listings/$id/edit"
+              params={{ id: String(detail.id) }}
+              className={buttonClasses()}
+            >
+              Edit listing
+            </Link>
+          </>
         }
       />
 
@@ -124,8 +163,8 @@ function PropertyDetailPage() {
       {redirectingToRooms ? null : (
         <>
           {tab === 'overview' ? (
-            <div className="flex flex-col gap-5">
-              <div className="grid grid-cols-1 gap-5 lg:grid-cols-2">
+            <div className="flex flex-col gap-6">
+              <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
                 <PropertyDetailsCard detail={detail} />
                 <PublicListingCard detail={detail} />
               </div>
@@ -145,17 +184,22 @@ function PropertyDetailPage() {
         Destructive zone (D18/R14): the only place a property can be deleted now
         that the card list no longer carries an overflow menu.
       */}
-      <section className="mt-8 rounded-2xl border border-error-border bg-surface p-5 shadow-card">
-        <h2 className="text-base font-semibold tracking-tight text-error-ink">Danger zone</h2>
-        <p className="mt-1 text-sm text-gray-ink">
-          Deleting removes <strong className="font-medium text-ink">{detail.name}</strong> and all
-          of its rooms from Haven Space. This cannot be undone.
-        </p>
-        <div className="mt-4">
-          <Button variant="danger" onClick={() => setConfirmDelete(true)}>
-            Delete property
-          </Button>
+      <section
+        aria-labelledby="danger-zone"
+        className="mt-12 flex flex-wrap items-center justify-between gap-4 rounded-2xl border border-error-border bg-surface px-5 py-4"
+      >
+        <div className="min-w-0 max-w-xl">
+          <h2 id="danger-zone" className="text-sm font-semibold text-error-ink">
+            Danger zone
+          </h2>
+          <p className="mt-1 text-sm text-gray-ink">
+            Deleting removes <strong className="font-medium text-ink">{detail.name}</strong> and
+            all of its rooms from Haven Space. This cannot be undone.
+          </p>
         </div>
+        <Button variant="danger" onClick={() => setConfirmDelete(true)}>
+          Delete property
+        </Button>
       </section>
 
       <ConfirmDialog
@@ -212,7 +256,7 @@ function PropertyApplications({ token, propertyId }: { token: string; propertyId
         {rows.map(row => (
           <li key={row.id} className="flex flex-wrap items-center justify-between gap-3 px-5 py-4">
             <div className="min-w-0">
-              <p className="text-sm font-medium text-ink">
+              <p className="text-sm font-semibold text-ink">
                 {[row.first_name, row.last_name].filter(Boolean).join(' ')}
               </p>
               <p className="mt-0.5 text-xs text-gray-ink">
@@ -226,9 +270,10 @@ function PropertyApplications({ token, propertyId }: { token: string; propertyId
       <div className="border-t border-border px-5 py-3">
         <Link
           to="/landlord/applications"
-          className="text-sm text-primary transition-colors hover:underline"
+          className={buttonClasses({ variant: 'ghost', size: 'sm' })}
         >
-          Manage all applications →
+          Manage all applications
+          <Icon name="chevronRight" size={14} />
         </Link>
       </div>
     </Card>

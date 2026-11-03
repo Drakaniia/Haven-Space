@@ -36,16 +36,19 @@ export function ActivityFeedRow({
       });
 
   return (
-    <div className="flex flex-wrap items-start justify-between gap-x-4 gap-y-1 py-2.5">
-      <div className="min-w-0 flex-1">
-        <p className="text-sm text-ink">{sentence}</p>
-        {context ? <p className="mt-0.5 truncate text-xs text-gray-ink">{context}</p> : null}
+    <div className="flex flex-wrap items-start justify-between gap-x-4 gap-y-1 py-3">
+      <div className="flex min-w-0 flex-1 items-start gap-2.5">
+        <span aria-hidden="true" className="mt-[0.4375rem] h-1.5 w-1.5 shrink-0 rounded-full bg-primary-light" />
+        <div className="min-w-0 flex-1">
+          <p className="text-sm text-ink">{sentence}</p>
+          {context ? <p className="mt-0.5 truncate text-xs text-gray-ink">{context}</p> : null}
+        </div>
       </div>
-      <div className="flex shrink-0 items-center gap-3">
+      <div className="flex shrink-0 items-center gap-3 pl-4">
         <time
           dateTime={event.occurred_at}
           title={absolute}
-          className="whitespace-nowrap text-xs text-gray-ink"
+          className="whitespace-nowrap text-xs text-gray-ink tabular"
         >
           {activityTime(event.occurred_at)}
         </time>

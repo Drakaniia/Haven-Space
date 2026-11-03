@@ -21,17 +21,15 @@ export function PropertyTabs({
   active: PropertyTabKey;
 }) {
   return (
-    <nav
-      aria-label="Property sections"
-      className="mb-6 rounded-2xl border border-border bg-surface p-1.5 shadow-card"
-    >
-      <ul className="flex flex-wrap items-center gap-1">
+    <nav aria-label="Property sections" className="mb-6 border-b border-border">
+      {/* Scrolls sideways on a narrow phone instead of wrapping into two rows. */}
+      <ul className="-mb-px flex items-center gap-1 overflow-x-auto">
         {PROPERTY_TAB_BAR_KEYS.map(key => {
           const isActive = key === active;
-          const className = `flex min-h-9 items-center rounded-xl px-4 text-sm transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 ${
+          const className = `flex min-h-11 items-center whitespace-nowrap border-b-2 px-3 text-sm transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-primary/40 sm:px-4 ${
             isActive
-              ? 'bg-mint font-semibold text-primary'
-              : 'text-gray-ink hover:bg-subtle hover:text-ink'
+              ? 'border-primary font-semibold text-ink'
+              : 'border-transparent font-medium text-gray-ink hover:border-border-strong hover:text-ink'
           }`;
 
           return (

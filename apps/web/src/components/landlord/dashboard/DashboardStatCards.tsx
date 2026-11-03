@@ -1,129 +1,107 @@
-import { Link } from '@tanstack/react-router';
-import type { ReactNode } from 'react';
 import { Card } from '../../ui/Card';
-import { Icon } from '../../ui/Icon';
 import { Skeleton } from '../../ui/Skeleton';
 import type { DashboardStatsResponse } from '../../../lib/types';
 
 type DashboardStats = DashboardStatsResponse['data'];
 
-function StatCard({
-  label,
-  value,
-  sub,
-  icon,
-  children,
-  link,
-}: {
-  label: string;
-  value: string;
-  sub?: string;
-  icon: string;
-  children?: ReactNode;
-  /** Optional action word under the sub-line — a destination, not a change. */
-  link?: ReactNode;
-}) {
-  return (
-    <Card className="flex items-start gap-4">
-      <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-mint text-primary">
-        <Icon name={icon} size={24} />
-      </span>
-      <div className="min-w-0 flex-1">
-        <p className="text-[11px] font-medium uppercase tracking-wider text-gray-ink">{label}</p>
-        <p className="mt-1 text-2xl font-bold tracking-tight text-ink">{value}</p>
-        {sub ? <p className="mt-1 text-sm text-gray-ink">{sub}</p> : null}
-        {children}
-        {link ? <div className="mt-2">{link}</div> : null}
-      </div>
-    </Card>
-  );
+function peso(value: number): string {
+  return `₱${Number(value).toLocaleString()}`;
 }
 
 /**
- * The four live metric cards (spec `landlord-dashboard-redesign` §7.2).
+ * Supporting context for the Action Center (spec `landlord-dashboard-redesign`
+ * §7.2): how full the houses are and what came in this month.
  *
- * Values stay on `dashboard-stats`; only the occupancy sub-line gains the
- * vacancy count and bar the mockup shows. The renewals card has no link and the
- * payment card keeps its tracker link (D28).
+ * One card with a clear lead figure rather than four equal tiles — occupancy is
+ * the number a small landlord steers by, so it gets the size; rent collected
+ * sits beneath it. Payment alerts live in the Action Center now, where they are
+ * something to act on rather than a statistic. Only the API's own numbers are
+ * shown: the month-on-month change appears when the API reports one, never a
+ * made-up delta.
  */
 export function DashboardStatCards({ data }: { data: DashboardStats }) {
-  const { occupancy, revenue, renewals, payment_alerts: alerts } = data;
+  const { occupancy, revenue } = data;
   const vacant = Math.max(occupancy.total_rooms - occupancy.occupied_rooms, 0);
-  const alertsTotal = alerts.due_today + alerts.in_grace + alerts.overdue;
-  const trend =
-    revenue.trend === 0
-      ? '0% vs last month'
-      : `${revenue.trend > 0 ? '▲' : '▼'} ${Math.abs(revenue.trend)}% vs last month`;
+  const rate = Math.min(Math.max(occupancy.rate, 0), 100);
+  const trend = Number(revenue.trend ?? 0);
 
   return (
-    <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 xl:grid-cols-4">
-      <StatCard
-        label="Occupancy"
-        value={`${occupancy.rate.toFixed(0)}%`}
-        sub={`${occupancy.occupied_rooms} of ${occupancy.total_rooms} rooms · ${vacant} vacant`}
-        icon="analytics"
-      >
+    <Card padding="p-0" className="flex h-full flex-col">
+      <section aria-labelledby="snapshot-occupancy" className="px-5 pb-5 pt-5">
+        <p id="snapshot-occupancy" className="kicker">
+          Occupancy
+        </p>
+        <div className="mt-2 flex items-baseline gap-3">
+          <p className="font-display text-[2.75rem] font-medium leading-none tracking-[-0.03em] text-ink tabular">
+            {`${occupancy.rate.toFixed(0)}%`}
+          </p>
+          <p className="text-sm text-gray-ink">of rooms filled</p>
+        </div>
         <div
           role="progressbar"
           aria-label="Occupancy"
           aria-valuemin={0}
           aria-valuemax={100}
           aria-valuenow={Math.round(occupancy.rate)}
-          className="mt-2 h-1.5 w-full overflow-hidden rounded-full bg-subtle"
+          className="mt-4 h-2 w-full overflow-hidden rounded-full bg-subtle"
         >
-          <div
-            className="h-full rounded-full bg-primary-strong"
-            style={{ width: `${Math.min(Math.max(occupancy.rate, 0), 100)}%` }}
-          />
+          <div className="h-full rounded-full bg-primary-strong" style={{ width: `${rate}%` }} />
         </div>
-      </StatCard>
+        <dl className="mt-4 grid grid-cols-2 gap-3 text-sm">
+          <div className="rounded-xl bg-cream px-3 py-2.5">
+            <dt className="text-gray-ink">Occupied</dt>
+            <dd className="mt-0.5 font-semibold text-ink tabular">
+              {`${occupancy.occupied_rooms} of ${occupancy.total_rooms} rooms`}
+            </dd>
+          </div>
+          <div className="rounded-xl bg-cream px-3 py-2.5">
+            <dt className="text-gray-ink">Vacant</dt>
+            <dd className="mt-0.5 font-semibold text-ink tabular">
+              {`${vacant} ${vacant === 1 ? 'room' : 'rooms'}`}
+            </dd>
+          </div>
+        </dl>
+      </section>
 
-      <StatCard
-        label="Monthly revenue"
-        value={`₱${revenue.monthly.toLocaleString()}`}
-        sub={trend}
-        icon="payment"
-      />
-
-      <StatCard
-        label="Upcoming renewals"
-        value={String(renewals.upcoming_count)}
-        sub={renewals.period}
-        icon="calendar"
-      />
-
-      <StatCard
-        label="Payment alerts"
-        value={String(alertsTotal)}
-        sub={`${alerts.due_today} due today · ${alerts.in_grace} in grace · ${alerts.overdue} overdue`}
-        icon="flag"
-        link={
-          <Link
-            to="/landlord/payments"
-            className="inline-flex text-sm font-semibold text-primary underline"
-          >
-            Open tracker
-          </Link>
-        }
-      />
-    </div>
+      <section
+        aria-labelledby="snapshot-revenue"
+        className="mt-auto border-t border-border px-5 pb-5 pt-4"
+      >
+        <p id="snapshot-revenue" className="text-sm font-semibold text-gray-ink">
+          Rent collected this month
+        </p>
+        <div className="mt-1 flex flex-wrap items-baseline gap-x-3 gap-y-1">
+          <p className="font-display text-[1.75rem] font-medium leading-tight tracking-[-0.02em] text-ink tabular">
+            {peso(revenue.monthly)}
+          </p>
+          {trend !== 0 ? (
+            <p className={`text-sm font-semibold ${trend > 0 ? 'text-success-ink' : 'text-error-ink'}`}>
+              {`${trend > 0 ? '▲' : '▼'} ${Math.abs(trend)}% vs last month`}
+            </p>
+          ) : null}
+        </div>
+      </section>
+    </Card>
   );
 }
 
-/** Same silhouette as the loaded grid, so the page does not jump on resolve. */
+/** Same silhouette as the loaded card, so the page does not jump on resolve. */
 export function DashboardStatCardsSkeleton() {
   return (
-    <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 xl:grid-cols-4">
-      {[0, 1, 2, 3].map(index => (
-        <Card key={index} className="flex items-start gap-4">
-          <Skeleton className="h-12 w-12 rounded-xl" />
-          <div className="min-w-0 flex-1 space-y-2">
-            <Skeleton className="h-3 w-24" />
-            <Skeleton className="h-7 w-20" />
-            <Skeleton className="h-3 w-32" />
-          </div>
-        </Card>
-      ))}
-    </div>
+    <Card padding="p-0" className="flex h-full flex-col" >
+      <div className="space-y-3 px-5 pb-5 pt-5" aria-hidden="true">
+        <Skeleton className="h-3 w-20" />
+        <Skeleton className="h-10 w-28" />
+        <Skeleton className="h-2 w-full rounded-full" />
+        <div className="grid grid-cols-2 gap-3">
+          <Skeleton className="h-14 rounded-xl" />
+          <Skeleton className="h-14 rounded-xl" />
+        </div>
+      </div>
+      <div className="mt-auto space-y-2 border-t border-border px-5 pb-5 pt-4" aria-hidden="true">
+        <Skeleton className="h-3 w-40" />
+        <Skeleton className="h-7 w-32" />
+      </div>
+    </Card>
   );
 }
