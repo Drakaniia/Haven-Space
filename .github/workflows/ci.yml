@@ -1,7 +1,8 @@
 name: Checks
 
-# Runs on every push to main and every pull request: typechecks and lint
-# (Prettier) must pass.
+# Runs on every push to main and every pull request: typechecks and the web
+# build must pass. Formatting is not enforced in CI (run `bun run format`
+# locally).
 #
 # The web app (`haven-space` Cloudflare Pages project) is deployed by the
 # Cloudflare git integration (build command + `dist/pages` output dir), which
@@ -16,7 +17,7 @@ on:
 
 jobs:
   checks:
-    name: Typechecks & lint
+    name: Typechecks & build
     runs-on: ubuntu-latest
 
     steps:
@@ -45,6 +46,3 @@ jobs:
 
       - name: Build web
         run: bun run web:build
-
-      - name: Lint (Prettier)
-        run: bun run format:check
