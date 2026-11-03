@@ -5,7 +5,7 @@ import {
   getBoarderPayments,
   getLandlordPayments,
   submitBoarderPayment,
-} from '../src/lib/api/payments';
+} from '../../src/lib/api/payments';
 import {
   chargeTypeLabel,
   formatPeso,
@@ -17,8 +17,8 @@ import {
   paymentStatusMeta,
   pendingReviewCount,
   roomOrBedLabel,
-} from '../src/lib/payments';
-import type { PaymentCharge } from '../src/lib/types';
+} from '../../src/lib/payments';
+import type { PaymentCharge } from '../../src/lib/types';
 
 function charge(overrides: Partial<PaymentCharge> = {}): PaymentCharge {
   return {

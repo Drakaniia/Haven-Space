@@ -12,7 +12,7 @@ import { ApiRequestError } from '../../../../lib/api/http';
 import { createApplication } from '../../../../lib/api/boarder';
 import { getRoomDetail } from '../../../../lib/api/public';
 import { useAuth } from '../../../../lib/auth-context';
-import { BOARDER_STATUS_KEY } from '../../../../lib/useBoarderNav';
+import { BOARDER_STATUS_KEY } from '../../../../lib/use-boarder-nav';
 import type { RoomDetail } from '../../../../lib/types';
 
 function cleanRoomType(room: RoomDetail): string {

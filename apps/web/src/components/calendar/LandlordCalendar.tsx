@@ -1,10 +1,13 @@
-import { keepPreviousData, useQuery, useQueryClient } from '@tanstack/react-query';
+import { keepPreviousData, useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { Link } from '@tanstack/react-router';
 import { useEffect, useState } from 'react';
 
 import { getLandlordCalendar } from '../../lib/api/calendar';
-import { getProperties } from '../../lib/api/landlord';
+import { approveLeaveRequest, getProperties } from '../../lib/api/landlord';
+import { ApiRequestError } from '../../lib/api/http';
 import { useAuth } from '../../lib/auth-context';
+import type { CalendarEvent } from '../../lib/types';
+import { ApproveLeaveDialog, type ApproveLeaveDetails } from '../tenancy/ApproveLeaveDialog';
 import { Button, buttonClasses } from '../ui/Button';
 import { EmptyState } from '../ui/EmptyState';
 import { ErrorState } from '../ui/ErrorState';
@@ -67,6 +70,8 @@ export function LandlordCalendar() {
   const [selectedDate, setSelectedDate] = useState<string | null>(null);
   const [propertyId, setPropertyId] = useState('');
   const [family, setFamily] = useState<string>('all');
+  const [pendingApprove, setPendingApprove] = useState<CalendarEvent | null>(null);
+  const [approveError, setApproveError] = useState<string | null>(null);
 
   const activePropertyId = propertyId ? Number(propertyId) : null;
   const familyTypes = FAMILY_FILTERS.find(option => option.value === family)?.types ?? null;
@@ -92,6 +97,22 @@ export function LandlordCalendar() {
     // Keep the previous month on screen while the next one loads, so paging never
     // collapses the grid (D16).
     placeholderData: keepPreviousData,
+  });
+
+  const approve = useMutation({
+    mutationFn: (applicationId: number) => approveLeaveRequest(token!, applicationId),
+    onSuccess: () => {
+      void queryClient.invalidateQueries({ queryKey: ['landlord-calendar'] });
+      void queryClient.invalidateQueries({ queryKey: ['boarders'] });
+      void queryClient.invalidateQueries({ queryKey: ['landlord-rooms'] });
+      void queryClient.invalidateQueries({ queryKey: ['landlord-properties'] });
+      setPendingApprove(null);
+      setApproveError(null);
+    },
+    onError: err =>
+      setApproveError(
+        err instanceof ApiRequestError ? err.message : 'Failed to approve leave request.'
+      ),
   });
 
   const data = calendar.data?.data;
@@ -126,6 +147,19 @@ export function LandlordCalendar() {
   const propertyList = properties.data?.data.properties ?? [];
   const dayEvents = groupEventsByDate(events)[selection] ?? [];
   const showNoProperties = properties.isSuccess && propertyList.length === 0;
+  const approveDetails: ApproveLeaveDetails | null =
+    pendingApprove && pendingApprove.application_id !== null
+      ? {
+          applicationId: pendingApprove.application_id,
+          boarderName: pendingApprove.boarder?.name ?? pendingApprove.subject,
+          propertyName: pendingApprove.property?.name ?? '',
+          roomName: pendingApprove.room?.name ?? '',
+          leaveDate: pendingApprove.leave_request?.leave_date ?? pendingApprove.date,
+          requestedOn: pendingApprove.leave_request?.requested_on ?? null,
+          reason: pendingApprove.leave_request?.reason ?? null,
+          outstandingAmount: pendingApprove.outstanding_amount ?? 0,
+        }
+      : null;
 
   return (
     <>
@@ -237,10 +271,35 @@ export function LandlordCalendar() {
               events={events}
               onSelectDate={setSelectedDate}
             />
-            <CalendarDayPanel date={selection} events={dayEvents} />
+            <CalendarDayPanel
+              date={selection}
+              events={dayEvents}
+              onApproveLeave={event => {
+                setApproveError(null);
+                setPendingApprove(event);
+              }}
+            />
           </div>
         </>
       )}
+
+      <ApproveLeaveDialog
+        details={approveDetails}
+        busy={approve.isPending}
+        error={approveError}
+        onConfirm={() => {
+          if (
+            pendingApprove?.application_id !== null &&
+            pendingApprove?.application_id !== undefined
+          ) {
+            approve.mutate(pendingApprove.application_id);
+          }
+        }}
+        onCancel={() => {
+          setPendingApprove(null);
+          setApproveError(null);
+        }}
+      />
     </>
   );
 }

@@ -121,6 +121,21 @@ export function leaveRequest(
   );
 }
 
+/** End an approved leave on the tenant's request (spec `leave-now`). */
+export function leaveNow(
+  token: string,
+  applicationId: number
+): Promise<{ success: boolean; message: string; data?: Record<string, unknown> }> {
+  return apiFetch(
+    base(),
+    '/api/boarder/leave-now',
+    jsonOptions(token, {
+      method: 'POST',
+      body: JSON.stringify({ application_id: applicationId }),
+    })
+  );
+}
+
 export function getBoarderAnnouncements(token: string): Promise<BoarderAnnouncementsResponse> {
   return apiFetch<BoarderAnnouncementsResponse>(base(), '/api/boarder/announcements', {
     headers: { Authorization: `Bearer ${token}` },

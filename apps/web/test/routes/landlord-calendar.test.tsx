@@ -11,8 +11,8 @@ import type { ReactNode } from 'react';
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 
-import { CalendarDayPanel } from '../src/components/calendar/CalendarDayPanel';
-import { CalendarMonthGrid } from '../src/components/calendar/CalendarMonthGrid';
+import { CalendarDayPanel } from '../../src/components/calendar/CalendarDayPanel';
+import { CalendarMonthGrid } from '../../src/components/calendar/CalendarMonthGrid';
 import {
   FAMILY_FILTERS,
   MAX_DAY_CHIPS,
@@ -30,16 +30,16 @@ import {
   monthWindow,
   packDayEvents,
   shiftMonth,
-} from '../src/components/calendar/calendar-helpers';
-import { calendarQueryString } from '../src/lib/api/calendar';
-import type { CalendarEvent } from '../src/lib/types';
+} from '../../src/components/calendar/calendar-helpers';
+import { calendarQueryString } from '../../src/lib/api/calendar';
+import type { CalendarEvent } from '../../src/lib/types';
 
 /**
  * `landlord-calendar`: the month matrix, the day-cell vocabulary, the query the
  * page sends, and the markup contracts behind the read-only calendar.
  */
 
-const ROOT = join(import.meta.dir, '..');
+const ROOT = join(import.meta.dir, '../..');
 
 function event(overrides: Partial<CalendarEvent> = {}): CalendarEvent {
   const draft: CalendarEvent = {
@@ -87,12 +87,7 @@ const boardersRoute = createRoute({
   path: '/landlord/boarders',
 });
 const router = createRouter({
-  routeTree: rootRoute.addChildren([
-    paymentRoute,
-    recordRoute,
-    applicationsRoute,
-    boardersRoute,
-  ]),
+  routeTree: rootRoute.addChildren([paymentRoute, recordRoute, applicationsRoute, boardersRoute]),
   history: createMemoryHistory({ initialEntries: ['/landlord/payments'] }),
 });
 
@@ -142,9 +137,7 @@ describe('calendar month matrix (D25/D26)', () => {
 
 describe('day cell vocabulary (D8)', () => {
   test('shows at most three chips and reports the rest', () => {
-    const events = [1, 2, 3, 4, 5].map(index =>
-      event({ id: `charge:${index}:charge_due` })
-    );
+    const events = [1, 2, 3, 4, 5].map(index => event({ id: `charge:${index}:charge_due` }));
     const packed = packDayEvents(events);
 
     expect(MAX_DAY_CHIPS).toBe(3);
@@ -228,9 +221,9 @@ describe('day cell vocabulary (D8)', () => {
   });
 
   test('formats the month strip and offers no content pill', () => {
-    expect(monthSummaryLabel({ due_amount: 14300, collected_amount: 7000, overdue_count: 1 })).toEqual(
-      { due: '₱14,300.00', collected: '₱7,000.00', overdue: '1 overdue' }
-    );
+    expect(
+      monthSummaryLabel({ due_amount: 14300, collected_amount: 7000, overdue_count: 1 })
+    ).toEqual({ due: '₱14,300.00', collected: '₱7,000.00', overdue: '1 overdue' });
     expect(FAMILY_FILTERS.map(option => option.value)).toEqual([
       'all',
       'money',
@@ -329,6 +322,34 @@ describe('calendar rendering', () => {
     expect(screen.getByRole('link', { name: 'Review application' })).toBeTruthy();
   });
 
+  test('shows the tenant balance on a leave row', async () => {
+    renderInApp(
+      <CalendarDayPanel
+        date="2026-10-13"
+        events={[
+          event({
+            id: 'application:204:tenancy_move_out',
+            type: 'tenancy_move_out',
+            family: 'tenancy',
+            status: 'pending',
+            amount: null,
+            application_id: 204,
+            leave_request: {
+              reason: 'New job downtown',
+              requested_on: '2026-10-01',
+              leave_date: '2026-10-20',
+            },
+            outstanding_amount: 6500,
+          }),
+        ]}
+        onApproveLeave={() => {}}
+      />
+    );
+
+    expect(await screen.findByText('₱6,500.00 due')).toBeTruthy();
+    expect(screen.getByRole('button', { name: 'Approve' })).toBeTruthy();
+  });
+
   test('keeps an empty day inert', async () => {
     renderInApp(<CalendarDayPanel date="2026-10-14" events={[]} />);
 
@@ -347,18 +368,20 @@ describe('calendar wiring', () => {
     expect(route).not.toContain('PlaceholderPage');
   });
 
-  test('the dashboard routes the landlord to the calendar without changing its numbers', () => {
+  test('the dashboard keeps the renewals count and the sidebar keeps the calendar route', () => {
     const dashboard = readFileSync(join(ROOT, 'src/routes/landlord/index.tsx'), 'utf8');
 
-    expect(dashboard).toContain('to="/landlord/calendar"');
-    expect(dashboard).toContain('stats.data.data.renewals.upcoming_count');
+    // The renewals card no longer carries a calendar link (dashboard redesign
+    // D28); the calendar stays reachable from the sidebar.
+    expect(dashboard).toContain('renewals.upcoming_count');
+    expect(dashboard).not.toContain('to="/landlord/calendar"');
+
+    const nav = readFileSync(join(ROOT, 'src/lib/nav.ts'), 'utf8');
+    expect(nav).toContain("to: '/landlord/calendar'");
   });
 
   test('the page fetches one window per month and keeps the previous month on screen', () => {
-    const page = readFileSync(
-      join(ROOT, 'src/components/calendar/LandlordCalendar.tsx'),
-      'utf8'
-    );
+    const page = readFileSync(join(ROOT, 'src/components/calendar/LandlordCalendar.tsx'), 'utf8');
 
     expect(page).toContain("['landlord-calendar', from, to, activePropertyId, familyTypes]");
     expect(page).toContain('keepPreviousData');

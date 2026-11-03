@@ -24,6 +24,21 @@ function invitationIdFromMetadata(metadata: unknown): number | null {
   return Number.isFinite(parsed) && parsed > 0 ? parsed : null;
 }
 
+/**
+ * Where a notification should navigate, when its metadata names a route
+ * (spec `approve-leave-request` §4.6). Only routes the app can render are
+ * accepted — an unknown string renders as plain text rather than a dead link.
+ */
+function notificationRoute(metadata: unknown): '/boarder/tenancy' | null {
+  if (!metadata || typeof metadata !== 'object' || Array.isArray(metadata)) {
+    return null;
+  }
+
+  const route = (metadata as Record<string, unknown>).route;
+
+  return route === '/boarder/tenancy' ? route : null;
+}
+
 function formatWhen(value: string): string {
   const date = new Date(value);
   if (Number.isNaN(date.getTime())) return '';
@@ -152,6 +167,12 @@ export function NotificationBell() {
                   notification.type === 'message'
                     ? notificationThreadId(notification.metadata)
                     : null;
+                // A leave approval opens the tenancy it changes, so the date
+                // and the leave-now path are one tap away.
+                const directRoute =
+                  notification.type === 'leave_request_approved'
+                    ? notificationRoute(notification.metadata)
+                    : null;
 
                 return (
                   <li key={notification.id} className="flex items-start gap-3 px-4 py-3">
@@ -164,6 +185,21 @@ export function NotificationBell() {
                               : '/boarder/messages/$threadId'
                           }
                           params={{ threadId: String(threadId) }}
+                          onClick={() => {
+                            setOpen(false);
+                            if (!notification.is_read) markOne.mutate(notification.id);
+                          }}
+                          className={`block text-sm ${
+                            notification.is_read
+                              ? 'text-primary hover:underline'
+                              : 'font-semibold text-primary hover:underline'
+                          }`}
+                        >
+                          {notification.title}
+                        </Link>
+                      ) : directRoute !== null ? (
+                        <Link
+                          to={directRoute}
                           onClick={() => {
                             setOpen(false);
                             if (!notification.is_read) markOne.mutate(notification.id);

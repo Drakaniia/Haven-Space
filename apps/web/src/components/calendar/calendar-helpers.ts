@@ -190,6 +190,19 @@ export function eventTypeLabel(event: CalendarEvent): string {
     return chargeTypeLabel(event.charge_type ?? 'rent');
   }
 
+  if (event.type === 'tenancy_move_out' && event.status === 'left_early') {
+    return 'Left early';
+  }
+
+  // An approved leave is no longer an ask — the chip says what was decided
+  // (spec `approve-leave-request` §5.3).
+  if (
+    (event.type === 'tenancy_move_out' || event.type === 'leave_requested') &&
+    event.status === 'approved'
+  ) {
+    return 'Leaving approved';
+  }
+
   return TYPE_LABELS[event.type];
 }
 

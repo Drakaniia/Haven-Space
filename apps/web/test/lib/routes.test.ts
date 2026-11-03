@@ -5,7 +5,7 @@ import {
   LANDLORD_NAV,
   accountHomeEntry,
   getBoarderNav,
-} from '../src/lib/nav';
+} from '../../src/lib/nav';
 import {
   BOARDER_MESSAGES_PATH,
   BROWSE_LISTINGS_PATH,
@@ -14,7 +14,7 @@ import {
   boarderTourPath,
   loginRedirectPath,
   publicDetailPath,
-} from '../src/lib/routes';
+} from '../../src/lib/routes';
 
 test('the browse constant points at the public page', () => {
   expect(BROWSE_LISTINGS_PATH).toBe('/find-a-room');

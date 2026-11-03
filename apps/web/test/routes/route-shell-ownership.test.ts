@@ -16,7 +16,7 @@ import { join, relative } from 'node:path';
  * names the offending file, which a count alone cannot.
  */
 
-const routesRoot = join(import.meta.dir, '..', 'src', 'routes');
+const routesRoot = join(import.meta.dir, '../..', 'src', 'routes');
 
 // Import statements only — a comment that mentions `RoleShell` (the payments
 // leaves carry one explaining where the shell lives) is not a second shell.

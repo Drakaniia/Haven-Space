@@ -14,7 +14,7 @@ import { ApiRequestError } from '../../lib/api/http';
 import { confirmApplication, getAcceptedApplications } from '../../lib/api/boarder';
 import { useAuth } from '../../lib/auth-context';
 import { setPendingToast } from '../../lib/toast';
-import { BOARDER_STATUS_KEY, useBoarderNav } from '../../lib/useBoarderNav';
+import { BOARDER_STATUS_KEY, useBoarderNav } from '../../lib/use-boarder-nav';
 
 export const Route = createFileRoute('/boarder/confirm-booking')({
   component: () => (

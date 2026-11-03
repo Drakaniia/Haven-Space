@@ -19,7 +19,7 @@ import {
   sharedPricingState,
   sharedPricingSummary,
   toListingStatusValue,
-} from '../src/lib/listing-status';
+} from '../../src/lib/listing-status';
 
 /**
  * `edit-listing-property-info` — the landlord's listing-status vocabulary, the
@@ -30,7 +30,7 @@ import {
  * router and an auth context`).
  */
 
-const webRoot = join(import.meta.dir, '..');
+const webRoot = join(import.meta.dir, '../..');
 const read = (...parts: string[]) => readFileSync(join(webRoot, 'src', ...parts), 'utf8');
 
 const form = {

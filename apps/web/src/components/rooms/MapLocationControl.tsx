@@ -1,4 +1,4 @@
-import type { MapLocationState } from '../../lib/useMapLocation';
+import type { MapLocationState } from '../../lib/use-map-location';
 import { Button } from '../ui/Button';
 import { Icon } from '../ui/Icon';
 

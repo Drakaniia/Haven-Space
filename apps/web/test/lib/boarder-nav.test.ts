@@ -1,5 +1,5 @@
 import { test, expect } from 'bun:test';
-import { BOARDER_LIMITED_NAV, BOARDER_NAV, getBoarderNav } from '../src/lib/nav';
+import { BOARDER_LIMITED_NAV, BOARDER_NAV, getBoarderNav } from '../../src/lib/nav';
 
 const FULL_TO = BOARDER_NAV.map(item => item.to);
 // Find a Room leaves the boarder shell: the in-shell grid was retired and now

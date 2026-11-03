@@ -1,6 +1,6 @@
 import { Link } from '@tanstack/react-router';
 import type { ReactNode } from 'react';
-import { useBoarderStatus } from '../../lib/useBoarderNav';
+import { useBoarderStatus } from '../../lib/use-boarder-nav';
 import { EmptyState } from '../ui/EmptyState';
 
 /**

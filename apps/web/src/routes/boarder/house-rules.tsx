@@ -4,7 +4,7 @@ import { Protected } from '../../components/auth/Protected';
 import { RoleShell } from '../../components/layout/RoleShell';
 import { Card } from '../../components/ui/Card';
 import { Icon } from '../../components/ui/Icon';
-import { useBoarderNav } from '../../lib/useBoarderNav';
+import { useBoarderNav } from '../../lib/use-boarder-nav';
 
 export const Route = createFileRoute('/boarder/house-rules')({
   component: () => (

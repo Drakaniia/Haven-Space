@@ -2,8 +2,8 @@ import { afterEach, expect, test } from 'bun:test';
 import { cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 
-import { LandlordDocumentsModal } from '../src/components/admin/LandlordDocumentsModal';
-import type { AdminLandlordDetail } from '../src/lib/types';
+import { LandlordDocumentsModal } from '../../src/components/admin/LandlordDocumentsModal';
+import type { AdminLandlordDetail } from '../../src/lib/types';
 
 afterEach(() => cleanup());
 

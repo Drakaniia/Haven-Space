@@ -10,7 +10,7 @@ import { getAcceptedApplications, getTenancy } from '../../lib/api/boarder';
 import { useAuth } from '../../lib/auth-context';
 import { getBoarderNav } from '../../lib/nav';
 import { BROWSE_LISTINGS_PATH } from '../../lib/routes';
-import { useBoarderStatus } from '../../lib/useBoarderNav';
+import { useBoarderStatus } from '../../lib/use-boarder-nav';
 
 export const Route = createFileRoute('/boarder/')({
   component: () => (

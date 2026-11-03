@@ -332,24 +332,10 @@ export function deleteAnnouncement(
 export function approveLeaveRequest(
   token: string,
   applicationId: number
-): Promise<{ success: boolean; message: string }> {
+): Promise<{ success: boolean; message: string; data: { finalized: boolean } }> {
   return apiFetch(
     base(),
     '/api/landlord/approve-leave-request',
-    jsonOptions(token, {
-      method: 'POST',
-      body: JSON.stringify({ application_id: applicationId }),
-    })
-  );
-}
-
-export function declineLeaveRequest(
-  token: string,
-  applicationId: number
-): Promise<{ success: boolean; message: string }> {
-  return apiFetch(
-    base(),
-    '/api/landlord/decline-leave-request',
     jsonOptions(token, {
       method: 'POST',
       body: JSON.stringify({ application_id: applicationId }),

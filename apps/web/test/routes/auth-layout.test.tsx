@@ -8,7 +8,7 @@ mock.module('@tanstack/react-router', () => ({
 }));
 
 const { AuthSplitLayout, AUTH_PANEL_IMAGE, AUTH_PANEL_IMAGE_ALT } = await import(
-  '../src/components/auth/AuthSplitLayout'
+  '../../src/components/auth/AuthSplitLayout'
 );
 
 // Regression: `/auth/choose-role` and the signup pages used to fall back to the retired

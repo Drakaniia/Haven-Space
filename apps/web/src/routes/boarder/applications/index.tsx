@@ -10,7 +10,7 @@ import { ToastStack, useToasts } from '../../../components/ui/Toast';
 import { ApiRequestError } from '../../../lib/api/http';
 import { deleteApplication, getApplications } from '../../../lib/api/boarder';
 import { useAuth } from '../../../lib/auth-context';
-import { BOARDER_STATUS_KEY } from '../../../lib/useBoarderNav';
+import { BOARDER_STATUS_KEY } from '../../../lib/use-boarder-nav';
 import type { ApplicationSummary } from '../../../lib/types';
 
 export const Route = createFileRoute('/boarder/applications/')({

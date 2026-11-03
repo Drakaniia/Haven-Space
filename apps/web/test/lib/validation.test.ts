@@ -1,5 +1,5 @@
 import { test, expect } from 'bun:test';
-import { isPhilippinePhone } from '../src/lib/validation';
+import { isPhilippinePhone } from '../../src/lib/validation';
 
 test('accepts a standard 09 phone number', () => {
   expect(isPhilippinePhone('09171234567')).toBe(true);

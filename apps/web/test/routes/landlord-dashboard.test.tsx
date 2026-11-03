@@ -3,9 +3,9 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { cleanup, render, screen, waitFor } from '@testing-library/react';
 import type { ReactNode } from 'react';
 
-import { AuthProvider } from '../src/lib/auth-context';
-import { clearStoredAuth, setStoredAuth } from '../src/lib/auth-store';
-import type { AuthUser } from '../src/lib/types';
+import { AuthProvider } from '../../src/lib/auth-context';
+import { clearStoredAuth, setStoredAuth } from '../../src/lib/auth-store';
+import type { AuthUser } from '../../src/lib/types';
 
 /**
  * The landlord dashboard's payment card (spec `payments-tracker-redesign` D32).
@@ -72,7 +72,7 @@ function stubApi(alerts: Record<string, number>) {
   }) as unknown as typeof fetch;
 }
 
-const dashboard = await import('../src/routes/landlord/index');
+const dashboard = await import('../../src/routes/landlord/index');
 
 /** What the router would render for that route file, shell and gate included. */
 function Dashboard() {

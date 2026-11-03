@@ -17,15 +17,15 @@ import {
   roomTypeForCapacity,
   roomTypeLabel,
   roomsToDiscard,
-} from '../src/lib/room-drafts';
-import { RoomFormFields } from '../src/components/rooms/RoomFormFields';
+} from '../../src/lib/room-drafts';
+import { RoomFormFields } from '../../src/components/rooms/RoomFormFields';
 import {
   cleanRoomType,
   freeSlotsLabel,
   isRoomAvailable,
   roomStatusLabel,
-} from '../src/components/rooms/detail-helpers';
-import type { RoomDetail } from '../src/lib/types';
+} from '../../src/components/rooms/detail-helpers';
+import type { RoomDetail } from '../../src/lib/types';
 
 afterEach(() => cleanup());
 
@@ -266,13 +266,13 @@ describe('tenant-facing occupancy copy', () => {
 
 describe('create-listing page contract', () => {
   const createPage = readFileSync(
-    join(import.meta.dir, '..', 'src', 'routes', 'landlord', 'listings', 'create.tsx'),
+    join(import.meta.dir, '../..', 'src', 'routes', 'landlord', 'listings', 'create.tsx'),
     'utf8'
   );
   const roomEditPage = readFileSync(
     join(
       import.meta.dir,
-      '..',
+      '../..',
       'src',
       'routes',
       'landlord',
@@ -284,13 +284,13 @@ describe('create-listing page contract', () => {
     'utf8'
   );
   const roomList = readFileSync(
-    join(import.meta.dir, '..', 'src', 'components', 'rooms', 'LandlordRoomList.tsx'),
+    join(import.meta.dir, '../..', 'src', 'components', 'rooms', 'LandlordRoomList.tsx'),
     'utf8'
   );
   // The add-room dialog was extracted so the rooms page and the listing edit page
   // create rooms the same way (`landlord-rooms-grid` D17).
   const roomFormModal = readFileSync(
-    join(import.meta.dir, '..', 'src', 'components', 'rooms', 'RoomFormModal.tsx'),
+    join(import.meta.dir, '../..', 'src', 'components', 'rooms', 'RoomFormModal.tsx'),
     'utf8'
   );
 
@@ -340,7 +340,7 @@ describe('create-listing page contract', () => {
     const propertiesSection = readFileSync(
       join(
         import.meta.dir,
-        '..',
+        '../..',
         'src',
         'components',
         'admin',

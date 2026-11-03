@@ -1,5 +1,6 @@
 import {
   useState,
+  type ComponentPropsWithRef,
   type InputHTMLAttributes,
   type ReactNode,
   type SelectHTMLAttributes,
@@ -40,7 +41,9 @@ const inputClasses =
 
 // `className` is *appended* so a caller can add to the shared look instead of
 // silently replacing it (the pre-existing spread order dropped every base class).
-export function TextInput({ className = '', ...props }: InputHTMLAttributes<HTMLInputElement>) {
+// `ComponentPropsWithRef` (rather than `InputHTMLAttributes`) so callers can hold
+// a ref to the field — Settings focuses the first input from "Edit profile →".
+export function TextInput({ className = '', ...props }: ComponentPropsWithRef<'input'>) {
   return <input className={`${inputClasses} ${className}`} {...props} />;
 }
 

@@ -1,5 +1,5 @@
 import { test, expect } from 'bun:test';
-import { readPendingToast, setPendingToast } from '../src/lib/toast';
+import { readPendingToast, setPendingToast } from '../../src/lib/toast';
 
 test('setPendingToast round-trips through sessionStorage', () => {
   setPendingToast('success', 'Welcome back, Test!');

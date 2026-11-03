@@ -3,7 +3,7 @@ import { useMemo, useState } from 'react';
 import { useAuth } from '../../lib/auth-context';
 import { messagesPath } from '../../lib/messages';
 import type { NavItem } from '../../lib/nav';
-import { useUnreadMessages } from '../../lib/useUnreadMessages';
+import { useUnreadMessages } from '../../lib/use-unread-messages';
 import { Icon } from '../ui/Icon';
 
 /** Stable, order-independent key fragment for a nav item's search params. */

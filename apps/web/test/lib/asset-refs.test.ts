@@ -2,9 +2,9 @@ import { test, expect } from 'bun:test';
 import { existsSync, readdirSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 
-import { AUTH_PANEL_IMAGE } from '../src/components/auth/AuthSplitLayout';
+import { AUTH_PANEL_IMAGE } from '../../src/components/auth/AuthSplitLayout';
 
-const WEB_DIR = join(import.meta.dir, '..');
+const WEB_DIR = join(import.meta.dir, '../..');
 const IMAGES_DIR = join(WEB_DIR, 'public', 'assets', 'images', 'public');
 const SRC_DIR = join(WEB_DIR, 'src');
 

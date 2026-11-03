@@ -2,14 +2,24 @@ import { createFileRoute, Link } from '@tanstack/react-router';
 import { useQuery } from '@tanstack/react-query';
 import { Protected } from '../../components/auth/Protected';
 import { RoleShell } from '../../components/layout/RoleShell';
+import {
+  ActionCenterCard,
+  ActionCenterCardSkeleton,
+} from '../../components/landlord/dashboard/ActionCenterCard';
+import {
+  DashboardStatCards,
+  DashboardStatCardsSkeleton,
+} from '../../components/landlord/dashboard/DashboardStatCards';
+import { MyPropertiesCard } from '../../components/landlord/dashboard/MyPropertiesCard';
+import { RecentActivityCard } from '../../components/landlord/dashboard/RecentActivityCard';
+import { RevenueTrendCard } from '../../components/landlord/dashboard/RevenueTrendCard';
 import { buttonClasses } from '../../components/ui/Button';
-import { Card } from '../../components/ui/Card';
 import { ErrorState } from '../../components/ui/ErrorState';
-import { Icon } from '../../components/ui/Icon';
 import { PageHeader } from '../../components/ui/PageHeader';
-import { Spinner } from '../../components/ui/Spinner';
-import { getDashboardStats } from '../../lib/api/landlord';
+import { getLandlordActivity } from '../../lib/api/activity';
+import { getDashboardStats, getProperties } from '../../lib/api/landlord';
 import { useAuth } from '../../lib/auth-context';
+import { maintenanceRequests, revenueTrend } from '../../lib/fixtures/dashboard';
 import { LANDLORD_NAV } from '../../lib/nav';
 
 export const Route = createFileRoute('/landlord/')({
@@ -20,72 +30,52 @@ export const Route = createFileRoute('/landlord/')({
   ),
 });
 
-function StatCard({
-  label,
-  value,
-  sub,
-  icon,
-  to,
-  action,
-}: {
-  label: string;
-  value: string;
-  sub?: string;
-  icon: string;
-  /** Optional link out of the card — a destination, not a change to the number. */
-  to?: string;
-  action?: string;
-}) {
-  return (
-    <Card className="flex items-start gap-4">
-      <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-mint text-primary">
-        <Icon name={icon} size={24} />
-      </span>
-      <div className="min-w-0">
-        <p className="text-[11px] font-medium uppercase tracking-wider text-gray-ink">{label}</p>
-        <p className="mt-1 text-2xl font-bold tracking-tight text-ink">{value}</p>
-        {sub ? <p className="mt-1 text-sm text-gray-ink">{sub}</p> : null}
-        {to && action ? (
-          <Link to={to} className="mt-2 inline-flex text-sm font-semibold text-primary underline">
-            {action}
-          </Link>
-        ) : null}
-      </div>
-    </Card>
-  );
-}
-
-function QuickLinkCard({
-  title,
-  description,
-  to,
-  action,
-}: {
-  title: string;
-  description?: string;
-  to: string;
-  action: string;
-}) {
-  return (
-    <Card className="flex flex-wrap items-center justify-between gap-4">
-      <div className="min-w-0">
-        <p className="font-semibold text-ink">{title}</p>
-        {description ? <p className="mt-0.5 text-sm text-gray-ink">{description}</p> : null}
-      </div>
-      <Link to={to} className={buttonClasses({ variant: 'outline', size: 'sm' })}>
-        {action}
-      </Link>
-    </Card>
-  );
-}
-
 function LandlordDashboard() {
   const { token, user } = useAuth();
+
   const stats = useQuery({
     queryKey: ['dashboard'],
     queryFn: () => getDashboardStats(token!),
     enabled: Boolean(token),
   });
+
+  const properties = useQuery({
+    queryKey: ['landlord-properties'],
+    queryFn: () => getProperties(token!),
+    enabled: Boolean(token),
+  });
+
+  const activity = useQuery({
+    queryKey: ['landlord-activity', 'recent'],
+    queryFn: () => getLandlordActivity(token!, { limit: 4 }),
+    enabled: Boolean(token),
+  });
+
+  const propertyList = properties.data?.data.properties ?? [];
+  const pendingApplications = propertyList.reduce(
+    (total, property) => total + Number(property.pending_applications ?? 0),
+    0
+  );
+  // On error the property count is unknown; keep the chart (its fixtures) rather
+  // than showing a misleading "no properties" empty state.
+  const hasProperties = properties.isLoading || properties.isError ? true : propertyList.length > 0;
+  const maintenance = properties.data ? (hasProperties ? maintenanceRequests : 0) : null;
+  const statData = stats.data?.data;
+
+  const attention =
+    properties.data && statData
+      ? pendingApplications +
+        (maintenance ?? 0) +
+        statData.payment_alerts.due_soon +
+        statData.renewals.upcoming_count
+      : null;
+
+  const subtitle =
+    attention === null
+      ? undefined
+      : attention === 0
+      ? 'You have nothing that needs attention today.'
+      : `You have ${attention} ${attention === 1 ? 'thing' : 'things'} that need attention today.`;
 
   return (
     <RoleShell nav={LANDLORD_NAV}>
@@ -106,6 +96,7 @@ function LandlordDashboard() {
 
       <PageHeader
         title={user?.first_name ? `Welcome back, ${user.first_name}` : 'Welcome back'}
+        subtitle={subtitle}
         actions={
           <Link to="/landlord/listings/create" className={buttonClasses()}>
             + Create listing
@@ -114,59 +105,45 @@ function LandlordDashboard() {
       />
 
       {stats.isLoading ? (
-        <Spinner />
+        <DashboardStatCardsSkeleton />
       ) : stats.error ? (
         <ErrorState message={stats.error.message} />
-      ) : stats.data ? (
-        <div className="grid grid-cols-1 gap-5 md:grid-cols-2 lg:grid-cols-4">
-          <StatCard
-            label="Occupancy"
-            value={`${stats.data.data.occupancy.rate.toFixed(0)}%`}
-            sub={`${stats.data.data.occupancy.occupied_rooms} of ${stats.data.data.occupancy.total_rooms} rooms`}
-            icon="analytics"
-          />
-          <StatCard
-            label="Monthly revenue"
-            value={`₱${stats.data.data.revenue.monthly.toLocaleString()}`}
-            sub={`${stats.data.data.revenue.trend >= 0 ? '+' : ''}${
-              stats.data.data.revenue.trend
-            }% vs last month`}
-            icon="payment"
-          />
-          {/* The calendar is where "what's coming up" actually lives, so the card
-              links to it — the count keeps counting exactly what it always did
-              (spec `landlord-calendar` D28). */}
-          <StatCard
-            label="Upcoming renewals"
-            value={String(stats.data.data.renewals.upcoming_count)}
-            sub={stats.data.data.renewals.period}
-            icon="calendar"
-            to="/landlord/calendar"
-            action="Open calendar"
-          />
-          <StatCard
-            label="Payment alerts"
-            value={String(
-              stats.data.data.payment_alerts.due_today +
-                stats.data.data.payment_alerts.in_grace +
-                stats.data.data.payment_alerts.overdue
-            )}
-            // The tracker's own vocabulary (spec `payments-tracker-redesign` D32),
-            // so the dashboard and the payments page never disagree.
-            sub={`${stats.data.data.payment_alerts.due_today} due today · ${stats.data.data.payment_alerts.in_grace} in grace · ${stats.data.data.payment_alerts.overdue} overdue`}
-            icon="flag"
-            // The count is a union of three states, so the card opens the tracker
-            // itself rather than a filter that would hide two of them (§8).
-            to="/landlord/payments"
-            action="Open tracker"
-          />
-        </div>
-      ) : null}
+      ) : !statData ? null : (
+        <DashboardStatCards data={statData} />
+      )}
 
-      <div className="mt-6 grid grid-cols-1 gap-5 md:grid-cols-3">
-        <QuickLinkCard title="My properties" to="/landlord/properties" action="Manage" />
-        <QuickLinkCard title="Applications" to="/landlord/applications" action="Review" />
-        <QuickLinkCard title="Boarders" to="/landlord/boarders" action="Manage" />
+      <div className="mt-5 grid grid-cols-1 gap-5 lg:grid-cols-3">
+        <div className="lg:col-span-2">
+          <RevenueTrendCard points={revenueTrend()} hasProperties={hasProperties} />
+        </div>
+        <div className="lg:col-span-1">
+          {stats.isLoading || properties.isLoading ? (
+            <ActionCenterCardSkeleton />
+          ) : (
+            <ActionCenterCard
+              counts={{
+                applications: properties.data ? pendingApplications : null,
+                maintenance,
+                rentDue: statData?.payment_alerts.due_soon ?? null,
+                renewals: statData?.renewals.upcoming_count ?? null,
+              }}
+            />
+          )}
+        </div>
+      </div>
+
+      <div className="mt-5 grid grid-cols-1 gap-5 md:grid-cols-2">
+        <MyPropertiesCard
+          properties={properties.data ? propertyList : undefined}
+          isLoading={properties.isLoading}
+          error={properties.error?.message}
+          onRetry={() => void properties.refetch()}
+        />
+        <RecentActivityCard
+          events={activity.data?.data.events}
+          isLoading={activity.isLoading}
+          error={activity.error?.message}
+        />
       </div>
     </RoleShell>
   );

@@ -10,7 +10,7 @@ import {
   loginRedirectPath,
 } from '../../lib/routes';
 import type { ListingDetail, RoomDetail, SimilarProperty } from '../../lib/types';
-import { useMapLocation } from '../../lib/useMapLocation';
+import { useMapLocation } from '../../lib/use-map-location';
 import { Icon } from '../ui/Icon';
 import { MapLocationControl } from './MapLocationControl';
 import { SaveButton } from './SaveButton';

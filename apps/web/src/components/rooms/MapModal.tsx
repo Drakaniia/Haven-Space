@@ -1,5 +1,5 @@
 import { mapUrlForCoordinates } from '../../lib/maps';
-import { useMapLocation } from '../../lib/useMapLocation';
+import { useMapLocation } from '../../lib/use-map-location';
 import { Modal } from '../ui/Modal';
 import { LOCATION_SUBTITLE, MapEmbed, mapSubtitle } from './MapEmbed';
 import { MapLocationControl } from './MapLocationControl';

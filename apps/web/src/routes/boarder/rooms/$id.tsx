@@ -7,7 +7,7 @@ import { RoomDetailView } from '../../../components/rooms/RoomDetailView';
 import { ErrorState } from '../../../components/ui/ErrorState';
 import { Spinner } from '../../../components/ui/Spinner';
 import { getRoomDetail } from '../../../lib/api/public';
-import { useBoarderNav } from '../../../lib/useBoarderNav';
+import { useBoarderNav } from '../../../lib/use-boarder-nav';
 
 export const Route = createFileRoute('/boarder/rooms/$id')({
   component: () => (

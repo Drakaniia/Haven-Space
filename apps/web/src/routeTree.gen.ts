@@ -43,12 +43,14 @@ import { Route as LandlordBoardersRouteImport } from './routes/landlord/boarders
 import { Route as LandlordCalendarRouteImport } from './routes/landlord/calendar'
 import { Route as LandlordInvitationsRouteImport } from './routes/landlord/invitations'
 import { Route as LandlordListingsRouteImport } from './routes/landlord/listings'
+import { Route as LandlordMaintenanceRouteImport } from './routes/landlord/maintenance'
 import { Route as LandlordMapsRouteImport } from './routes/landlord/maps'
 import { Route as LandlordMessagesRouteImport } from './routes/landlord/messages'
 import { Route as LandlordOnboardingRouteImport } from './routes/landlord/onboarding'
 import { Route as LandlordPaymentsRouteImport } from './routes/landlord/payments'
 import { Route as LandlordPricingRouteImport } from './routes/landlord/pricing'
 import { Route as LandlordPropertiesRouteImport } from './routes/landlord/properties'
+import { Route as LandlordRenewalsRouteImport } from './routes/landlord/renewals'
 import { Route as LandlordSettingsRouteImport } from './routes/landlord/settings'
 import { Route as LandlordVerificationRouteImport } from './routes/landlord/verification'
 import { Route as LegalPrivacyPolicyRouteImport } from './routes/legal/privacy-policy'
@@ -255,6 +257,11 @@ const LandlordListingsRoute = LandlordListingsRouteImport.update({
   path: '/landlord/listings',
   getParentRoute: () => rootRouteImport,
 } as any)
+const LandlordMaintenanceRoute = LandlordMaintenanceRouteImport.update({
+  id: '/landlord/maintenance',
+  path: '/landlord/maintenance',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const LandlordMapsRoute = LandlordMapsRouteImport.update({
   id: '/landlord/maps',
   path: '/landlord/maps',
@@ -283,6 +290,11 @@ const LandlordPricingRoute = LandlordPricingRouteImport.update({
 const LandlordPropertiesRoute = LandlordPropertiesRouteImport.update({
   id: '/landlord/properties',
   path: '/landlord/properties',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const LandlordRenewalsRoute = LandlordRenewalsRouteImport.update({
+  id: '/landlord/renewals',
+  path: '/landlord/renewals',
   getParentRoute: () => rootRouteImport,
 } as any)
 const LandlordSettingsRoute = LandlordSettingsRouteImport.update({
@@ -493,12 +505,14 @@ export interface FileRoutesByFullPath {
   '/landlord/calendar': typeof LandlordCalendarRoute
   '/landlord/invitations': typeof LandlordInvitationsRoute
   '/landlord/listings': typeof LandlordListingsRouteWithChildren
+  '/landlord/maintenance': typeof LandlordMaintenanceRoute
   '/landlord/maps': typeof LandlordMapsRoute
   '/landlord/messages': typeof LandlordMessagesRouteWithChildren
   '/landlord/onboarding': typeof LandlordOnboardingRoute
   '/landlord/payments': typeof LandlordPaymentsRouteWithChildren
   '/landlord/pricing': typeof LandlordPricingRoute
   '/landlord/properties': typeof LandlordPropertiesRouteWithChildren
+  '/landlord/renewals': typeof LandlordRenewalsRoute
   '/landlord/settings': typeof LandlordSettingsRoute
   '/landlord/verification': typeof LandlordVerificationRoute
   '/legal/privacy-policy': typeof LegalPrivacyPolicyRoute
@@ -564,9 +578,11 @@ export interface FileRoutesByTo {
   '/landlord/calendar': typeof LandlordCalendarRoute
   '/landlord/invitations': typeof LandlordInvitationsRoute
   '/landlord/listings': typeof LandlordListingsRouteWithChildren
+  '/landlord/maintenance': typeof LandlordMaintenanceRoute
   '/landlord/maps': typeof LandlordMapsRoute
   '/landlord/onboarding': typeof LandlordOnboardingRoute
   '/landlord/pricing': typeof LandlordPricingRoute
+  '/landlord/renewals': typeof LandlordRenewalsRoute
   '/landlord/settings': typeof LandlordSettingsRoute
   '/landlord/verification': typeof LandlordVerificationRoute
   '/legal/privacy-policy': typeof LegalPrivacyPolicyRoute
@@ -637,12 +653,14 @@ export interface FileRoutesById {
   '/landlord/calendar': typeof LandlordCalendarRoute
   '/landlord/invitations': typeof LandlordInvitationsRoute
   '/landlord/listings': typeof LandlordListingsRouteWithChildren
+  '/landlord/maintenance': typeof LandlordMaintenanceRoute
   '/landlord/maps': typeof LandlordMapsRoute
   '/landlord/messages': typeof LandlordMessagesRouteWithChildren
   '/landlord/onboarding': typeof LandlordOnboardingRoute
   '/landlord/payments': typeof LandlordPaymentsRouteWithChildren
   '/landlord/pricing': typeof LandlordPricingRoute
   '/landlord/properties': typeof LandlordPropertiesRouteWithChildren
+  '/landlord/renewals': typeof LandlordRenewalsRoute
   '/landlord/settings': typeof LandlordSettingsRoute
   '/landlord/verification': typeof LandlordVerificationRoute
   '/legal/privacy-policy': typeof LegalPrivacyPolicyRoute
@@ -715,12 +733,14 @@ export interface FileRouteTypes {
     | '/landlord/calendar'
     | '/landlord/invitations'
     | '/landlord/listings'
+    | '/landlord/maintenance'
     | '/landlord/maps'
     | '/landlord/messages'
     | '/landlord/onboarding'
     | '/landlord/payments'
     | '/landlord/pricing'
     | '/landlord/properties'
+    | '/landlord/renewals'
     | '/landlord/settings'
     | '/landlord/verification'
     | '/legal/privacy-policy'
@@ -786,9 +806,11 @@ export interface FileRouteTypes {
     | '/landlord/calendar'
     | '/landlord/invitations'
     | '/landlord/listings'
+    | '/landlord/maintenance'
     | '/landlord/maps'
     | '/landlord/onboarding'
     | '/landlord/pricing'
+    | '/landlord/renewals'
     | '/landlord/settings'
     | '/landlord/verification'
     | '/legal/privacy-policy'
@@ -858,12 +880,14 @@ export interface FileRouteTypes {
     | '/landlord/calendar'
     | '/landlord/invitations'
     | '/landlord/listings'
+    | '/landlord/maintenance'
     | '/landlord/maps'
     | '/landlord/messages'
     | '/landlord/onboarding'
     | '/landlord/payments'
     | '/landlord/pricing'
     | '/landlord/properties'
+    | '/landlord/renewals'
     | '/landlord/settings'
     | '/landlord/verification'
     | '/legal/privacy-policy'
@@ -935,12 +959,14 @@ export interface RootRouteChildren {
   LandlordCalendarRoute: typeof LandlordCalendarRoute
   LandlordInvitationsRoute: typeof LandlordInvitationsRoute
   LandlordListingsRoute: typeof LandlordListingsRouteWithChildren
+  LandlordMaintenanceRoute: typeof LandlordMaintenanceRoute
   LandlordMapsRoute: typeof LandlordMapsRoute
   LandlordMessagesRoute: typeof LandlordMessagesRouteWithChildren
   LandlordOnboardingRoute: typeof LandlordOnboardingRoute
   LandlordPaymentsRoute: typeof LandlordPaymentsRouteWithChildren
   LandlordPricingRoute: typeof LandlordPricingRoute
   LandlordPropertiesRoute: typeof LandlordPropertiesRouteWithChildren
+  LandlordRenewalsRoute: typeof LandlordRenewalsRoute
   LandlordSettingsRoute: typeof LandlordSettingsRoute
   LandlordVerificationRoute: typeof LandlordVerificationRoute
   LegalPrivacyPolicyRoute: typeof LegalPrivacyPolicyRoute
@@ -1197,6 +1223,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof LandlordListingsRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/landlord/maintenance': {
+      id: '/landlord/maintenance'
+      path: '/landlord/maintenance'
+      fullPath: '/landlord/maintenance'
+      preLoaderRoute: typeof LandlordMaintenanceRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/landlord/maps': {
       id: '/landlord/maps'
       path: '/landlord/maps'
@@ -1237,6 +1270,13 @@ declare module '@tanstack/react-router' {
       path: '/landlord/properties'
       fullPath: '/landlord/properties'
       preLoaderRoute: typeof LandlordPropertiesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/landlord/renewals': {
+      id: '/landlord/renewals'
+      path: '/landlord/renewals'
+      fullPath: '/landlord/renewals'
+      preLoaderRoute: typeof LandlordRenewalsRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/landlord/settings': {
@@ -1652,12 +1692,14 @@ const rootRouteChildren: RootRouteChildren = {
   LandlordCalendarRoute: LandlordCalendarRoute,
   LandlordInvitationsRoute: LandlordInvitationsRoute,
   LandlordListingsRoute: LandlordListingsRouteWithChildren,
+  LandlordMaintenanceRoute: LandlordMaintenanceRoute,
   LandlordMapsRoute: LandlordMapsRoute,
   LandlordMessagesRoute: LandlordMessagesRouteWithChildren,
   LandlordOnboardingRoute: LandlordOnboardingRoute,
   LandlordPaymentsRoute: LandlordPaymentsRouteWithChildren,
   LandlordPricingRoute: LandlordPricingRoute,
   LandlordPropertiesRoute: LandlordPropertiesRouteWithChildren,
+  LandlordRenewalsRoute: LandlordRenewalsRoute,
   LandlordSettingsRoute: LandlordSettingsRoute,
   LandlordVerificationRoute: LandlordVerificationRoute,
   LegalPrivacyPolicyRoute: LegalPrivacyPolicyRoute,

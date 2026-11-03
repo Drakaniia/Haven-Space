@@ -54,9 +54,12 @@ const TONES: Record<string, string> = {
   upcoming: 'bg-subtle text-gray-ink',
   no_charge: 'bg-subtle text-gray-ink',
   superseded: 'bg-subtle text-gray-ink',
+  // need-attention — the dashboard's occupancy tag (low < 50%)
+  low: 'bg-warning-tint text-warning-ink',
   // neutral
   ended: 'bg-subtle text-gray-ink',
   cancelled: 'bg-subtle text-gray-ink',
+  left_early: 'bg-subtle text-gray-ink',
   // account roles — the same pill language for the admin users table, so it no
   // longer hand-rolls its own colours next to this component
   // (`admin-apple-ui-restructure` R20).

@@ -8,8 +8,8 @@ import {
   parseGooglePendingToken,
   redirectPathForUser,
   resolvePostAuthPath,
-} from '../src/lib/oauth';
-import type { AuthUser } from '../src/lib/types';
+} from '../../src/lib/oauth';
+import type { AuthUser } from '../../src/lib/types';
 
 const user = (role: AuthUser['role']): AuthUser => ({
   id: 1,

@@ -11,7 +11,7 @@ import { StatusBadge } from '../../../components/ui/StatusBadge';
 import { ApiRequestError } from '../../../lib/api/http';
 import { confirmApplication, deleteApplication, getApplication } from '../../../lib/api/boarder';
 import { useAuth } from '../../../lib/auth-context';
-import { BOARDER_STATUS_KEY } from '../../../lib/useBoarderNav';
+import { BOARDER_STATUS_KEY } from '../../../lib/use-boarder-nav';
 import { setPendingToast } from '../../../lib/toast';
 
 export const Route = createFileRoute('/boarder/applications/$id')({

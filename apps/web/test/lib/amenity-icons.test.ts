@@ -2,9 +2,9 @@ import { test, expect } from 'bun:test';
 import { existsSync } from 'node:fs';
 import { join } from 'node:path';
 
-import { amenityIcon } from '../src/components/rooms/FindARoomContent';
+import { amenityIcon } from '../../src/components/rooms/FindARoomContent';
 
-const ICON_DIR = join(import.meta.dir, '..', 'public', 'assets', 'svg');
+const ICON_DIR = join(import.meta.dir, '../..', 'public', 'assets', 'svg');
 
 // Regression: the icon names used to be lowercased amenity names ('wifi', 'laundry',
 // 'kitchen'), which 404 on the dev server and on Cloudflare Pages because the files are

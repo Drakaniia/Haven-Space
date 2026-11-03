@@ -35,14 +35,14 @@ globalThis.fetch = (async () =>
     status: 200,
   })) as unknown as typeof fetch;
 
-const { RoleShell } = await import('../src/components/layout/RoleShell');
-const { AuthProvider } = await import('../src/lib/auth-context');
-const { BOARDER_NAV, LANDLORD_NAV } = await import('../src/lib/nav');
+const { RoleShell } = await import('../../src/components/layout/RoleShell');
+const { AuthProvider } = await import('../../src/lib/auth-context');
+const { BOARDER_NAV, LANDLORD_NAV } = await import('../../src/lib/nav');
 
-const landlordLedger = await import('../src/routes/landlord/payments/index');
-const landlordRecord = await import('../src/routes/landlord/payments/record');
-const boarderLedger = await import('../src/routes/boarder/payments/index');
-const boarderPay = await import('../src/routes/boarder/payments/pay');
+const landlordLedger = await import('../../src/routes/landlord/payments/index');
+const landlordRecord = await import('../../src/routes/landlord/payments/record');
+const boarderLedger = await import('../../src/routes/boarder/payments/index');
+const boarderPay = await import('../../src/routes/boarder/payments/pay');
 
 /** The component the router would render for that route file. */
 function componentOf(route: unknown): ComponentType {

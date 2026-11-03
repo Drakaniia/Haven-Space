@@ -1,4 +1,4 @@
-import type { PaymentCharge, PropertyBillingSettings, TrackerRow, TrackerStatus } from './types';
+import type { PaymentCharge, PropertyBillingSettings, TrackerRow } from './types';
 
 /** Pure display helpers shared by the boarder and landlord payment screens. */
 
@@ -58,30 +58,406 @@ export function paymentMethodLabel(
   );
 }
 
-/**
- * Label, tone key and icon for the tracker's derived state — the icon and the
- * text label are what keep the state readable without colour (D25).
- */
-export function trackerStatusMeta(row: Pick<TrackerRow, 'status' | 'status_label'>): {
-  status: TrackerStatus;
+/* --------------------------------------------- payments monitoring page */
+
+/** One row's display state on the monitoring page (spec `landlord-payments-monitoring` §3). */
+export interface MonitorStatus {
+  /** `StatusBadge` tone key — always an existing key, never a new colour. */
+  tone: string;
   label: string;
-  icon: string;
-} {
-  const icons: Record<TrackerStatus, string> = {
-    paid: 'check',
-    overdue: 'report',
-    in_grace: 'clock',
-    due_today: 'banknotes',
-    due_soon: 'clock',
-    upcoming: 'calendar',
-    no_charge: 'minus',
-  };
+  action: 'view' | 'review' | 'remind' | 'none';
+}
+
+/** The fields the label derivation needs; every `TrackerRow` satisfies it. */
+export type MonitorRow = Pick<
+  TrackerRow,
+  'status' | 'days_remaining' | 'has_pending_claim' | 'has_rejected_claim' | 'monthly_rent'
+>;
+
+export type MonitorFilterKey =
+  | 'paid'
+  | 'needs_review'
+  | 'payment_issue'
+  | 'due_today'
+  | 'due_soon'
+  | 'in_grace'
+  | 'overdue'
+  | 'no_charge';
+
+/**
+ * The status filter's options: the seven labels the page shows (D11).
+ *
+ * `due_soon` reads "Due in X days" because it covers both the tracker's
+ * `due_soon` and its `upcoming` — same sentence, different tone (§3).
+ */
+export const MONITOR_STATUS_OPTIONS: Array<{ value: MonitorFilterKey; label: string }> = [
+  { value: 'needs_review', label: 'Needs review' },
+  { value: 'payment_issue', label: 'Payment issue' },
+  { value: 'due_today', label: 'Due today' },
+  { value: 'due_soon', label: 'Due in X days' },
+  { value: 'in_grace', label: 'In grace' },
+  { value: 'overdue', label: 'Overdue' },
+  { value: 'paid', label: 'Paid' },
+  { value: 'no_charge', label: 'No charge yet' },
+];
+
+/** Tones that need the landlord's attention (D35). */
+const ATTENTION_TONES = new Set(['in_grace', 'overdue', 'awaiting_verification', 'rejected']);
+
+/**
+ * The row's label, tone and action.
+ *
+ * Precedence is deliberate: a pending claim leaves the ball with the landlord, a
+ * rejected claim means the tenant resubmits, and only then do the dates speak.
+ * The table, the metrics and the footer all read this one function, so they can
+ * never disagree.
+ */
+export function monitorStatusMeta(row: MonitorRow): MonitorStatus {
+  if (row.has_pending_claim) {
+    return { tone: 'awaiting_verification', label: 'Needs review', action: 'review' };
+  }
+
+  if (row.has_rejected_claim) {
+    return { tone: 'rejected', label: 'Payment issue', action: 'remind' };
+  }
+
+  switch (row.status) {
+    case 'paid':
+      return { tone: 'paid', label: 'Paid', action: 'view' };
+    case 'due_today':
+      return { tone: 'due_today', label: 'Due today', action: 'remind' };
+    case 'in_grace':
+      return { tone: 'in_grace', label: 'In grace', action: 'remind' };
+    case 'overdue':
+      return { tone: 'overdue', label: 'Overdue', action: 'remind' };
+    case 'due_soon':
+    case 'upcoming': {
+      const days = row.days_remaining;
+
+      return {
+        // Same words, different urgency: the tone does the work (§3).
+        tone: row.status === 'due_soon' ? 'due_soon' : 'upcoming',
+        label:
+          days === null || days === undefined
+            ? 'Due soon'
+            : `Due in ${days} ${days === 1 ? 'day' : 'days'}`,
+        action: 'remind',
+      };
+    }
+    case 'no_charge':
+    default:
+      return { tone: 'no_charge', label: 'No charge yet', action: 'none' };
+  }
+}
+
+/** The status filter's key for a row, folding `due_soon` and `upcoming` together. */
+export function monitorFilterKey(row: MonitorRow): MonitorFilterKey {
+  switch (monitorStatusMeta(row).tone) {
+    case 'awaiting_verification':
+      return 'needs_review';
+    case 'rejected':
+      return 'payment_issue';
+    case 'due_soon':
+    case 'upcoming':
+      return 'due_soon';
+    case 'paid':
+      return 'paid';
+    case 'due_today':
+      return 'due_today';
+    case 'in_grace':
+      return 'in_grace';
+    case 'overdue':
+      return 'overdue';
+    default:
+      return 'no_charge';
+  }
+}
+
+/**
+ * Whether a row belongs in "Needs attention" (D35): past due, inside grace, or
+ * waiting on the landlord. "Due today" and "Due in X days" are business as usual.
+ */
+export function needsAttention(row: MonitorRow): boolean {
+  return ATTENTION_TONES.has(monitorStatusMeta(row).tone);
+}
+
+export interface MonitorMetrics {
+  tenants: number;
+  expected: number;
+  paid: number;
+  needsAttention: number;
+}
+
+/**
+ * The four metrics, scoped to the rows the table is showing (D14/RES-3).
+ *
+ * Every money figure uses the cycle's rent (`monthly_rent`) so the three amounts
+ * share one basis: expected = everyone still owing, paid = everyone settled.
+ */
+export function monitorMetrics(rows: MonitorRow[]): MonitorMetrics {
+  let expected = 0;
+  let paid = 0;
+  let attention = 0;
+
+  for (const row of rows) {
+    const { tone } = monitorStatusMeta(row);
+    const rent = Number(row.monthly_rent) || 0;
+
+    if (tone === 'paid') {
+      paid += rent;
+    } else if (tone !== 'no_charge') {
+      expected += rent;
+    }
+
+    if (ATTENTION_TONES.has(tone)) {
+      attention += 1;
+    }
+  }
 
   return {
-    status: row.status,
-    label: row.status_label,
-    icon: icons[row.status] ?? 'minus',
+    tenants: rows.length,
+    expected: roundMoney(expected),
+    paid: roundMoney(paid),
+    needsAttention: attention,
   };
+}
+
+/** The monitoring page's filter state, carried in the URL (D16). */
+export interface MonitorFilters {
+  propertyId: string;
+  month: string;
+  search: string;
+  status: string;
+  room: string;
+  dueFrom: string;
+  dueTo: string;
+  overdue: boolean;
+  needsReview: boolean;
+  method: string;
+}
+
+export function emptyMonitorFilters(month: string): MonitorFilters {
+  return {
+    propertyId: '',
+    month,
+    search: '',
+    status: '',
+    room: '',
+    dueFrom: '',
+    dueTo: '',
+    overdue: false,
+    needsReview: false,
+    method: '',
+  };
+}
+
+/**
+ * The client-side half of the filtering (RES-3): property, month and search are
+ * applied by the server; everything else narrows the rows it returned.
+ */
+export function matchesFilters(row: TrackerRow, filters: MonitorFilters): boolean {
+  if (filters.status && monitorFilterKey(row) !== filters.status) {
+    return false;
+  }
+
+  if (filters.room && row.room_number !== filters.room) {
+    return false;
+  }
+
+  if (filters.overdue && monitorFilterKey(row) !== 'overdue') {
+    return false;
+  }
+
+  if (filters.needsReview && monitorFilterKey(row) !== 'needs_review') {
+    return false;
+  }
+
+  if (filters.method && row.last_payment?.method !== filters.method) {
+    return false;
+  }
+
+  if (filters.dueFrom && (!row.next_due_date || row.next_due_date < filters.dueFrom)) {
+    return false;
+  }
+
+  if (filters.dueTo && (!row.next_due_date || row.next_due_date > filters.dueTo)) {
+    return false;
+  }
+
+  return true;
+}
+
+/** Whether any of the controls — property and month excepted — narrows the table. */
+export function hasActiveFilters(filters: MonitorFilters): boolean {
+  return Boolean(
+    filters.search ||
+      filters.status ||
+      filters.room ||
+      filters.dueFrom ||
+      filters.dueTo ||
+      filters.overdue ||
+      filters.needsReview ||
+      filters.method
+  );
+}
+
+function firstName(name: string): string {
+  return name.trim().split(/\s+/)[0] || name;
+}
+
+/** The Remind composer's starting text (D21) — editable, never sent as-is silently. */
+export function reminderMessage(
+  row: Pick<TrackerRow, 'boarder_name' | 'monthly_rent' | 'next_due_date' | 'days_overdue'>,
+  month: string
+): string {
+  const due = row.next_due_date ? ` on ${formatPaymentDate(row.next_due_date)}` : '';
+  const past =
+    row.days_overdue && row.days_overdue > 0
+      ? ` It's now ${row.days_overdue} ${row.days_overdue === 1 ? 'day' : 'days'} past the due date.`
+      : '';
+
+  return (
+    `Hi ${firstName(row.boarder_name)}, a gentle reminder that your ${formatPeso(row.monthly_rent)} ` +
+    `rent for ${month} was due${due}.${past} You can send your payment proof here once you've paid.`
+  );
+}
+
+/** The post-rejection message, offered after a rejection (D31). */
+export function rejectionMessage(
+  row: Pick<TrackerRow, 'boarder_name' | 'monthly_rent'>,
+  month: string,
+  reason: string
+): string {
+  return (
+    `Your ${formatPeso(row.monthly_rent)} rent payment for ${month} was rejected: ` +
+    `${reason.trim()}. Please send a new proof with the correct amount and reference number.`
+  );
+}
+
+/** The brief's exact request-a-new-proof sentence (§8.6). */
+export const REQUEST_NEW_PROOF_MESSAGE =
+  'Please send a clearer payment proof showing the amount and reference number.';
+
+export type TenantTimelineKind =
+  | 'charge_created'
+  | 'proof_submitted'
+  | 'proof_approved'
+  | 'proof_rejected'
+  | 'reminder_sent';
+
+export interface TenantTimelineEvent {
+  id: string;
+  kind: TenantTimelineKind;
+  /** Raw timestamp — the sort key, and what the drawer formats for display. */
+  at: string;
+  title: string;
+  detail: string | null;
+  tone: 'neutral' | 'info' | 'success' | 'error';
+  proof_url?: string | null;
+}
+
+/**
+ * The tenant drawer's payment activity timeline, derived from the tenancy's own
+ * charges and submissions (D32) — one event per real record, nothing invented.
+ *
+ * Returned newest first; a rejection reuses `verified_at` because the schema has
+ * no separate rejected timestamp (spec §22 L3).
+ */
+export function buildTenantTimeline(
+  charges: PaymentCharge[],
+  options: { viewerId?: number | null } = {}
+): TenantTimelineEvent[] {
+  const viewerId = options.viewerId ?? null;
+  const events: TenantTimelineEvent[] = [];
+
+  for (const charge of charges) {
+    const typeLabel = chargeTypeLabel(charge.charge_type);
+
+    events.push({
+      id: `charge:${charge.id}:created`,
+      kind: 'charge_created',
+      at: charge.created_at,
+      title: charge.charge_type === 'rent' ? 'Rent charge created' : `${typeLabel} charge created`,
+      detail: `${formatPeso(charge.amount)} · due ${formatPaymentDate(charge.due_date)}`,
+      tone: 'neutral',
+    });
+
+    if (charge.reminder_sent_at) {
+      events.push({
+        id: `charge:${charge.id}:reminder`,
+        kind: 'reminder_sent',
+        at: charge.reminder_sent_at,
+        title: 'Reminder sent',
+        detail: `${typeLabel} for ${monthLabel(charge.due_date.slice(0, 7))}`,
+        tone: 'neutral',
+      });
+    }
+
+    for (const submission of charge.submissions ?? []) {
+      const money = [
+        formatPeso(submission.amount),
+        paymentMethodLabel(submission.payment_method),
+        submission.reference_number ? `Ref ${submission.reference_number}` : null,
+      ]
+        .filter(Boolean)
+        .join(' · ');
+
+      if (submission.status === 'pending') {
+        events.push({
+          id: `submission:${submission.id}:pending`,
+          kind: 'proof_submitted',
+          at: submission.created_at,
+          title: 'Proof submitted',
+          detail: money,
+          tone: 'info',
+          proof_url: submission.proof_url,
+        });
+      } else if (submission.status === 'verified') {
+        events.push({
+          id: `submission:${submission.id}:verified`,
+          kind: 'proof_approved',
+          at: submission.verified_at ?? submission.created_at,
+          title: 'Payment approved',
+          detail: viewerId && submission.verified_by === viewerId ? `${money} · by you` : money,
+          tone: 'success',
+          proof_url: submission.proof_url,
+        });
+      } else if (submission.status === 'rejected') {
+        events.push({
+          id: `submission:${submission.id}:rejected`,
+          kind: 'proof_rejected',
+          at: submission.verified_at ?? submission.created_at,
+          title: 'Payment rejected',
+          detail: submission.rejection_reason
+            ? `Reason: ${submission.rejection_reason}`
+            : money,
+          tone: 'error',
+        });
+      }
+    }
+  }
+
+  return events.sort((left, right) => {
+    if (left.at === right.at) {
+      return left.id < right.id ? 1 : -1;
+    }
+
+    return left.at < right.at ? 1 : -1;
+  });
+}
+
+/**
+ * `Room 04` for a stored `04` or an already-labelled `Room 04` — the seeded
+ * rooms carry both shapes, and `Room Room 04` is the trap.
+ */
+export function roomLabel(value: string | null | undefined): string {
+  const label = (value ?? '').trim();
+
+  if (!label) {
+    return '';
+  }
+
+  return /^room\b/i.test(label) ? label : `Room ${label}`;
 }
 
 /**
@@ -101,21 +477,6 @@ export function roomOrBedLabel(
 
   return `${label} · ${occupied}/${capacity}`;
 }
-
-/** The on-page key for the five states the brief lists (plus the two quiet ones). */
-export const TRACKER_STATUS_LEGEND: Array<{
-  status: TrackerStatus;
-  label: string;
-  meaning: string;
-}> = [
-  { status: 'paid', label: 'Paid', meaning: 'Settled for the current cycle' },
-  { status: 'due_soon', label: 'Due soon', meaning: 'Within 3 days of the due date' },
-  { status: 'due_today', label: 'Due today', meaning: 'Due on today’s date' },
-  { status: 'in_grace', label: 'In grace', meaning: 'Past the due date, inside the grace period' },
-  { status: 'overdue', label: 'Overdue', meaning: 'Past the grace period — a fee may apply' },
-  { status: 'upcoming', label: 'Upcoming', meaning: 'Due later than the due-soon window' },
-  { status: 'no_charge', label: 'No active charge', meaning: 'Nothing billed to this boarder yet' },
-];
 
 function roundMoney(value: number): number {
   return Math.round(value * 100) / 100;
@@ -154,6 +515,42 @@ export function formatPeso(value: number): string {
     minimumFractionDigits: 2,
     maximumFractionDigits: 2,
   })}`;
+}
+
+/**
+ * A stored timestamp as `October 8, 2026 · 10:42 AM`, in Asia/Manila.
+ *
+ * SQLite writes `YYYY-MM-DD HH:MM:SS` in UTC, so a zoneless value is parsed as
+ * UTC before the Manila offset is applied — the same reasoning as `manilaToday`,
+ * and never the browser's own zone (spec §13.4).
+ */
+export function formatDateTime(value: string | null | undefined): string {
+  if (!value) {
+    return '—';
+  }
+
+  const normalized = value.trim().replace(' ', 'T');
+  const hasZone = /(Z|[+-]\d{2}:?\d{2})$/i.test(normalized);
+  const date = new Date(hasZone ? normalized : `${normalized}Z`);
+
+  if (Number.isNaN(date.getTime())) {
+    return value;
+  }
+
+  const day = new Intl.DateTimeFormat('en-PH', {
+    timeZone: 'Asia/Manila',
+    month: 'long',
+    day: 'numeric',
+    year: 'numeric',
+  }).format(date);
+  const time = new Intl.DateTimeFormat('en-PH', {
+    timeZone: 'Asia/Manila',
+    hour: 'numeric',
+    minute: '2-digit',
+    hour12: true,
+  }).format(date);
+
+  return `${day} · ${time}`;
 }
 
 export function formatPaymentDate(value: string | null | undefined): string {

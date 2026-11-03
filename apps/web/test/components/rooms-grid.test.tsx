@@ -11,7 +11,7 @@ import {
 import type { ReactNode } from 'react';
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
-import { PropertyRoomsGrid } from '../src/components/rooms/PropertyRoomsGrid';
+import { PropertyRoomsGrid } from '../../src/components/rooms/PropertyRoomsGrid';
 import {
   ROOM_FILTERS,
   ROOM_SORT_OPTIONS,
@@ -26,9 +26,9 @@ import {
   slotRatio,
   slotsLabel,
   sortRooms,
-} from '../src/components/rooms/RoomCard';
-import { COVER_PHOTO_ACCEPT, coverPhotoError } from '../src/components/rooms/RoomFormModal';
-import type { LandlordRoom } from '../src/lib/types';
+} from '../../src/components/rooms/RoomCard';
+import { COVER_PHOTO_ACCEPT, coverPhotoError } from '../../src/components/rooms/RoomFormModal';
+import type { LandlordRoom } from '../../src/lib/types';
 
 /**
  * `landlord-rooms-grid`: the stat rollups, the toolbar vocabulary and the markup
@@ -505,7 +505,7 @@ describe('rooms grid behaviour', () => {
 });
 
 describe('rooms page contract', () => {
-  const webRoot = join(import.meta.dir, '..');
+  const webRoot = join(import.meta.dir, '../..');
   const read = (...parts: string[]) => readFileSync(join(webRoot, 'src', ...parts), 'utf8');
 
   const page = read('routes', 'landlord', 'properties', '$id', 'rooms.tsx');

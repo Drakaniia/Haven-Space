@@ -6,7 +6,7 @@ import { MapLocationControl } from '../../components/rooms/MapLocationControl';
 import { PageHeader } from '../../components/ui/PageHeader';
 import { mapUrlForCoordinates } from '../../lib/maps';
 import { LANDLORD_NAV } from '../../lib/nav';
-import { useMapLocation } from '../../lib/useMapLocation';
+import { useMapLocation } from '../../lib/use-map-location';
 
 export const Route = createFileRoute('/landlord/maps')({
   component: LandlordMapsPage,

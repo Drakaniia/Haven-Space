@@ -3,7 +3,7 @@ import { Link } from '@tanstack/react-router';
 import { Card } from '../ui/Card';
 import { Icon } from '../ui/Icon';
 import { StatusBadge } from '../ui/StatusBadge';
-import { buttonClasses } from '../ui/Button';
+import { buttonClasses, Button } from '../ui/Button';
 import { formatPeso } from '../../lib/payments';
 import type { CalendarEvent } from '../../lib/types';
 import { daySummary, eventIcon, eventLabel, formatDayLabel } from './calendar-helpers';
@@ -18,9 +18,11 @@ import { daySummary, eventIcon, eventLabel, formatDayLabel } from './calendar-he
 export function CalendarDayPanel({
   date,
   events,
+  onApproveLeave,
 }: {
   date: string;
   events: CalendarEvent[];
+  onApproveLeave: (event: CalendarEvent) => void;
 }) {
   const summary = daySummary(events);
   const hasMoney = events.some(event => event.family === 'money');
@@ -32,9 +34,7 @@ export function CalendarDayPanel({
   return (
     <Card className="lg:sticky lg:top-4" padding="p-4">
       <div className="flex items-baseline justify-between gap-2">
-        <h2 className="text-base font-semibold tracking-tight text-ink">
-          {formatDayLabel(date)}
-        </h2>
+        <h2 className="text-base font-semibold tracking-tight text-ink">{formatDayLabel(date)}</h2>
         <span className="text-xs text-gray-ink">
           {events.length === 1 ? '1 event' : `${events.length} events`}
         </span>
@@ -54,9 +54,7 @@ export function CalendarDayPanel({
                 <span className="font-semibold text-ink">{formatPeso(summary.collected)}</span>
               </span>
               {summary.overdueCount > 0 ? (
-                <span className="text-xs text-error-ink">
-                  {summary.overdueCount} overdue
-                </span>
+                <span className="text-xs text-error-ink">{summary.overdueCount} overdue</span>
               ) : null}
             </div>
           ) : null}
@@ -77,15 +75,33 @@ export function CalendarDayPanel({
                     <p className="mt-0.5 text-xs text-gray-ink">
                       {[event.room?.name, event.property?.name].filter(Boolean).join(' · ') || '—'}
                     </p>
+                    {/* Approval is blocked while anything is unsettled, so the
+                        amount rides on the leave row instead of only surfacing
+                        in the dialog (spec `approve-leave-request` §5.3). */}
+                    {(event.type === 'leave_requested' || event.type === 'tenancy_move_out') &&
+                    (event.outstanding_amount ?? 0) > 0 ? (
+                      <p className="mt-0.5 text-xs font-medium text-warning-ink">
+                        {formatPeso(event.outstanding_amount ?? 0)} due
+                      </p>
+                    ) : null}
                     {event.amount !== null ? (
                       <p className="text-sm font-semibold text-ink">{formatPeso(event.amount)}</p>
                     ) : null}
-                    <Link
-                      to={event.link.to}
-                      className="mt-1 inline-flex text-xs font-semibold text-primary underline"
-                    >
-                      {event.link.label}
-                    </Link>
+                    <div className="mt-1 flex flex-wrap items-center gap-3">
+                      <Link
+                        to={event.link.to}
+                        className="inline-flex text-xs font-semibold text-primary underline"
+                      >
+                        {event.link.label}
+                      </Link>
+                      {event.status === 'pending' &&
+                      event.application_id !== null &&
+                      (event.type === 'leave_requested' || event.type === 'tenancy_move_out') ? (
+                        <Button variant="outline" size="sm" onClick={() => onApproveLeave(event)}>
+                          Approve
+                        </Button>
+                      ) : null}
+                    </div>
                   </div>
                 </div>
               </li>
@@ -102,12 +118,18 @@ export function CalendarDayPanel({
             </Link>
           ) : null}
           {hasApplications ? (
-            <Link to="/landlord/applications" className={buttonClasses({ size: 'sm', variant: 'outline' })}>
+            <Link
+              to="/landlord/applications"
+              className={buttonClasses({ size: 'sm', variant: 'outline' })}
+            >
               Review application
             </Link>
           ) : null}
           {hasLeave ? (
-            <Link to="/landlord/boarders" className={buttonClasses({ size: 'sm', variant: 'outline' })}>
+            <Link
+              to="/landlord/boarders"
+              className={buttonClasses({ size: 'sm', variant: 'outline' })}
+            >
               Review leave request
             </Link>
           ) : null}

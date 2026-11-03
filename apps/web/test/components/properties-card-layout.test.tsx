@@ -11,24 +11,24 @@ import {
   occupancyLabel,
   propertyAddress,
   roomsLabel,
-} from '../src/components/properties/PropertyCard';
+} from '../../src/components/properties/PropertyCard';
 import {
   amenitiesLabel,
   availableRooms,
   hasRooms,
   locationLabel,
   propertyTypeLabel,
-} from '../src/components/properties/PropertyOverview';
+} from '../../src/components/properties/PropertyOverview';
 import {
   DEFAULT_PROPERTY_TAB,
   PROPERTY_TAB_BAR_KEYS,
   PROPERTY_TAB_KEYS,
   PROPERTY_TAB_LABELS,
   toPropertyTabKey,
-} from '../src/lib/property-tabs';
-import { isFullProperty } from '../src/lib/listing-status';
-import { buildTrail } from '../src/components/layout/Topbar';
-import type { AdminPropertyRow, LandlordProperty } from '../src/lib/types';
+} from '../../src/lib/property-tabs';
+import { isFullProperty } from '../../src/lib/listing-status';
+import { buildTrail } from '../../src/components/layout/Topbar';
+import type { AdminPropertyRow, LandlordProperty } from '../../src/lib/types';
 
 /**
  * `landlord-properties-card-layout` (D23): the card list, its vocabulary and the
@@ -152,7 +152,7 @@ describe('status pills', () => {
 });
 
 describe('property card contract', () => {
-  const webRoot = join(import.meta.dir, '..');
+  const webRoot = join(import.meta.dir, '../..');
   const read = (...parts: string[]) => readFileSync(join(webRoot, 'src', ...parts), 'utf8');
 
   const card = read('components', 'properties', 'PropertyCard.tsx');
@@ -253,7 +253,7 @@ describe('property card contract', () => {
  * and the page's own markup contracts.
  */
 describe('property detail page', () => {
-  const webRoot = join(import.meta.dir, '..');
+  const webRoot = join(import.meta.dir, '../..');
   const read = (...parts: string[]) => readFileSync(join(webRoot, 'src', ...parts), 'utf8');
 
   test('tab keys are kebab-case and an unknown or absent value lands on Overview (R6)', () => {

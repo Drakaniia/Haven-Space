@@ -1,8 +1,8 @@
 import { test, expect } from 'bun:test';
-import { ApiRequestError, apiFetch } from '../src/lib/api/http';
-import { listPublicRooms } from '../src/lib/api/public';
-import { clearStoredAuth, getStoredAuth, setStoredAuth } from '../src/lib/auth-store';
-import type { AuthUser } from '../src/lib/types';
+import { ApiRequestError, apiFetch } from '../../src/lib/api/http';
+import { listPublicRooms } from '../../src/lib/api/public';
+import { clearStoredAuth, getStoredAuth, setStoredAuth } from '../../src/lib/auth-store';
+import type { AuthUser } from '../../src/lib/types';
 
 const SESSION_USER = {
   id: 1,

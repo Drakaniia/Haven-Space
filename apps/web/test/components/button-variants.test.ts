@@ -2,7 +2,7 @@ import { test, expect } from 'bun:test';
 import { readdirSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 
-const SRC_DIR = join(import.meta.dir, '..', 'src');
+const SRC_DIR = join(import.meta.dir, '../..', 'src');
 
 /** Every `.ts`/`.tsx` file under `src`, so a regression can't hide in an unread file. */
 function sourceFiles(dir: string): string[] {

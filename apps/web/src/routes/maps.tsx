@@ -4,7 +4,7 @@ import { LOCATION_SUBTITLE, MapEmbed, mapSubtitle } from '../components/rooms/Ma
 import { MapLocationControl } from '../components/rooms/MapLocationControl';
 import { PageHeader } from '../components/ui/PageHeader';
 import { mapUrlForCoordinates } from '../lib/maps';
-import { useMapLocation } from '../lib/useMapLocation';
+import { useMapLocation } from '../lib/use-map-location';
 
 export const Route = createFileRoute('/maps')({
   component: MapsPage,

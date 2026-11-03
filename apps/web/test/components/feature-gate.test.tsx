@@ -9,10 +9,10 @@ import {
   RouterProvider,
 } from '@tanstack/react-router';
 import type { ReactNode } from 'react';
-import { AuthProvider } from '../src/lib/auth-context';
-import { clearStoredAuth, setStoredAuth } from '../src/lib/auth-store';
-import { FeatureGate, RequireTenancy } from '../src/components/boarder/FeatureGate';
-import type { AuthUser } from '../src/lib/types';
+import { AuthProvider } from '../../src/lib/auth-context';
+import { clearStoredAuth, setStoredAuth } from '../../src/lib/auth-store';
+import { FeatureGate, RequireTenancy } from '../../src/components/boarder/FeatureGate';
+import type { AuthUser } from '../../src/lib/types';
 
 // Auto-cleanup isn't registered in this environment; unmount between tests so
 // queries never see elements from a previous render.

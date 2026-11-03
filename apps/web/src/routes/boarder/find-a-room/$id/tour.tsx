@@ -11,7 +11,7 @@ import { ApiRequestError } from '../../../../lib/api/http';
 import { createApplication } from '../../../../lib/api/boarder';
 import { getRoomDetail } from '../../../../lib/api/public';
 import { useAuth } from '../../../../lib/auth-context';
-import { BOARDER_STATUS_KEY } from '../../../../lib/useBoarderNav';
+import { BOARDER_STATUS_KEY } from '../../../../lib/use-boarder-nav';
 
 const TIME_SLOTS = [
   'Morning (9:00 AM – 12:00 PM)',

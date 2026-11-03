@@ -10,18 +10,18 @@ import {
   USER_LOCATION_MAP_ZOOM,
   mapUrlForCoordinates,
   osmEmbedUrl,
-} from '../src/lib/maps';
+} from '../../src/lib/maps';
 import {
   GEOLOCATION_TIMEOUT_MS,
   LOCATION_OPT_IN_KEY,
   hasLocationOptIn,
   type UserCoordinates,
-} from '../src/lib/geolocation';
-import { useMapLocation } from '../src/lib/useMapLocation';
-import { mapSubtitle } from '../src/components/rooms/MapEmbed';
-import { MAP_MODAL_TITLE } from '../src/components/rooms/MapModal';
+} from '../../src/lib/geolocation';
+import { useMapLocation } from '../../src/lib/use-map-location';
+import { mapSubtitle } from '../../src/components/rooms/MapEmbed';
+import { MAP_MODAL_TITLE } from '../../src/components/rooms/MapModal';
 
-const SRC_DIR = join(import.meta.dir, '..', 'src');
+const SRC_DIR = join(import.meta.dir, '../..', 'src');
 
 /** Every `.ts`/`.tsx` file under `src`, so a regression can't hide in an unread file. */
 function sourceFiles(dir: string): string[] {

@@ -12,7 +12,7 @@ import { Modal } from '../../components/ui/Modal';
 import { Spinner } from '../../components/ui/Spinner';
 import { getBoarderAnnouncements, viewAnnouncement } from '../../lib/api/boarder';
 import { useAuth } from '../../lib/auth-context';
-import { useBoarderNav } from '../../lib/useBoarderNav';
+import { useBoarderNav } from '../../lib/use-boarder-nav';
 import type { Announcement } from '../../lib/types';
 
 export const Route = createFileRoute('/boarder/announcements')({

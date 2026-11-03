@@ -4,7 +4,7 @@ import { useAuth } from '../../lib/auth-context';
 import { accountHomeEntry } from '../../lib/nav';
 import type { AuthUser } from '../../lib/types';
 import { setPendingToast } from '../../lib/toast';
-import { useBoarderStatus } from '../../lib/useBoarderNav';
+import { useBoarderStatus } from '../../lib/use-boarder-nav';
 import { Avatar } from '../ui/Avatar';
 import { Icon } from '../ui/Icon';
 

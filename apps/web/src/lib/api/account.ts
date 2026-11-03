@@ -1,5 +1,11 @@
 import { getApiBaseUrl } from '../config';
-import type { OnboardingStatusResponse, ProfileResponse, UpdateProfileInput } from '../types';
+import type {
+  NotificationPreferences,
+  NotificationPreferencesResponse,
+  OnboardingStatusResponse,
+  ProfileResponse,
+  UpdateProfileInput,
+} from '../types';
 import { apiFetch } from './http';
 
 const base = () => getApiBaseUrl();
@@ -27,6 +33,25 @@ export async function uploadAvatar(token: string, file: File): Promise<ProfileRe
     body: form,
   });
   return (await response.json()) as ProfileResponse;
+}
+
+export function getNotificationPreferences(
+  token: string
+): Promise<NotificationPreferencesResponse> {
+  return apiFetch<NotificationPreferencesResponse>(base(), '/api/users/notification-preferences', {
+    headers: { Authorization: `Bearer ${token}` },
+  });
+}
+
+export function updateNotificationPreferences(
+  token: string,
+  preferences: NotificationPreferences
+): Promise<NotificationPreferencesResponse> {
+  return apiFetch<NotificationPreferencesResponse>(base(), '/api/users/notification-preferences', {
+    method: 'PUT',
+    headers: { Authorization: `Bearer ${token}` },
+    body: JSON.stringify(preferences),
+  });
 }
 
 export function getOnboardingStatus(token: string): Promise<OnboardingStatusResponse> {

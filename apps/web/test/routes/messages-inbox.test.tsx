@@ -2,7 +2,7 @@ import { afterEach, expect, test } from 'bun:test';
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react';
-import { MessageComposer } from '../src/components/messages/MessageComposer';
+import { MessageComposer } from '../../src/components/messages/MessageComposer';
 import {
   MAX_MESSAGE_IMAGES,
   composerError,
@@ -15,8 +15,8 @@ import {
   notificationThreadId,
   relativeTime,
   unreadTotal,
-} from '../src/lib/messages';
-import type { MessageThread, ThreadMessage } from '../src/lib/types';
+} from '../../src/lib/messages';
+import type { MessageThread, ThreadMessage } from '../../src/lib/types';
 
 // Auto-cleanup isn't registered in this environment; unmount between tests so
 // queries never see elements from a previous render.
@@ -24,7 +24,7 @@ afterEach(() => cleanup());
 
 /** Reads one source file under `apps/web/src`, for the contract assertions below. */
 function source(...parts: string[]): string {
-  return readFileSync(join(import.meta.dir, '..', 'src', ...parts), 'utf8');
+  return readFileSync(join(import.meta.dir, '../..', 'src', ...parts), 'utf8');
 }
 
 function message(overrides: Partial<ThreadMessage>): ThreadMessage {
@@ -239,5 +239,5 @@ test('the bell deep-links message notifications without bodies (R9)', () => {
 
 test('the nav badge reads the shared unread total (R9)', () => {
   expect(source('components', 'layout', 'Sidebar.tsx')).toContain('useUnreadMessages');
-  expect(source('lib', 'useUnreadMessages.ts')).toContain('MESSAGE_UNREAD_KEY');
+  expect(source('lib', 'use-unread-messages.ts')).toContain('MESSAGE_UNREAD_KEY');
 });

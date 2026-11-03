@@ -2,9 +2,9 @@ import { test, expect, afterEach } from 'bun:test';
 import { cleanup, fireEvent, render, screen } from '@testing-library/react';
 import { useState } from 'react';
 
-import { ConfirmDialog } from '../src/components/ui/ConfirmDialog';
-import { Modal } from '../src/components/ui/Modal';
-import { MapModal } from '../src/components/rooms/MapModal';
+import { ConfirmDialog } from '../../src/components/ui/ConfirmDialog';
+import { Modal } from '../../src/components/ui/Modal';
+import { MapModal } from '../../src/components/rooms/MapModal';
 
 /**
  * The shared dialog's behaviour, added by spec `find-a-room-map-modal` (D9/D14).

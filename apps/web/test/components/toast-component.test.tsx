@@ -1,6 +1,6 @@
 import { afterEach, test, expect } from 'bun:test';
 import { cleanup, render, screen, fireEvent } from '@testing-library/react';
-import { ToastStack } from '../src/components/ui/Toast';
+import { ToastStack } from '../../src/components/ui/Toast';
 
 // Auto-cleanup isn't registered in this environment; unmount between tests so
 // queries never see elements from a previous render.
