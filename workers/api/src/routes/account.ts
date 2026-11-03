@@ -15,6 +15,11 @@ import { uploadFilesToUploadThing } from '../lib/uploadthing';
 import { isJsonRecord, readJsonObject, type JsonRecord } from '../lib/validation';
 import { z } from 'zod';
 import {
+  findNotificationPreferences,
+  saveNotificationPreferences,
+  type NotificationPreferences,
+} from '../repositories/notification-preferences';
+import {
   ensureBoarderProfile,
   findPasswordResetByCode,
   findPasswordResetByIdAndEmail,
@@ -32,6 +37,7 @@ import {
   updateUserAvatarUrl,
   updateUserProfile,
   ensureLandlordProfile,
+  type UserProfileRow,
 } from '../repositories/account';
 import {
   determineBoarderStatus,
@@ -49,6 +55,24 @@ function stringField(body: JsonRecord, field: string): string {
   const value = body[field];
 
   return typeof value === 'string' ? value.trim() : '';
+}
+
+function booleanField(body: JsonRecord, field: string): boolean | null {
+  const value = body[field];
+
+  return typeof value === 'boolean' ? value : null;
+}
+
+/**
+ * SQLite returns the sign-in flags as 0/1; the client only ever sees booleans.
+ * The hash and Google ID themselves stay server-side.
+ */
+function profilePayload(user: UserProfileRow): Record<string, unknown> {
+  return {
+    ...user,
+    has_password: Boolean(user.has_password),
+    google_connected: Boolean(user.google_connected),
+  };
 }
 
 function normalizeEmail(value: unknown): string | null {
@@ -159,7 +183,7 @@ async function handleProfile(c: Context<{ Bindings: Env }>) {
     user.boarder_status = await determineBoarderStatus(db, Number(user.id));
   }
 
-  return jsonResponse({ user });
+  return jsonResponse({ user: profilePayload(user) });
 }
 
 async function handleUpdateProfile(c: Context<{ Bindings: Env }>) {
@@ -192,7 +216,7 @@ async function handleUpdateProfile(c: Context<{ Bindings: Env }>) {
 
   return jsonResponse({
     message: 'Profile updated successfully',
-    user: updated,
+    user: updated ? profilePayload(updated) : updated,
   });
 }
 
@@ -276,6 +300,38 @@ async function handleChangePassword(c: Context<{ Bindings: Env }>) {
   await updatePasswordHash(db, authUser.user_id, await hash(newPassword, 10));
 
   return jsonResponse({ message: 'Password updated successfully' });
+}
+
+async function handleGetNotificationPreferences(c: Context<{ Bindings: Env }>) {
+  const db = requireD1(c.env);
+  const authUser = await requireUser(c);
+
+  return jsonResponse({
+    preferences: await findNotificationPreferences(db, authUser.user_id),
+  });
+}
+
+async function handleUpdateNotificationPreferences(c: Context<{ Bindings: Env }>) {
+  const db = requireD1(c.env);
+  const authUser = await requireUser(c);
+  const body = await readJsonObject(c.req.raw);
+  const applicationUpdates = booleanField(body, 'application_updates');
+  const messages = booleanField(body, 'messages');
+  const announcements = booleanField(body, 'announcements');
+
+  if (applicationUpdates === null || messages === null || announcements === null) {
+    return errorResponse(400, 'Invalid notification preferences');
+  }
+
+  const preferences: NotificationPreferences = {
+    application_updates: applicationUpdates,
+    messages,
+    announcements,
+  };
+
+  return jsonResponse({
+    preferences: await saveNotificationPreferences(db, authUser.user_id, preferences),
+  });
 }
 
 async function handleForgotPassword(c: Context<{ Bindings: Env }>) {
@@ -643,6 +699,8 @@ accountRoutes.put('/api/users/profile', handleUpdateProfile);
 accountRoutes.patch('/api/users/profile', handleUpdateProfile);
 accountRoutes.post('/api/users/avatar', handleAvatarUpload);
 accountRoutes.post('/auth/change-password', handleChangePassword);
+accountRoutes.get('/api/users/notification-preferences', handleGetNotificationPreferences);
+accountRoutes.put('/api/users/notification-preferences', handleUpdateNotificationPreferences);
 accountRoutes.post('/auth/forgot-password', handleForgotPassword);
 accountRoutes.post('/auth/verify-reset-code', handleVerifyResetCode);
 accountRoutes.post('/auth/resend-reset-code', handleResendResetCode);

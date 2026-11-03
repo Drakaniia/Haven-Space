@@ -152,6 +152,32 @@ function insertUtility(sqlite: Database, dueDate: string, amount: number): numbe
   return Number(statement.lastInsertRowid ?? 0);
 }
 
+function insertSubmission(
+  sqlite: Database,
+  chargeId: number,
+  input: { status?: string; amount?: number; createdAt?: string } = {}
+): number {
+  const statement = sqlite
+    .prepare(
+      `
+        INSERT INTO payment_submissions (
+          payment_id, submitted_by, amount, payment_method, reference_number, proof_url,
+          status, created_at, updated_at
+        )
+        VALUES (?, 2, ?, 'gcash', '8842', 'https://example.com/proof.png', ?, ?, ?)
+      `
+    )
+    .run(
+      chargeId,
+      input.amount ?? 6500,
+      input.status ?? 'pending',
+      input.createdAt ?? '2026-10-08 02:42:00',
+      input.createdAt ?? '2026-10-08 02:42:00'
+    );
+
+  return Number(statement.lastInsertRowid ?? 0);
+}
+
 async function tracker(env: Env, query = ''): Promise<{
   rows: Array<Record<string, unknown>>;
   summary: Record<string, number>;
@@ -225,6 +251,55 @@ describe('tracker rows', () => {
     const byStatus = await tracker(env, '?status=no_charge');
 
     expect(byStatus.rows).toHaveLength(0);
+  });
+
+  it('derives the claim’s own charge, the rejected-claim state and the reminder stamp (D3/D40/D41)', async () => {
+    const { sqlite, env } = setup();
+    const rentId = insertCharge(sqlite, { dueDate: addDays(manilaToday(), -4) });
+
+    expect((await tracker(env)).rows[0].reminder_sent_at).toBeNull();
+
+    // A pending proof hands the row to the landlord, with that charge's id.
+    insertSubmission(sqlite, rentId);
+    const pending = (await tracker(env)).rows[0];
+
+    expect(pending.has_pending_claim).toBe(true);
+    expect(pending.pending_claim_charge_id).toBe(rentId);
+    expect(pending.has_rejected_claim).toBe(false);
+
+    // Rejecting it produces the derived "Payment issue" state.
+    sqlite
+      .prepare(
+        `UPDATE payment_submissions
+            SET status = 'rejected', verified_by = 3,
+                verified_at = '2026-10-09 03:00:00', rejection_reason = 'Blurry proof'
+          WHERE payment_id = ?`
+      )
+      .run(rentId);
+    const rejected = (await tracker(env)).rows[0];
+
+    expect(rejected.has_pending_claim).toBe(false);
+    expect(rejected.has_rejected_claim).toBe(true);
+
+    // A newer proof clears it — the label only lasts until the tenant acts.
+    insertSubmission(sqlite, rentId, { createdAt: '2026-10-11 02:42:00' });
+    const again = (await tracker(env)).rows[0];
+
+    expect(again.has_rejected_claim).toBe(false);
+    expect(again.pending_claim_charge_id).toBe(rentId);
+  });
+
+  it('points a utility claim at its own charge, not at the rent cycle (L4)', async () => {
+    const { sqlite, env } = setup();
+    insertCharge(sqlite, { dueDate: addDays(manilaToday(), 5) });
+    const utilityId = insertUtility(sqlite, addDays(manilaToday(), 5), 800);
+    insertSubmission(sqlite, utilityId, { amount: 800 });
+
+    const row = (await tracker(env)).rows[0];
+
+    expect(row.has_pending_claim).toBe(true);
+    expect(row.pending_claim_charge_id).toBe(utilityId);
+    expect(row.has_rejected_claim).toBe(false);
   });
 
   it('scopes the tracker to the caller’s properties', async () => {

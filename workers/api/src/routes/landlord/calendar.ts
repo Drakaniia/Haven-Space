@@ -10,6 +10,7 @@ import {
   listCalendarEvents,
   parseCalendarTypes,
 } from '../../repositories/landlord-calendar';
+import { finalizeDueLeaveRequests } from '../../repositories/tenancy';
 import { parsePositiveInt, requireLandlord } from './shared';
 
 /**
@@ -61,6 +62,7 @@ async function handleLandlordCalendar(c: Context<{ Bindings: Env }>) {
     }
   }
 
+  await finalizeDueLeaveRequests(db, { landlordId: user.user_id });
   const result = await listCalendarEvents(db, user.user_id, {
     from,
     to,

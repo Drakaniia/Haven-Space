@@ -1,6 +1,7 @@
 import { Hono } from 'hono';
 
 import type { Env } from '../../env';
+import activityRoutes from './activity';
 import boardersRoutes from './boarders';
 import calendarRoutes from './calendar';
 import dashboardRoutes from './dashboard';
@@ -18,6 +19,7 @@ landlordRoutes.route('/api/landlord', roomsRoutes);
 landlordRoutes.route('/api/landlord', boardersRoutes);
 landlordRoutes.route('/api/landlord', dashboardRoutes);
 landlordRoutes.route('/api/landlord', calendarRoutes);
+landlordRoutes.route('/api/landlord', activityRoutes);
 landlordRoutes.route('/api/landlord', invitationsRoutes);
 landlordRoutes.route('/api/landlord', verificationRoutes);
 

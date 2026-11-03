@@ -1,4 +1,4 @@
-import type { AuthorizedLandlordRow } from '../property-access.js';
+import type { AuthorizedLandlordRow } from '../property-access/index.js';
 export interface LandlordPropertyListRow {
   id: number;
   title: string;

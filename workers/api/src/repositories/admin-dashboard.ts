@@ -1,4 +1,4 @@
-import { listPropertyCoverPhotos } from './landlord/properties-photos.js';
+import { listPropertyCoverPhotos } from './landlord-properties/properties-photos.js';
 
 export interface AdminSummary {
   counts: {

@@ -79,12 +79,15 @@ function roleVisibleTypes(role: string): string[] | null {
       // A boarder's payment claim needs the landlord's decision (spec
       // `payments-feature` §8.1).
       'payment_submitted',
+      // An approved tenant left before the agreed date (spec `leave-now` §4.5).
+      'boarder_left_early',
     ];
   }
 
   if (role === 'boarder') {
     return [
       'application_accepted',
+      'leave_request_approved',
       'announcement',
       'message',
       // Payment reminders and decisions (spec `payments-feature` §8.1).

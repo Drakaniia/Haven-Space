@@ -3,7 +3,7 @@ import {
   accessiblePropertyClause,
   listAuthorizedLandlords,
   type AuthorizedLandlordRow,
-} from '../property-access.js';
+} from '../property-access/index.js';
 import type {
   LandlordPropertyListRow,
   LandlordPropertyDetailRow,

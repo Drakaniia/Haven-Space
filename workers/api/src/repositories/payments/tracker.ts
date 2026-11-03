@@ -64,6 +64,21 @@ export interface TrackerRow {
   amount_due: number;
   last_payment: TrackerLastPayment | null;
   has_pending_claim: boolean;
+  /**
+   * The charge that actually holds a pending claim — often the rent cycle, but a
+   * utility claim lands here instead. The review drawer opens *this* charge, so
+   * "Needs review" can never point at a charge with nothing to review
+   * (spec `landlord-payments-monitoring` D40).
+   */
+  pending_claim_charge_id: number | null;
+  /**
+   * The open rent charge's newest submission was rejected and nothing newer has
+   * arrived — the derived "Payment issue" state (spec
+   * `landlord-payments-monitoring` D3/D38). A new proof clears it.
+   */
+  has_rejected_claim: boolean;
+  /** When the landlord last sent this cycle's reminder, so the composer can say so (D41). */
+  reminder_sent_at: string | null;
   other_open_charges: number;
   can_remind: boolean;
 }
@@ -364,6 +379,24 @@ export async function listTrackerRows(
       charge.submissions.some(item => item.status === 'pending')
     );
 
+    // The claim's own charge id — the review drawer opens the charge that has
+    // something to review, which is not always the rent cycle (D40).
+    const pendingClaimCharge = charges.find(charge =>
+      charge.submissions.some(item => item.status === 'pending')
+    );
+
+    // "Rejected" is about the open **rent** charge (a rejected utility claim must
+    // never repaint a rent row) and only until something newer arrives: a pending
+    // proof outranks it, which is exactly the promise the label makes (D3).
+    const openRentSubmissions = openRent?.submissions ?? [];
+    const latestOnOpenRent =
+      openRentSubmissions.length > 0
+        ? openRentSubmissions[openRentSubmissions.length - 1]
+        : null;
+    const hasRejectedClaim =
+      !openRentSubmissions.some(item => item.status === 'pending') &&
+      latestOnOpenRent?.status === 'rejected';
+
     const row: TrackerRow = {
       application_id: applicationId,
       boarder_id: Number(tenancy.boarder_id),
@@ -386,6 +419,9 @@ export async function listTrackerRows(
       amount_due: recentDue(openRent),
       last_payment: lastPaymentOf(charges),
       has_pending_claim: hasPendingClaim,
+      pending_claim_charge_id: pendingClaimCharge ? Number(pendingClaimCharge.id) : null,
+      has_rejected_claim: hasRejectedClaim,
+      reminder_sent_at: openRent?.reminder_sent_at ?? null,
       other_open_charges: charges.filter(
         charge =>
           charge.charge_type !== 'rent' &&

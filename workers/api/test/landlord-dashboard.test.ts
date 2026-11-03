@@ -73,6 +73,7 @@ describe('landlord dashboard stats routes', () => {
       createSequenceEnv(
         [
           { first: landlordUser },
+          { all: [] },
           { first: { total_rooms: 4, occupied_rooms: 3, monthly_revenue: 13500 } },
           { first: { upcoming_renewals: 2 } },
           // Revenue is now *collected* money, so the ledger decides it (spec F6).
@@ -127,7 +128,7 @@ describe('landlord dashboard stats routes', () => {
         },
       },
     });
-    expect(capturedBinds).toEqual([[3], [3, 3], [3, 3], [3, 3], [501]]);
+    expect(capturedBinds).toEqual([[3], [3, 3], [3, 3], [3, 3], [3, 3], [501]]);
   });
 
   it('returns zeroed dashboard stats when the landlord has no rooms', async () => {
@@ -140,6 +141,7 @@ describe('landlord dashboard stats routes', () => {
       },
       createSequenceEnv([
         { first: landlordUser },
+        { all: [] },
         { first: { total_rooms: 0, occupied_rooms: null, monthly_revenue: null } },
         { first: { upcoming_renewals: 0 } },
         { all: [] },
@@ -184,6 +186,7 @@ describe('landlord dashboard stats routes', () => {
       },
       createSequenceEnv([
         { first: landlordUser },
+        { all: [] },
         { first: { total_rooms: 3, occupied_rooms: 1, monthly_revenue: 4500 } },
         { first: { upcoming_renewals: 1 } },
         { all: [] },
@@ -223,6 +226,7 @@ describe('landlord dashboard stats routes', () => {
       },
       createSequenceEnv([
         { first: landlordUser },
+        { all: [] },
         { first: { total_rooms: 2, occupied_rooms: 1, monthly_revenue: 4500 } },
         { first: { upcoming_renewals: 1 } },
         {

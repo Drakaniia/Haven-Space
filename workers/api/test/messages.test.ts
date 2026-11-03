@@ -47,7 +47,7 @@ function createSqliteD1(db: Database): D1Database {
             },
           };
         },
-      }) as unknown as D1PreparedStatement,
+      } as unknown as D1PreparedStatement),
   } as unknown as D1Database;
 }
 
@@ -410,9 +410,9 @@ describe('messages: sending, unread and blocks', () => {
     const threadId = await openInquiry();
 
     expect((await get(`/api/messages/threads/${threadId}`, CARA)).status).toBe(403);
-    expect((await post(`/api/messages/threads/${threadId}/messages`, CARA, { body: 'hi' })).status).toBe(
-      403
-    );
+    expect(
+      (await post(`/api/messages/threads/${threadId}/messages`, CARA, { body: 'hi' })).status
+    ).toBe(403);
     expect((await del(`/api/messages/threads/${threadId}`, CARA)).status).toBe(403);
     expect((await get('/api/messages/threads/9999', BENNY)).status).toBe(404);
   });
@@ -483,6 +483,30 @@ describe('messages: notifications', () => {
     // Admins are metadata-only: no message rows reach the admin bell (D9/R12).
     const adminBell = await get('/api/notifications', 1);
     expect(((await adminBell.json()) as { data: unknown[] }).data).toHaveLength(0);
+  });
+
+  it('skips the bell row for a recipient who muted messages', async () => {
+    const sqlite = setup();
+    sqlite.run(`INSERT INTO notification_preferences (user_id, messages) VALUES (?, 0)`, [LARA]);
+    const threadId = await openInquiry();
+
+    const sent = await post(`/api/messages/threads/${threadId}/messages`, BENNY, {
+      body: 'Muted but delivered',
+    });
+    expect(sent.status).toBe(201);
+
+    // The message itself is unaffected — only the bell row is suppressed.
+    expect(sqlite.query('SELECT COUNT(*) AS total FROM thread_messages').get()).toEqual({
+      total: 1,
+    });
+
+    const landlordBell = await get('/api/notifications', LARA);
+    expect(((await landlordBell.json()) as { data: unknown[] }).data).toHaveLength(0);
+
+    // The other direction still notifies: Benny has no row, so defaults apply.
+    await post(`/api/messages/threads/${threadId}/messages`, LARA, { body: 'Reply' });
+    const boarderBell = await get('/api/notifications', BENNY);
+    expect(((await boarderBell.json()) as { data: unknown[] }).data).toHaveLength(1);
   });
 
   it('rate-limits a flood inside one conversation', async () => {

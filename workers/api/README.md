@@ -101,6 +101,7 @@ they are not PHP files and do not require a PHP runtime.
 - `POST /api/boarder/update-onboarding`
 - `GET /api/boarder/tenancy`
 - `POST /api/boarder/leave-request`
+- `POST /api/boarder/leave-now`
 - `GET /api/boarder/applications`
 - `POST /api/boarder/applications`
 - `GET /api/boarder/applications/:id`
@@ -123,6 +124,7 @@ they are not PHP files and do not require a PHP runtime.
 - `GET /api/landlord/dashboard-stats`
 - `GET /api/landlord/dashboard-stats`
 - `GET /api/landlord/dashboard/stats`
+- `GET /api/landlord/activity?from=...&to=...&propertyId=...&types=...&limit=...&offset=...`
 - `GET /api/landlord/boarders?propertyId=...`
 - `GET /api/landlord/boarders?propertyId=...`
 - `POST /api/landlord/approve-leave-request`

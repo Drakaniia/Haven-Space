@@ -1,3 +1,4 @@
+import { mutedRecipientIds } from './notification-preferences';
 import { accessiblePropertyClause } from './property-access';
 
 export interface AnnouncementRow {
@@ -498,8 +499,15 @@ export async function createAnnouncementNotifications(
   title: string
 ): Promise<void> {
   const metadata = JSON.stringify({ announcement_id: announcementId, landlord_id: landlordId });
+  // One query for the whole fan-out: muting is per user and the defaults (row
+  // absent) are announcements-on (spec `settings-signin-method` §7.3).
+  const muted = await mutedRecipientIds(db, boarderIds, 'announcements');
 
   for (const boarderId of boarderIds) {
+    if (muted.has(Number(boarderId))) {
+      continue;
+    }
+
     await db
       .prepare(
         `

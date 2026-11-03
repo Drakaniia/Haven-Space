@@ -7,6 +7,8 @@
  * `side` so a participant can never see a half of the pair they are not in.
  */
 
+import { isNotificationMuted } from './notification-preferences';
+
 export type MessageSide = 'landlord' | 'boarder';
 
 export interface MessageThreadRow {
@@ -154,10 +156,7 @@ export async function countRecentBoarderThreads(
 }
 
 /** Messages sent in a thread during the last minute — the D23 in-thread rate cap. */
-export async function countRecentThreadMessages(
-  db: D1Database,
-  threadId: number
-): Promise<number> {
+export async function countRecentThreadMessages(db: D1Database, threadId: number): Promise<number> {
   const row = await db
     .prepare(
       `
@@ -691,6 +690,12 @@ export async function insertMessageNotification(
     .first<{ account_status: string }>();
 
   if (recipient && ['suspended', 'banned'].includes(recipient.account_status)) {
+    return;
+  }
+
+  // Muted Messages suppresses the bell row only — the message itself is already
+  // stored and still reaches the inbox (spec `settings-signin-method` §7.3).
+  if (await isNotificationMuted(db, input.recipientId, 'message')) {
     return;
   }
 

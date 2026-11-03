@@ -19,6 +19,7 @@ import {
   findLandlordRoomProperty,
   getLandlordManagedRoom,
 } from '../../repositories/landlord-rooms';
+import { finalizeDueLeaveRequests } from '../../repositories/tenancy';
 import {
   dateStringFromBody,
   floatValue,
@@ -49,6 +50,9 @@ async function handleListLandlordBoarders(c: Context<{ Bindings: Env }>) {
     return errorResponse(404, 'Property not found');
   }
 
+  // Close approved leaves whose date has arrived before listing, so an old
+  // "Leaving approved" row never lingers (spec `approve-leave-request` §4.2).
+  await finalizeDueLeaveRequests(db, { landlordId: user.user_id });
   const boarders = await listLandlordBoarders(db, propertyId, user.user_id);
 
   return jsonResponse({

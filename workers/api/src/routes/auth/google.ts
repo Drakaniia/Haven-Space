@@ -113,6 +113,10 @@ export async function formatUserResponse(db: D1Database, user: UserAccountRow) {
     account_status: user.account_status,
     avatar_url: user.avatar_url,
     phone_number: user.phone_number,
+    // Settings decides Google vs password from these; the hash and Google ID
+    // never leave the server (spec `settings-signin-method`).
+    has_password: Boolean(user.password_hash),
+    google_connected: Boolean(user.google_id),
     verification_status:
       user.role === 'landlord' ? (user.is_verified ? 'approved' : 'pending') : null,
   };

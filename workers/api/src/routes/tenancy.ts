@@ -10,15 +10,21 @@ import {
   buildLeaveMessage,
   createLeaveConversation,
   createLeaveMessage,
-  declinePendingLeaveRequest,
+  endApprovedLeaveNow,
+  finalizeDueLeaveRequests,
   findBoarderName,
   findCurrentTenancy,
   findLeaveConversation,
   findPendingLeaveRequest,
+  findUserName,
   formatTenancy,
+  notifyBoarderOfLeaveApproval,
+  notifyLandlordOfEarlyMoveOut,
+  outstandingBalanceForApplication,
   submitLeaveRequest,
   touchConversation,
 } from '../repositories/tenancy';
+import { manilaToday } from '../repositories/payments/helpers';
 
 const tenancyRoutes = new Hono<{ Bindings: Env }>();
 
@@ -85,6 +91,9 @@ async function requireLandlord(
 tenancyRoutes.get('/api/boarder/tenancy', async c => {
   const db = requireD1(c.env);
   const user = await authorizeUser(db, c.req.raw, ['boarder'], c.env.JWT_SECRET);
+  // A leave whose date has passed is closed on the same read that would show it
+  // (spec `approve-leave-request` §4.2).
+  await finalizeDueLeaveRequests(db, { boarderId: user.user_id });
   const tenancy = await findCurrentTenancy(db, user.user_id);
 
   if (!tenancy) {
@@ -95,9 +104,11 @@ tenancyRoutes.get('/api/boarder/tenancy', async c => {
     });
   }
 
+  const balance = await outstandingBalanceForApplication(db, Number(tenancy.application_id));
+
   return jsonResponse({
     success: true,
-    data: formatTenancy(tenancy),
+    data: formatTenancy(tenancy, new Date(), balance),
   });
 });
 
@@ -139,6 +150,15 @@ tenancyRoutes.post('/api/boarder/leave-request', async c => {
     );
   }
 
+  if (tenancy.leave_request_status === 'approved') {
+    return errorResponse(
+      409,
+      `Your leave request has already been approved. Your tenancy ends on ${
+        tenancy.intended_leave_date ?? 'the approved date'
+      }.`
+    );
+  }
+
   const boarderName = [boarder.first_name, boarder.last_name].filter(Boolean).join(' ').trim();
   const leaveMessage = buildLeaveMessage(
     boarderName,
@@ -171,6 +191,8 @@ tenancyRoutes.post('/api/boarder/leave-request', async c => {
 
   await submitLeaveRequest(db, Number(tenancy.application_id), user.user_id, reason, leaveDate);
 
+  const outstanding = await outstandingBalanceForApplication(db, Number(tenancy.application_id));
+
   return jsonResponse({
     success: true,
     message: 'Leave request sent to landlord successfully',
@@ -183,6 +205,10 @@ tenancyRoutes.post('/api/boarder/leave-request', async c => {
         .trim(),
       property_name: tenancy.property_name,
       leave_date: leaveMessage.formattedDate,
+      // Approval is gated on this, so the tenant learns about the debt at the
+      // moment they file the request rather than when the landlord refuses
+      // (spec `approve-leave-request` §4.7).
+      outstanding_amount: outstanding.outstanding_balance,
     },
   });
 });
@@ -208,7 +234,61 @@ tenancyRoutes.post('/api/landlord/approve-leave-request', async c => {
     return errorResponse(404, 'Leave request not found or already processed');
   }
 
-  await approvePendingLeaveRequest(db, applicationId, request.boarder_id, Number(request.room_id));
+  // Unsettled money blocks the approval (spec `approve-leave-request` §4.2.3):
+  // the room is released at approval, so an approval with rent still owed would
+  // leave the debt behind a tenancy nobody can chase. Anything the tenant has
+  // submitted but the landlord has not verified still counts as unsettled.
+  const balance = await outstandingBalanceForApplication(db, applicationId);
+
+  if (balance.outstanding_balance > 0) {
+    return errorResponse(
+      409,
+      `This tenant still owes ₱${balance.outstanding_balance.toLocaleString(
+        'en-PH'
+      )}. Settle or verify payments before approving.`,
+      {
+        code: 'unsettled_balance',
+        details: { outstanding_amount: balance.outstanding_balance },
+      }
+    );
+  }
+
+  const approver = await findUserName(db, user.user_id);
+  const approverName =
+    [approver?.first_name, approver?.last_name].filter(Boolean).join(' ').trim() || 'your landlord';
+
+  const approval = await approvePendingLeaveRequest(db, applicationId, Number(request.room_id), {
+    id: user.user_id,
+    name: approverName,
+  });
+
+  const landlordName = approverName;
+
+  if (request.intended_leave_date) {
+    // Best-effort: a failed message/notification must not turn a completed
+    // approval into an error response (spec `approve-leave-request` §7).
+    try {
+      await notifyBoarderOfLeaveApproval(db, {
+        applicationId,
+        boarderId: request.boarder_id,
+        // The conversation always belongs to the property's owner, so a
+        // manager approving does not spawn a second leave thread; the message
+        // itself is still sent as the person who approved it.
+        landlordId: Number(request.landlord_id),
+        senderId: user.user_id,
+        propertyId: Number(request.property_id),
+        propertyName: request.property_title,
+        landlordName,
+        leaveDate: request.intended_leave_date,
+      });
+    } catch (error) {
+      console.error('Leave approval notification failed', error);
+    }
+  }
+
+  // A leave date that is today or already past has nothing left to wait for
+  // (spec §4.1, decision 15).
+  const finalized = await finalizeDueLeaveRequests(db, { boarderId: request.boarder_id });
 
   return jsonResponse({
     success: true,
@@ -217,18 +297,16 @@ tenancyRoutes.post('/api/landlord/approve-leave-request', async c => {
       application_id: applicationId,
       boarder_name: [request.first_name, request.last_name].filter(Boolean).join(' ').trim(),
       intended_leave_date: request.intended_leave_date,
+      finalized: finalized > 0,
+      approved_at: approval.approvedAt,
+      approved_by_name: approverName,
     },
   });
 });
 
-tenancyRoutes.post('/api/landlord/decline-leave-request', async c => {
+tenancyRoutes.post('/api/boarder/leave-now', async c => {
   const db = requireD1(c.env);
-  const user = await requireLandlord(c);
-
-  if (user instanceof Response) {
-    return user;
-  }
-
+  const user = await authorizeUser(db, c.req.raw, ['boarder'], c.env.JWT_SECRET);
   const body = await readJsonBody(c.req.raw);
   const applicationId = positiveInt(body, 'application_id');
 
@@ -236,21 +314,84 @@ tenancyRoutes.post('/api/landlord/decline-leave-request', async c => {
     return errorResponse(400, 'Application ID is required');
   }
 
-  const request = await findPendingLeaveRequest(db, applicationId, user.user_id);
+  // Close a leave whose approved date has arrived before deciding anything else.
+  await finalizeDueLeaveRequests(db, { boarderId: user.user_id });
 
-  if (!request) {
-    return errorResponse(404, 'Leave request not found or already processed');
+  const tenancy = await findCurrentTenancy(db, user.user_id);
+
+  if (!tenancy) {
+    return errorResponse(404, 'No active tenancy found.');
   }
 
-  await declinePendingLeaveRequest(db, applicationId);
+  if (Number(tenancy.application_id) !== applicationId) {
+    return errorResponse(404, 'Tenancy not found.');
+  }
+
+  if (tenancy.leave_request_status !== 'approved') {
+    return errorResponse(
+      409,
+      'You can only leave now after your landlord approves your leave request.'
+    );
+  }
+
+  if (!tenancy.intended_leave_date) {
+    return errorResponse(409, 'Your leave request does not have an approved leave date.');
+  }
+
+  if (tenancy.intended_leave_date <= manilaToday()) {
+    return errorResponse(
+      409,
+      'Your approved leave date has arrived. This tenancy is already closing.'
+    );
+  }
+
+  const balance = await outstandingBalanceForApplication(db, applicationId);
+
+  if (balance.outstanding_balance > 0) {
+    return errorResponse(
+      409,
+      `You have an outstanding balance of ₱${balance.outstanding_balance.toLocaleString(
+        'en-PH'
+      )}. Settle your fees before you can leave now.`
+    );
+  }
+
+  const ended = await endApprovedLeaveNow(db, applicationId, user.user_id);
+
+  if (!ended) {
+    return errorResponse(409, 'This tenancy has already ended.');
+  }
+
+  const moveOutDate = manilaToday();
+  const boarder = await findBoarderName(db, user.user_id);
+  const boarderName = [boarder?.first_name, boarder?.last_name].filter(Boolean).join(' ').trim();
+
+  // Best-effort: the tenancy has already ended, so a failed bell must not turn
+  // the completed move-out into an error (spec `leave-now` §4.3).
+  try {
+    await notifyLandlordOfEarlyMoveOut(db, {
+      applicationId,
+      landlordId: Number(tenancy.landlord_id),
+      boarderName: boarderName || 'The boarder',
+      propertyId: Number(tenancy.property_id),
+      propertyName: tenancy.property_name,
+      roomId: Number(tenancy.room_id),
+      roomNumber: tenancy.room_number,
+      approvedLeaveDate: tenancy.intended_leave_date,
+      moveOutDate,
+    });
+  } catch (error) {
+    console.error('Early move-out notification failed', error);
+  }
 
   return jsonResponse({
     success: true,
-    message: 'Leave request declined successfully',
+    message: "You've moved out. Your tenancy has ended.",
     data: {
       application_id: applicationId,
-      boarder_name: [request.first_name, request.last_name].filter(Boolean).join(' ').trim(),
-      intended_leave_date: request.intended_leave_date,
+      property_name: tenancy.property_name,
+      room_number: tenancy.room_number,
+      move_out_date: moveOutDate,
     },
   });
 });

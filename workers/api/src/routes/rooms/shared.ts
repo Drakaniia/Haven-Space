@@ -1,12 +1,4 @@
-import { Hono } from 'hono';
-
-import type { Env } from '../env';
-import { requireD1 } from '../lib/d1';
-import { errorResponse, jsonResponse } from '../lib/http';
 import {
-  getPublicListingDetail,
-  listSimilarPublicListings,
-  listPublicListings,
   PLACEHOLDER_IMAGE,
   type DetailPropertyRow,
   type PublicListingFilters,
@@ -14,12 +6,10 @@ import {
   type PropertyPhotoRow,
   type RoomRow,
   type SimilarPropertyRow,
-} from '../repositories/listings';
-import { listPopularLocations, type PopularLocationRow } from '../repositories/locations';
+} from '../../repositories/listings';
+import type { PopularLocationRow } from '../../repositories/locations';
 
-const roomsRoutes = new Hono<{ Bindings: Env }>();
-
-function parseLimit(value: string | null, defaultLimit: number, maxLimit: number): number {
+export function parseLimit(value: string | null, defaultLimit: number, maxLimit: number): number {
   if (value === null) {
     return defaultLimit;
   }
@@ -35,13 +25,15 @@ function parseLimit(value: string | null, defaultLimit: number, maxLimit: number
 
 function cleanLocationName(cityValue: string | null, provinceValue: string | null): string {
   const city = (cityValue ?? '').trim();
+
   const province = (provinceValue ?? '').trim();
+
   const locationName = province && province !== city ? `${city}, ${province}` : city;
 
   return locationName.replace(/^(City of|Municipality of)\s+/i, '').trim();
 }
 
-function formatPopularLocation(location: PopularLocationRow) {
+export function formatPopularLocation(location: PopularLocationRow) {
   const locationName = cleanLocationName(location.city, location.province);
 
   return {
@@ -61,6 +53,7 @@ function parseNumber(value: string | undefined): number | null {
   }
 
   const parsed = Number(value);
+
   return Number.isFinite(parsed) ? parsed : null;
 }
 
@@ -70,10 +63,11 @@ function parseOffset(value: string | undefined): number {
   }
 
   const parsed = Number.parseInt(value, 10);
+
   return Number.isFinite(parsed) ? Math.max(parsed, 0) : 0;
 }
 
-function escapeHtml(value: string | number | null | undefined): string {
+export function escapeHtml(value: string | number | null | undefined): string {
   return String(value ?? '')
     .replace(/&/g, '&amp;')
     .replace(/</g, '&lt;')
@@ -94,12 +88,14 @@ function isNewListing(createdAt: string | null): boolean {
   }
 
   const ageMs = Date.now() - createdDate.getTime();
+
   return ageMs >= 0 && ageMs <= 7 * 24 * 60 * 60 * 1000;
 }
 
 /** Free slots are what tenants can still book in the room (spec D2/R10). */
 function roomOccupancy(room: RoomRow): { capacity: number; occupied: number; freeSlots: number } {
   const capacity = Math.max(Number(room.capacity ?? 1), 1);
+
   const occupied = Math.max(Number(room.occupied ?? 0), 0);
 
   return { capacity, occupied, freeSlots: Math.max(capacity - occupied, 0) };
@@ -107,10 +103,15 @@ function roomOccupancy(room: RoomRow): { capacity: number; occupied: number; fre
 
 function formatRoom(room: RoomRow, property: PublicPropertyRow, photos: string[]) {
   const roomPrice = Number(room.room_price);
+
   const price = Number.isFinite(roomPrice) && roomPrice > 0 ? roomPrice : Number(property.price);
+
   const roomNumber = room.room_number || `Room ${room.id}`;
+
   const roomType = room.room_type || 'Standard Room';
+
   const status = room.status || 'available';
+
   const occupancy = roomOccupancy(room);
 
   return {
@@ -152,15 +153,13 @@ function formatDetailRoom(room: RoomRow, photos: string[]) {
 
 function coverImage(photos: PropertyPhotoRow[]): { image: string; images: string[] } {
   const images = photos.map(photo => photo.photo_url).filter(Boolean);
+
   const cover = photos.find(photo => Number(photo.is_cover) === 1)?.photo_url;
 
-  return {
-    image: cover || images[0] || PLACEHOLDER_IMAGE,
-    images,
-  };
+  return { image: cover || images[0] || PLACEHOLDER_IMAGE, images };
 }
 
-function formatPublicProperty(
+export function formatPublicProperty(
   property: PublicPropertyRow,
   amenities: string[],
   photos: PropertyPhotoRow[],
@@ -176,7 +175,9 @@ function formatPublicProperty(
   const formattedRooms = rooms.map(room =>
     formatRoom(room, property, roomPhotos.get(Number(room.id)) ?? [])
   );
+
   const availableRooms = formattedRooms.filter(room => room.status === 'available').length;
+
   const propertyImages = coverImage(photos);
 
   return {
@@ -262,7 +263,7 @@ function detailImages(photos: PropertyPhotoRow[]): { coverImage: string; images:
   };
 }
 
-function formatListingDetail(
+export function formatListingDetail(
   property: DetailPropertyRow,
   amenities: string[],
   photos: PropertyPhotoRow[],
@@ -277,7 +278,9 @@ function formatListingDetail(
   }
 
   const availableRooms = rooms.filter(room => room.status === 'available').length;
+
   const images = detailImages(photos);
+
   const formattedRooms = rooms.map(room =>
     formatDetailRoom(room, roomPhotos.get(Number(room.id)) ?? [])
   );
@@ -336,7 +339,7 @@ function cheapestRoomPrice(rooms: Array<{ price: number }>): number | null {
   }, null);
 }
 
-function formatSimilarProperty(property: SimilarPropertyRow) {
+export function formatSimilarProperty(property: SimilarPropertyRow) {
   const rating = Number(property.rating);
 
   return {
@@ -353,7 +356,7 @@ function formatSimilarProperty(property: SimilarPropertyRow) {
   };
 }
 
-function publicListingFilters(url: URL): PublicListingFilters {
+export function publicListingFilters(url: URL): PublicListingFilters {
   return {
     search: url.searchParams.get('search')?.trim() ?? '',
     priceMin: parseNumber(url.searchParams.get('price_min') ?? undefined),
@@ -363,82 +366,3 @@ function publicListingFilters(url: URL): PublicListingFilters {
     offset: parseOffset(url.searchParams.get('offset') ?? undefined),
   };
 }
-
-roomsRoutes.get('/api/rooms/public', async c => {
-  const filters = publicListingFilters(new URL(c.req.url));
-  const result = await listPublicListings(requireD1(c.env), filters);
-
-  return jsonResponse({
-    data: {
-      properties: result.properties.map(property =>
-        formatPublicProperty(
-          property,
-          result.amenities.get(Number(property.id)) ?? [],
-          result.propertyPhotos.get(Number(property.id)) ?? [],
-          result.rooms.get(Number(property.id)) ?? [],
-          result.roomPhotos
-        )
-      ),
-      total_count: result.totalCount,
-      limit: filters.limit,
-      offset: filters.offset,
-    },
-  });
-});
-
-roomsRoutes.get('/api/rooms/detail', async c => {
-  const propertyId = Number.parseInt(c.req.query('id') ?? '', 10);
-
-  if (!Number.isFinite(propertyId)) {
-    return errorResponse(400, 'Property ID is required');
-  }
-
-  const detail = await getPublicListingDetail(requireD1(c.env), propertyId);
-
-  if (!detail) {
-    return errorResponse(404, 'Property not found');
-  }
-
-  return jsonResponse({
-    data: formatListingDetail(
-      detail.property,
-      detail.amenities,
-      detail.propertyPhotos,
-      detail.rooms,
-      detail.roomPhotos,
-      detail.landlordProperties
-    ),
-  });
-});
-
-roomsRoutes.get('/api/rooms/similar', async c => {
-  const propertyId = Number.parseInt(c.req.query('id') ?? '', 10);
-
-  if (!Number.isFinite(propertyId)) {
-    return errorResponse(400, 'Property ID is required');
-  }
-
-  const limit = Math.max(parseLimit(c.req.query('limit') ?? null, 3, 10), 1);
-  const properties = await listSimilarPublicListings(requireD1(c.env), propertyId, limit);
-
-  if (!properties) {
-    return errorResponse(404, 'Property not found');
-  }
-
-  return jsonResponse({
-    data: properties.map(formatSimilarProperty),
-  });
-});
-
-roomsRoutes.get('/api/rooms/popular-locations', async c => {
-  const limit = parseLimit(c.req.query('limit') ?? null, 6, 20);
-  const locations = await listPopularLocations(requireD1(c.env), limit);
-
-  return jsonResponse({
-    data: {
-      locations: locations.map(formatPopularLocation).slice(0, limit),
-    },
-  });
-});
-
-export default roomsRoutes;

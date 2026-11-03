@@ -6,6 +6,11 @@ import { join } from 'node:path';
 
 import type { Env, UploadThingUploadResult } from '../src/env';
 import { signJwt } from '../src/lib/auth';
+import {
+  isNotificationMuted,
+  mutedRecipientIds,
+  saveNotificationPreferences,
+} from '../src/repositories/notification-preferences';
 import app from '../src/index';
 
 function runMigrations(db: Database): void {
@@ -286,10 +291,14 @@ describe('account, profile, password, and onboarding routes', () => {
     expect(response.status).toBe(200);
     expect(await response.json()).toEqual({ message: 'Password updated successfully' });
 
-    const row = sqlite.prepare('SELECT password_hash FROM users WHERE id = 2').get() as {
+    const row = sqlite
+      .prepare('SELECT password_hash, password_updated_at FROM users WHERE id = 2')
+      .get() as {
       password_hash: string;
+      password_updated_at: string | null;
     };
     expect(await compare('NewPass123', row.password_hash)).toBe(true);
+    expect(row.password_updated_at).not.toBeNull();
   });
 
   it('stores, verifies, resends, and consumes password reset requests', async () => {
@@ -362,10 +371,14 @@ describe('account, profile, password, and onboarding routes', () => {
     expect(reset.status).toBe(200);
     expect(await reset.json()).toEqual({ message: 'Password has been reset successfully' });
 
-    const row = sqlite.prepare('SELECT password_hash FROM users WHERE id = 2').get() as {
+    const row = sqlite
+      .prepare('SELECT password_hash, password_updated_at FROM users WHERE id = 2')
+      .get() as {
       password_hash: string;
+      password_updated_at: string | null;
     };
     expect(await compare('ResetPass123', row.password_hash)).toBe(true);
+    expect(row.password_updated_at).not.toBeNull();
     expect(
       sqlite
         .prepare('SELECT is_used FROM password_reset_requests WHERE id = ?')
@@ -642,6 +655,238 @@ describe('account, profile, password, and onboarding routes', () => {
       stripe_connect_id: 'acct_123',
       verification_status: 'verified',
     });
+  });
+});
+
+describe('settings: sign-in method and notification preferences', () => {
+  it('reports a password account as password-only', async () => {
+    const sqlite = new Database(':memory:');
+    runMigrations(sqlite);
+    await seedAccountData(sqlite);
+
+    const response = await app.request(
+      'http://localhost/api/users/profile',
+      { headers: { 'X-User-ID': '2' } },
+      createEnv(sqlite)
+    );
+    const body = (await response.json()) as {
+      user: {
+        has_password: boolean;
+        google_connected: boolean;
+        password_updated_at: string | null;
+      };
+    };
+
+    expect(response.status).toBe(200);
+    expect(body.user.has_password).toBe(true);
+    expect(body.user.google_connected).toBe(false);
+    expect(body.user.password_updated_at).toBeNull();
+  });
+
+  it('reports a Google-only account as connected without a password', async () => {
+    const sqlite = new Database(':memory:');
+    runMigrations(sqlite);
+    await seedAccountData(sqlite);
+    // Google signups store an empty hash plus the Google identity.
+    sqlite.run(`UPDATE users SET password_hash = '', google_id = 'google-only-3' WHERE id = 3`);
+
+    const response = await app.request(
+      'http://localhost/api/users/profile',
+      { headers: { 'X-User-ID': '3' } },
+      createEnv(sqlite)
+    );
+    const body = (await response.json()) as {
+      user: { has_password: boolean; google_connected: boolean };
+    };
+
+    expect(response.status).toBe(200);
+    expect(body.user.has_password).toBe(false);
+    expect(body.user.google_connected).toBe(true);
+  });
+
+  it('reports both flags for an account that has a Google link and a password', async () => {
+    const sqlite = new Database(':memory:');
+    runMigrations(sqlite);
+    await seedAccountData(sqlite);
+    sqlite.run(`UPDATE users SET google_id = 'google-linked-2' WHERE id = 2`);
+
+    const response = await app.request(
+      'http://localhost/api/users/profile',
+      { headers: { 'X-User-ID': '2' } },
+      createEnv(sqlite)
+    );
+    const body = (await response.json()) as {
+      user: { has_password: boolean; google_connected: boolean };
+    };
+
+    expect(body.user.has_password).toBe(true);
+    expect(body.user.google_connected).toBe(true);
+  });
+
+  it('never exposes the password hash or Google ID', async () => {
+    const sqlite = new Database(':memory:');
+    runMigrations(sqlite);
+    await seedAccountData(sqlite);
+
+    const response = await app.request(
+      'http://localhost/api/users/profile',
+      { headers: { 'X-User-ID': '2' } },
+      createEnv(sqlite)
+    );
+    const raw = await response.text();
+
+    expect(raw).not.toContain('password_hash');
+    expect(raw).not.toContain('google_id');
+  });
+
+  it('returns defaults without writing a row, then upserts on save', async () => {
+    const sqlite = new Database(':memory:');
+    runMigrations(sqlite);
+    await seedAccountData(sqlite);
+    const env = createEnv(sqlite);
+
+    const defaults = await app.request(
+      'http://localhost/api/users/notification-preferences',
+      { headers: { 'X-User-ID': '2' } },
+      env
+    );
+
+    expect(defaults.status).toBe(200);
+    expect(await defaults.json()).toEqual({
+      preferences: { application_updates: true, messages: true, announcements: false },
+    });
+    expect(sqlite.prepare('SELECT COUNT(*) AS total FROM notification_preferences').get()).toEqual({
+      total: 0,
+    });
+
+    const saved = await app.request(
+      'http://localhost/api/users/notification-preferences',
+      {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json', 'X-User-ID': '2' },
+        body: JSON.stringify({ application_updates: false, messages: true, announcements: true }),
+      },
+      env
+    );
+
+    expect(saved.status).toBe(200);
+    expect(await saved.json()).toEqual({
+      preferences: { application_updates: false, messages: true, announcements: true },
+    });
+
+    const reread = await app.request(
+      'http://localhost/api/users/notification-preferences',
+      { headers: { 'X-User-ID': '2' } },
+      env
+    );
+    expect(await reread.json()).toEqual({
+      preferences: { application_updates: false, messages: true, announcements: true },
+    });
+
+    const secondSave = await app.request(
+      'http://localhost/api/users/notification-preferences',
+      {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json', 'X-User-ID': '2' },
+        body: JSON.stringify({ application_updates: true, messages: false, announcements: false }),
+      },
+      env
+    );
+    expect(secondSave.status).toBe(200);
+    expect(sqlite.prepare('SELECT COUNT(*) AS total FROM notification_preferences').get()).toEqual({
+      total: 1,
+    });
+  });
+
+  it('rejects malformed preference bodies and leaves the stored row alone', async () => {
+    const sqlite = new Database(':memory:');
+    runMigrations(sqlite);
+    await seedAccountData(sqlite);
+    const env = createEnv(sqlite);
+
+    const missingKey = await app.request(
+      'http://localhost/api/users/notification-preferences',
+      {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json', 'X-User-ID': '2' },
+        body: JSON.stringify({ messages: true, announcements: false }),
+      },
+      env
+    );
+    expect(missingKey.status).toBe(400);
+
+    const wrongType = await app.request(
+      'http://localhost/api/users/notification-preferences',
+      {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json', 'X-User-ID': '2' },
+        body: JSON.stringify({
+          application_updates: 'yes',
+          messages: true,
+          announcements: false,
+        }),
+      },
+      env
+    );
+    expect(wrongType.status).toBe(400);
+    expect(sqlite.prepare('SELECT COUNT(*) AS total FROM notification_preferences').get()).toEqual({
+      total: 0,
+    });
+  });
+
+  it('requires a signed-in user for notification preferences', async () => {
+    const sqlite = new Database(':memory:');
+    runMigrations(sqlite);
+    await seedAccountData(sqlite);
+    const env = { ...createEnv(sqlite), APP_ENV: 'production' };
+
+    const response = await app.request(
+      'http://localhost/api/users/notification-preferences',
+      {},
+      env
+    );
+
+    expect(response.status).toBe(401);
+  });
+
+  it('resolves batch mutes against the per-toggle defaults', async () => {
+    const sqlite = new Database(':memory:');
+    runMigrations(sqlite);
+    await seedAccountData(sqlite);
+    const db = createEnv(sqlite).DB!;
+
+    // No rows: announcements default OFF, so both recipients are muted…
+    expect(await mutedRecipientIds(db, [2, 3], 'announcements')).toEqual(new Set([2, 3]));
+    // …while messages default ON, so nobody is.
+    expect(await mutedRecipientIds(db, [2, 3], 'messages')).toEqual(new Set());
+
+    // An explicit opt-in flips one recipient back on.
+    await saveNotificationPreferences(db, 2, {
+      application_updates: true,
+      messages: true,
+      announcements: true,
+    });
+
+    expect(await mutedRecipientIds(db, [2, 3], 'announcements')).toEqual(new Set([3]));
+  });
+
+  it('never mutes the always-on notification types', async () => {
+    const sqlite = new Database(':memory:');
+    runMigrations(sqlite);
+    await seedAccountData(sqlite);
+    const db = createEnv(sqlite).DB!;
+
+    await saveNotificationPreferences(db, 2, {
+      application_updates: false,
+      messages: false,
+      announcements: false,
+    });
+
+    expect(await isNotificationMuted(db, 2, 'payment_overdue')).toBe(false);
+    expect(await isNotificationMuted(db, 2, 'property_invitation')).toBe(false);
+    expect(await isNotificationMuted(db, 2, 'landlord_verification_approved')).toBe(false);
+    expect(await isNotificationMuted(db, 2, 'message')).toBe(true);
+    expect(await isNotificationMuted(db, 2, 'announcement')).toBe(true);
   });
 });
 
