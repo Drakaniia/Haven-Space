@@ -4,7 +4,7 @@
   "type": "module",
   "scripts": {
     "dev": "vite dev",
-    "build": "vite build",
+    "build": "bun ../../scripts/probe/pages-probe.mjs",
     "preview": "vite preview",
     "deploy": "bun run build && bun ../../scripts/build/build-pages.mjs && wrangler pages deploy dist/pages --project-name haven-space --branch main",
     "typecheck": "bun run cf-typegen && tsc --noEmit",
