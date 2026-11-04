@@ -96,7 +96,7 @@ bun run cf:api:deploy
 The frontend defaults to the Worker API:
 
 - local: `http://localhost:8000`
-- production: `https://haven-space-api.floresaybaez574.workers.dev`
+- production: `https://haven-space-api.ovpcasss.workers.dev`
 
 You can override the API URL with:
 

@@ -70,7 +70,7 @@ For Google auth, register both callback URLs as **Authorized redirect URIs** on 
 Console → APIs & Services → Credentials:
 
 ```text
-https://haven-space-api.floresaybaez574.workers.dev/api/auth/google/callback
+https://haven-space-api.ovpcasss.workers.dev/api/auth/google/callback
 http://localhost:8000/api/auth/google/callback
 ```
 
@@ -79,7 +79,7 @@ http://localhost:8000/api/auth/google/callback
 The frontend defaults to:
 
 - local: `http://localhost:8000`
-- production: `https://haven-space-api.floresaybaez574.workers.dev` (set as the `API_BASE_URL` var in `apps/web/wrangler.jsonc`)
+- production: `https://haven-space-api.ovpcasss.workers.dev` (set as the `API_BASE_URL` var in `apps/web/wrangler.jsonc`)
 
 Override it without editing files:
 

@@ -49,7 +49,7 @@ bunx wrangler secret put UPLOADTHING_TOKEN --env=""
 
 Google sign-in/sign-up routes require OAuth credentials from Google Cloud. Set
 the production redirect URI in Google Cloud to the Worker callback URL, for
-example `https://haven-space-api.floresaybaez574.workers.dev/api/auth/google/callback`.
+example `https://haven-space-api.ovpcasss.workers.dev/api/auth/google/callback`.
 
 ```bash
 bunx wrangler secret put GOOGLE_CLIENT_ID --env=""

@@ -1,4 +1,4 @@
-const DEFAULT_WORKER_API_URL = 'https://haven-space-api.floresaybaez574.workers.dev';
+const DEFAULT_WORKER_API_URL = 'https://haven-space-api.ovpcasss.workers.dev';
 const LOCAL_WORKER_API_URL = 'http://localhost:8000';
 const STORAGE_KEY = 'havenSpaceApiBaseUrl';
 
