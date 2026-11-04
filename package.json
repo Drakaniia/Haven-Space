@@ -14,6 +14,7 @@
     "cf:api:deploy": "bun run --cwd workers/api deploy",
     "cf:api:deploy:staging": "bun run --cwd workers/api deploy:staging",
     "cf:api:typecheck": "bun run --cwd workers/api typecheck",
+    "cf:api:migrate:check": "bun scripts/tools/check-migrations.mjs && bun run --cwd workers/api migrate:local --persist-to .wrangler/ci-migrations",
     "cf:api:test": "bun run --cwd workers/api test",
     "web:dev": "bun run --cwd apps/web dev",
     "web:build": "bun run --cwd apps/web build",

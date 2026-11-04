@@ -1,8 +1,8 @@
 name: Checks
 
-# Runs on every push to main and every pull request: typechecks and the web
-# build must pass. Formatting is not enforced in CI (run `bun run format`
-# locally).
+# Runs on every push to main and every pull request: typechecks, the D1
+# migration chain, and the web build must pass. Formatting is not enforced in CI
+# (run `bun run format` locally).
 #
 # The web app (`haven-space` Cloudflare Pages project) is deployed by the
 # Cloudflare git integration (build command + `dist/pages` output dir), which
@@ -40,6 +40,12 @@ jobs:
 
       - name: Typecheck API
         run: bun run cf:api:typecheck
+
+      # Fails when a migration is renamed/renumbered or its SQL is broken: the
+      # chain is applied to a throwaway local D1, so a bad migration is caught
+      # here instead of leaving the deployed database behind the code.
+      - name: Check migrations
+        run: bun run cf:api:migrate:check
 
       - name: Typecheck web
         run: bun run web:typecheck
