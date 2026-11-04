@@ -1,6 +1,5 @@
 import { createFileRoute, Link } from '@tanstack/react-router';
 import { createServerFn } from '@tanstack/react-start';
-import { env } from 'cloudflare:workers';
 import { PublicLayout } from '../../components/layout/PublicLayout';
 import { RoomDetailView } from '../../components/rooms/RoomDetailView';
 import { buttonClasses } from '../../components/ui/Button';
@@ -10,11 +9,11 @@ import type { ListingDetailResponse, SimilarPropertiesResponse } from '../../lib
 
 const loadDetail = createServerFn({ method: 'GET' })
   .validator((id: number) => id)
-  .handler(({ data }) => getRoomDetail(data, env.API_BASE_URL));
+  .handler(({ data }) => getRoomDetail(data));
 
 const loadSimilar = createServerFn({ method: 'GET' })
   .validator((id: number) => id)
-  .handler(({ data }) => getSimilarRooms(data, 3, env.API_BASE_URL));
+  .handler(({ data }) => getSimilarRooms(data, 3));
 
 type RoomLoaderResult =
   | { found: true; detail: ListingDetailResponse; similar: SimilarPropertiesResponse }
