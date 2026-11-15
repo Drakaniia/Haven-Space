@@ -585,6 +585,13 @@ export async function handleGoogleComplete(c: Context<{ Bindings: Env }>): Promi
     return errorResponse(400, 'Invalid role');
   }
 
+  const phoneNumber = stringField(body, 'phoneNumber');
+
+  // Same rule as the email/password landlord sign-up: optional, valid if given.
+  if (role === 'landlord' && phoneNumber && !validatePhilippinePhone(phoneNumber)) {
+    return errorResponse(400, 'Invalid Philippine mobile number format');
+  }
+
   const firstName =
     stringField(body, 'firstName') ||
     (typeof payload.firstName === 'string' && payload.firstName ? payload.firstName : 'Google');
@@ -603,7 +610,7 @@ export async function handleGoogleComplete(c: Context<{ Bindings: Env }>): Promi
     isVerified: role === 'landlord' ? 0 : 1,
     emailVerified: 1,
     boarderStatus: role === 'boarder' ? 'new' : null,
-    phoneNumber: stringField(body, 'phoneNumber') || null,
+    phoneNumber: phoneNumber || null,
   });
 
   if (role === 'landlord') {

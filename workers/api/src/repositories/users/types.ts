@@ -32,6 +32,7 @@ export interface CreateUserInput {
   isVerified: number;
   emailVerified: number;
   boarderStatus: string | null;
+  phoneNumber?: string | null;
 }
 
 export interface CreateGoogleUserInput {

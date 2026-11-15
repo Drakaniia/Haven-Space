@@ -107,8 +107,6 @@ describe('phase 7 flow smoke test', () => {
           city: 'Manila',
           province: 'Metro Manila',
           experienceLevel: 'new',
-          idType: 'passport',
-          idNumber: 'P1234567',
         }),
       },
       env
@@ -119,7 +117,8 @@ describe('phase 7 flow smoke test', () => {
     };
 
     expect(landlordSignup.status).toBe(200);
-    expect(landlordSignupBody.user.account_status).toBe('pending_verification');
+    // Created right away, like a Google landlord; verification comes later.
+    expect(landlordSignupBody.user.account_status).toBe('active');
     expect(landlordSignupBody.user.verification_status).toBe('pending');
 
     const blockedListing = await app.request(

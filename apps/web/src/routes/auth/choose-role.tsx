@@ -2,10 +2,18 @@ import { Link, createFileRoute, useNavigate, useSearch } from '@tanstack/react-r
 import { useEffect, useRef, useState, type FormEvent } from 'react';
 import { AuthAlert, AuthStatus } from '../../components/auth/AuthAlert';
 import { AuthSplitLayout } from '../../components/auth/AuthSplitLayout';
+import {
+  BoardingHouseFields,
+  EMPTY_BOARDING_HOUSE,
+  LANDLORD_SIGNUP_NOTE,
+  boardingHousePayload,
+  boardingHousePhoneError,
+  type BoardingHouseDetails,
+} from '../../components/auth/BoardingHouseFields';
 import { FormSection } from '../../components/auth/FormSection';
 import { RoleChoice, type RoleValue } from '../../components/auth/RoleChoice';
 import { Button, buttonClasses } from '../../components/ui/Button';
-import { Field, TextArea, TextInput } from '../../components/ui/Field';
+import { Field, TextInput } from '../../components/ui/Field';
 import { Spinner } from '../../components/ui/Spinner';
 import { useAuth } from '../../lib/auth-context';
 import { setPendingToast } from '../../lib/toast';
@@ -42,13 +50,9 @@ function ChooseRolePage() {
   const [roleMissing, setRoleMissing] = useState(false);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [details, setDetails] = useState({
-    businessName: '',
-    businessDescription: '',
-    city: '',
-    province: '',
-    phoneNumber: '',
-  });
+  const [details, setDetails] = useState<BoardingHouseDetails>(EMPTY_BOARDING_HOUSE);
+  const [names, setNames] = useState({ firstName: '', lastName: '' });
+  const [phoneError, setPhoneError] = useState<string | null>(null);
 
   useEffect(() => {
     if (handled.current) return;
@@ -57,6 +61,11 @@ function ChooseRolePage() {
     const pending = handleGooglePendingHash();
     if (pending) {
       setPending(pending);
+      // Google fills the name; the landlord can still correct it.
+      setNames({
+        firstName: pending.session.firstName ?? '',
+        lastName: pending.session.lastName ?? '',
+      });
       clearGooglePendingHash();
     }
     setReady(true);
@@ -66,6 +75,8 @@ function ChooseRolePage() {
 
   async function finish(input: {
     role?: 'boarder' | 'landlord';
+    firstName?: string;
+    lastName?: string;
     businessName?: string;
     businessDescription?: string;
     city?: string;
@@ -113,13 +124,17 @@ function ChooseRolePage() {
 
   async function handleLandlordSubmit(e: FormEvent) {
     e.preventDefault();
+    const invalidPhone = boardingHousePhoneError(details);
+    if (invalidPhone) {
+      setPhoneError(invalidPhone);
+      document.getElementById('phoneNumber')?.focus();
+      return;
+    }
     await finish({
       role: 'landlord',
-      businessName: details.businessName.trim(),
-      businessDescription: details.businessDescription.trim() || undefined,
-      city: details.city.trim() || undefined,
-      province: details.province.trim() || undefined,
-      phoneNumber: details.phoneNumber.trim() || undefined,
+      firstName: names.firstName.trim() || undefined,
+      lastName: names.lastName.trim() || undefined,
+      ...boardingHousePayload(details),
     });
   }
 
@@ -146,7 +161,7 @@ function ChooseRolePage() {
             <span className="font-semibold text-ink">{session.email}</span>.
           </>
         ) : step === 'landlord-details' ? (
-          'These details are optional. You can complete them later from your dashboard.'
+          LANDLORD_SIGNUP_NOTE
         ) : (
           <>
             Signed in with Google as{' '}
@@ -219,7 +234,9 @@ function ChooseRolePage() {
                   id="landlordFirstName"
                   name="firstName"
                   autoComplete="given-name"
-                  defaultValue={session.firstName}
+                  required
+                  value={names.firstName}
+                  onChange={e => setNames(n => ({ ...n, firstName: e.target.value }))}
                 />
               </Field>
               <Field label="Last name" htmlFor="landlordLastName">
@@ -227,7 +244,9 @@ function ChooseRolePage() {
                   id="landlordLastName"
                   name="lastName"
                   autoComplete="family-name"
-                  defaultValue={session.lastName}
+                  required
+                  value={names.lastName}
+                  onChange={e => setNames(n => ({ ...n, lastName: e.target.value }))}
                 />
               </Field>
             </div>
@@ -245,75 +264,18 @@ function ChooseRolePage() {
             </Field>
           </FormSection>
 
-          <FormSection
-            title="Your boarding house"
-            description="Optional for now. Boarders see this on your listings."
-          >
-            <Field label="Business / property name" htmlFor="businessName">
-              <TextInput
-                id="businessName"
-                name="businessName"
-                placeholder="e.g. Haven Dormitory"
-                autoComplete="organization"
-                value={details.businessName}
-                onChange={e => setDetails(d => ({ ...d, businessName: e.target.value }))}
-              />
-            </Field>
-
-            <Field label="Brief description" htmlFor="businessDescription">
-              <TextArea
-                id="businessDescription"
-                name="businessDescription"
-                placeholder="What makes your place a good home?"
-                rows={3}
-                maxLength={500}
-                value={details.businessDescription}
-                onChange={e => setDetails(d => ({ ...d, businessDescription: e.target.value }))}
-              />
-            </Field>
-
-            <div className="grid grid-cols-1 gap-5 min-[400px]:grid-cols-2 min-[400px]:gap-3">
-              <Field label="City" htmlFor="city">
-                <TextInput
-                  id="city"
-                  name="city"
-                  placeholder="e.g. Quezon City"
-                  autoComplete="address-level2"
-                  value={details.city}
-                  onChange={e => setDetails(d => ({ ...d, city: e.target.value }))}
-                />
-              </Field>
-              <Field label="Province" htmlFor="province">
-                <TextInput
-                  id="province"
-                  name="province"
-                  placeholder="e.g. Metro Manila"
-                  autoComplete="address-level1"
-                  value={details.province}
-                  onChange={e => setDetails(d => ({ ...d, province: e.target.value }))}
-                />
-              </Field>
-            </div>
-
-            <Field label="Contact number" htmlFor="phoneNumber">
-              <TextInput
-                id="phoneNumber"
-                type="tel"
-                name="phoneNumber"
-                placeholder="0917 123 4567"
-                autoComplete="tel"
-                inputMode="tel"
-                value={details.phoneNumber}
-                onChange={e => setDetails(d => ({ ...d, phoneNumber: e.target.value }))}
-              />
-            </Field>
-          </FormSection>
+          <BoardingHouseFields
+            value={details}
+            onChange={next => {
+              setDetails(next);
+              setPhoneError(null);
+            }}
+            phoneError={phoneError}
+            onPhoneBlur={() => setPhoneError(boardingHousePhoneError(details))}
+          />
 
           <div className="flex flex-col gap-3">
-            <p className="text-sm text-gray-ink">
-              Your account is created right away. Verification can be completed later from your
-              dashboard.
-            </p>
+            <p className="text-sm text-gray-ink">{LANDLORD_SIGNUP_NOTE}</p>
             <div className="flex flex-col-reverse gap-3 sm:flex-row">
               <Button
                 type="button"

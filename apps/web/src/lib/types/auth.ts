@@ -49,8 +49,6 @@ export interface RegisterInput {
   city?: string;
   province?: string;
   phoneNumber?: string;
-  idType?: string;
-  idNumber?: string;
 }
 
 export interface RegisterResponse {

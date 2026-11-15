@@ -22,7 +22,6 @@ import {
   normalizeEmail,
   safeRedirectPath,
   stringField,
-  missingRequired,
   userPayload,
 } from './helpers.js';
 import { authenticateUser } from '../../lib/auth';
@@ -80,23 +79,12 @@ export async function handleRegister(c: Context<{ Bindings: Env }>) {
     return errorResponse(400, 'Password must be at least 8 characters long');
   }
 
-  if (role === 'landlord') {
-    if (
-      missingRequired(body, [
-        'businessName',
-        'city',
-        'province',
-        'phoneNumber',
-        'idType',
-        'idNumber',
-      ])
-    ) {
-      return errorResponse(400, 'Missing required landlord profile fields');
-    }
+  // Landlords register like Google sign-up does: name + email now, boarding house
+  // details optional, ID verification later from the dashboard.
+  const phoneNumber = stringField(body, 'phoneNumber');
 
-    if (!validatePhilippinePhone(stringField(body, 'phoneNumber'))) {
-      return errorResponse(400, 'Invalid Philippine mobile number format');
-    }
+  if (role === 'landlord' && phoneNumber && !validatePhilippinePhone(phoneNumber)) {
+    return errorResponse(400, 'Invalid Philippine mobile number format');
   }
 
   const existing = await findUserAccountByEmail(db, email);
@@ -120,10 +108,12 @@ export async function handleRegister(c: Context<{ Bindings: Env }>) {
     email,
     passwordHash,
     role,
-    accountStatus: role === 'landlord' ? 'pending_verification' : 'active',
+    // Same as a Google landlord: usable right away, verification pending.
+    accountStatus: 'active',
     isVerified: role === 'landlord' ? 0 : 1,
     emailVerified: role === 'landlord' ? 0 : 1,
     boarderStatus: role === 'boarder' ? 'new' : null,
+    phoneNumber: role === 'landlord' ? phoneNumber || null : null,
   });
 
   if (role === 'landlord') {
@@ -147,7 +137,7 @@ export async function handleRegister(c: Context<{ Bindings: Env }>) {
     success: true,
     message:
       role === 'landlord'
-        ? 'Landlord account created successfully. Please check your email to verify your account, then complete the verification process.'
+        ? 'Your account is created right away. Verification can be completed later from your dashboard.'
         : 'Boarder account created successfully. Please check your email to verify your account.',
     access_token: accessToken,
     refresh_token: refreshToken,
@@ -156,9 +146,8 @@ export async function handleRegister(c: Context<{ Bindings: Env }>) {
       role === 'landlord'
         ? [
             'Verify your email address',
-            'Upload required verification documents',
-            'Wait for admin approval (24-48 hours)',
-            'Start listing your properties',
+            'Complete verification from your dashboard when you are ready',
+            'Start listing your properties once approved',
           ]
         : [
             'Verify your email address',

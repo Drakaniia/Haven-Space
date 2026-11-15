@@ -189,6 +189,69 @@ afterEach(() => {
 });
 
 describe('auth routes', () => {
+  it('creates a landlord from name and email alone, with no ID step', async () => {
+    const sqlite = new Database(':memory:');
+    runMigrations(sqlite);
+    const env = createEnv(sqlite);
+
+    const minimal = await postJson(
+      '/auth/register',
+      {
+        firstName: 'Lara',
+        lastName: 'Owner',
+        email: 'lara@example.com',
+        password: 'StrongPass123',
+        role: 'landlord',
+      },
+      env
+    );
+    const body = (await minimal.json()) as {
+      message: string;
+      user: { account_status: string; is_verified: boolean };
+    };
+
+    expect(minimal.status).toBe(200);
+    expect(body.message).toBe(
+      'Your account is created right away. Verification can be completed later from your dashboard.'
+    );
+    expect(body.user).toMatchObject({ account_status: 'active', is_verified: false });
+    expect(sqlite.prepare('SELECT COUNT(*) AS n FROM landlord_profiles').get()).toEqual({ n: 1 });
+
+    const withHouse = await postJson(
+      '/auth/register',
+      {
+        firstName: 'Mia',
+        lastName: 'Owner',
+        email: 'mia@example.com',
+        password: 'StrongPass123',
+        role: 'landlord',
+        businessName: 'Mia Dorm',
+        city: 'Malaybalay',
+        province: 'Bukidnon',
+        phoneNumber: '09171234567',
+      },
+      env
+    );
+    const badPhone = await postJson(
+      '/auth/register',
+      {
+        firstName: 'Ned',
+        lastName: 'Owner',
+        email: 'ned@example.com',
+        password: 'StrongPass123',
+        role: 'landlord',
+        phoneNumber: '123',
+      },
+      env
+    );
+
+    expect(withHouse.status).toBe(200);
+    expect(
+      sqlite.prepare("SELECT phone_number FROM users WHERE email = 'mia@example.com'").get()
+    ).toEqual({ phone_number: '09171234567' });
+    expect(badPhone.status).toBe(400);
+  });
+
   it('returns false when the email is not registered', async () => {
     const sqlite = new Database(':memory:');
     runMigrations(sqlite);

@@ -28,9 +28,10 @@ export async function createUserAccount(db: D1Database, input: CreateUserInput):
           is_verified,
           email_verified,
           account_status,
-          boarder_status
+          boarder_status,
+          phone_number
         )
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
       `
     )
     .bind(
@@ -42,7 +43,8 @@ export async function createUserAccount(db: D1Database, input: CreateUserInput):
       input.isVerified,
       input.emailVerified,
       input.accountStatus,
-      input.boarderStatus
+      input.boarderStatus,
+      input.phoneNumber ?? null
     )
     .run();
 
