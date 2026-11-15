@@ -21,6 +21,7 @@ import {
   emptyMonitorFilters,
   formatPaymentDate,
   hasActiveFilters,
+  manilaToday,
   matchesFilters,
   monitorMetrics,
   monthLabel,
@@ -44,7 +45,8 @@ export function PaymentsMonitoringPage() {
   const navigate = useNavigate();
   const location = useLocation() as unknown as { searchStr?: string; href?: string };
 
-  const thisMonth = useMemo(() => new Date().toISOString().slice(0, 7), []);
+  // Manila's month, not UTC's: the first 8 hours of a month used to open last month.
+  const thisMonth = useMemo(() => manilaToday().slice(0, 7), []);
   const [filters, setFilters] = useState<MonitorFilters>(() =>
     readFilters(location.searchStr ?? (location.href ?? '').split('?')[1] ?? '', thisMonth)
   );

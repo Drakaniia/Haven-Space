@@ -301,6 +301,97 @@ describe('tracker rows', () => {
     expect(row.has_rejected_claim).toBe(false);
   });
 
+  it('lists every tenant of a property and each one’s claim separately (3 tenants)', async () => {
+    const { sqlite, env } = setup();
+    const today = manilaToday();
+    const month = today.slice(0, 7);
+
+    sqlite.exec(`
+      INSERT INTO users (id, first_name, last_name, email, password_hash, role, is_verified, email_verified, account_status, boarder_status, created_at)
+      VALUES
+        (8, 'Cara', 'New', 'cara@example.com', 'hash', 'boarder', 1, 1, 'active', 'confirmed', '2026-01-02 08:00:00'),
+        (9, 'Dan', 'Gone', 'dan@example.com', 'hash', 'boarder', 1, 1, 'active', 'new', '2026-01-02 08:00:00');
+      INSERT INTO rooms (id, property_id, landlord_id, room_number, title, price, deposit, capacity, occupied, status)
+      VALUES (102, 10, 3, 'A2', 'Second Room', 5000, 1000, 1, 1, 'occupied');
+    `);
+    // Benny: rent cycle due this month. Cara: moved in today, so her first rent is
+    // next month and only her deposit is open. Dan: moved out, still owes a bill.
+    insertCharge(sqlite, { dueDate: `${month}-01` });
+    sqlite
+      .prepare(
+        `INSERT INTO applications (id, boarder_id, landlord_id, room_id, message, status, advance_amount, created_at, confirmed_at, deleted_at)
+         VALUES (210, 8, 3, 102, 'Hi', 'confirmed', 0, ?, ?, NULL),
+                (211, 9, 3, 102, 'Hi', 'ended', 0, '2026-01-02 08:00:00', '2026-01-02 08:00:00', '2026-02-01 00:00:00')`
+      )
+      .run(`${today} 08:00:00`, `${today} 08:00:00`);
+    const caraDeposit = Number(
+      sqlite
+        .prepare(
+          `INSERT INTO payments (boarder_id, landlord_id, room_id, property_id, application_id, charge_type, description, amount, due_date, status)
+           VALUES (8, 3, 102, 10, 210, 'deposit', 'Security deposit', 1000, ?, 'pending')`
+        )
+        .run(addMonthsClamped(today, 1)).lastInsertRowid
+    );
+    sqlite
+      .prepare(
+        `INSERT INTO payments (boarder_id, landlord_id, room_id, property_id, application_id, charge_type, description, amount, due_date, status)
+         VALUES (9, 3, 102, 10, 211, 'utility', 'Water', 300, '2026-01-20', 'overdue')`
+      )
+      .run();
+
+    const submit = (boarderId: string, chargeId: number, body: object) =>
+      app.request(
+        `http://localhost/api/boarder/payments/${chargeId}/submissions`,
+        {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'X-User-ID': boarderId },
+          body: JSON.stringify(body),
+        },
+        env
+      );
+
+    const bennyRent = Number(
+      (sqlite.prepare('SELECT id FROM payments WHERE application_id = 200').get() as { id: number })
+        .id
+    );
+
+    expect(
+      (await submit('2', bennyRent, { payment_method: 'gcash', reference_number: 'G-1' })).status
+    ).toBe(201);
+    expect((await submit('8', caraDeposit, { payment_method: 'cash' })).status).toBe(201);
+
+    const data = await tracker(env, `?propertyId=10&month=${month}`);
+    const byName = Object.fromEntries(data.rows.map(row => [row.boarder_name, row]));
+
+    expect(Object.keys(byName).sort()).toEqual(['Benny Boarder', 'Cara New', 'Dan Gone']);
+    expect(data.counts.needs_review).toBe(2);
+    expect(byName['Benny Boarder'].pending_claim_method).toBe('gcash');
+    expect(byName['Cara New'].pending_claim_charge_id).toBe(caraDeposit);
+    expect(byName['Cara New'].pending_claim_method).toBe('cash');
+    expect(byName['Dan Gone'].tenancy_status).toBe('ended');
+
+    // Each claim is reviewed on its own; approving Cara's leaves Benny's pending.
+    const caraClaim = (
+      sqlite
+        .prepare('SELECT id FROM payment_submissions WHERE payment_id = ?')
+        .get(caraDeposit) as {
+        id: number;
+      }
+    ).id;
+    const verified = await app.request(
+      `http://localhost/api/landlord/submissions/${caraClaim}/verify`,
+      { method: 'POST', headers: { 'X-User-ID': '3' } },
+      env
+    );
+
+    expect(verified.status).toBe(200);
+
+    const after = await tracker(env, `?propertyId=10&month=${month}`);
+
+    expect(after.rows).toHaveLength(3);
+    expect(after.counts.needs_review).toBe(1);
+  });
+
   it('scopes the tracker to the caller’s properties', async () => {
     const { env } = setup();
 

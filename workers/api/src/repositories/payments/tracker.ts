@@ -71,6 +71,10 @@ export interface TrackerRow {
    * (spec `landlord-payments-monitoring` D40).
    */
   pending_claim_charge_id: number | null;
+  /** The pending claim's method, so cash (face to face) reads apart from online. */
+  pending_claim_method: string | null;
+  /** `ended` rows are moved-out tenants who still owe or have a claim to review. */
+  tenancy_status: 'confirmed' | 'ended';
   /**
    * The open rent charge's newest submission was rejected and nothing newer has
    * arrived — the derived "Payment issue" state (spec
@@ -99,6 +103,7 @@ export interface TrackerResponse {
 
 interface TenancyRow {
   application_id: number;
+  tenancy_status?: string | null;
   boarder_id: number;
   room_id: number;
   property_id: number;
@@ -242,9 +247,10 @@ export async function listTrackerRows(
   filters: TrackerFilters = {},
   today: string = manilaToday()
 ): Promise<TrackerResponse> {
+  // Ended tenancies are read too: a tenant who moved out can still owe money or
+  // have a claim waiting, and hiding them hid their payments from the landlord.
   const clauses = [
-    "app.status = 'confirmed'",
-    'app.deleted_at IS NULL',
+    "((app.status = 'confirmed' AND app.deleted_at IS NULL) OR app.status = 'ended')",
     'pr.deleted_at IS NULL',
     accessiblePropertyClause('pr'),
   ];
@@ -275,6 +281,7 @@ export async function listTrackerRows(
       `
         SELECT
           app.id AS application_id,
+          app.status AS tenancy_status,
           app.boarder_id,
           app.room_id,
           r.property_id AS property_id,
@@ -355,9 +362,34 @@ export async function listTrackerRows(
       .filter(charge => charge.stored_status === 'paid' && charge.paid_date)
       .sort((left, right) => String(left.paid_date).localeCompare(String(right.paid_date)));
 
-    // D1: the month narrows the rows to tenancies with a cycle due or paid then.
-    if (filters.month && !cycleForMonth(rents, filters.month)) {
-      continue;
+    const hasPendingClaim = charges.some(charge =>
+      charge.submissions.some(item => item.status === 'pending')
+    );
+    const ended = tenancy.tenancy_status === 'ended';
+    const hasOpenCharge = charges.some(
+      charge => charge.status !== 'paid' && charge.stored_status !== 'cancelled'
+    );
+    const touchesMonth = (month: string) =>
+      charges.some(
+        charge =>
+          monthOf(charge.due_date) === month ||
+          (charge.stored_status === 'paid' && monthOf(charge.paid_date) === month)
+      );
+
+    // A claim waiting on the landlord is never hidden by the month or by a move-out:
+    // the bell already told them about it.
+    if (!hasPendingClaim) {
+      if (ended && !hasOpenCharge && !(filters.month && touchesMonth(filters.month))) {
+        continue;
+      }
+
+      // Every tenant living there that month is listed, even before their first
+      // rent cycle (new tenants used to vanish until their first rent was due).
+      const movedIn = monthOf(tenancy.move_in_date);
+
+      if (filters.month && movedIn && movedIn > filters.month) {
+        continue;
+      }
     }
 
     if (search && !searchableText(tenancy, charges).includes(search)) {
@@ -374,9 +406,6 @@ export async function listTrackerRows(
       settled,
     });
     const remaining = openRent && dueDate ? daysBetween(today, dueDate) : null;
-    const hasPendingClaim = charges.some(charge =>
-      charge.submissions.some(item => item.status === 'pending')
-    );
 
     // The claim's own charge id — the review drawer opens the charge that has
     // something to review, which is not always the rent cycle (D40).
@@ -416,6 +445,10 @@ export async function listTrackerRows(
       last_payment: lastPaymentOf(charges),
       has_pending_claim: hasPendingClaim,
       pending_claim_charge_id: pendingClaimCharge ? Number(pendingClaimCharge.id) : null,
+      pending_claim_method:
+        pendingClaimCharge?.submissions.find(item => item.status === 'pending')?.payment_method ??
+        null,
+      tenancy_status: ended ? 'ended' : 'confirmed',
       has_rejected_claim: hasRejectedClaim,
       reminder_sent_at: openRent?.reminder_sent_at ?? null,
       other_open_charges: charges.filter(
@@ -477,7 +510,8 @@ export async function listTrackerRows(
   for (const entry of entries) {
     const cycle = cycleForMonth(entry.rents, filters.month);
 
-    summary.expected += cycle ? cycle.amount : entry.row.monthly_rent;
+    // A month with no rent cycle for this tenant expects nothing from them.
+    summary.expected += cycle ? cycle.amount : filters.month ? 0 : entry.row.monthly_rent;
     summary.paid +=
       cycle && cycle.stored_status === 'paid'
         ? cycle.total_due

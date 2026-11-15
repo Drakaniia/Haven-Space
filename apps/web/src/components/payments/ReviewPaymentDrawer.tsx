@@ -17,6 +17,7 @@ import {
 import { useAuth } from '../../lib/auth-context';
 import {
   REQUEST_NEW_PROOF_MESSAGE,
+  chargeTypeLabel,
   formatDateTime,
   formatPeso,
   latestSubmission,
@@ -100,6 +101,11 @@ export function ReviewPaymentDrawer({
   const overpaid = pending && detail ? pending.amount > detail.total_due : false;
   const exact = pending && detail ? pending.amount === detail.total_due : false;
   const shown = pending ?? settled;
+  const isCash = (shown ?? submission)?.payment_method === 'cash';
+  const chargeName =
+    detail && detail.charge_type !== 'rent'
+      ? detail.description || chargeTypeLabel(detail.charge_type)
+      : `${monthName || 'Rent'} rent`;
 
   return (
     <>
@@ -107,9 +113,7 @@ export function ReviewPaymentDrawer({
         open
         title={detail?.boarder_name ?? row.boarder_name}
         eyebrow="Payment submission"
-        subtitle={`${roomLabel(detail?.room_title ?? row.room_number)} · ${
-          monthName || 'Rent'
-        } rent`}
+        subtitle={`${roomLabel(detail?.room_title ?? row.room_number)} · ${chargeName}`}
         onClose={onClose}
         width="md"
         suspended={suspended || rejecting}
@@ -117,7 +121,9 @@ export function ReviewPaymentDrawer({
           pending ? (
             <div className="flex flex-col gap-3">
               <p className="text-sm text-gray-ink">
-                Check the amount and reference before approving.
+                {isCash
+                  ? 'Approve only after you have received the cash in person.'
+                  : 'Check the amount and reference before approving.'}
               </p>
               <div className="flex flex-wrap items-center gap-2">
                 <Button
@@ -176,11 +182,16 @@ export function ReviewPaymentDrawer({
           />
         ) : (
           <div className="flex flex-col gap-5">
-            <div>
+            <div className="flex flex-wrap items-center gap-2">
               <StatusBadge
                 status={pending ? 'awaiting_verification' : settled ? 'paid' : 'rejected'}
                 label={pending ? 'Needs review' : settled ? 'Paid' : 'Payment issue'}
               />
+              {shown ? (
+                <span className="rounded-full border border-border bg-surface px-2.5 py-0.5 text-xs font-semibold text-ink">
+                  {isCash ? 'Cash · face to face' : 'Online payment'}
+                </span>
+              ) : null}
             </div>
 
             {shown ? (
@@ -193,7 +204,11 @@ export function ReviewPaymentDrawer({
                   {pending && detail ? (
                     <p
                       className={`mt-2 flex items-center gap-1.5 text-sm ${
-                        exact ? 'text-success-ink' : underpaid ? 'text-error-ink' : 'text-warning-ink'
+                        exact
+                          ? 'text-success-ink'
+                          : underpaid
+                          ? 'text-error-ink'
+                          : 'text-warning-ink'
                       }`}
                     >
                       {exact ? <Icon name="check" size={14} className="shrink-0" /> : null}
@@ -213,7 +228,7 @@ export function ReviewPaymentDrawer({
                   <div className="min-w-0">
                     <dt className="text-xs font-medium text-gray-ink">Reference</dt>
                     <dd className="mt-0.5 break-all font-mono text-sm text-ink">
-                      {shown.reference_number || '—'}
+                      {isCash ? 'Paid in person' : shown.reference_number || '—'}
                     </dd>
                   </div>
                   <div className="col-span-2">
@@ -253,7 +268,9 @@ export function ReviewPaymentDrawer({
                 </a>
               ) : (
                 <p className="mt-2 rounded-xl border border-dashed border-border-strong bg-surface/60 px-4 py-6 text-center text-sm text-gray-ink">
-                  No proof image attached.
+                  {isCash
+                    ? 'Cash payments have no screenshot. Confirm you received the money before approving.'
+                    : 'No proof image attached.'}
                 </p>
               )}
             </div>

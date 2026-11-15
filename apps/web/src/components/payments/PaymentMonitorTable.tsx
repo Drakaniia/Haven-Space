@@ -194,9 +194,7 @@ export function PaymentMonitorTable({
                           : null;
                       // Opaque fills per cell, so the pinned tenant cell never
                       // shows the columns sliding underneath it.
-                      const cellBg = active
-                        ? 'bg-mint'
-                        : 'bg-surface group-hover:bg-cream';
+                      const cellBg = active ? 'bg-mint' : 'bg-surface group-hover:bg-cream';
 
                       return (
                         <tr
@@ -224,7 +222,9 @@ export function PaymentMonitorTable({
                               </button>
                             </div>
                           </td>
-                          <td className={`px-4 py-3 text-gray-ink transition-colors duration-100 ${cellBg}`}>
+                          <td
+                            className={`px-4 py-3 text-gray-ink transition-colors duration-100 ${cellBg}`}
+                          >
                             {roomLabel(row.room_number) || '—'}
                           </td>
                           <td className={`px-4 py-3 transition-colors duration-100 ${cellBg}`}>
@@ -255,6 +255,16 @@ export function PaymentMonitorTable({
                           </td>
                           <td className={`px-4 py-3 transition-colors duration-100 ${cellBg}`}>
                             <StatusBadge status={meta.tone} label={meta.label} />
+                            {row.has_pending_claim && row.pending_claim_method ? (
+                              <span className="mt-1 block text-xs text-gray-ink">
+                                {row.pending_claim_method === 'cash'
+                                  ? 'Cash · face to face'
+                                  : 'Online payment'}
+                              </span>
+                            ) : null}
+                            {row.tenancy_status === 'ended' ? (
+                              <span className="mt-1 block text-xs text-gray-ink">Moved out</span>
+                            ) : null}
                           </td>
                           <td
                             className={`px-5 py-3 text-right transition-colors duration-100 ${cellBg}`}

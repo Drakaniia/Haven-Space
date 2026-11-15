@@ -172,6 +172,10 @@ export interface TrackerRow {
   /** The charge holding a pending claim — not always the rent cycle
    *  (spec `landlord-payments-monitoring` D40). */
   pending_claim_charge_id: number | null;
+  /** `cash` (face to face) or an online method, for the pending claim. */
+  pending_claim_method?: string | null;
+  /** `confirmed`, or `ended` for a moved-out tenant who still has money to settle. */
+  tenancy_status?: 'confirmed' | 'ended';
   /** The open rent charge's newest submission was rejected and nothing newer
    *  arrived — the derived "Payment issue" state (D3/D38). */
   has_rejected_claim: boolean;
