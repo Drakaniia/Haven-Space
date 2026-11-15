@@ -25,6 +25,7 @@ import {
   touchConversation,
 } from '../repositories/tenancy';
 import { manilaToday } from '../repositories/payments/helpers';
+import { cancelRentAfter } from '../repositories/payments/charges';
 
 const tenancyRoutes = new Hono<{ Bindings: Env }>();
 
@@ -234,13 +235,13 @@ tenancyRoutes.post('/api/landlord/approve-leave-request', async c => {
     return errorResponse(404, 'Leave request not found or already processed');
   }
 
-  // Unsettled money blocks the approval (spec `approve-leave-request` §4.2.3):
-  // the room is released at approval, so an approval with rent still owed would
-  // leave the debt behind a tenancy nobody can chase. Anything the tenant has
-  // submitted but the landlord has not verified still counts as unsettled.
+  // Unsettled money (owed through the leave date; a submitted-but-unverified
+  // claim counts) needs the landlord's explicit say-so: they see the balance and
+  // may approve anyway. The debt stays chaseable — a moved-out tenant with open
+  // charges stays listed in payment management.
   const balance = await outstandingBalanceForApplication(db, applicationId);
 
-  if (balance.outstanding_balance > 0) {
+  if (balance.outstanding_balance > 0 && body?.acknowledge_balance !== true) {
     return errorResponse(
       409,
       `This tenant still owes ₱${balance.outstanding_balance.toLocaleString(
@@ -261,6 +262,11 @@ tenancyRoutes.post('/api/landlord/approve-leave-request', async c => {
     id: user.user_id,
     name: approverName,
   });
+
+  // Rent pre-billed for after the leave date is not owed.
+  if (request.intended_leave_date) {
+    await cancelRentAfter(db, applicationId, request.intended_leave_date);
+  }
 
   const landlordName = approverName;
 
@@ -345,7 +351,8 @@ tenancyRoutes.post('/api/boarder/leave-now', async c => {
     );
   }
 
-  const balance = await outstandingBalanceForApplication(db, applicationId);
+  // Leaving now: what is owed is what fell due up to today.
+  const balance = await outstandingBalanceForApplication(db, applicationId, manilaToday());
 
   if (balance.outstanding_balance > 0) {
     return errorResponse(
@@ -363,6 +370,7 @@ tenancyRoutes.post('/api/boarder/leave-now', async c => {
   }
 
   const moveOutDate = manilaToday();
+  await cancelRentAfter(db, applicationId, moveOutDate);
   const boarder = await findBoarderName(db, user.user_id);
   const boarderName = [boarder?.first_name, boarder?.last_name].filter(Boolean).join(' ').trim();
 

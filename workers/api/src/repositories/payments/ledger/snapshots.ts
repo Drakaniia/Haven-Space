@@ -47,9 +47,11 @@ export async function paymentSummariesForApplications(
           pay.late_fee,
           pay.due_date,
           pay.paid_date,
+          app.intended_leave_date,
           COALESCE(pr.late_fee_grace_days, ${DEFAULT_GRACE_DAYS}) AS grace_days
         FROM payments pay
         LEFT JOIN properties pr ON pay.property_id = pr.id
+        LEFT JOIN applications app ON app.id = pay.application_id
         WHERE pay.application_id IN (${placeholders})
         ORDER BY pay.due_date ASC, pay.id ASC
       `
@@ -104,9 +106,19 @@ export async function paymentSummariesForApplications(
       const grace = Number(row.grace_days ?? 0);
 
       accumulator.has_open = true;
-      accumulator.outstanding_total = roundMoney(
-        accumulator.outstanding_total + Number(row.amount ?? 0) + Number(row.late_fee ?? 0)
+
+      // Owed = due by the later of today and the leave date; pre-generated rent
+      // for months after that is not owed (same rule as the leave approval).
+      const leaveDate = toDateOnly(
+        (row as { intended_leave_date?: string | null }).intended_leave_date ?? ''
       );
+      const cutoff = leaveDate && leaveDate > today ? leaveDate : today;
+
+      if (dueDate <= cutoff) {
+        accumulator.outstanding_total = roundMoney(
+          accumulator.outstanding_total + Number(row.amount ?? 0) + Number(row.late_fee ?? 0)
+        );
+      }
       accumulator.next_due_date = accumulator.next_due_date ?? dueDate;
 
       if (today > addDaysSafe(dueDate, grace)) {

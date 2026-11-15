@@ -425,6 +425,60 @@ describe('tenancy and leave request routes', () => {
     });
   });
 
+  it('ignores rent billed past the leave date, and approves with an acknowledged balance', async () => {
+    const sqlite = new Database(':memory:');
+    runMigrations(sqlite);
+    seedTenancyData(sqlite);
+    const leaveDate = addDays(manilaToday(), 40);
+    sqlite
+      .prepare(
+        `UPDATE applications
+            SET leave_request_status = 'pending', intended_leave_date = ?, deleted_at = NULL
+          WHERE id = 200`
+      )
+      .run(leaveDate);
+    // Pre-generated rent: one cycle inside the stay, one after the move-out.
+    sqlite
+      .prepare(
+        `INSERT INTO payments (id, boarder_id, landlord_id, room_id, property_id, application_id, charge_type, amount, due_date, status)
+         VALUES (302, 2, 3, 100, 10, 200, 'rent', 6500, ?, 'pending'),
+                (303, 2, 3, 100, 10, 200, 'rent', 6500, ?, 'pending')`
+      )
+      .run(addDays(manilaToday(), 10), addDays(leaveDate, 5));
+
+    const approve = (body: object) =>
+      app.request(
+        'http://localhost/api/landlord/approve-leave-request',
+        {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'X-User-ID': '3' },
+          body: JSON.stringify(body),
+        },
+        createEnv(sqlite)
+      );
+
+    // June rent (300) + the in-stay cycle (302); the post-leave cycle (303) is not owed.
+    const refused = await approve({ application_id: 200 });
+
+    expect(refused.status).toBe(409);
+    expect(((await refused.json()) as { details: unknown }).details).toEqual({
+      outstanding_amount: 13000,
+    });
+
+    const approved = await approve({ application_id: 200, acknowledge_balance: true });
+
+    expect(approved.status).toBe(200);
+    expect(
+      sqlite
+        .prepare('SELECT id, status FROM payments WHERE id IN (300, 302, 303) ORDER BY id')
+        .all()
+    ).toEqual([
+      { id: 300, status: 'pending' },
+      { id: 302, status: 'pending' },
+      { id: 303, status: 'cancelled' },
+    ]);
+  });
+
   it('reports the tenant balance and the approver on the boarders list', async () => {
     const sqlite = new Database(':memory:');
     runMigrations(sqlite);

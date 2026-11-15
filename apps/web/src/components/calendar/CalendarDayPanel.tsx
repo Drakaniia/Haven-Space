@@ -99,9 +99,8 @@ export function CalendarDayPanel({
                       {event.approximate ? (
                         <p className="text-xs text-muted">Accepted date is approximate</p>
                       ) : null}
-                      {/* Approval is blocked while anything is unsettled, so the
-                          amount rides on the leave row instead of only surfacing
-                          in the dialog (spec `approve-leave-request` §5.3). */}
+                      {/* The balance owed through the leave date rides on the
+                          leave row instead of only surfacing in the dialog. */}
                       {isLeave && (event.outstanding_amount ?? 0) > 0 ? (
                         <p className="mt-0.5 text-xs font-semibold text-warning-ink">
                           {formatPeso(event.outstanding_amount ?? 0)} due

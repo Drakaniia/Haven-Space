@@ -63,9 +63,8 @@ function TenancyPage() {
   const data = tenancy.data?.data;
   const leaveStatus =
     typeof data?.leave_request_status === 'string' ? data.leave_request_status : 'none';
-  // Approval is refused while anything is unsettled, so the form says so now
-  // rather than letting the landlord reject it later (spec
-  // `approve-leave-request` §4.7).
+  // What is owed through today/the leave date is shown up front; the landlord sees
+  // it too when reviewing the request.
   const outstanding = Number(data?.outstanding_balance ?? 0);
 
   const leave = useMutation({
@@ -179,8 +178,8 @@ function TenancyPage() {
               </p>
               {outstanding > 0 ? (
                 <p className="mt-3 rounded-xl border border-warning-border bg-warning-tint px-3 py-2 text-sm text-warning-ink">
-                  Unsettled balance: {formatPeso(outstanding)}. It must be paid before a leave can
-                  be approved.
+                  Unsettled balance: {formatPeso(outstanding)}. You can still request to leave; your
+                  landlord will see this balance when they review it.
                 </p>
               ) : null}
               <div className="mt-5">
@@ -232,7 +231,8 @@ function TenancyPage() {
               {outstanding > 0 ? (
                 <p className="rounded-xl border border-warning-border bg-warning-tint px-3 py-2 text-sm text-warning-ink">
                   You have an unsettled balance of ₱{outstanding.toLocaleString()}. Your landlord
-                  can&apos;t approve this request until it&apos;s settled.
+                  will see it when reviewing this request. Rent for after your leave date is
+                  cancelled once they approve.
                 </p>
               ) : null}
               {error ? <ErrorState message={error} /> : null}
@@ -335,7 +335,10 @@ function TenancyLayout({
           </h2>
           <TenancyDetails data={data} extra={extraDetails} />
           <div className="mt-6 flex flex-wrap gap-2 border-t border-border/80 pt-5">
-            <Link to="/boarder/payments" className={buttonClasses({ variant: 'outline', size: 'sm' })}>
+            <Link
+              to="/boarder/payments"
+              className={buttonClasses({ variant: 'outline', size: 'sm' })}
+            >
               Payments
             </Link>
             <Link
@@ -344,7 +347,10 @@ function TenancyLayout({
             >
               House rules
             </Link>
-            <Link to="/boarder/messages" className={buttonClasses({ variant: 'ghost', size: 'sm' })}>
+            <Link
+              to="/boarder/messages"
+              className={buttonClasses({ variant: 'ghost', size: 'sm' })}
+            >
               Messages
             </Link>
           </div>

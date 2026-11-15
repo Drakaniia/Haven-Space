@@ -331,14 +331,19 @@ export function deleteAnnouncement(
 
 export function approveLeaveRequest(
   token: string,
-  applicationId: number
+  applicationId: number,
+  /** The landlord saw the unsettled balance and approves anyway. */
+  acknowledgeBalance = false
 ): Promise<{ success: boolean; message: string; data: { finalized: boolean } }> {
   return apiFetch(
     base(),
     '/api/landlord/approve-leave-request',
     jsonOptions(token, {
       method: 'POST',
-      body: JSON.stringify({ application_id: applicationId }),
+      body: JSON.stringify({
+        application_id: applicationId,
+        ...(acknowledgeBalance ? { acknowledge_balance: true } : {}),
+      }),
     })
   );
 }

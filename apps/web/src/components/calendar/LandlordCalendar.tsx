@@ -100,7 +100,9 @@ export function LandlordCalendar() {
   });
 
   const approve = useMutation({
-    mutationFn: (applicationId: number) => approveLeaveRequest(token!, applicationId),
+    // The dialog only confirms a balance once the landlord ticks the acknowledgement.
+    mutationFn: (applicationId: number) =>
+      approveLeaveRequest(token!, applicationId, (pendingApprove?.outstanding_amount ?? 0) > 0),
     onSuccess: () => {
       void queryClient.invalidateQueries({ queryKey: ['landlord-calendar'] });
       void queryClient.invalidateQueries({ queryKey: ['boarders'] });

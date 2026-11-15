@@ -6,6 +6,7 @@ import {
   numeric,
   parseJsonArray,
 } from './helpers';
+import { manilaToday } from '../payments/helpers';
 import type { BoarderNameRow, OutstandingBalance, TenancyData, TenancyRow } from './types';
 
 export function formatTenancy(
@@ -132,22 +133,32 @@ export async function findUserName(db: D1Database, userId: number): Promise<Boar
   return await findBoarderName(db, userId);
 }
 
+/**
+ * What the tenant owes for their stay: open charges due on or before the later of
+ * today and their intended leave date. Rent the billing horizon pre-generated
+ * for months after they leave is not owed, and used to block every leave approval.
+ * `throughDate` overrides the cutoff (leave-now uses today).
+ */
 export async function outstandingBalanceForApplication(
   db: D1Database,
-  applicationId: number
+  applicationId: number,
+  throughDate?: string
 ): Promise<OutstandingBalance> {
+  const today = manilaToday();
   const row = await db
     .prepare(
       `
         SELECT
-          COALESCE(SUM(amount + COALESCE(late_fee, 0)), 0) AS outstanding_balance,
+          COALESCE(SUM(pay.amount + COALESCE(pay.late_fee, 0)), 0) AS outstanding_balance,
           COUNT(*) AS open_charge_count
-        FROM payments
-        WHERE application_id = ?
-          AND status IN ('pending', 'awaiting_verification', 'overdue')
+        FROM payments pay
+        JOIN applications app ON app.id = pay.application_id
+        WHERE pay.application_id = ?
+          AND pay.status IN ('pending', 'awaiting_verification', 'overdue')
+          AND pay.due_date <= COALESCE(?, MAX(COALESCE(app.intended_leave_date, ?), ?))
       `
     )
-    .bind(applicationId)
+    .bind(applicationId, throughDate ?? null, today, today)
     .first<{
       outstanding_balance: number | string | null;
       open_charge_count: number | string | null;

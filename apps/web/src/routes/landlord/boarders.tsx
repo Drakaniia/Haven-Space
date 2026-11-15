@@ -162,7 +162,9 @@ function BoardersPage() {
   });
 
   const approve = useMutation({
-    mutationFn: (applicationId: number) => approveLeaveRequest(token!, applicationId),
+    // The dialog only confirms a balance once the landlord ticks the acknowledgement.
+    mutationFn: (applicationId: number) =>
+      approveLeaveRequest(token!, applicationId, (pendingApprove?.outstanding_amount ?? 0) > 0),
     onSuccess: () => {
       // Approval frees the room and changes occupancy, so refresh rooms too.
       void queryClient.invalidateQueries({ queryKey: ['boarders', propertyIdNumber] });
@@ -400,7 +402,9 @@ function BoardersPage() {
                         </span>
                         <div className="min-w-0">
                           <p className="truncate font-semibold text-ink">{fullName(row)}</p>
-                          <p className="truncate text-xs text-gray-ink">{row.email ?? 'No email'}</p>
+                          <p className="truncate text-xs text-gray-ink">
+                            {row.email ?? 'No email'}
+                          </p>
                         </div>
                       </div>
                     ),
@@ -434,9 +438,8 @@ function BoardersPage() {
                                 Leaves {formatPaymentDate(row.intended_leave_date)}
                               </p>
                             ) : null}
-                            {/* Approval is blocked on an unsettled balance, so the
-                                amount is visible before the landlord clicks Approve
-                                (spec `approve-leave-request` §5.1). */}
+                            {/* The balance owed through the leave date is visible
+                                before the landlord clicks Approve. */}
                             {row.outstanding_amount > 0 ? (
                               <p className="mt-1 text-xs font-semibold text-warning-ink">
                                 {formatPeso(row.outstanding_amount)} due

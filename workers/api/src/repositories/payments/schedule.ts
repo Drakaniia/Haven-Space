@@ -236,6 +236,8 @@ async function insertRentMonths(
 interface ExtensionRow {
   application_id: number;
   last_due: string | null;
+  /** Set once a leave is approved: no rent is billed past it. */
+  leave_date: string | null;
 }
 
 /**
@@ -258,7 +260,9 @@ export async function extendSchedulesForActiveTenancies(
             WHERE p.application_id = app.id
               AND p.charge_type = 'rent'
               AND p.generation_key IS NOT NULL
-          ) AS last_due
+          ) AS last_due,
+          CASE WHEN app.leave_request_status = 'approved' THEN app.intended_leave_date END
+            AS leave_date
         FROM applications app
         WHERE app.status = 'confirmed'
           AND app.deleted_at IS NULL
@@ -290,8 +294,15 @@ export async function extendSchedulesForActiveTenancies(
     let lastDue = toDateOnly(row.last_due);
     let guard = 0;
 
+    const leaveDate = row.leave_date ? toDateOnly(row.leave_date) : null;
+
     while (lastDue < horizonEnd && guard < 24) {
       lastDue = addMonthsClamped(lastDue, 1, dueDay);
+
+      if (leaveDate && lastDue > leaveDate) {
+        break;
+      }
+
       const nextDue = addMonthsClamped(lastDue, 1, dueDay);
 
       created += await insertCharge(db, {

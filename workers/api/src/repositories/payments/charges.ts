@@ -228,6 +228,37 @@ export async function cancelCharge(
   return Number(result.meta.changes ?? 0);
 }
 
+/**
+ * Cancels rent the billing horizon pre-generated for after a tenant's move-out,
+ * so leaving never leaves phantom charges behind. A cycle with a claim waiting
+ * on the landlord is left for them to decide.
+ */
+export async function cancelRentAfter(
+  db: D1Database,
+  applicationId: number,
+  moveOutDate: string
+): Promise<number> {
+  const result = await db
+    .prepare(
+      `
+        UPDATE payments
+        SET status = 'cancelled', updated_at = CURRENT_TIMESTAMP
+        WHERE application_id = ?
+          AND charge_type = 'rent'
+          AND due_date > ?
+          AND status IN ('pending', 'overdue')
+          AND NOT EXISTS (
+            SELECT 1 FROM payment_submissions ps
+            WHERE ps.payment_id = payments.id AND ps.status = 'pending'
+          )
+      `
+    )
+    .bind(applicationId, toDateOnly(moveOutDate))
+    .run();
+
+  return Number(result.meta.changes ?? 0);
+}
+
 export interface DepositResolutionInput {
   resolution: 'refund' | 'forfeit' | 'partial';
   amount: number;
