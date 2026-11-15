@@ -41,7 +41,7 @@ export interface CreateGoogleUserInput {
   email: string;
   googleId: string;
   googlePicture: string | null;
-  role: 'boarder' | 'landlord';
+  role: 'boarder' | 'landlord' | 'admin';
   accountStatus: string;
   isVerified: number;
   emailVerified: number;

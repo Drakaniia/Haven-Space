@@ -12,6 +12,8 @@ export interface Env {
   GOOGLE_REDIRECT_URI?: string;
   UPLOADTHING_TOKEN?: string;
   GEMINI_API_KEY?: string;
+  /** Emails that become admin on Google sign-in (comma-separated). See `lib/bootstrap-admin`. */
+  BOOTSTRAP_ADMIN_EMAILS?: string;
   DB?: D1Database;
   UPLOADTHING_UPLOAD_FILES?: UploadThingUploadFiles;
   UPLOADTHING_DELETE_FILES?: UploadThingDeleteFiles;

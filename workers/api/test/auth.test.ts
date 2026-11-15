@@ -1038,3 +1038,168 @@ describe('auth routes', () => {
     expect(location.searchParams.get('redirect')).toBe('/find-a-room');
   });
 });
+
+describe('bootstrap admin (BOOTSTRAP_ADMIN_EMAILS)', () => {
+  function adminEnv(sqlite: Database): Env {
+    return { ...createEnv(sqlite), BOOTSTRAP_ADMIN_EMAILS: ' Owner@Example.com , ops@example.com' };
+  }
+
+  async function googleCallback(env: Env, profile: Record<string, unknown>): Promise<Response> {
+    const authorize = await app.request(
+      'http://localhost/auth/google/authorize?action=login',
+      { headers: { Referer: 'http://localhost:4173/auth/login' } },
+      env
+    );
+    const state = stateFromRedirect(authorize);
+    const cookie = cookieHeader(authorize);
+
+    mockGoogleFetch({ email_verified: true, given_name: 'Olive', family_name: 'Owner', ...profile });
+
+    return await app.request(
+      `http://localhost/auth/google/callback?code=google-code&state=${encodeURIComponent(state)}`,
+      { headers: { Cookie: cookie } },
+      env
+    );
+  }
+
+  function userRow(sqlite: Database, email: string) {
+    return sqlite
+      .prepare(
+        'SELECT role, is_verified, email_verified, password_hash, boarder_status FROM users WHERE email = ?'
+      )
+      .get(email) as {
+      role: string;
+      is_verified: number;
+      email_verified: number;
+      password_hash: string;
+      boarder_status: string | null;
+    } | null;
+  }
+
+  it('creates the admin on a first Google sign-in, skipping the role chooser', async () => {
+    const sqlite = new Database(':memory:');
+    runMigrations(sqlite);
+    const env = adminEnv(sqlite);
+
+    const callback = await googleCallback(env, { sub: 'google-owner', email: 'owner@example.com' });
+    const location = new URL(callback.headers.get('Location') as string);
+
+    expect(callback.status).toBe(302);
+    expect(location.origin + location.pathname).toBe('http://localhost:4173/admin');
+    expect(location.hash).toStartWith('#auth=');
+    expect(userRow(sqlite, 'owner@example.com')).toMatchObject({
+      role: 'admin',
+      is_verified: 1,
+      email_verified: 1,
+    });
+  });
+
+  it('promotes an existing Google account and clears its old password', async () => {
+    const sqlite = new Database(':memory:');
+    runMigrations(sqlite);
+    const env = adminEnv(sqlite);
+    const passwordHash = await hash('someone-elses-pass', 4);
+
+    sqlite
+      .prepare(
+        `
+          INSERT INTO users (
+            first_name, last_name, email, password_hash, role, google_id,
+            is_verified, email_verified, account_status, boarder_status
+          )
+          VALUES ('Ops', 'Person', 'ops@example.com', ?, 'boarder', 'google-ops', 1, 1, 'active', 'new')
+        `
+      )
+      .run(passwordHash);
+
+    const callback = await googleCallback(env, { sub: 'google-ops', email: 'ops@example.com' });
+    const location = new URL(callback.headers.get('Location') as string);
+
+    expect(location.pathname).toBe('/admin');
+    expect(userRow(sqlite, 'ops@example.com')).toMatchObject({
+      role: 'admin',
+      password_hash: '',
+      boarder_status: null,
+    });
+
+    // The pre-promotion password no longer opens the admin account.
+    const login = await postJson(
+      '/auth/login',
+      { email: 'ops@example.com', password: 'someone-elses-pass' },
+      env
+    );
+    expect(login.status).toBe(401);
+  });
+
+  it('promotes a password account once the owner links Google to it', async () => {
+    const sqlite = new Database(':memory:');
+    runMigrations(sqlite);
+    const env = adminEnv(sqlite);
+
+    const register = await postJson(
+      '/auth/register',
+      {
+        firstName: 'Olive',
+        lastName: 'Owner',
+        email: 'owner@example.com',
+        password: 'StrongPass123',
+        role: 'landlord',
+      },
+      env
+    );
+    expect(register.status).toBe(200);
+
+    const callback = await googleCallback(env, { sub: 'google-owner', email: 'owner@example.com' });
+    const token = pendingTokenFromRedirect(callback);
+    expect(userRow(sqlite, 'owner@example.com')?.role).toBe('landlord');
+
+    const complete = await postJson('/auth/google/complete', { pendingToken: token }, env);
+    const body = (await complete.json()) as { user: { role: string } };
+
+    expect(complete.status).toBe(200);
+    expect(body.user.role).toBe('admin');
+    expect(userRow(sqlite, 'owner@example.com')).toMatchObject({ role: 'admin', password_hash: '' });
+  });
+
+  it('never grants admin through email/password sign-up or login', async () => {
+    const sqlite = new Database(':memory:');
+    runMigrations(sqlite);
+    const env = adminEnv(sqlite);
+
+    const register = await postJson(
+      '/auth/register',
+      {
+        firstName: 'Mallory',
+        lastName: 'Squatter',
+        email: 'owner@example.com',
+        password: 'StrongPass123',
+        role: 'boarder',
+      },
+      env
+    );
+    const login = await postJson(
+      '/auth/login',
+      { email: 'owner@example.com', password: 'StrongPass123' },
+      env
+    );
+    const body = (await login.json()) as { user: { role: string } };
+
+    expect(register.status).toBe(200);
+    expect(body.user.role).toBe('boarder');
+    expect(userRow(sqlite, 'owner@example.com')?.role).toBe('boarder');
+  });
+
+  it('ignores Google sign-ins for emails that are not listed', async () => {
+    const sqlite = new Database(':memory:');
+    runMigrations(sqlite);
+    const env = adminEnv(sqlite);
+
+    const callback = await googleCallback(env, {
+      sub: 'google-guest',
+      email: 'guest@example.com',
+    });
+
+    expect(pendingTokenFromRedirect(callback)).toBeString();
+    expect(userRow(sqlite, 'guest@example.com')).toBeNull();
+  });
+});

@@ -12,9 +12,11 @@ import {
   findUserAccountByEmail,
   findUserAccountByGoogleId,
   findUserAccountById,
+  promoteToAdmin,
   updateGoogleIdentity,
   type UserAccountRow,
 } from '../../repositories/users';
+import { isBootstrapAdminEmail } from '../../lib/bootstrap-admin';
 import {
   accessTokenSeconds,
   refreshTokenSeconds,
@@ -255,6 +257,65 @@ export function splitGoogleName(profile: GoogleProfileResponse): {
   };
 }
 
+/**
+ * Promote the account to admin when Google has just verified that the signer owns
+ * a `BOOTSTRAP_ADMIN_EMAILS` address and the account carries that same email.
+ * Call only after a Google sign-in; returns the (possibly updated) account.
+ */
+export async function withBootstrapAdmin(
+  env: Env,
+  db: D1Database,
+  user: UserAccountRow,
+  googleEmail: string
+): Promise<UserAccountRow> {
+  if (
+    user.role === 'admin' ||
+    !isBootstrapAdminEmail(env, googleEmail) ||
+    normalizeEmail(user.email) !== normalizeEmail(googleEmail)
+  ) {
+    return user;
+  }
+
+  await promoteToAdmin(db, Number(user.id));
+
+  return (await findUserAccountById(db, Number(user.id))) ?? user;
+}
+
+/** First Google sign-in of a bootstrap admin: create the admin account directly. */
+async function createBootstrapAdmin(
+  db: D1Database,
+  profile: GoogleProfileResponse,
+  email: string
+): Promise<UserAccountRow> {
+  const googleId = profile.sub?.trim();
+
+  if (!googleId) {
+    throw new Error('Google did not return a usable profile');
+  }
+
+  const { firstName, lastName } = splitGoogleName(profile);
+  const userId = await createGoogleUserAccount(db, {
+    firstName,
+    lastName,
+    email,
+    googleId,
+    googlePicture: profile.picture ?? null,
+    role: 'admin',
+    accountStatus: 'active',
+    isVerified: 1,
+    emailVerified: 1,
+    boarderStatus: null,
+    phoneNumber: null,
+  });
+  const created = await findUserAccountById(db, userId);
+
+  if (!created) {
+    throw new Error('Unable to create the admin account');
+  }
+
+  return created;
+}
+
 export type GoogleUserResolution =
   | { kind: 'existing'; user: UserAccountRow }
   | { kind: 'link_required'; user: UserAccountRow }
@@ -420,10 +481,20 @@ export async function handleGoogleCallback(c: Context<{ Bindings: Env }>): Promi
     const db = requireD1(c.env);
     const googleAccessToken = await googleTokens(c, code);
     const profile = await googleProfile(googleAccessToken);
-    const resolution = await resolveGoogleUser(db, profile);
+    let resolution = await resolveGoogleUser(db, profile);
+    // resolveGoogleUser has already rejected a missing or unverified email.
+    const googleEmail = normalizeEmail(profile.email) ?? '';
+
+    // A bootstrap admin's first sign-in skips the boarder/landlord chooser.
+    if (resolution.kind === 'new' && isBootstrapAdminEmail(c.env, googleEmail)) {
+      resolution = {
+        kind: 'existing',
+        user: await createBootstrapAdmin(db, profile, googleEmail),
+      };
+    }
 
     if (resolution.kind === 'existing') {
-      const user = resolution.user;
+      const user = await withBootstrapAdmin(c.env, db, resolution.user, googleEmail);
 
       if (['suspended', 'banned'].includes(user.account_status)) {
         return authErrorRedirect(
@@ -516,7 +587,10 @@ export async function handleGoogleComplete(c: Context<{ Bindings: Env }>): Promi
   const googleId = payload.googleId;
   const email = payload.email;
 
-  const complete = async (user: UserAccountRow): Promise<Response> => {
+  const complete = async (account: UserAccountRow): Promise<Response> => {
+    // The pending token only exists after Google verified `email`.
+    const user = await withBootstrapAdmin(c.env, db, account, email);
+
     if (['suspended', 'banned'].includes(user.account_status)) {
       return errorResponse(
         403,

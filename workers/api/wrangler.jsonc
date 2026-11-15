@@ -15,16 +15,22 @@
   "triggers": {
     "crons": ["0 17 * * *"]
   },
+  // BOOTSTRAP_ADMIN_EMAILS: comma-separated emails that become admin the next time they sign in
+  // with Google (Google proves the email is theirs; email/password sign-up never grants admin).
+  // A first-time Google sign-in creates the admin account directly. Promotion clears any old
+  // password on that account; set a new one with "Forgot password".
   "vars": {
     "APP_ENV": "production",
-    "APP_ORIGIN": "https://haven-space.pages.dev,http://localhost:3000,http://localhost:4173"
+    "APP_ORIGIN": "https://haven-space.pages.dev,http://localhost:3000,http://localhost:4173",
+    "BOOTSTRAP_ADMIN_EMAILS": ""
   },
   "env": {
     "staging": {
       "name": "haven-space-api-staging",
       "vars": {
         "APP_ENV": "staging",
-        "APP_ORIGIN": "https://haven-space.pages.dev,http://localhost:3000,http://localhost:4173"
+        "APP_ORIGIN": "https://haven-space.pages.dev,http://localhost:3000,http://localhost:4173",
+        "BOOTSTRAP_ADMIN_EMAILS": ""
       },
       "triggers": {
         "crons": ["0 17 * * *"]

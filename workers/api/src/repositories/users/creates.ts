@@ -120,6 +120,35 @@ export async function updateGoogleIdentity(
   return Number(result.meta.changes ?? 0);
 }
 
+/**
+ * Promote a bootstrap admin (see `lib/bootstrap-admin`). Any password set before
+ * the promotion is cleared: password sign-ups are never email-verified, so it may
+ * belong to whoever registered the address first. The admin signs in with Google,
+ * or sets a new password through the forgot-password flow. No-op for admins.
+ */
+export async function promoteToAdmin(db: D1Database, userId: number): Promise<number> {
+  const result = await db
+    .prepare(
+      `
+        UPDATE users
+        SET
+          role = 'admin',
+          is_verified = 1,
+          email_verified = 1,
+          boarder_status = NULL,
+          password_hash = '',
+          updated_at = CURRENT_TIMESTAMP
+        WHERE id = ?
+          AND role != 'admin'
+          AND deleted_at IS NULL
+      `
+    )
+    .bind(userId)
+    .run();
+
+  return Number(result.meta.changes ?? 0);
+}
+
 export async function createLandlordProfile(
   db: D1Database,
   input: CreateLandlordProfileInput
