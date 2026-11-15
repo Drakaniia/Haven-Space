@@ -4,6 +4,7 @@ import { join } from 'node:path';
 import { act, renderHook, waitFor } from '@testing-library/react';
 
 import {
+  DEFAULT_MAP_CENTER,
   DEFAULT_MAP_URL,
   DEFAULT_MAP_ZOOM,
   MAP_LOCATION_QUERY,
@@ -11,6 +12,7 @@ import {
   addressFromNominatim,
   mapUrlForCoordinates,
   osmEmbedUrl,
+  osmEmbedUrlAtZoom,
 } from '../../src/lib/maps';
 import {
   GEOLOCATION_TIMEOUT_MS,
@@ -60,11 +62,40 @@ test('the canonical map locale is Malaybalay, Bukidnon', () => {
   expect(MAP_LOCATION_QUERY).toBe('Malaybalay, Bukidnon');
 });
 
-test('the default map URL pins the locale at city zoom', () => {
+/** The `bbox` of an OSM embed URL as [west, south, east, north]. */
+function bboxOf(url: string): number[] {
+  const bbox = new URL(url).searchParams.get('bbox');
+  expect(bbox).toBeString();
+  return (bbox as string).split(',').map(Number);
+}
+
+test('the default map URL is an OpenStreetMap embed pinned on the locale at city zoom', () => {
   expect(DEFAULT_MAP_ZOOM).toBe(13);
-  expect(DEFAULT_MAP_URL).toContain(`q=${encodeURIComponent(MAP_LOCATION_QUERY)}`);
-  expect(DEFAULT_MAP_URL).toContain('output=embed');
-  expect(DEFAULT_MAP_URL.endsWith(`&z=${DEFAULT_MAP_ZOOM}`)).toBe(true);
+  expect(DEFAULT_MAP_URL).toStartWith('https://www.openstreetmap.org/export/embed.html?');
+  expect(DEFAULT_MAP_URL).toBe(
+    osmEmbedUrlAtZoom(DEFAULT_MAP_CENTER.latitude, DEFAULT_MAP_CENTER.longitude, DEFAULT_MAP_ZOOM)
+  );
+  expect(new URL(DEFAULT_MAP_URL).searchParams.get('marker')).toBe(
+    `${DEFAULT_MAP_CENTER.latitude},${DEFAULT_MAP_CENTER.longitude}`
+  );
+});
+
+test('osmEmbedUrlAtZoom centres the box on the point and tightens it per zoom level', () => {
+  const [west, south, east, north] = bboxOf(osmEmbedUrlAtZoom(8.1575, 125.1278, 13));
+  expect((west + east) / 2).toBeCloseTo(125.1278, 5);
+  expect((south + north) / 2).toBeCloseTo(8.1575, 5);
+
+  const wide = bboxOf(osmEmbedUrlAtZoom(8.1575, 125.1278, 13));
+  const tight = bboxOf(osmEmbedUrlAtZoom(8.1575, 125.1278, 14));
+  expect(tight[2] - tight[0]).toBeCloseTo((wide[2] - wide[0]) / 2, 5);
+  expect(tight[3] - tight[1]).toBeCloseTo((wide[3] - wide[1]) / 2, 5);
+});
+
+test('no source file embeds or links Google Maps any more', () => {
+  const offenders = sourceFiles(SRC_DIR).filter(file =>
+    /google\.[a-z.]+\/maps|maps\.google\./.test(readFileSync(file, 'utf8'))
+  );
+  expect(offenders).toEqual([]);
 });
 
 test('every map route renders the shared embed, not a literal URL', () => {
@@ -98,17 +129,20 @@ test('the user-location zoom is neighbourhood level, tighter than the default', 
 
 test('mapUrlForCoordinates pins raw coordinates at the user zoom', () => {
   const url = mapUrlForCoordinates(8.1575, 125.1275);
-  expect(url).toContain('output=embed');
-  expect(url).toContain(`q=${encodeURIComponent('8.1575,125.1275')}`);
-  expect(url.endsWith(`&z=${USER_LOCATION_MAP_ZOOM}`)).toBe(true);
-  // The place-string default must not leak into a coordinate URL.
-  expect(url).not.toContain(encodeURIComponent(MAP_LOCATION_QUERY));
+  expect(url).toStartWith('https://www.openstreetmap.org/export/embed.html?');
+  expect(new URL(url).searchParams.get('marker')).toBe('8.1575,125.1275');
+  expect(url).toBe(osmEmbedUrlAtZoom(8.1575, 125.1275, USER_LOCATION_MAP_ZOOM));
+  // The default locale must not leak into a coordinate URL.
+  expect(url).not.toBe(DEFAULT_MAP_URL);
 });
 
 test('mapUrlForCoordinates handles negative coordinates and a custom zoom', () => {
   const url = mapUrlForCoordinates(-8.5, -125.25, 11);
-  expect(url).toContain(`q=${encodeURIComponent('-8.5,-125.25')}`);
-  expect(url.endsWith('&z=11')).toBe(true);
+  expect(new URL(url).searchParams.get('marker')).toBe('-8.5,-125.25');
+  expect(url).toBe(osmEmbedUrlAtZoom(-8.5, -125.25, 11));
+  const [west, south, east, north] = bboxOf(url);
+  expect((west + east) / 2).toBeCloseTo(-125.25, 5);
+  expect((south + north) / 2).toBeCloseTo(-8.5, 5);
 });
 
 test('a pin drop fills street, city and province from a Philippine reverse geocode', () => {

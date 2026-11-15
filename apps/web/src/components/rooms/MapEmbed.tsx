@@ -1,7 +1,7 @@
 import { DEFAULT_MAP_URL, MAP_LOCATION_QUERY } from '../../lib/maps';
 
 /**
- * The single embedded Google Map every `/maps` surface renders. The pin, the
+ * The single embedded OpenStreetMap every `/maps` surface renders. The pin, the
  * zoom and the copy all come from `lib/maps`, so a page only chooses its
  * heading and its frame height.
  *
