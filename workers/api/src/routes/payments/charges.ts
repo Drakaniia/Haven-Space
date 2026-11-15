@@ -12,6 +12,7 @@ import {
   buildLedgerResponse,
   cancelCharge,
   createManualCharge,
+  createPropertyBill,
   createSubmission,
   findChargeForBoarder,
   findChargeForLandlordWrite,
@@ -65,6 +66,104 @@ import {
 } from './shared';
 
 export function registerChargeRoutes(router: Hono<{ Bindings: Env }>) {
+  /** Additional bills (electricity, water, internet, maintenance...) for many tenants at once. */
+  router.post('/api/landlord/properties/:propertyId/bills', async c => {
+    const db = requireD1(c.env);
+    const user = await landlordUser(c);
+
+    if (user instanceof Response) {
+      return user;
+    }
+
+    const propertyId = routeId(c.req.param('propertyId'));
+
+    if (!propertyId || !(await findLandlordRoomProperty(db, propertyId, user.user_id))) {
+      return errorResponse(404, 'Property not found');
+    }
+
+    const body = await readJsonObject(c.req.raw);
+    const name = trimmed(body, 'name');
+    const chargeType = trimmed(body, 'charge_type') || 'utility';
+    const amount = positiveNumber(body.amount);
+    const dueDate = isoDate(trimmed(body, 'due_date'));
+    const period = trimmed(body, 'billing_period');
+    const arrangement = trimmed(body, 'arrangement') || 'each';
+    const roomIds = Array.isArray(body.room_ids)
+      ? [...new Set(body.room_ids.map(value => routeId(String(value))))].filter(
+          (value): value is number => value !== null
+        )
+      : [];
+
+    if (!name) {
+      return errorResponse(400, 'Bill name is required');
+    }
+
+    if (chargeType !== 'utility' && chargeType !== 'other') {
+      return errorResponse(400, 'charge_type must be utility or other');
+    }
+
+    if (!amount) {
+      return errorResponse(400, 'amount is required');
+    }
+
+    if (!dueDate) {
+      return errorResponse(400, 'due_date must be YYYY-MM-DD');
+    }
+
+    if (period && !/^\d{4}-\d{2}$/.test(period)) {
+      return errorResponse(400, 'billing_period must be YYYY-MM');
+    }
+
+    if (arrangement !== 'each' && arrangement !== 'split') {
+      return errorResponse(400, 'arrangement must be each or split');
+    }
+
+    if (body.applies_to === 'rooms' && roomIds.length === 0) {
+      return errorResponse(400, 'Choose at least one room');
+    }
+
+    const result = await createPropertyBill(db, {
+      propertyId,
+      landlordId: user.user_id,
+      chargeType,
+      name,
+      notes: trimmed(body, 'description') || null,
+      amount,
+      dueDate,
+      period: period || null,
+      roomIds: body.applies_to === 'rooms' ? roomIds : [],
+      arrangement,
+    });
+
+    if (result.created === 0 && result.skipped === 0) {
+      return errorResponse(409, 'No current tenants in the selected rooms', {
+        code: 'no_tenants',
+      });
+    }
+
+    for (const boarderId of result.boarder_ids) {
+      await insertNotification(db, {
+        userId: boarderId,
+        type: 'bill_added',
+        title: `New bill: ${name}`,
+        message: `${name} of ₱${result.per_boarder.toLocaleString()} is due ${dueDate}.`,
+        metadata: { property_id: propertyId, amount: result.per_boarder, due_date: dueDate },
+      });
+    }
+
+    return jsonResponse(
+      {
+        success: true,
+        message:
+          result.created === 0
+            ? 'Every selected tenant already has this bill'
+            : `Bill added for ${result.created} ${result.created === 1 ? 'tenant' : 'tenants'}`,
+        data: result,
+      },
+      result.created > 0 ? 201 : 200
+    );
+  });
+
   router.post('/api/landlord/properties/:propertyId/charges', async c => {
     const db = requireD1(c.env);
     const user = await landlordUser(c);

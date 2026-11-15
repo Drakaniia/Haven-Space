@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { useLocation, useNavigate } from '@tanstack/react-router';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 
+import { AddBillModal } from './AddBillModal';
 import { AddChargeModal } from './AddChargeModal';
 import { MessageTenantModal } from './MessageTenantModal';
 import { PaymentMetricsStrip } from './PaymentMetricsStrip';
@@ -63,6 +64,7 @@ export function PaymentsMonitoringPage() {
   } | null>(null);
   const [recording, setRecording] = useState<TrackerRow | null>(null);
   const [charging, setCharging] = useState<TrackerRow | null>(null);
+  const [billing, setBilling] = useState(false);
 
   // The URL is the filter state's home (D16): shareable, reloadable, and written
   // with `replace` so a filter change never fills the back button. Search is
@@ -205,13 +207,22 @@ export function PaymentsMonitoringPage() {
         title="Payments"
         subtitle="Who owes rent this month, how late they are, and what to do next."
         actions={
-          <Button
-            variant="outline"
-            disabled={exportCsv.isPending || activePropertyId === null}
-            onClick={() => exportCsv.mutate()}
-          >
-            {exportCsv.isPending ? 'Exporting…' : 'Export CSV'}
-          </Button>
+          <div className="flex flex-wrap gap-2">
+            <Button
+              variant="outline"
+              disabled={activePropertyId === null}
+              onClick={() => setBilling(true)}
+            >
+              Add bill
+            </Button>
+            <Button
+              variant="outline"
+              disabled={exportCsv.isPending || activePropertyId === null}
+              onClick={() => exportCsv.mutate()}
+            >
+              {exportCsv.isPending ? 'Exporting…' : 'Export CSV'}
+            </Button>
+          </div>
         }
       />
 
@@ -319,6 +330,23 @@ export function PaymentsMonitoringPage() {
           propertyId={activePropertyId}
           initialBoarderId={charging.boarder_id}
           onClose={() => setCharging(null)}
+          onCreated={message => {
+            push({ tone: 'success', message });
+            refresh();
+          }}
+          onError={message => push({ tone: 'error', message })}
+        />
+      ) : null}
+
+      {billing && token ? (
+        <AddBillModal
+          open
+          token={token}
+          propertyId={activePropertyId}
+          propertyName={
+            propertyList.find(property => property.id === activePropertyId)?.name ?? 'Property'
+          }
+          onClose={() => setBilling(false)}
           onCreated={message => {
             push({ tone: 'success', message });
             refresh();

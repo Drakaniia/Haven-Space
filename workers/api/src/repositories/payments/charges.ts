@@ -1,5 +1,11 @@
 import { accessiblePropertyClause } from '../property-access/helpers';
-import { DEFAULT_GRACE_DAYS, roundMoney, toDateOnly } from './helpers';
+import {
+  DEFAULT_GRACE_DAYS,
+  addMonthsClamped,
+  previousDay,
+  roundMoney,
+  toDateOnly,
+} from './helpers';
 
 /**
  * Landlord-side writes: manual utility/ad-hoc charges (spec D9), billing
@@ -160,6 +166,123 @@ export async function createManualCharge(
     .run();
 
   return Number(result.meta.last_row_id ?? 0);
+}
+
+export interface PropertyBillInput {
+  propertyId: number;
+  landlordId: number;
+  chargeType: 'utility' | 'other';
+  name: string;
+  notes: string | null;
+  amount: number;
+  dueDate: string;
+  /** `YYYY-MM` the bill covers, if any. */
+  period: string | null;
+  /** Empty = every room with a tenant. */
+  roomIds: number[];
+  /** `each`: every tenant pays `amount`; `split`: `amount` is shared evenly. */
+  arrangement: 'each' | 'split';
+}
+
+export interface PropertyBillResult {
+  created: number;
+  /** Tenants who already had this bill (same name + due date) — not charged twice. */
+  skipped: number;
+  per_boarder: number;
+  boarder_ids: number[];
+}
+
+/**
+ * An additional bill (electricity, water, internet, maintenance...) fanned out to
+ * the tenants it applies to: current tenancies in the chosen rooms whose stay
+ * reaches the due date. One manual charge per tenant, keyed so re-posting the same
+ * bill never charges anyone twice; rent records are untouched.
+ */
+export async function createPropertyBill(
+  db: D1Database,
+  input: PropertyBillInput
+): Promise<PropertyBillResult> {
+  const roomFilter =
+    input.roomIds.length > 0 ? `AND r.id IN (${input.roomIds.map(() => '?').join(', ')})` : '';
+  const tenants = await db
+    .prepare(
+      `
+        SELECT app.id AS application_id, app.boarder_id, app.room_id
+        FROM applications app
+        JOIN rooms r ON app.room_id = r.id
+        WHERE r.property_id = ?
+          AND app.status = 'confirmed'
+          AND app.deleted_at IS NULL
+          AND COALESCE(app.confirmed_at, app.created_at) <= ? || ' 23:59:59'
+          AND NOT (
+            app.leave_request_status = 'approved'
+            AND app.intended_leave_date IS NOT NULL
+            AND app.intended_leave_date < ?
+          )
+          ${roomFilter}
+        ORDER BY app.id
+      `
+    )
+    .bind(input.propertyId, input.dueDate, input.dueDate, ...input.roomIds)
+    .all<{ application_id: number; boarder_id: number; room_id: number }>();
+  const rows = tenants.results ?? [];
+
+  if (rows.length === 0) {
+    return { created: 0, skipped: 0, per_boarder: 0, boarder_ids: [] };
+  }
+
+  // ponytail: an even split rounds to centavos; a 1-centavo remainder is dropped.
+  const perBoarder = roundMoney(
+    input.arrangement === 'split' ? input.amount / rows.length : input.amount
+  );
+  const billKey = `${input.name.trim().toLowerCase()}:${input.dueDate}`;
+  const periodStart = input.period ? `${input.period}-01` : null;
+  const periodEnd = input.period ? addMonthsClamped(`${input.period}-01`, 1) : null;
+  let created = 0;
+  const charged: number[] = [];
+
+  for (const row of rows) {
+    const result = await db
+      .prepare(
+        `
+          INSERT OR IGNORE INTO payments (
+            boarder_id, landlord_id, room_id, property_id, application_id,
+            charge_type, description, notes, amount, due_date, period_start, period_end,
+            status, generation_key, created_by, created_at, updated_at
+          )
+          VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'pending', ?, ?, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
+        `
+      )
+      .bind(
+        Number(row.boarder_id),
+        input.landlordId,
+        Number(row.room_id),
+        input.propertyId,
+        Number(row.application_id),
+        input.chargeType,
+        input.name.trim(),
+        input.notes,
+        perBoarder,
+        input.dueDate,
+        periodStart,
+        periodEnd ? previousDay(periodEnd) : null,
+        `bill:${Number(row.application_id)}:${billKey}`,
+        input.landlordId
+      )
+      .run();
+
+    if (Number(result.meta.changes ?? 0) > 0) {
+      created += 1;
+      charged.push(Number(row.boarder_id));
+    }
+  }
+
+  return {
+    created,
+    skipped: rows.length - created,
+    per_boarder: perBoarder,
+    boarder_ids: charged,
+  };
 }
 
 /** Tenant-visible charge fields a landlord may correct while it is still open. */

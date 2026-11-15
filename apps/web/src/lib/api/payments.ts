@@ -302,6 +302,33 @@ export function createLandlordCharge(
   );
 }
 
+/** An additional bill fanned out to the property's affected tenants. */
+export function createPropertyBill(
+  token: string,
+  propertyId: number,
+  input: {
+    name: string;
+    charge_type: 'utility' | 'other';
+    description?: string;
+    amount: number;
+    due_date: string;
+    billing_period?: string;
+    applies_to: 'all' | 'rooms';
+    room_ids: number[];
+    arrangement: 'each' | 'split';
+  }
+): Promise<{
+  success: true;
+  message: string;
+  data: { created: number; skipped: number; per_boarder: number };
+}> {
+  return apiFetch(
+    base(),
+    `/api/landlord/properties/${propertyId}/bills`,
+    jsonOptions(token, { method: 'POST', body: JSON.stringify(input) })
+  );
+}
+
 export function cancelLandlordCharge(
   token: string,
   chargeId: number

@@ -415,6 +415,118 @@ describe('tracker rows', () => {
   });
 });
 
+describe('additional bills', () => {
+  function seedRooms(sqlite: Database): void {
+    sqlite.exec(`
+      INSERT INTO users (id, first_name, last_name, email, password_hash, role, is_verified, email_verified, account_status, boarder_status, created_at)
+      VALUES
+        (8, 'Cara', 'Two', 'cara@example.com', 'hash', 'boarder', 1, 1, 'active', 'confirmed', '2026-01-02 08:00:00'),
+        (9, 'Dan', 'Three', 'dan@example.com', 'hash', 'boarder', 1, 1, 'active', 'confirmed', '2026-01-02 08:00:00'),
+        (10, 'Eve', 'Leaving', 'eve@example.com', 'hash', 'boarder', 1, 1, 'active', 'confirmed', '2026-01-02 08:00:00');
+      INSERT INTO rooms (id, property_id, landlord_id, room_number, title, price, deposit, capacity, occupied, status)
+      VALUES (102, 10, 3, 'Room 2', 'Two', 5000, 1000, 2, 2, 'occupied'),
+             (103, 10, 3, 'Room 3', 'Three', 5000, 1000, 1, 1, 'occupied');
+      INSERT INTO applications (id, boarder_id, landlord_id, room_id, message, status, advance_amount, created_at, confirmed_at, leave_request_status, intended_leave_date)
+      VALUES
+        (210, 8, 3, 102, 'Hi', 'confirmed', 0, '2026-01-15 08:00:00', '2026-01-15 08:00:00', 'none', NULL),
+        (211, 9, 3, 103, 'Hi', 'confirmed', 0, '2026-01-15 08:00:00', '2026-01-15 08:00:00', 'none', NULL),
+        (212, 10, 3, 102, 'Hi', 'confirmed', 0, '2026-01-15 08:00:00', '2026-01-15 08:00:00', 'approved', '2026-02-01');
+    `);
+  }
+
+  const postBill = (env: Env, body: object, landlordId = '3') =>
+    app.request(
+      'http://localhost/api/landlord/properties/10/bills',
+      {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'X-User-ID': landlordId },
+        body: JSON.stringify(body),
+      },
+      env
+    );
+
+  const billsFor = (sqlite: Database, name: string) =>
+    sqlite
+      .prepare(
+        'SELECT boarder_id, amount, charge_type FROM payments WHERE description = ? ORDER BY boarder_id'
+      )
+      .all(name);
+
+  it('charges every current tenant for an all-rooms bill, once', async () => {
+    const { sqlite, env } = setup();
+    seedRooms(sqlite);
+    const bill = {
+      name: 'Electricity',
+      charge_type: 'utility',
+      amount: 400,
+      due_date: '2026-03-10',
+      billing_period: '2026-02',
+      applies_to: 'all',
+      arrangement: 'each',
+    };
+
+    const first = await postBill(env, bill);
+
+    expect(first.status).toBe(201);
+    // Eve left on 2026-02-01, before the bill is due, so she is not charged.
+    expect(billsFor(sqlite, 'Electricity')).toEqual([
+      { boarder_id: 2, amount: 400, charge_type: 'utility' },
+      { boarder_id: 8, amount: 400, charge_type: 'utility' },
+      { boarder_id: 9, amount: 400, charge_type: 'utility' },
+    ]);
+
+    const again = await postBill(env, bill);
+    const body = (await again.json()) as { data: { created: number; skipped: number } };
+
+    expect(again.status).toBe(200);
+    expect(body.data).toMatchObject({ created: 0, skipped: 3 });
+    expect(billsFor(sqlite, 'Electricity')).toHaveLength(3);
+    // Rent records are untouched.
+    expect(
+      sqlite.prepare("SELECT COUNT(*) AS n FROM payments WHERE charge_type = 'rent'").get()
+    ).toEqual({ n: 0 });
+    expect(
+      sqlite.prepare("SELECT COUNT(*) AS n FROM notifications WHERE type = 'bill_added'").get()
+    ).toEqual({ n: 3 });
+  });
+
+  it('limits a bill to the chosen rooms and can split it evenly', async () => {
+    const { sqlite, env } = setup();
+    seedRooms(sqlite);
+
+    const water = await postBill(env, {
+      name: 'Water',
+      amount: 600,
+      due_date: '2026-03-10',
+      applies_to: 'rooms',
+      room_ids: [102, 103],
+      arrangement: 'split',
+    });
+
+    expect(water.status).toBe(201);
+    expect(billsFor(sqlite, 'Water')).toEqual([
+      { boarder_id: 8, amount: 300, charge_type: 'utility' },
+      { boarder_id: 9, amount: 300, charge_type: 'utility' },
+    ]);
+
+    const noRooms = await postBill(env, {
+      name: 'Maintenance',
+      amount: 100,
+      due_date: '2026-03-10',
+      applies_to: 'rooms',
+      room_ids: [],
+    });
+    const rival = await postBill(
+      env,
+      { name: 'Hack', amount: 100, due_date: '2026-03-10', applies_to: 'all' },
+      '4'
+    );
+
+    expect(noRooms.status).toBe(400);
+    expect(rival.status).toBe(404);
+  });
+});
+
 describe('next due date', () => {
   it('re-anchors one month after the payment date and shifts the not-yet-due rent row (R4/D33)', async () => {
     const { sqlite, env } = setup();
