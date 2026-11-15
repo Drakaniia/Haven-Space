@@ -463,6 +463,86 @@ describe('submission and verification', () => {
     expect(badMethod.status).toBe(400);
   });
 
+  it('accepts a cash declaration without a reference, then the landlord approves it', async () => {
+    const { sqlite, env } = setup();
+    const chargeId = await firstChargeId(env);
+
+    const submitted = await app.request(
+      `http://localhost/api/boarder/payments/${chargeId}/submissions`,
+      {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'X-User-ID': '2' },
+        body: JSON.stringify({
+          payment_method: 'cash',
+          reference_number: '',
+          proof_url: 'https://example.com/ignored.png',
+        }),
+      },
+      env
+    );
+
+    expect(submitted.status).toBe(201);
+
+    const claim = sqlite
+      .prepare('SELECT id, reference_number, proof_url, status FROM payment_submissions')
+      .get() as { id: number; reference_number: string; proof_url: string | null; status: string };
+
+    expect(claim).toMatchObject({ reference_number: '', proof_url: null, status: 'pending' });
+
+    const verified = await app.request(
+      `http://localhost/api/landlord/submissions/${claim.id}/verify`,
+      { method: 'POST', headers: { 'X-User-ID': '3' } },
+      env
+    );
+
+    expect(verified.status).toBe(200);
+    expect(
+      sqlite.prepare('SELECT status, payment_method FROM payments WHERE id = ?').get(chargeId)
+    ).toEqual({ status: 'paid', payment_method: 'cash' });
+    expect(
+      sqlite
+        .prepare(
+          "SELECT COUNT(*) AS n FROM notifications WHERE user_id = 2 AND type = 'payment_verified'"
+        )
+        .get()
+    ).toEqual({ n: 1 });
+  });
+
+  it('accepts a receipt screenshot by its bytes, even with an empty browser type', async () => {
+    const { env } = setup();
+    const chargeId = await firstChargeId(env);
+    const uploads: File[] = [];
+    const uploadEnv: Env = {
+      ...env,
+      UPLOADTHING_UPLOAD_FILES: async files => {
+        uploads.push(...files);
+        return [{ data: { ufsUrl: 'https://utfs.io/f/receipt' }, error: null }] as never;
+      },
+    };
+    const png = new Uint8Array([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a, 0, 0, 0, 0]);
+    const form = new FormData();
+    form.append('proof', new File([png], 'IMG_1234', { type: '' }));
+
+    const uploaded = await app.request(
+      `http://localhost/api/boarder/payments/${chargeId}/proof`,
+      { method: 'POST', headers: { 'X-User-ID': '2' }, body: form },
+      uploadEnv
+    );
+
+    expect(uploaded.status).toBe(201);
+    expect(uploads[0]?.type).toBe('image/png');
+
+    const notImage = new FormData();
+    notImage.append('proof', new File(['hello'], 'receipt.png', { type: 'image/png' }));
+    const rejected = await app.request(
+      `http://localhost/api/boarder/payments/${chargeId}/proof`,
+      { method: 'POST', headers: { 'X-User-ID': '2' }, body: notImage },
+      uploadEnv
+    );
+
+    expect(rejected.status).toBe(400);
+  });
+
   it('returns a rejected claim to the open ledger so it can be resubmitted', async () => {
     const { sqlite, env } = setup();
     const chargeId = await firstChargeId(env);

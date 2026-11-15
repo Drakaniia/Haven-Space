@@ -30,6 +30,7 @@ import {
   paymentMethodLabel,
   paymentStatusMeta,
 } from '../../../lib/payments';
+import { prepareReceiptImage } from '../../../lib/receipt-image';
 import { setPendingToast } from '../../../lib/toast';
 import type { PaymentCharge } from '../../../lib/types';
 
@@ -45,6 +46,29 @@ export const Route = createFileRoute('/boarder/payments/pay')({
 
 /** A boarder claim has no place to name a custom method, so "Other" is the landlord's only (D12). */
 const BOARDER_METHODS = PAYMENT_METHODS.filter(option => option.value !== 'other');
+
+/** Face-to-face vs online: cash needs no reference or screenshot. */
+const METHOD_GROUPS = [
+  {
+    key: 'in_person',
+    title: 'Face to face',
+    hint: 'You handed the cash to your landlord in person.',
+    methods: BOARDER_METHODS.filter(option => option.value === 'cash'),
+  },
+  {
+    key: 'online',
+    title: 'Online',
+    hint: 'You sent it through GCash, a bank, or a card.',
+    methods: BOARDER_METHODS.filter(option => option.value !== 'cash'),
+  },
+];
+
+/** How a submission's proof reads: cash has no reference. */
+function submissionRef(submission: { payment_method: string; reference_number: string }) {
+  return submission.payment_method === 'cash' || !submission.reference_number
+    ? 'Paid in person'
+    : `Ref ${submission.reference_number}`;
+}
 
 /** Fallback when the page is opened without a charge: pick an open one. */
 function ChooseCharge() {
@@ -181,7 +205,7 @@ function ChargeSummary({ detail }: { detail: PaymentCharge }) {
                     {paymentMethodLabel(submission.payment_method)}
                   </p>
                   <p className="truncate text-xs">
-                    Ref {submission.reference_number}
+                    {submissionRef(submission)}
                     {submission.rejection_reason ? ` · ${submission.rejection_reason}` : ''}
                   </p>
                 </div>
@@ -224,24 +248,24 @@ function FormStep({
 }) {
   return (
     <div className="border-t border-border/80 pt-6 first:border-t-0 first:pt-0">
-    <fieldset>
-      <legend className="w-full">
-        <span className="flex items-center gap-3">
-          <span
-            aria-hidden="true"
-            className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-mint text-xs font-bold text-primary-dark"
-          >
-            {number}
+      <fieldset>
+        <legend className="w-full">
+          <span className="flex items-center gap-3">
+            <span
+              aria-hidden="true"
+              className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-mint text-xs font-bold text-primary-dark"
+            >
+              {number}
+            </span>
+            <span className="font-display text-lg font-medium tracking-[-0.01em] text-ink">
+              <span className="sr-only">Step {number}: </span>
+              {title}
+            </span>
           </span>
-          <span className="font-display text-lg font-medium tracking-[-0.01em] text-ink">
-            <span className="sr-only">Step {number}: </span>
-            {title}
-          </span>
-        </span>
-      </legend>
-      {description ? <p className="mt-1.5 pl-10 text-sm text-gray-ink">{description}</p> : null}
-      <div className="mt-4 flex flex-col gap-4 sm:pl-10">{children}</div>
-    </fieldset>
+        </legend>
+        {description ? <p className="mt-1.5 pl-10 text-sm text-gray-ink">{description}</p> : null}
+        <div className="mt-4 flex flex-col gap-4 sm:pl-10">{children}</div>
+      </fieldset>
     </div>
   );
 }
@@ -323,6 +347,7 @@ function SubmitPaymentPage() {
   const [notes, setNotes] = useState('');
   const [receipt, setReceipt] = useState<File | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const isCash = method === 'cash';
 
   const charge = useQuery({
     queryKey: ['boarder-charge', chargeId],
@@ -336,21 +361,25 @@ function SubmitPaymentPage() {
         throw new Error('No charge selected');
       }
 
+      if (!isCash && !reference.trim()) {
+        throw new Error('Enter the reference number from your GCash, bank, or card receipt.');
+      }
+
       let proofUrl: string | null = null;
 
-      if (receipt) {
-        const uploaded = await uploadPaymentProof(token!, chargeId, receipt);
-
-        if (!uploaded.data?.proof_url) {
-          throw new Error('The receipt could not be uploaded');
-        }
-
+      // Cash is face to face, so any picked screenshot is ignored.
+      if (receipt && !isCash) {
+        const uploaded = await uploadPaymentProof(
+          token!,
+          chargeId,
+          await prepareReceiptImage(receipt)
+        );
         proofUrl = uploaded.data.proof_url;
       }
 
       return await submitBoarderPayment(token!, chargeId, {
         payment_method: method,
-        reference_number: reference.trim(),
+        reference_number: isCash ? '' : reference.trim(),
         proof_url: proofUrl,
         ...(notes.trim() ? { notes: notes.trim() } : {}),
       });
@@ -389,7 +418,10 @@ function SubmitPaymentPage() {
       {!chargeId ? (
         <ChooseCharge />
       ) : charge.isLoading ? (
-        <div aria-busy="true" className="grid grid-cols-1 gap-6 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.4fr)]">
+        <div
+          aria-busy="true"
+          className="grid grid-cols-1 gap-6 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.4fr)]"
+        >
           <Skeleton className="h-72 w-full rounded-2xl" />
           <Skeleton className="h-96 w-full rounded-2xl" />
         </div>
@@ -454,13 +486,18 @@ function SubmitPaymentPage() {
                       title: 'Proof sent',
                       description: `${paymentMethodLabel(
                         latestSubmission(detail)?.payment_method
-                      )} · Ref ${latestSubmission(detail)?.reference_number ?? '—'}`,
+                      )} · ${
+                        latestSubmission(detail) ? submissionRef(latestSubmission(detail)!) : '—'
+                      }`,
                       state: 'done',
                     },
                     {
                       key: 'verify',
                       title: 'Landlord verifies',
-                      description: 'They check the amount and reference against their records.',
+                      description:
+                        latestSubmission(detail)?.payment_method === 'cash'
+                          ? 'They approve it once they confirm they received your cash.'
+                          : 'They check the amount and reference against their records.',
                       state: 'current',
                     },
                     {
@@ -479,8 +516,8 @@ function SubmitPaymentPage() {
                 <div className="mb-6 rounded-xl border border-error-border bg-error-tint px-4 py-3 text-sm text-error-ink">
                   <p className="font-semibold">Your last submission was rejected.</p>
                   <p className="mt-0.5">
-                    {latestSubmission(detail)?.rejection_reason || 'No reason was given.'} Check
-                    the details and send it again.
+                    {latestSubmission(detail)?.rejection_reason || 'No reason was given.'} Check the
+                    details and send it again.
                   </p>
                 </div>
               ) : null}
@@ -498,51 +535,67 @@ function SubmitPaymentPage() {
                 }}
               >
                 <FormStep number={1} title="How did you pay?">
-                  <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
-                    {BOARDER_METHODS.map(option => {
-                      const checked = method === option.value;
-                      return (
-                        <label
-                          key={option.value}
-                          className={`flex cursor-pointer items-center gap-3 rounded-xl border px-4 py-3 text-sm font-semibold transition-colors focus-within:ring-4 focus-within:ring-primary/15 ${
-                            checked
-                              ? 'border-primary bg-mint text-primary-dark'
-                              : 'border-border-strong bg-surface text-ink hover:border-primary/50'
-                          }`}
-                        >
-                          <input
-                            type="radio"
-                            name="payment_method"
-                            value={option.value}
-                            checked={checked}
-                            onChange={() => setMethod(option.value)}
-                            className="h-4 w-4 accent-primary"
-                          />
-                          {option.label}
-                        </label>
-                      );
-                    })}
-                  </div>
+                  {METHOD_GROUPS.map(group => (
+                    <div key={group.key}>
+                      <p className="text-sm font-semibold text-ink">{group.title}</p>
+                      <p className="mb-2 text-xs text-gray-ink">{group.hint}</p>
+                      <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
+                        {group.methods.map(option => {
+                          const checked = method === option.value;
+                          return (
+                            <label
+                              key={option.value}
+                              className={`flex cursor-pointer items-center gap-3 rounded-xl border px-4 py-3 text-sm font-semibold transition-colors focus-within:ring-4 focus-within:ring-primary/15 ${
+                                checked
+                                  ? 'border-primary bg-mint text-primary-dark'
+                                  : 'border-border-strong bg-surface text-ink hover:border-primary/50'
+                              }`}
+                            >
+                              <input
+                                type="radio"
+                                name="payment_method"
+                                value={option.value}
+                                checked={checked}
+                                onChange={() => setMethod(option.value)}
+                                className="h-4 w-4 accent-primary"
+                              />
+                              {option.label}
+                            </label>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  ))}
                 </FormStep>
 
                 <FormStep
                   number={2}
                   title="Payment details"
-                  description="The reference lets your landlord match your payment quickly."
+                  description={
+                    isCash
+                      ? 'No reference number or screenshot needed. Your landlord approves it once they confirm they received the cash.'
+                      : 'The reference lets your landlord match your payment quickly.'
+                  }
                 >
-                  <Field label="Reference number" htmlFor="reference_number" error={null}>
-                    <TextInput
-                      id="reference_number"
-                      required
-                      value={reference}
-                      onChange={event => setReference(event.target.value)}
-                      placeholder={method === 'cash' ? 'CASH' : 'GCash / bank reference'}
-                    />
-                  </Field>
-                  <div>
-                    <p className="mb-1.5 text-sm font-semibold text-ink">Receipt (optional)</p>
-                    <ReceiptPicker file={receipt} onChange={setReceipt} />
-                  </div>
+                  {isCash ? null : (
+                    <>
+                      <Field label="Reference number" htmlFor="reference_number" error={null}>
+                        <TextInput
+                          id="reference_number"
+                          required
+                          value={reference}
+                          onChange={event => setReference(event.target.value)}
+                          placeholder="GCash / bank reference"
+                        />
+                      </Field>
+                      <div>
+                        <p className="mb-1.5 text-sm font-semibold text-ink">
+                          Screenshot (optional)
+                        </p>
+                        <ReceiptPicker file={receipt} onChange={setReceipt} />
+                      </div>
+                    </>
+                  )}
                   <Field label="Notes (optional)" htmlFor="notes">
                     <TextArea
                       id="notes"
@@ -566,12 +619,16 @@ function SubmitPaymentPage() {
                     </div>
                     <div className="flex justify-between gap-3 py-2.5">
                       <dt className="text-gray-ink">Reference</dt>
-                      <dd className="truncate text-ink">{reference.trim() || '—'}</dd>
+                      <dd className="truncate text-ink">
+                        {isCash ? 'Paid in person' : reference.trim() || '—'}
+                      </dd>
                     </div>
-                    <div className="flex justify-between gap-3 py-2.5">
-                      <dt className="text-gray-ink">Receipt</dt>
-                      <dd className="text-ink">{receipt ? 'Attached' : 'None'}</dd>
-                    </div>
+                    {isCash ? null : (
+                      <div className="flex justify-between gap-3 py-2.5">
+                        <dt className="text-gray-ink">Screenshot</dt>
+                        <dd className="text-ink">{receipt ? 'Attached' : 'None'}</dd>
+                      </div>
+                    )}
                   </dl>
                   <Button type="submit" size="lg" disabled={submit.isPending}>
                     {submit.isPending ? 'Submitting…' : `Submit ${formatPeso(detail.total_due)}`}

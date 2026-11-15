@@ -10,6 +10,7 @@ import {
   recordLandlordPayment,
   uploadLandlordProof,
 } from '../../lib/api/payments';
+import { prepareReceiptImage } from '../../lib/receipt-image';
 import {
   PAYMENT_METHODS,
   formatPaymentDate,
@@ -102,24 +103,24 @@ export function RecordPaymentModal({
   const missing = !applicationId
     ? 'Choose a boarder.'
     : history.isLoading
-      ? null
-      : charges.length === 0
-        ? null
-        : selected.length === 0
-          ? 'Tick at least one charge that was paid.'
-          : method === 'other' && methodLabel.trim().length === 0
-            ? 'Name the payment method.'
-            : needsReference && reference.trim().length === 0
-              ? 'Add the reference or transaction ID.'
-              : needsReceipt && file === null
-                ? 'Attach a receipt — only cash can be recorded without one.'
-                : null;
+    ? null
+    : charges.length === 0
+    ? null
+    : selected.length === 0
+    ? 'Tick at least one charge that was paid.'
+    : method === 'other' && methodLabel.trim().length === 0
+    ? 'Name the payment method.'
+    : needsReference && reference.trim().length === 0
+    ? 'Add the reference or transaction ID.'
+    : needsReceipt && file === null
+    ? 'Attach a receipt — only cash can be recorded without one.'
+    : null;
   const boarderName =
     boarders.find(row => row.application_id === applicationId)?.boarder_name ?? 'this boarder';
   const methodName =
     method === 'other'
       ? methodLabel.trim() || 'another method'
-      : (PAYMENT_METHODS.find(option => option.value === method)?.label ?? method);
+      : PAYMENT_METHODS.find(option => option.value === method)?.label ?? method;
 
   const submit = async () => {
     if (!applicationId || selected.length === 0) {
@@ -132,7 +133,11 @@ export function RecordPaymentModal({
       let proofUrl: string | undefined;
 
       if (file) {
-        const uploaded = await uploadLandlordProof(token, selected[0], file);
+        const uploaded = await uploadLandlordProof(
+          token,
+          selected[0],
+          await prepareReceiptImage(file)
+        );
         const proof = uploaded.data?.proof_url;
 
         if (!proof) {
@@ -183,7 +188,9 @@ export function RecordPaymentModal({
         {history.isLoading ? <Spinner /> : null}
 
         <fieldset>
-          <legend className="mb-1.5 text-sm font-semibold text-ink">Charges to settle in full</legend>
+          <legend className="mb-1.5 text-sm font-semibold text-ink">
+            Charges to settle in full
+          </legend>
           {history.isLoading ? null : charges.length === 0 ? (
             <p className="rounded-xl border border-dashed border-border-strong px-4 py-4 text-sm text-gray-ink">
               This boarder has no open charges. Nothing needs recording right now.
@@ -296,7 +303,7 @@ export function RecordPaymentModal({
           <input
             id="record-proof"
             type="file"
-            accept="image/jpeg,image/png,image/gif,image/webp"
+            accept="image/*"
             className="block w-full rounded-xl border border-dashed border-border-strong bg-surface px-3 py-2.5 text-sm text-gray-ink file:mr-3 file:rounded-lg file:border-0 file:bg-mint file:px-3 file:py-1.5 file:text-sm file:font-semibold file:text-primary-dark"
             onChange={event => setFile(event.target.files?.[0] ?? null)}
           />
@@ -317,7 +324,9 @@ export function RecordPaymentModal({
               {`You are recording ${formatPeso(total)} from ${boarderName}.`}
             </p>
             <p className="mt-1">
-              {`${selected.length} ${selected.length === 1 ? 'charge' : 'charges'} will be marked paid, by ${methodName}${
+              {`${selected.length} ${
+                selected.length === 1 ? 'charge' : 'charges'
+              } will be marked paid, by ${methodName}${
                 paidDate ? ` on ${formatPaymentDate(paidDate)}` : ''
               }.${nextDue ? ` The next due date becomes ${formatPaymentDate(nextDue)}.` : ''}`}
             </p>

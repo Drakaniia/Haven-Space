@@ -62,6 +62,7 @@ import {
   requireBoarder,
   routeId,
   trimmed,
+  uploadProofFromRequest,
 } from './shared';
 
 export function registerTrackerRoutes(router: Hono<{ Bindings: Env }>) {
@@ -236,44 +237,12 @@ export function registerTrackerRoutes(router: Hono<{ Bindings: Env }>) {
       return errorResponse(404, 'Charge not found');
     }
 
-    const form = await c.req.formData();
-    const entry = form.get('proof') as unknown;
+    const uploaded = await uploadProofFromRequest(c, { userId: user.user_id, chargeId });
 
-    if (
-      !entry ||
-      typeof entry === 'string' ||
-      typeof (entry as { size?: unknown }).size !== 'number' ||
-      typeof (entry as { type?: unknown }).type !== 'string'
-    ) {
-      return errorResponse(400, 'No valid receipt image uploaded');
+    if (uploaded instanceof Response) {
+      return uploaded;
     }
 
-    const file = entry as File;
-
-    if (file.size > MAX_PROOF_BYTES) {
-      return errorResponse(400, 'Receipt image must be less than 2MB');
-    }
-
-    if (!allowedProofTypes.has(file.type)) {
-      return errorResponse(400, 'Invalid file type. Only JPEG, PNG, GIF, and WebP are allowed');
-    }
-
-    const [uploaded] = await uploadFilesToUploadThing(c.env, [file], {
-      userId: user.user_id,
-      purpose: 'payment-proof',
-      chargeId,
-    });
-
-    if (!uploaded?.data || uploaded.error) {
-      return errorResponse(502, uploaded?.error?.message || 'Failed to upload receipt');
-    }
-
-    const proofUrl = uploaded.data.ufsUrl || uploaded.data.url || uploaded.data.appUrl;
-
-    if (!proofUrl) {
-      return errorResponse(502, 'UploadThing did not return a receipt URL');
-    }
-
-    return jsonResponse({ success: true, data: { proof_url: proofUrl } }, 201);
+    return jsonResponse({ success: true, data: { proof_url: uploaded.proofUrl } }, 201);
   });
 }

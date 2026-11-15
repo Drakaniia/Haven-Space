@@ -10,7 +10,7 @@ import type {
   PaymentTrackerResponse,
   PropertyBillingSettings,
 } from '../types';
-import { apiFetch, jsonOptions } from './http';
+import { ApiRequestError, apiFetch, jsonOptions } from './http';
 
 const base = () => getApiBaseUrl();
 
@@ -88,7 +88,30 @@ export async function uploadPaymentProof(
     body: form,
   });
 
-  return (await response.json()) as PaymentProofResponse;
+  return await readProofResponse(response);
+}
+
+/**
+ * A failed upload used to surface as a generic "could not be uploaded" (or a JSON
+ * parse error on a non-JSON 413), hiding the real reason. Throw the API's message.
+ */
+async function readProofResponse(response: Response): Promise<PaymentProofResponse> {
+  const body = (await response.json().catch(() => ({}))) as PaymentProofResponse & {
+    error?: string;
+  };
+
+  if (!response.ok || !body.data?.proof_url) {
+    throw new ApiRequestError(
+      response.status,
+      body.error ??
+        (response.status === 413
+          ? 'The receipt image is too large. Please use a photo under 5MB.'
+          : 'The receipt could not be uploaded. Please try again.'),
+      body
+    );
+  }
+
+  return body;
 }
 
 /* ------------------------------------------------------------------- landlord */
@@ -198,7 +221,7 @@ export async function uploadLandlordProof(
     body: form,
   });
 
-  return (await response.json()) as PaymentProofResponse;
+  return await readProofResponse(response);
 }
 
 export function getLandlordCharge(

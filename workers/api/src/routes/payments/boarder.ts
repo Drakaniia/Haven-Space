@@ -62,6 +62,7 @@ import {
   requireBoarder,
   routeId,
   trimmed,
+  uploadProofFromRequest,
 } from './shared';
 
 export function registerBoarderRoutes(router: Hono<{ Bindings: Env }>) {
@@ -126,9 +127,9 @@ export function registerBoarderRoutes(router: Hono<{ Bindings: Env }>) {
       return errorResponse(400, 'Payment method is required');
     }
 
-    if (!reference) {
-      // The reference is the only proof every method can provide (spec D10).
-      return errorResponse(400, 'Reference number is required');
+    // Cash is paid face to face: no reference, no online transaction details.
+    if (methodRequiresReference(method) && !reference) {
+      return errorResponse(400, 'Reference number is required for online payments');
     }
 
     if (await hasPendingSubmission(db, chargeId)) {
@@ -141,14 +142,14 @@ export function registerBoarderRoutes(router: Hono<{ Bindings: Env }>) {
       return errorResponse(409, 'This charge has nothing left to pay');
     }
 
-    const proofUrl = trimmed(body, 'proof_url') || null;
+    const proofUrl = method === 'cash' ? null : trimmed(body, 'proof_url') || null;
     const notes = trimmed(body, 'notes') || null;
     const submissionId = await createSubmission(db, {
       chargeId,
       amount,
       submittedBy: user.user_id,
       method,
-      reference,
+      reference: method === 'cash' ? '' : reference,
       proofUrl,
       notes,
     });
@@ -187,45 +188,13 @@ export function registerBoarderRoutes(router: Hono<{ Bindings: Env }>) {
       return errorResponse(404, 'Charge not found');
     }
 
-    const form = await c.req.formData();
-    const entry = form.get('proof') as unknown;
+    const uploaded = await uploadProofFromRequest(c, { userId: user.user_id, chargeId });
 
-    if (
-      !entry ||
-      typeof entry === 'string' ||
-      typeof (entry as { size?: unknown }).size !== 'number' ||
-      typeof (entry as { type?: unknown }).type !== 'string'
-    ) {
-      return errorResponse(400, 'No valid receipt image uploaded');
+    if (uploaded instanceof Response) {
+      return uploaded;
     }
 
-    const file = entry as File;
-
-    if (file.size > MAX_PROOF_BYTES) {
-      return errorResponse(400, 'Receipt image must be less than 2MB');
-    }
-
-    if (!allowedProofTypes.has(file.type)) {
-      return errorResponse(400, 'Invalid file type. Only JPEG, PNG, GIF, and WebP are allowed');
-    }
-
-    const [uploaded] = await uploadFilesToUploadThing(c.env, [file], {
-      userId: user.user_id,
-      purpose: 'payment-proof',
-      chargeId,
-    });
-
-    if (!uploaded?.data || uploaded.error) {
-      return errorResponse(502, uploaded?.error?.message || 'Failed to upload receipt');
-    }
-
-    const proofUrl = uploaded.data.ufsUrl || uploaded.data.url || uploaded.data.appUrl;
-
-    if (!proofUrl) {
-      return errorResponse(502, 'UploadThing did not return a receipt URL');
-    }
-
-    return jsonResponse({ success: true, data: { proof_url: proofUrl } }, 201);
+    return jsonResponse({ success: true, data: { proof_url: uploaded.proofUrl } }, 201);
   });
 
   // --------------------------------------------------------------- landlord ----
