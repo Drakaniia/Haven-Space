@@ -370,6 +370,20 @@ describe('tracker rows', () => {
     expect(byName['Cara New'].pending_claim_method).toBe('cash');
     expect(byName['Dan Gone'].tenancy_status).toBe('ended');
 
+    // The review drawer reads the claim from the landlord charge endpoint.
+    const reviewed = await app.request(
+      `http://localhost/api/landlord/charges/${caraDeposit}`,
+      { headers: { 'X-User-ID': '3' } },
+      env
+    );
+    const reviewedBody = (await reviewed.json()) as {
+      data: { submissions: Array<{ status: string; payment_method: string }> };
+    };
+
+    expect(reviewedBody.data.submissions).toMatchObject([
+      { status: 'pending', payment_method: 'cash' },
+    ]);
+
     // Each claim is reviewed on its own; approving Cara's leaves Benny's pending.
     const caraClaim = (
       sqlite

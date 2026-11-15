@@ -28,6 +28,7 @@ import {
   isPaymentMethod,
   listChargesForBoarder,
   listChargesForLandlord,
+  listSubmissionsForCharges,
   listTenancyPaymentHistory,
   listTrackerRows,
   manilaToday,
@@ -335,6 +336,13 @@ export function registerChargeRoutes(router: Hono<{ Bindings: Env }>) {
       return errorResponse(404, 'Charge not found');
     }
 
-    return jsonResponse({ success: true, data: formatCharge(charge) });
+    // The review drawer reads the claims from here; without them every pending
+    // payment looked like "nothing to review" to the landlord.
+    const submissions = await listSubmissionsForCharges(db, [chargeId]);
+
+    return jsonResponse({
+      success: true,
+      data: formatCharge(charge, manilaToday(), submissions.get(chargeId) ?? []),
+    });
   });
 }
