@@ -165,6 +165,18 @@ describe('the PUT body this form sends (R2/R3)', () => {
     expect(payload).not.toHaveProperty('min_stay');
   });
 
+  test('sends the map pin only once one is placed', () => {
+    expect(
+      listingUpdatePayload({ ...form, latitude: null, longitude: null }, { sharedPricing: true })
+    ).not.toHaveProperty('latitude');
+    expect(
+      listingUpdatePayload(
+        { ...form, latitude: 8.1575, longitude: 125.1278 },
+        { sharedPricing: true }
+      )
+    ).toMatchObject({ latitude: 8.1575, longitude: 125.1278 });
+  });
+
   test('omits price and deposit when pricing is not shared (D7)', () => {
     const payload = listingUpdatePayload(form, { sharedPricing: false });
 

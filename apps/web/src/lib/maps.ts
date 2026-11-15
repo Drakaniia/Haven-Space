@@ -10,6 +10,9 @@
 /** The place every embedded map pins. Also used in the map pages' copy. */
 export const MAP_LOCATION_QUERY = 'Malaybalay, Bukidnon';
 
+/** `MAP_LOCATION_QUERY` as coordinates: where the listing location picker opens. */
+export const DEFAULT_MAP_CENTER = { latitude: 8.1575, longitude: 125.1278 };
+
 /** City-level zoom: the pin stays readable with the surrounding area still in frame. */
 export const DEFAULT_MAP_ZOOM = 13;
 
@@ -48,6 +51,51 @@ export function mapUrlForCoordinates(
  */
 const OSM_LAT_SPAN = 0.009;
 const OSM_LNG_SPAN = 0.012;
+
+/** The address parts a pin drop fills in on the listing form. */
+export interface PickedAddress {
+  street: string;
+  city: string;
+  province: string;
+}
+
+interface NominatimAddress {
+  house_number?: string;
+  road?: string;
+  neighbourhood?: string;
+  suburb?: string;
+  village?: string;
+  hamlet?: string;
+  quarter?: string;
+  city?: string;
+  town?: string;
+  municipality?: string;
+  county?: string;
+  province?: string;
+  state?: string;
+  region?: string;
+}
+
+/**
+ * A Nominatim reverse-geocode result as the form's street/city/province. Philippine
+ * results put the barangay in `village`/`suburb`/`quarter`, the city in `city` or
+ * `town`, and the province in `province` or `state` (with `region` a level above).
+ */
+export function addressFromNominatim(result: { address?: NominatimAddress } | null): PickedAddress {
+  const a = result?.address ?? {};
+  const street = [
+    [a.house_number, a.road].filter(Boolean).join(' '),
+    a.quarter ?? a.neighbourhood ?? a.suburb ?? a.village ?? a.hamlet,
+  ]
+    .filter(Boolean)
+    .join(', ');
+
+  return {
+    street,
+    city: a.city ?? a.town ?? a.municipality ?? a.county ?? '',
+    province: a.province ?? a.state ?? a.region ?? '',
+  };
+}
 
 /** OpenStreetMap embed centred on a point, with a marker on it. */
 export function osmEmbedUrl(latitude: number, longitude: number): string {

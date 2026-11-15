@@ -2,6 +2,7 @@ import { createFileRoute, Link, useNavigate } from '@tanstack/react-router';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useState, type FormEvent, type ReactNode } from 'react';
 import { VerificationNotice } from '../../../../components/landlord/VerificationNotice';
+import { LocationPicker } from '../../../../components/rooms/LocationPicker';
 import { Button, buttonClasses } from '../../../../components/ui/Button';
 import { Card } from '../../../../components/ui/Card';
 import { ErrorState } from '../../../../components/ui/ErrorState';
@@ -143,6 +144,8 @@ function EditListingPage() {
     city: string;
     province: string;
     status: ListingStatusValue;
+    latitude: number | null;
+    longitude: number | null;
   }>({
     name: '',
     type: 'boarding-house',
@@ -154,6 +157,8 @@ function EditListingPage() {
     city: '',
     province: '',
     status: DEFAULT_LISTING_STATUS,
+    latitude: null,
+    longitude: null,
   });
   const [amenities, setAmenities] = useState<string[]>([]);
   const [sharedPricing, setSharedPricing] = useState(true);
@@ -174,6 +179,8 @@ function EditListingPage() {
       city: String(detail.city ?? ''),
       province: String(detail.province ?? ''),
       status: toListingStatusValue(detail.status, detail.listing_moderation_status as string),
+      latitude: typeof detail.latitude === 'number' ? detail.latitude : null,
+      longitude: typeof detail.longitude === 'number' ? detail.longitude : null,
     });
     setAmenities(
       Array.isArray(detail.amenities)
@@ -434,6 +441,26 @@ function EditListingPage() {
             </FormSection>
 
             <FormSection title="Location">
+              <LocationPicker
+                value={
+                  form.latitude !== null && form.longitude !== null
+                    ? { latitude: form.latitude, longitude: form.longitude }
+                    : null
+                }
+                disabled={needsVerification}
+                onChange={point =>
+                  setForm(f => ({ ...f, latitude: point.latitude, longitude: point.longitude }))
+                }
+                onAddress={address =>
+                  setForm(f => ({
+                    ...f,
+                    address: address.street || f.address,
+                    city: address.city || f.city,
+                    province: address.province || f.province,
+                  }))
+                }
+              />
+
               <Field label="Street address" htmlFor="address">
                 <TextInput
                   id="address"

@@ -8,6 +8,7 @@ import { ConfirmDialog } from '../../../components/ui/ConfirmDialog';
 import { ErrorState } from '../../../components/ui/ErrorState';
 import { Field, SelectInput, TextArea, TextInput } from '../../../components/ui/Field';
 import { PageHeader } from '../../../components/ui/PageHeader';
+import { LocationPicker, type PickedPoint } from '../../../components/rooms/LocationPicker';
 import { RoomFormFields } from '../../../components/rooms/RoomFormFields';
 import { ApiRequestError } from '../../../lib/api/http';
 import { createListing, uploadRoomPhotos } from '../../../lib/api/landlord';
@@ -62,6 +63,7 @@ function CreateListingPage() {
     propertyProvince: '',
   });
   const [amenities, setAmenities] = useState<string[]>([]);
+  const [point, setPoint] = useState<PickedPoint | null>(null);
   const [rooms, setRooms] = useState<RoomDraft[]>(() =>
     createRoomDrafts(1, { rent: '', deposit: '', capacity: '1' })
   );
@@ -89,6 +91,8 @@ function CreateListingPage() {
         propertyDeposit: Number(form.propertyDeposit),
         propertyRooms: rooms.length,
         propertyCapacity: Number(form.propertyCapacity),
+        propertyLatitude: point?.latitude ?? null,
+        propertyLongitude: point?.longitude ?? null,
         amenities,
         rooms: rooms.map(roomDraftPayload),
       });
@@ -375,6 +379,26 @@ function CreateListingPage() {
               />
             ))}
           </section>
+
+          <div>
+            <p className="mb-1 text-sm font-medium">Location on the map</p>
+            <p className="mb-3 text-sm text-gray-ink">
+              Pin the building so boarders find it. The address below fills in from the pin.
+            </p>
+            <LocationPicker
+              value={point}
+              disabled={submit.isPending || needsVerification}
+              onChange={setPoint}
+              onAddress={address =>
+                setForm(f => ({
+                  ...f,
+                  propertyAddress: address.street || f.propertyAddress,
+                  propertyCity: address.city || f.propertyCity,
+                  propertyProvince: address.province || f.propertyProvince,
+                }))
+              }
+            />
+          </div>
 
           <Field label="Street address" htmlFor="propertyAddress">
             <TextInput

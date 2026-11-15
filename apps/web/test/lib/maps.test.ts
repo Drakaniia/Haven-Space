@@ -8,6 +8,7 @@ import {
   DEFAULT_MAP_ZOOM,
   MAP_LOCATION_QUERY,
   USER_LOCATION_MAP_ZOOM,
+  addressFromNominatim,
   mapUrlForCoordinates,
   osmEmbedUrl,
 } from '../../src/lib/maps';
@@ -108,6 +109,38 @@ test('mapUrlForCoordinates handles negative coordinates and a custom zoom', () =
   const url = mapUrlForCoordinates(-8.5, -125.25, 11);
   expect(url).toContain(`q=${encodeURIComponent('-8.5,-125.25')}`);
   expect(url.endsWith('&z=11')).toBe(true);
+});
+
+test('a pin drop fills street, city and province from a Philippine reverse geocode', () => {
+  expect(
+    addressFromNominatim({
+      address: {
+        house_number: '12',
+        road: 'Rizal Street',
+        quarter: 'Barangay 9',
+        city: 'Malaybalay',
+        state: 'Bukidnon',
+        region: 'Northern Mindanao',
+      },
+    })
+  ).toEqual({ street: '12 Rizal Street, Barangay 9', city: 'Malaybalay', province: 'Bukidnon' });
+
+  // Towns, explicit provinces, and a result with no address at all.
+  expect(
+    addressFromNominatim({
+      address: { village: 'Poblacion', town: 'Valencia', province: 'Bukidnon' },
+    })
+  ).toEqual({ street: 'Poblacion', city: 'Valencia', province: 'Bukidnon' });
+  expect(addressFromNominatim(null)).toEqual({ street: '', city: '', province: '' });
+});
+
+test('the listing picker sends the pin with the create and edit payloads', () => {
+  const create = readFileSync(join(SRC_DIR, 'routes/landlord/listings/create.tsx'), 'utf8');
+  const edit = readFileSync(join(SRC_DIR, 'routes/landlord/listings/$id/edit.tsx'), 'utf8');
+
+  expect(create).toContain('<LocationPicker');
+  expect(create).toContain('propertyLatitude: point?.latitude');
+  expect(edit).toContain('<LocationPicker');
 });
 
 test('osmEmbedUrl keeps the listing-detail embed shape', () => {

@@ -228,6 +228,9 @@ export interface ListingFormValues {
   city: string;
   province: string;
   status: ListingStatusValue;
+  /** The map pin; left out of the body until the landlord places one. */
+  latitude?: number | null;
+  longitude?: number | null;
 }
 
 /**
@@ -257,6 +260,11 @@ export function listingUpdatePayload(
   if (options.sharedPricing) {
     payload.price = Number(values.price);
     payload.deposit = Number(values.deposit);
+  }
+
+  if (typeof values.latitude === 'number' && typeof values.longitude === 'number') {
+    payload.latitude = values.latitude;
+    payload.longitude = values.longitude;
   }
 
   return payload;
