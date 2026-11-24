@@ -258,7 +258,10 @@ export function summarizeCharges(charges: ChargeDto[]): LedgerSummary {
       summary.overdue_total += outstanding;
     }
 
-    if (charge.status === 'awaiting_verification') {
+    if (
+      charge.status === 'awaiting_verification' ||
+      charge.submissions.some(s => s.status === 'pending')
+    ) {
       summary.awaiting_verification_count += 1;
     } else {
       summary.pending_count += 1;

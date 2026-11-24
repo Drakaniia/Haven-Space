@@ -59,8 +59,8 @@ export async function getLandlordDashboardStats(
       `
         SELECT
           COUNT(r.id) as total_rooms,
-          COALESCE(SUM(CASE WHEN r.status = 'occupied' THEN 1 ELSE 0 END), 0) as occupied_rooms,
-          COALESCE(SUM(CASE WHEN r.status = 'occupied' THEN r.price ELSE 0 END), 0) as monthly_revenue
+          COALESCE(SUM(CASE WHEN r.status = 'occupied' OR COALESCE(r.occupied, 0) > 0 THEN 1 ELSE 0 END), 0) as occupied_rooms,
+          COALESCE(SUM(CASE WHEN r.status = 'occupied' OR COALESCE(r.occupied, 0) > 0 THEN r.price ELSE 0 END), 0) as monthly_revenue
         FROM rooms r
         INNER JOIN properties p ON r.property_id = p.id
         WHERE p.deleted_at IS NULL

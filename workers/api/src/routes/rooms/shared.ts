@@ -176,7 +176,9 @@ export function formatPublicProperty(
     formatRoom(room, property, roomPhotos.get(Number(room.id)) ?? [])
   );
 
-  const availableRooms = formattedRooms.filter(room => room.status === 'available').length;
+  const availableRooms = formattedRooms.filter(
+    room => room.status !== 'maintenance' && room.status !== 'deleted' && room.free_slots > 0
+  ).length;
 
   const propertyImages = coverImage(photos);
 
@@ -277,13 +279,15 @@ export function formatListingDetail(
     badges.push('new');
   }
 
-  const availableRooms = rooms.filter(room => room.status === 'available').length;
-
-  const images = detailImages(photos);
-
   const formattedRooms = rooms.map(room =>
     formatDetailRoom(room, roomPhotos.get(Number(room.id)) ?? [])
   );
+
+  const availableRooms = formattedRooms.filter(
+    room => room.status !== 'maintenance' && room.status !== 'deleted' && room.freeSlots > 0
+  ).length;
+
+  const images = detailImages(photos);
 
   return {
     id: Number(property.id),
