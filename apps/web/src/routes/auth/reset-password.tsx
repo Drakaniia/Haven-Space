@@ -157,7 +157,7 @@ function ResetPasswordPage() {
           }
         />
       ) : null}
-      <form className="flex flex-col gap-5" onSubmit={handleSubmit}>
+      <form method="post" className="flex flex-col gap-5" onSubmit={handleSubmit}>
         <Field label="New password" htmlFor="newPassword" error={fieldErrors.newPassword}>
           <PasswordInput
             id="newPassword"

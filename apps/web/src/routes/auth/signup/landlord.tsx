@@ -169,7 +169,7 @@ function LandlordSignupPage() {
       />
       <AuthDivider />
 
-      <form className="flex flex-col gap-9" onSubmit={handleSubmit}>
+      <form method="post" className="flex flex-col gap-9" onSubmit={handleSubmit}>
         <FormSection title="Your account">
           <div className="grid grid-cols-1 gap-5 min-[400px]:grid-cols-2 min-[400px]:gap-3">
             <Field label="First name" htmlFor="firstName">
@@ -263,7 +263,6 @@ function LandlordSignupPage() {
         />
 
         <div className="flex flex-col gap-3">
-          <p className="text-sm text-gray-ink">{LANDLORD_SIGNUP_NOTE}</p>
           <Button type="submit" size="lg" className="w-full" disabled={submitting || googleLoading}>
             {submitting ? 'Creating your account…' : 'Create landlord account'}
           </Button>

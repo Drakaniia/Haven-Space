@@ -100,7 +100,7 @@ function LoginPage() {
       <GoogleButton loading={googleLoading} disabled={submitting} onClick={startGoogle} />
       <AuthDivider />
 
-      <form className="flex flex-col gap-5" onSubmit={handleSubmit}>
+      <form method="post" className="flex flex-col gap-5" onSubmit={handleSubmit}>
         <Field label="Email" htmlFor="email">
           <TextInput
             id="email"

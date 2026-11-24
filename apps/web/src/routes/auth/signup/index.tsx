@@ -131,7 +131,7 @@ function BoarderSignupPage() {
       />
       <AuthDivider />
 
-      <form className="flex flex-col gap-5" onSubmit={handleSubmit}>
+      <form method="post" className="flex flex-col gap-5" onSubmit={handleSubmit}>
         <div className="grid grid-cols-1 gap-5 min-[400px]:grid-cols-2 min-[400px]:gap-3">
           <Field label="First name" htmlFor="firstName">
             <TextInput

@@ -43,9 +43,9 @@ export function AuthSplitLayout({
           src={image}
           alt={imageAlt}
           fetchPriority="high"
-          /* 20% keeps the artwork's baked-in headline clear of the left edge when the
+          /* 0% keeps the artwork's baked-in headline clear of the left edge when the
              panel is narrower than the artwork and object-cover crops horizontally. */
-          className="absolute inset-0 h-full w-full object-cover object-[20%_50%]"
+          className="absolute inset-0 h-full w-full object-cover object-left"
         />
       </div>
 
