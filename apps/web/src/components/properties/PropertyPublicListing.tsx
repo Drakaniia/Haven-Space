@@ -80,7 +80,7 @@ export function PropertyPublicListing({ detail }: { detail: LandlordPropertyDeta
         <dl className="mt-4 grid grid-cols-1 gap-x-6 gap-y-4 sm:grid-cols-2">
           <Row label="Monthly rent" value={formatPeso(detail.monthlyPayment)} />
           <Row label="Deposit" value={formatPeso(detail.monthlyDeposit)} />
-          <Row label="Minimum stay" value={detail.min_stay || 'Not specified'} />
+          <Row label="Minimum stay" value={detail.min_stay || '1 month or longer'} />
           <Row label="Amenities" value={amenitiesLabel(detail.amenities)} />
         </dl>
 

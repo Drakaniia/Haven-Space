@@ -335,7 +335,7 @@ export function RoomDetailView({
             <dl className="grid grid-cols-2 divide-border sm:grid-cols-4 sm:divide-x [&>div]:p-4 sm:[&>div]:p-5">
               <Fact icon="users" label="Room types" value={capitalize(listing.roomTypes) || 'Ask the landlord'} />
               <Fact icon="calendar" label="Availability" value={listing.availability || 'Contact for availability'} />
-              <Fact icon="clock" label="Minimum stay" value={listing.minStay || 'Flexible'} />
+              <Fact icon="clock" label="Minimum stay" value={listing.minStay || '1 month or longer'} />
               <Fact icon={gender.icon} label="Who can stay" value={gender.label} />
             </dl>
           </Card>

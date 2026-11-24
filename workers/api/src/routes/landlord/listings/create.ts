@@ -19,7 +19,7 @@ import {
   requireVerifiedLandlordWrite,
   stringValue,
 } from '../shared';
-import { listingRooms, requiredFieldErrors } from './drafts';
+import { listingRooms, minStayFromBody, requiredFieldErrors } from './drafts';
 
 export async function handleCreateListing(c: Context<{ Bindings: Env }>) {
   const db = requireD1(c.env);
@@ -73,10 +73,7 @@ export async function handleCreateListing(c: Context<{ Bindings: Env }>) {
     price: propertyPrice,
     deposit: numberValue(body, 'propertyDeposit'),
     advance: stringValue(body, 'propertyAdvance', '1 month') || '1 month',
-    // Spec `create-listing-room-details` D4/D19: the create form no longer asks
-    // for a minimum stay, so new listings are written without one (the column
-    // default applies). The edit page still sets it via `minStayFromBody`.
-    minStay: '',
+    minStay: minStayFromBody(body, '1 month or longer'),
     houseRules: JSON.stringify([]),
     genderPreference: stringValue(body, 'genderPreference', 'any') || 'any',
     propertyRules: stringValue(body, 'propertyRules'),

@@ -18,6 +18,7 @@ const createListingRequiredFields = [
 const minStayMap: Record<string, string> = {
   'no-minimum': 'No minimum',
   '1-month': '1 month',
+  '1-month-or-longer': '1 month or longer',
   '3-months': '3 months',
   '6-months': '6 months',
   '1-year': '1 year',

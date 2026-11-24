@@ -8,7 +8,6 @@ import {
   listPublicListings,
   listSimilarPublicListings,
 } from '../../repositories/listings';
-import { listPopularLocations } from '../../repositories/locations';
 import {
   formatListingDetail,
   formatPopularLocation,
@@ -17,6 +16,14 @@ import {
   parseLimit,
   publicListingFilters,
 } from './shared';
+
+const BUKIDNON_POPULAR_LOCATIONS = [
+  { city: 'Malaybalay City', province: 'Bukidnon', property_count: 0 },
+  { city: 'Valencia City', province: 'Bukidnon', property_count: 0 },
+  { city: 'Maramag', province: 'Bukidnon', property_count: 0 },
+  { city: 'Manolo Fortich', province: 'Bukidnon', property_count: 0 },
+  { city: 'Don Carlos', province: 'Bukidnon', property_count: 0 },
+];
 
 export async function handlePublicRooms(c: Context<{ Bindings: Env }>) {
   const filters = publicListingFilters(new URL(c.req.url));
@@ -86,11 +93,10 @@ export async function handleSimilarRooms(c: Context<{ Bindings: Env }>) {
 
 export async function handlePopularLocations(c: Context<{ Bindings: Env }>) {
   const limit = parseLimit(c.req.query('limit') ?? null, 6, 20);
-  const locations = await listPopularLocations(requireD1(c.env), limit);
 
   return jsonResponse({
     data: {
-      locations: locations.map(formatPopularLocation).slice(0, limit),
+      locations: BUKIDNON_POPULAR_LOCATIONS.map(formatPopularLocation).slice(0, limit),
     },
   });
 }

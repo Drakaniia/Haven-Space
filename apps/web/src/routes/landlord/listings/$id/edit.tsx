@@ -20,11 +20,14 @@ import {
 import { useAuth } from '../../../../lib/auth-context';
 import {
   DEFAULT_LISTING_STATUS,
+  DEFAULT_MIN_STAY,
   LISTING_STATUS_OPTIONS,
+  MIN_STAY_OPTIONS,
   NOT_VISIBLE_TO_BOARDERS,
   PUBLISH_NEEDS_ROOM,
   listingModerationHint,
   listingUpdatePayload,
+  normalizeMinStay,
   sharedPricingState,
   sharedPricingSummary,
   toListingStatusValue,
@@ -137,6 +140,7 @@ function EditListingPage() {
     name: string;
     type: string;
     gender_preference: string;
+    min_stay: string;
     description: string;
     price: string;
     deposit: string;
@@ -150,6 +154,7 @@ function EditListingPage() {
     name: '',
     type: 'boarding-house',
     gender_preference: 'any',
+    min_stay: DEFAULT_MIN_STAY,
     description: '',
     price: '',
     deposit: '',
@@ -172,6 +177,7 @@ function EditListingPage() {
       name: String(detail.name ?? ''),
       type: String(detail.type ?? 'boarding-house'),
       gender_preference: String(detail.gender_preference ?? 'any'),
+      min_stay: normalizeMinStay(detail.min_stay),
       description: String(detail.description ?? ''),
       price: String(Number(detail.monthlyPayment ?? detail.price ?? 0)),
       deposit: String(Number(detail.monthlyDeposit ?? detail.deposit ?? 0)),
@@ -373,6 +379,23 @@ function EditListingPage() {
                   </SelectInput>
                 </Field>
               </div>
+
+              <Field label="Minimum stay" htmlFor="min_stay">
+                <SelectInput
+                  id="min_stay"
+                  value={form.min_stay}
+                  onChange={e => set('min_stay', e.target.value)}
+                >
+                  {MIN_STAY_OPTIONS.map(opt => (
+                    <option key={opt.value} value={opt.value}>
+                      {opt.label}
+                    </option>
+                  ))}
+                  {!MIN_STAY_OPTIONS.some(opt => opt.value === form.min_stay) ? (
+                    <option value={form.min_stay}>{form.min_stay}</option>
+                  ) : null}
+                </SelectInput>
+              </Field>
 
               <Field label="Description" htmlFor="description">
                 <TextArea

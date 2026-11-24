@@ -217,10 +217,33 @@ export function sharedPricingSummary(state: SharedPricingState): string {
   } room${state.count === 1 ? '' : 's'}`;
 }
 
+export const DEFAULT_MIN_STAY = '1 month or longer';
+
+export const MIN_STAY_OPTIONS: ReadonlyArray<{ value: string; label: string }> = [
+  { value: '1 month or longer', label: '1 month or longer' },
+  { value: '3 months', label: '3 months' },
+  { value: '6 months', label: '6 months' },
+  { value: '1 year', label: '1 year' },
+];
+
+export function normalizeMinStay(value: unknown): string {
+  const raw = String(value ?? '').trim();
+  if (!raw || raw === '1 month' || raw === '1-month' || raw === '1-month-or-longer') {
+    return DEFAULT_MIN_STAY;
+  }
+  const slugMap: Record<string, string> = {
+    '3-months': '3 months',
+    '6-months': '6 months',
+    '1-year': '1 year',
+  };
+  return slugMap[raw] ?? raw;
+}
+
 export interface ListingFormValues {
   name: string;
   type: string;
   gender_preference: string;
+  min_stay: string;
   description: string;
   price: string;
   deposit: string;
@@ -250,6 +273,7 @@ export function listingUpdatePayload(
     name: values.name,
     type: values.type,
     gender_preference: values.gender_preference,
+    min_stay: values.min_stay,
     description: values.description,
     address: values.address,
     city: values.city,

@@ -204,7 +204,7 @@ function ForLandlordsPage() {
                 One plan, everything included.
               </h2>
               <p className="mt-8 flex items-baseline gap-2">
-                <span className="display-xl text-clay tabular">₱499</span>
+                <span className="display-xl text-clay tabular">₱~~</span>
                 <span className="text-gray-ink">per month</span>
               </p>
               <p className="mt-4 text-[0.9375rem] leading-relaxed text-gray-ink">
