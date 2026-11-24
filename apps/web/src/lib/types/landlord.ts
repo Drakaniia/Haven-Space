@@ -4,7 +4,8 @@ import type { ApplicationSummary } from './applications';
 export interface Announcement {
   id: number;
   title: string;
-  body: string;
+  description?: string;
+  body?: string;
   category: string;
   priority: string;
   property_id: number | null;

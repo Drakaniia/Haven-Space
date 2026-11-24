@@ -72,6 +72,9 @@ function NavList({
                   // `/admin` and differ only by search (`admin-apple-ui-restructure` R7).
                   key={`${item.to}${item.search ? `?${searchKey(item.search)}` : ''}`}
                   to={item.to}
+                  // Root dashboards (`/boarder`, `/landlord`) must match exactly so they
+                  // don't stay highlighted on every subpage; `/admin` uses `search` instead.
+                  activeOptions={{ exact: item.to === '/boarder' || item.to === '/landlord' }}
                   // `Link` matches on search by default, so passing `search` keeps exactly
                   // one admin section active at a time.
                   search={item.search}

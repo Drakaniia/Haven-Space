@@ -104,7 +104,7 @@ export function PaymentMonitorFilters({
 
   return (
     <div className="flex flex-col gap-3">
-      <div className="grid grid-cols-1 items-end gap-3 sm:grid-cols-2 lg:grid-cols-[minmax(0,1.25fr)_minmax(0,0.85fr)_minmax(0,1.5fr)_minmax(0,1fr)_auto]">
+      <div className="grid grid-cols-1 items-end gap-3 sm:grid-cols-2 lg:grid-cols-[minmax(0,1.2fr)_minmax(12rem,1fr)_minmax(0,1.35fr)_minmax(0,1fr)_auto]">
         <Field label="Property" htmlFor="monitor-property">
           <SelectInput
             id="monitor-property"

@@ -28,6 +28,8 @@ function AnnouncementsPage() {
   const nav = useBoarderNav();
   const queryClient = useQueryClient();
   const [selected, setSelected] = useState<Announcement | null>(null);
+  // shortcut: per-user read state is session-local until an announcement_views table is added.
+  const [viewedIds, setViewedIds] = useState<Set<number>>(() => new Set());
 
   const announcements = useQuery({
     queryKey: ['announcements'],
@@ -44,7 +46,8 @@ function AnnouncementsPage() {
 
   function open(announcement: Announcement) {
     setSelected(announcement);
-    if (!announcement.is_viewed) view.mutate(announcement.id);
+    setViewedIds(prev => new Set(prev).add(announcement.id));
+    if (!announcement.is_viewed && !viewedIds.has(announcement.id)) view.mutate(announcement.id);
   }
 
   const list = announcements.data?.data.announcements ?? [];
@@ -84,7 +87,7 @@ function AnnouncementsPage() {
                         High priority
                       </span>
                     ) : null}
-                    {!announcement.is_viewed ? (
+                    {!announcement.is_viewed && !viewedIds.has(announcement.id) ? (
                       <span
                         className="h-2 w-2 rounded-full bg-primary-strong"
                         aria-label="Unread"
@@ -93,7 +96,9 @@ function AnnouncementsPage() {
                   </div>
                 </div>
                 <p className="mt-1 text-sm text-gray-ink">{announcement.category}</p>
-                <p className="mt-2 line-clamp-2 text-sm">{announcement.body}</p>
+                <p className="mt-2 line-clamp-2 text-sm">
+                  {announcement.description ?? announcement.body}
+                </p>
               </button>
             ))}
           </div>
@@ -109,7 +114,7 @@ function AnnouncementsPage() {
               <p className="text-sm text-gray-ink">
                 {selected.category} · {new Date(selected.created_at).toLocaleDateString()}
               </p>
-              <p className="mt-3 whitespace-pre-line">{selected.body}</p>
+              <p className="mt-3 whitespace-pre-line">{selected.description ?? selected.body}</p>
             </div>
           ) : null}
         </Modal>

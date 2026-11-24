@@ -123,7 +123,7 @@ export function AddBillModal({
             id="bill-description"
             value={description}
             onChange={event => setDescription(event.target.value)}
-            placeholder="e.g. Meco reading Feb 1 – Feb 28"
+            placeholder="e.g. Meralco reading Feb 1 – Feb 28"
           />
         </Field>
 

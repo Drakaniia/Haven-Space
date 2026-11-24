@@ -72,6 +72,7 @@ import { Route as BoarderMessagesThreadIdRouteImport } from './routes/boarder/me
 import { Route as BoarderPaymentsIndexRouteImport } from './routes/boarder/payments/index'
 import { Route as BoarderPaymentsPayRouteImport } from './routes/boarder/payments/pay'
 import { Route as BoarderRoomsIdRouteImport } from './routes/boarder/rooms/$id'
+import { Route as LandlordListingsIndexRouteImport } from './routes/landlord/listings/index'
 import { Route as LandlordListingsCreateRouteImport } from './routes/landlord/listings/create'
 import { Route as LandlordMessagesIndexRouteImport } from './routes/landlord/messages/index'
 import { Route as LandlordMessagesThreadIdRouteImport } from './routes/landlord/messages/$threadId'
@@ -404,6 +405,11 @@ const BoarderRoomsIdRoute = BoarderRoomsIdRouteImport.update({
   path: '/boarder/rooms/$id',
   getParentRoute: () => rootRouteImport,
 } as any)
+const LandlordListingsIndexRoute = LandlordListingsIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => LandlordListingsRoute,
+} as any)
 const LandlordListingsCreateRoute = LandlordListingsCreateRouteImport.update({
   id: '/create',
   path: '/create',
@@ -541,6 +547,7 @@ export interface FileRoutesByFullPath {
   '/boarder/find-a-room/': typeof BoarderFindARoomIndexRoute
   '/boarder/messages/': typeof BoarderMessagesIndexRoute
   '/boarder/payments/': typeof BoarderPaymentsIndexRoute
+  '/landlord/listings/': typeof LandlordListingsIndexRoute
   '/landlord/messages/': typeof LandlordMessagesIndexRoute
   '/landlord/payments/': typeof LandlordPaymentsIndexRoute
   '/landlord/properties/': typeof LandlordPropertiesIndexRoute
@@ -577,7 +584,6 @@ export interface FileRoutesByTo {
   '/landlord/boarders': typeof LandlordBoardersRoute
   '/landlord/calendar': typeof LandlordCalendarRoute
   '/landlord/invitations': typeof LandlordInvitationsRoute
-  '/landlord/listings': typeof LandlordListingsRouteWithChildren
   '/landlord/maintenance': typeof LandlordMaintenanceRoute
   '/landlord/maps': typeof LandlordMapsRoute
   '/landlord/onboarding': typeof LandlordOnboardingRoute
@@ -610,6 +616,7 @@ export interface FileRoutesByTo {
   '/boarder/find-a-room': typeof BoarderFindARoomIndexRoute
   '/boarder/messages': typeof BoarderMessagesIndexRoute
   '/boarder/payments': typeof BoarderPaymentsIndexRoute
+  '/landlord/listings': typeof LandlordListingsIndexRoute
   '/landlord/messages': typeof LandlordMessagesIndexRoute
   '/landlord/payments': typeof LandlordPaymentsIndexRoute
   '/landlord/properties': typeof LandlordPropertiesIndexRoute
@@ -689,6 +696,7 @@ export interface FileRoutesById {
   '/boarder/find-a-room/': typeof BoarderFindARoomIndexRoute
   '/boarder/messages/': typeof BoarderMessagesIndexRoute
   '/boarder/payments/': typeof BoarderPaymentsIndexRoute
+  '/landlord/listings/': typeof LandlordListingsIndexRoute
   '/landlord/messages/': typeof LandlordMessagesIndexRoute
   '/landlord/payments/': typeof LandlordPaymentsIndexRoute
   '/landlord/properties/': typeof LandlordPropertiesIndexRoute
@@ -769,6 +777,7 @@ export interface FileRouteTypes {
     | '/boarder/find-a-room/'
     | '/boarder/messages/'
     | '/boarder/payments/'
+    | '/landlord/listings/'
     | '/landlord/messages/'
     | '/landlord/payments/'
     | '/landlord/properties/'
@@ -805,7 +814,6 @@ export interface FileRouteTypes {
     | '/landlord/boarders'
     | '/landlord/calendar'
     | '/landlord/invitations'
-    | '/landlord/listings'
     | '/landlord/maintenance'
     | '/landlord/maps'
     | '/landlord/onboarding'
@@ -838,6 +846,7 @@ export interface FileRouteTypes {
     | '/boarder/find-a-room'
     | '/boarder/messages'
     | '/boarder/payments'
+    | '/landlord/listings'
     | '/landlord/messages'
     | '/landlord/payments'
     | '/landlord/properties'
@@ -916,6 +925,7 @@ export interface FileRouteTypes {
     | '/boarder/find-a-room/'
     | '/boarder/messages/'
     | '/boarder/payments/'
+    | '/landlord/listings/'
     | '/landlord/messages/'
     | '/landlord/payments/'
     | '/landlord/properties/'
@@ -1426,6 +1436,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof BoarderRoomsIdRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/landlord/listings/': {
+      id: '/landlord/listings/'
+      path: '/'
+      fullPath: '/landlord/listings/'
+      preLoaderRoute: typeof LandlordListingsIndexRouteImport
+      parentRoute: typeof LandlordListingsRoute
+    }
     '/landlord/listings/create': {
       id: '/landlord/listings/create'
       path: '/create'
@@ -1607,12 +1624,14 @@ const BoarderPaymentsRouteWithChildren = BoarderPaymentsRoute._addFileChildren(
 
 interface LandlordListingsRouteChildren {
   LandlordListingsCreateRoute: typeof LandlordListingsCreateRoute
+  LandlordListingsIndexRoute: typeof LandlordListingsIndexRoute
   LandlordListingsIdEditRoute: typeof LandlordListingsIdEditRoute
   LandlordListingsRoomsIdEditRoute: typeof LandlordListingsRoomsIdEditRoute
 }
 
 const LandlordListingsRouteChildren: LandlordListingsRouteChildren = {
   LandlordListingsCreateRoute: LandlordListingsCreateRoute,
+  LandlordListingsIndexRoute: LandlordListingsIndexRoute,
   LandlordListingsIdEditRoute: LandlordListingsIdEditRoute,
   LandlordListingsRoomsIdEditRoute: LandlordListingsRoomsIdEditRoute,
 }

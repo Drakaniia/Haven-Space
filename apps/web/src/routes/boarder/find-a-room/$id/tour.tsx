@@ -115,6 +115,7 @@ function TourPage() {
     setError(null);
     const next: TourErrors = {};
     if (!date) next.date = 'Choose a preferred date for your tour.';
+    else if (date < tomorrow()) next.date = 'Choose tomorrow or a later date.';
     if (!timeSlot) next.time = 'Choose a preferred time slot.';
     setFieldErrors(next);
     if (next.date || next.time) {

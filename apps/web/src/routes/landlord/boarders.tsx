@@ -194,7 +194,7 @@ function BoardersPage() {
       last_name: boarder.last_name,
       email: boarder.email ?? '',
       room_id: boarder.room_id ? String(boarder.room_id) : '',
-      move_in_date: boarder.move_in_date ?? '',
+      move_in_date: (boarder.move_in_date ?? '').slice(0, 10),
     });
     setError(null);
     setModalOpen(true);

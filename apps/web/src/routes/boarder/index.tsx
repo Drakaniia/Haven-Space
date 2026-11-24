@@ -507,7 +507,9 @@ function AnnouncementCard({
               {latest.priority === 'high' ? ' · High priority' : ''}
             </p>
             <h3 className="mt-1 font-semibold text-ink">{latest.title}</h3>
-            <p className="mt-1 line-clamp-3 text-sm leading-relaxed text-gray-ink">{latest.body}</p>
+            <p className="mt-1 line-clamp-3 text-sm leading-relaxed text-gray-ink">
+              {latest.description ?? latest.body}
+            </p>
           </article>
         )}
       </div>
