@@ -1,4 +1,5 @@
 import { Link } from '@tanstack/react-router';
+import { useState } from 'react';
 import { useAuth } from '../../lib/auth-context';
 import { BROWSE_LISTINGS_PATH, loginRedirectPath } from '../../lib/routes';
 import type { PublicProperty } from '../../lib/types';
@@ -199,6 +200,135 @@ export function ListingCard({
   );
 }
 
+/**
+ * The compact browse row used beside the map: photo on the left, then the name, street, clay
+ * price and an open-rooms pill. `active` is the card whose pin is lit on the map; the card reports
+ * hover and focus through `onActivate` so the map can follow the pointer.
+ */
+export function ListingRowCard({
+  property,
+  detailTo,
+  active = false,
+  onActivate,
+}: {
+  property: PublicProperty;
+  detailTo: string;
+  active?: boolean;
+  onActivate?: (id: number | null) => void;
+}) {
+  const photos = (property.images.length > 0 ? property.images : [property.image]).filter(Boolean);
+  const [photoIndex, setPhotoIndex] = useState(0);
+  const image = photos[photoIndex] || LISTING_PLACEHOLDER_IMAGE;
+  const dots = photos.slice(0, 5);
+  const available = property.availableRooms > 0;
+  const street =
+    property.address && property.city && !property.address.includes(property.city)
+      ? `${property.address}, ${property.city}`
+      : property.address || [property.city, property.province].filter(Boolean).join(', ');
+
+  return (
+    <li
+      id={`listing-${property.id}`}
+      onMouseEnter={() => onActivate?.(property.id)}
+      onMouseLeave={() => onActivate?.(null)}
+      onFocus={() => onActivate?.(property.id)}
+      onBlur={event => {
+        if (!event.currentTarget.contains(event.relatedTarget as Node | null)) onActivate?.(null);
+      }}
+      className={`press-card group relative grid scroll-mt-48 grid-cols-1 gap-4 rounded-2xl border bg-surface p-3 shadow-card transition-[border-color,box-shadow] duration-150 sm:grid-cols-[minmax(0,10rem)_1fr] ${
+        active ? 'border-primary/70 ring-1 ring-primary/30' : 'border-border/80'
+      }`}
+    >
+      <div className="relative aspect-[4/3] w-full overflow-hidden rounded-xl bg-subtle">
+        <img
+          src={image}
+          alt=""
+          loading="lazy"
+          className="h-full w-full object-cover transition-transform duration-500 ease-out motion-safe:group-hover:scale-[1.03]"
+          onError={e => {
+            e.currentTarget.src = LISTING_PLACEHOLDER_IMAGE;
+          }}
+        />
+        <div className="absolute right-2 top-2">
+          <CardSave propertyId={property.id} title={property.title} />
+        </div>
+        {dots.length > 1 ? (
+          <div className="absolute inset-x-0 bottom-2 z-10 flex justify-center gap-1">
+            {dots.map((_, index) => (
+              <button
+                key={index}
+                type="button"
+                aria-label={`Show photo ${index + 1} of ${dots.length} for ${property.title}`}
+                aria-pressed={index === photoIndex}
+                onClick={() => setPhotoIndex(index)}
+                className="flex h-4 w-4 items-center justify-center"
+              >
+                <span
+                  className={`block h-1.5 w-1.5 rounded-full shadow-sm transition-colors duration-150 ${
+                    index === photoIndex ? 'bg-white' : 'bg-white/55'
+                  }`}
+                />
+              </button>
+            ))}
+          </div>
+        ) : null}
+      </div>
+
+      <div className="flex min-w-0 flex-col justify-center pb-1 pr-2 sm:py-1">
+        <h3 className="font-display text-[1.25rem] font-semibold leading-snug text-ink">
+          <Link
+            to={detailTo}
+            params={{ id: String(property.id) }}
+            className="after:absolute after:inset-0 after:content-[''] focus-visible:outline-none focus-visible:after:rounded-2xl focus-visible:after:outline focus-visible:after:outline-2 focus-visible:after:outline-offset-2 focus-visible:after:outline-primary"
+          >
+            {property.title}
+          </Link>
+        </h3>
+        <p className="mt-1 line-clamp-1 text-sm text-gray-ink">{street || 'Location on request'}</p>
+
+        <p className="mt-3 flex items-baseline gap-1">
+          <span className="tabular font-display text-[1.625rem] font-semibold leading-none tracking-[-0.02em] text-clay">
+            {pesos(property.price)}
+          </span>
+          <span className="text-sm text-gray-ink">/month</span>
+        </p>
+
+        <p
+          className={`mt-3 inline-flex w-fit items-center gap-1.5 rounded-md border px-2 py-0.5 text-xs font-medium ${
+            available
+              ? 'border-primary/30 bg-mint text-primary-dark'
+              : 'border-border bg-subtle text-gray-ink'
+          }`}
+        >
+          <span
+            aria-hidden="true"
+            className={`h-1.5 w-1.5 rounded-full ${available ? 'bg-primary' : 'bg-muted'}`}
+          />
+          {openRoomsLabel(property.availableRooms, property.totalRooms)}
+        </p>
+      </div>
+    </li>
+  );
+}
+
+/** Loading state for `ListingRowCard`. */
+export function ListingRowCardSkeleton() {
+  return (
+    <li
+      aria-hidden="true"
+      className="grid grid-cols-1 gap-4 rounded-2xl border border-border/80 bg-surface p-3 shadow-card sm:grid-cols-[minmax(0,10rem)_1fr]"
+    >
+      <Skeleton className="aspect-[4/3] w-full rounded-xl" />
+      <div className="flex flex-col justify-center py-1">
+        <Skeleton className="h-6 w-4/5" />
+        <Skeleton className="mt-2 h-4 w-1/2" />
+        <Skeleton className="mt-4 h-7 w-32" />
+        <Skeleton className="mt-3 h-5 w-36" />
+      </div>
+    </li>
+  );
+}
+
 /** Loading state shaped like a real card, so the grid does not jump when data lands. */
 export function ListingCardSkeleton({ listView = false }: { listView?: boolean }) {
   return (
@@ -209,7 +339,9 @@ export function ListingCardSkeleton({ listView = false }: { listView?: boolean }
       }`}
     >
       <Skeleton
-        className={`aspect-[4/3] w-full rounded-none ${listView ? 'sm:aspect-auto sm:h-full sm:min-h-[220px]' : ''}`}
+        className={`aspect-[4/3] w-full rounded-none ${
+          listView ? 'sm:aspect-auto sm:h-full sm:min-h-[220px]' : ''
+        }`}
       />
       <div className="flex flex-col p-5">
         <Skeleton className="h-4 w-1/2" />

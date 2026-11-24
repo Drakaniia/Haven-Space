@@ -4,13 +4,19 @@ import { Link } from '@tanstack/react-router';
 import { useAuth } from '../../lib/auth-context';
 import { getPopularLocations, listPublicRooms } from '../../lib/api/public';
 import type { PublicListingsFilters, PublicListingsResponse } from '../../lib/types';
-import { Button, buttonClasses } from '../ui/Button';
+import { Button } from '../ui/Button';
 import { Drawer } from '../ui/Drawer';
 import { EmptyState } from '../ui/EmptyState';
 import { ErrorState } from '../ui/ErrorState';
 import { Field, SelectInput } from '../ui/Field';
 import { Icon } from '../ui/Icon';
-import { ListingCard, ListingCardSkeleton } from './ListingCard';
+import {
+  ListingCard,
+  ListingCardSkeleton,
+  ListingRowCard,
+  ListingRowCardSkeleton,
+} from './ListingCard';
+import { ListingMap } from './ListingMap';
 import { MapModal } from './MapModal';
 
 const DEFAULT_FILTERS: PublicListingsFilters = { sort_by: 'newest', limit: 20, offset: 0 };
@@ -99,7 +105,12 @@ export function FindARoomContent({
   const [selectedAmenities, setSelectedAmenities] = useState<string[]>([]);
   const [amenitiesOpen, setAmenitiesOpen] = useState(false);
   const [sheetOpen, setSheetOpen] = useState(false);
-  const [view, setView] = useState<'grid' | 'list'>('grid');
+  // `map` is the list beside a live map (the map column shows from `lg` up); `grid` is photo cards.
+  const [view, setView] = useState<'map' | 'grid'>('map');
+  // The listing whose card is hovered or whose pin was pressed; lights both at once.
+  const [activeId, setActiveId] = useState<number | null>(null);
+  // The side map is a desktop column; false during SSR so Leaflet never loads on a phone.
+  const [isDesktop, setIsDesktop] = useState(false);
   const [searchInput, setSearchInput] = useState('');
   // The map opens in place so a visitor never loses their filters or scroll position
   // (spec `find-a-room-map-modal` D1/D6).
@@ -121,6 +132,14 @@ export function FindARoomContent({
     queryKey: ['popular-locations'],
     queryFn: () => getPopularLocations(5),
   });
+
+  useEffect(() => {
+    const media = window.matchMedia('(min-width: 1024px)');
+    const sync = () => setIsDesktop(media.matches);
+    sync();
+    media.addEventListener('change', sync);
+    return () => media.removeEventListener('change', sync);
+  }, []);
 
   // The amenities menu closes on an outside press or Escape, like any menu.
   useEffect(() => {
@@ -181,6 +200,13 @@ export function FindARoomContent({
     setFilters(f => ({ ...f, search: undefined, offset: 0 }));
   }
 
+  function selectFromMap(id: number) {
+    setActiveId(id);
+    document
+      .getElementById(`listing-${id}`)
+      ?.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+  }
+
   function goToPage(offset: number) {
     setFilters(f => ({ ...f, offset: Math.max(0, offset) }));
     resultsRef.current?.scrollIntoView({ block: 'start' });
@@ -220,9 +246,12 @@ export function FindARoomContent({
   const pageNumber = Math.floor(offset / limit) + 1;
 
   const clientFiltered = selectedAmenities.length > 0 || roomType !== 'any';
-  const filterCount = (priceRange !== 'any' ? 1 : 0) + (roomType !== 'any' ? 1 : 0) + selectedAmenities.length;
+  const filterCount =
+    (priceRange !== 'any' ? 1 : 0) + (roomType !== 'any' ? 1 : 0) + selectedAmenities.length;
   const hasActiveFilters = filterCount > 0 || Boolean(filters.search);
   const updating = query.isFetching && query.isPlaceholderData;
+
+  const splitView = view === 'map' && !query.error && (query.isPending || properties.length > 0);
 
   const countHeading = clientFiltered
     ? `${plural(properties.length, 'match', 'matches')} on this page`
@@ -232,19 +261,19 @@ export function FindARoomContent({
     <div className="bg-cream">
       {/* ================= HEADER ================= */}
       <section className="paper-grain border-b border-border">
-        <div className="rise-in mx-auto max-w-7xl px-4 pb-10 pt-10 sm:px-6 md:pt-14 lg:px-8">
+        <div className="rise-in mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8">
           <p className="kicker">Find a room</p>
-          <h1 className="display-lg mt-3 max-w-3xl text-ink">
+          <h1 className="mt-2 font-display text-3xl font-medium leading-tight text-ink sm:text-4xl">
             Boarding houses near your school and work
           </h1>
-          <p className="mt-4 max-w-xl text-[1.0625rem] leading-relaxed text-gray-ink">
-            Browse verified rooms, compare rent and amenities, then request a tour or apply in a
-            few steps.
+          <p className="mt-2 max-w-2xl text-sm leading-relaxed text-gray-ink">
+            Browse verified rooms, compare rent and amenities, then request a tour or apply in a few
+            steps.
           </p>
 
           <form
             role="search"
-            className="mt-8 flex max-w-3xl flex-col gap-2 sm:flex-row sm:items-center"
+            className="mt-5 flex max-w-3xl flex-col gap-2 sm:flex-row sm:items-center"
             onSubmit={e => {
               e.preventDefault();
               runSearch();
@@ -265,7 +294,7 @@ export function FindARoomContent({
                 value={searchInput}
                 onChange={e => setSearchInput(e.target.value)}
                 placeholder="Location, university or property name"
-                className="h-12 w-full rounded-xl border border-border-strong bg-surface pl-11 pr-4 text-base text-ink shadow-card transition-[border-color,box-shadow] duration-150 placeholder:text-muted focus:border-primary focus:outline-none focus:ring-4 focus:ring-primary/15"
+                className="h-12 w-full rounded-xl border border-primary/40 bg-surface pl-11 pr-4 text-base text-ink shadow-card transition-[border-color,box-shadow] duration-150 placeholder:text-muted focus:border-primary focus:outline-none focus:ring-4 focus:ring-primary/15"
               />
             </div>
             <div className="flex gap-2">
@@ -299,12 +328,13 @@ export function FindARoomContent({
                       setSearchInput(location.search_value);
                       setFilters(f => ({ ...f, search: location.search_value, offset: 0 }));
                     }}
-                    className={`rounded-lg border px-3 py-1.5 text-sm font-medium transition-[background-color,border-color,color] duration-150 ${
+                    className={`inline-flex items-center gap-1.5 rounded-lg border px-3 py-1.5 text-sm font-medium transition-[background-color,border-color,color] duration-150 ${
                       active
                         ? 'border-primary/40 bg-mint text-primary-dark'
                         : 'border-border bg-surface text-gray-ink hover:border-border-strong hover:text-ink'
                     }`}
                   >
+                    {active ? <Icon name="check" size={14} /> : null}
                     {location.name}
                   </button>
                 );
@@ -365,7 +395,7 @@ export function FindARoomContent({
               aria-label="Property type"
               value={roomType}
               onChange={e => setRoomType(e.target.value)}
-              className="w-auto min-w-[10.5rem] cursor-pointer"
+              className="w-auto min-w-[11.5rem] whitespace-nowrap cursor-pointer"
             >
               {TYPE_OPTIONS.map(option => (
                 <option key={option.value} value={option.value}>
@@ -390,7 +420,9 @@ export function FindARoomContent({
                 <Icon
                   name="chevronDown"
                   size={16}
-                  className={`text-muted transition-transform duration-150 ${amenitiesOpen ? 'rotate-180' : ''}`}
+                  className={`text-muted transition-transform duration-150 ${
+                    amenitiesOpen ? 'rotate-180' : ''
+                  }`}
                 />
               </button>
               {amenitiesOpen ? (
@@ -439,16 +471,16 @@ export function FindARoomContent({
               className="hidden items-center rounded-xl border border-border-strong bg-surface p-1 sm:flex"
             >
               <ViewToggle
+                label="List and map view"
+                icon="map"
+                active={view === 'map'}
+                onClick={() => setView('map')}
+              />
+              <ViewToggle
                 label="Grid view"
                 icon="grid"
                 active={view === 'grid'}
                 onClick={() => setView('grid')}
-              />
-              <ViewToggle
-                label="List view"
-                icon="list"
-                active={view === 'list'}
-                onClick={() => setView('list')}
               />
             </div>
           </div>
@@ -458,7 +490,11 @@ export function FindARoomContent({
         {hasActiveFilters ? (
           <div className="mx-auto flex max-w-7xl flex-wrap items-center gap-2 px-4 pb-3 sm:px-6 lg:px-8">
             {filters.search ? (
-              <FilterTag label={`“${filters.search}”`} onRemove={clearSearch} removeLabel="Clear search" />
+              <FilterTag
+                label={`“${filters.search}”`}
+                onRemove={clearSearch}
+                removeLabel="Clear search"
+              />
             ) : null}
             {priceRange !== 'any' ? (
               <FilterTag
@@ -499,7 +535,10 @@ export function FindARoomContent({
             </h2>
             <p className="mt-1.5 text-sm text-gray-ink">
               {clientFiltered
-                ? `Amenity and type filters narrow the ${plural(pageProperties.length, 'place')} on this page.`
+                ? `Amenity and type filters narrow the ${plural(
+                    pageProperties.length,
+                    'place'
+                  )} on this page.`
                 : filters.search
                 ? `Results for “${filters.search}”.`
                 : 'Boarding houses, dorms and apartments listed on Haven Space.'}
@@ -512,86 +551,126 @@ export function FindARoomContent({
           ) : null}
         </div>
 
-        {query.isPending ? (
-          <ul
-            aria-label="Loading rooms"
-            className={`grid gap-6 ${view === 'list' ? 'grid-cols-1' : 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-3'}`}
-          >
-            {Array.from({ length: 6 }, (_, index) => (
-              <ListingCardSkeleton key={index} listView={view === 'list'} />
-            ))}
-          </ul>
-        ) : query.error ? (
-          <ErrorState
-            message="We couldn't load rooms right now."
-            hint={query.error.message}
-            action={
-              <Button variant="outline" size="sm" onClick={() => void query.refetch()}>
-                Try again
-              </Button>
-            }
-          />
-        ) : properties.length === 0 ? (
-          hasActiveFilters ? (
-            <EmptyState
-              icon="search"
-              title="No rooms match these filters"
-              description="Try a wider price range, fewer amenities or a different area."
-              action={
-                <Button variant="outline" onClick={resetFilters}>
-                  Clear filters
-                </Button>
-              }
-            />
-          ) : (
-            <EmptyState
-              icon="buildingOffice"
-              title="No rooms listed yet"
-              description="New boarding houses appear here as soon as landlords publish them."
-            />
-          )
-        ) : (
-          <ul
-              aria-busy={updating}
-              className={`grid gap-6 transition-opacity duration-200 ${updating ? 'opacity-60' : ''} ${
-                view === 'list' ? 'grid-cols-1' : 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-3'
-              }`}
-            >
-              {properties.map(property => (
-                <ListingCard
-                  key={property.id}
-                  property={property}
-                  detailTo={detailTo}
-                  listView={view === 'list'}
+        <div
+          className={
+            splitView
+              ? 'lg:grid lg:grid-cols-[minmax(0,7fr)_minmax(0,6fr)] lg:items-start lg:gap-6'
+              : ''
+          }
+        >
+          <div className="min-w-0">
+            {query.isPending ? (
+              view === 'map' ? (
+                <ul aria-label="Loading rooms" className="flex flex-col gap-4">
+                  {Array.from({ length: 4 }, (_, index) => (
+                    <ListingRowCardSkeleton key={index} />
+                  ))}
+                </ul>
+              ) : (
+                <ul
+                  aria-label="Loading rooms"
+                  className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3"
+                >
+                  {Array.from({ length: 6 }, (_, index) => (
+                    <ListingCardSkeleton key={index} />
+                  ))}
+                </ul>
+              )
+            ) : query.error ? (
+              <ErrorState
+                message="We couldn't load rooms right now."
+                hint={query.error.message}
+                action={
+                  <Button variant="outline" size="sm" onClick={() => void query.refetch()}>
+                    Try again
+                  </Button>
+                }
+              />
+            ) : properties.length === 0 ? (
+              hasActiveFilters ? (
+                <EmptyState
+                  icon="search"
+                  title="No rooms match these filters"
+                  description="Try a wider price range, fewer amenities or a different area."
+                  action={
+                    <Button variant="outline" onClick={resetFilters}>
+                      Clear filters
+                    </Button>
+                  }
                 />
-              ))}
-            </ul>
-        )}
+              ) : (
+                <EmptyState
+                  icon="buildingOffice"
+                  title="No rooms listed yet"
+                  description="New boarding houses appear here as soon as landlords publish them."
+                />
+              )
+            ) : view === 'map' ? (
+              <ul
+                aria-busy={updating}
+                className={`flex flex-col gap-4 transition-opacity duration-200 ${
+                  updating ? 'opacity-60' : ''
+                }`}
+              >
+                {properties.map(property => (
+                  <ListingRowCard
+                    key={property.id}
+                    property={property}
+                    detailTo={detailTo}
+                    active={activeId === property.id}
+                    onActivate={setActiveId}
+                  />
+                ))}
+              </ul>
+            ) : (
+              <ul
+                aria-busy={updating}
+                className={`grid grid-cols-1 gap-6 transition-opacity duration-200 sm:grid-cols-2 lg:grid-cols-3 ${
+                  updating ? 'opacity-60' : ''
+                }`}
+              >
+                {properties.map(property => (
+                  <ListingCard key={property.id} property={property} detailTo={detailTo} />
+                ))}
+              </ul>
+            )}
 
-        {!query.isPending && !query.error && (hasPrev || hasNext) ? (
-          <nav
-            aria-label="Pages"
-            className="mt-10 flex items-center justify-between gap-3 border-t border-border pt-6"
-          >
-            <Button
-              variant="outline"
-              disabled={!hasPrev || updating}
-              onClick={() => goToPage(offset - limit)}
-            >
-              <Icon name="chevronLeft" size={16} />
-              Previous
-            </Button>
-            <p className="tabular text-sm text-gray-ink">Page {pageNumber}</p>
-            <Button
-              variant="outline"
-              disabled={!hasNext || updating}
-              onClick={() => goToPage(offset + limit)}
-            >
-              Next
-              <Icon name="chevronRight" size={16} />
-            </Button>
-          </nav>
-        ) : null}
+            {!query.isPending && !query.error && (hasPrev || hasNext) ? (
+              <nav
+                aria-label="Pages"
+                className="mt-10 flex items-center justify-between gap-3 border-t border-border pt-6"
+              >
+                <Button
+                  variant="outline"
+                  disabled={!hasPrev || updating}
+                  onClick={() => goToPage(offset - limit)}
+                >
+                  <Icon name="chevronLeft" size={16} />
+                  Previous
+                </Button>
+                <p className="tabular text-sm text-gray-ink">Page {pageNumber}</p>
+                <Button
+                  variant="outline"
+                  disabled={!hasNext || updating}
+                  onClick={() => goToPage(offset + limit)}
+                >
+                  Next
+                  <Icon name="chevronRight" size={16} />
+                </Button>
+              </nav>
+            ) : null}
+          </div>
+
+          {/* The map column only exists from `lg` up; smaller screens use the Map dialog. */}
+          {splitView && isDesktop ? (
+            <ListingMap
+              properties={properties}
+              activeId={activeId}
+              onSelect={selectFromMap}
+              className="sticky top-36 h-[calc(100vh-10rem)] min-h-[24rem]"
+            />
+          ) : null}
+        </div>
       </section>
 
       {/* ================= MOBILE FILTER SHEET ================= */}
@@ -630,7 +709,11 @@ export function FindARoomContent({
             </SelectInput>
           </Field>
           <Field label="Property type" htmlFor="sheet-type">
-            <SelectInput id="sheet-type" value={roomType} onChange={e => setRoomType(e.target.value)}>
+            <SelectInput
+              id="sheet-type"
+              value={roomType}
+              onChange={e => setRoomType(e.target.value)}
+            >
               {TYPE_OPTIONS.map(option => (
                 <option key={option.value} value={option.value}>
                   {option.label}
@@ -691,17 +774,21 @@ function FilterTag({
   removeLabel: string;
 }) {
   return (
-    <span className="inline-flex items-center gap-1 rounded-lg bg-mint py-1 pl-2.5 pr-1 text-xs font-medium text-primary-dark">
+    <button
+      type="button"
+      onClick={onRemove}
+      aria-label={removeLabel}
+      title={removeLabel}
+      className="group/tag inline-flex items-center gap-1.5 rounded-lg border border-primary/40 bg-mint px-2.5 py-1 text-sm font-medium text-primary-dark transition-[background-color,border-color] duration-150 hover:border-primary hover:bg-primary-strong/10"
+    >
+      <span className="flex group-hover/tag:hidden">
+        <Icon name="check" size={14} />
+      </span>
+      <span className="hidden group-hover/tag:flex">
+        <Icon name="close" size={14} />
+      </span>
       {label}
-      <button
-        type="button"
-        onClick={onRemove}
-        aria-label={removeLabel}
-        className="flex h-5 w-5 items-center justify-center rounded-md transition-colors duration-100 hover:bg-primary-strong/15"
-      >
-        <Icon name="close" size={12} />
-      </button>
-    </span>
+    </button>
   );
 }
 

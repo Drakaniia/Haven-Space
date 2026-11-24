@@ -19,6 +19,28 @@ export const DEFAULT_MAP_CENTER = { latitude: 8.1575, longitude: 125.1278 };
 /** City-level zoom: the pin stays readable with the surrounding area still in frame. */
 export const DEFAULT_MAP_ZOOM = 13;
 
+/**
+ * Malaybalay administrative extent, from OpenStreetMap relation 13434541.
+ * A rectangular navigation limit, not a cadastral/city-boundary polygon.
+ */
+export const MALAYBALAY_MAP_BOUNDS: [[number, number], [number, number]] = [
+  [7.9443801, 124.9222279],
+  [8.3361357, 125.4132356],
+];
+
+/** Only coordinates within the browse map's Malaybalay extent may receive price pins. */
+export function isWithinMalaybalay(latitude: number, longitude: number): boolean {
+  const [[south, west], [north, east]] = MALAYBALAY_MAP_BOUNDS;
+  return (
+    Number.isFinite(latitude) &&
+    Number.isFinite(longitude) &&
+    latitude >= south &&
+    latitude <= north &&
+    longitude >= west &&
+    longitude <= east
+  );
+}
+
 const OSM_EMBED_BASE = 'https://www.openstreetmap.org/export/embed.html';
 
 /**
