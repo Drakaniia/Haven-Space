@@ -1,6 +1,6 @@
 import { createFileRoute, Link, useNavigate } from '@tanstack/react-router';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { useMemo, useState, type FormEvent, type ReactNode } from 'react';
+import { useEffect, useMemo, useRef, useState, type FormEvent, type ReactNode } from 'react';
 import { FlowSkeleton, FlowSteps, ListingSummary } from '../../../../components/rooms/BookingFlow';
 import {
   cleanRoomType,
@@ -59,6 +59,46 @@ function ApplyPage() {
   const [agreed, setAgreed] = useState(false);
   const [fieldErrors, setFieldErrors] = useState<ApplyErrors>({});
   const [error, setError] = useState<string | null>(null);
+  const draftKey = `haven:apply-draft:${id}`;
+  const draftHydrated = useRef(false);
+
+  useEffect(() => {
+    draftHydrated.current = false;
+    try {
+      const raw = window.sessionStorage.getItem(draftKey);
+      if (raw) {
+        const saved = JSON.parse(raw) as Partial<{
+          roomId: string;
+          moveInDate: string;
+          message: string;
+          agreed: boolean;
+        }>;
+        if (!initialRoom && typeof saved.roomId === 'string') setRoomId(saved.roomId);
+        if (typeof saved.moveInDate === 'string') setMoveInDate(saved.moveInDate);
+        if (typeof saved.message === 'string') setMessage(saved.message);
+        if (typeof saved.agreed === 'boolean') setAgreed(saved.agreed);
+      }
+    } catch {
+      // Ignore malformed draft storage
+    }
+    draftHydrated.current = true;
+  }, [draftKey, initialRoom]);
+
+  useEffect(() => {
+    if (!draftHydrated.current) return;
+    try {
+      if (!moveInDate && !message && !agreed && roomId === initialRoom) {
+        window.sessionStorage.removeItem(draftKey);
+        return;
+      }
+      window.sessionStorage.setItem(
+        draftKey,
+        JSON.stringify({ roomId, moveInDate, message, agreed })
+      );
+    } catch {
+      // Ignore storage quota/privacy errors
+    }
+  }, [draftKey, roomId, moveInDate, message, agreed, initialRoom]);
 
   const detail = useQuery({
     queryKey: ['listing', Number(id)],
@@ -76,6 +116,11 @@ function ApplyPage() {
       });
     },
     onSuccess: () => {
+      try {
+        window.sessionStorage.removeItem(draftKey);
+      } catch {
+        // Ignore storage errors
+      }
       // Submitting moves the boarder's status (new → applied_pending) — refresh
       // it so the sidebar/gates stay accurate (spec R13).
       void queryClient.invalidateQueries({ queryKey: [BOARDER_STATUS_KEY] });
@@ -331,6 +376,8 @@ function ApplyPage() {
                     I agree to the{' '}
                     <Link
                       to="/legal/terms-of-service"
+                      target="_blank"
+                      rel="noopener noreferrer"
                       className="font-semibold text-primary underline underline-offset-[3px]"
                     >
                       Terms of Service
