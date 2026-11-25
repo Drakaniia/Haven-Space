@@ -17,13 +17,6 @@ const GROUPS: { title: string; links: { to: string; label: string }[] }[] = [
       { to: '/auth/signup/landlord', label: 'Create a landlord account' },
     ],
   },
-  {
-    title: 'About',
-    links: [
-      { to: '/our-story', label: 'Our story' },
-      { to: '/teams', label: 'The team' },
-    ],
-  },
 ];
 
 const LEGAL = [
@@ -55,7 +48,7 @@ export function Footer() {
             for the landlords who keep those houses running.
           </p>
         </div>
-        <div className="grid gap-10 sm:grid-cols-3">
+        <div className="grid gap-10 sm:grid-cols-2">
           {GROUPS.map(group => (
             <div key={group.title}>
               <p className="text-sm font-semibold text-ink">{group.title}</p>

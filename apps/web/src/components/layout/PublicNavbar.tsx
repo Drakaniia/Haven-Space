@@ -7,8 +7,6 @@ const LINKS = [
   { to: '/find-a-room', label: 'Find a room' },
   { to: '/for-landlords', label: 'For landlords' },
   { to: '/haven-ai', label: 'Haven AI' },
-  { to: '/our-story', label: 'Our story' },
-  { to: '/teams', label: 'Team' },
 ] as const;
 
 /**

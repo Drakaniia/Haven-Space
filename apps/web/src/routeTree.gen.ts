@@ -13,8 +13,7 @@ import { Route as IndexRouteImport } from './routes/index'
 import { Route as ForLandlordsRouteImport } from './routes/for-landlords'
 import { Route as HavenAiRouteImport } from './routes/haven-ai'
 import { Route as MapsRouteImport } from './routes/maps'
-import { Route as OurStoryRouteImport } from './routes/our-story'
-import { Route as TeamsRouteImport } from './routes/teams'
+import { Route as PitchRouteImport } from './routes/pitch'
 import { Route as AdminIndexRouteImport } from './routes/admin/index'
 import { Route as AuthChooseRouteImport } from './routes/auth/choose'
 import { Route as AuthChooseRoleRouteImport } from './routes/auth/choose-role'
@@ -107,14 +106,9 @@ const MapsRoute = MapsRouteImport.update({
   path: '/maps',
   getParentRoute: () => rootRouteImport,
 } as any)
-const OurStoryRoute = OurStoryRouteImport.update({
-  id: '/our-story',
-  path: '/our-story',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const TeamsRoute = TeamsRouteImport.update({
-  id: '/teams',
-  path: '/teams',
+const PitchRoute = PitchRouteImport.update({
+  id: '/pitch',
+  path: '/pitch',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AdminIndexRoute = AdminIndexRouteImport.update({
@@ -485,8 +479,7 @@ export interface FileRoutesByFullPath {
   '/for-landlords': typeof ForLandlordsRoute
   '/haven-ai': typeof HavenAiRoute
   '/maps': typeof MapsRoute
-  '/our-story': typeof OurStoryRoute
-  '/teams': typeof TeamsRoute
+  '/pitch': typeof PitchRoute
   '/auth/choose': typeof AuthChooseRoute
   '/auth/choose-role': typeof AuthChooseRoleRoute
   '/auth/forgot-password': typeof AuthForgotPasswordRoute
@@ -564,8 +557,7 @@ export interface FileRoutesByTo {
   '/for-landlords': typeof ForLandlordsRoute
   '/haven-ai': typeof HavenAiRoute
   '/maps': typeof MapsRoute
-  '/our-story': typeof OurStoryRoute
-  '/teams': typeof TeamsRoute
+  '/pitch': typeof PitchRoute
   '/auth/choose': typeof AuthChooseRoute
   '/auth/choose-role': typeof AuthChooseRoleRoute
   '/auth/forgot-password': typeof AuthForgotPasswordRoute
@@ -634,8 +626,7 @@ export interface FileRoutesById {
   '/for-landlords': typeof ForLandlordsRoute
   '/haven-ai': typeof HavenAiRoute
   '/maps': typeof MapsRoute
-  '/our-story': typeof OurStoryRoute
-  '/teams': typeof TeamsRoute
+  '/pitch': typeof PitchRoute
   '/auth/choose': typeof AuthChooseRoute
   '/auth/choose-role': typeof AuthChooseRoleRoute
   '/auth/forgot-password': typeof AuthForgotPasswordRoute
@@ -715,8 +706,7 @@ export interface FileRouteTypes {
     | '/for-landlords'
     | '/haven-ai'
     | '/maps'
-    | '/our-story'
-    | '/teams'
+    | '/pitch'
     | '/auth/choose'
     | '/auth/choose-role'
     | '/auth/forgot-password'
@@ -794,8 +784,7 @@ export interface FileRouteTypes {
     | '/for-landlords'
     | '/haven-ai'
     | '/maps'
-    | '/our-story'
-    | '/teams'
+    | '/pitch'
     | '/auth/choose'
     | '/auth/choose-role'
     | '/auth/forgot-password'
@@ -863,8 +852,7 @@ export interface FileRouteTypes {
     | '/for-landlords'
     | '/haven-ai'
     | '/maps'
-    | '/our-story'
-    | '/teams'
+    | '/pitch'
     | '/auth/choose'
     | '/auth/choose-role'
     | '/auth/forgot-password'
@@ -943,8 +931,7 @@ export interface RootRouteChildren {
   ForLandlordsRoute: typeof ForLandlordsRoute
   HavenAiRoute: typeof HavenAiRoute
   MapsRoute: typeof MapsRoute
-  OurStoryRoute: typeof OurStoryRoute
-  TeamsRoute: typeof TeamsRoute
+  PitchRoute: typeof PitchRoute
   AuthChooseRoute: typeof AuthChooseRoute
   AuthChooseRoleRoute: typeof AuthChooseRoleRoute
   AuthForgotPasswordRoute: typeof AuthForgotPasswordRoute
@@ -1023,18 +1010,11 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof MapsRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/our-story': {
-      id: '/our-story'
-      path: '/our-story'
-      fullPath: '/our-story'
-      preLoaderRoute: typeof OurStoryRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/teams': {
-      id: '/teams'
-      path: '/teams'
-      fullPath: '/teams'
-      preLoaderRoute: typeof TeamsRouteImport
+    '/pitch': {
+      id: '/pitch'
+      path: '/pitch'
+      fullPath: '/pitch'
+      preLoaderRoute: typeof PitchRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/admin/': {
@@ -1685,8 +1665,7 @@ const rootRouteChildren: RootRouteChildren = {
   ForLandlordsRoute: ForLandlordsRoute,
   HavenAiRoute: HavenAiRoute,
   MapsRoute: MapsRoute,
-  OurStoryRoute: OurStoryRoute,
-  TeamsRoute: TeamsRoute,
+  PitchRoute: PitchRoute,
   AuthChooseRoute: AuthChooseRoute,
   AuthChooseRoleRoute: AuthChooseRoleRoute,
   AuthForgotPasswordRoute: AuthForgotPasswordRoute,
