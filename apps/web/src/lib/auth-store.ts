@@ -40,11 +40,11 @@ export function getStoredAuth(): StoredAuth {
 export function setStoredAuth(
   token: string,
   refreshToken: string | undefined,
-  user: AuthUser
+  user?: AuthUser
 ): void {
   localStorage.setItem(TOKEN_KEY, token);
   if (refreshToken) localStorage.setItem(REFRESH_KEY, refreshToken);
-  localStorage.setItem(USER_KEY, JSON.stringify(user));
+  if (user !== undefined) localStorage.setItem(USER_KEY, JSON.stringify(user));
   notifyAuthChanged();
 }
 

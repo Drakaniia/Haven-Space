@@ -261,10 +261,12 @@ async function handleAvatarUpload(c: Context<{ Bindings: Env }>) {
   }
 
   await updateUserAvatarUrl(db, authUser.user_id, avatarUrl);
+  const updated = await findUserProfileById(db, authUser.user_id);
 
   return jsonResponse({
     message: 'Avatar uploaded successfully',
     avatar_url: avatarUrl,
+    user: updated ? profilePayload(updated) : undefined,
   });
 }
 

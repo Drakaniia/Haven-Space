@@ -1,12 +1,13 @@
 import { getApiBaseUrl } from '../config';
 import type {
+  ApiErrorBody,
   NotificationPreferences,
   NotificationPreferencesResponse,
   OnboardingStatusResponse,
   ProfileResponse,
   UpdateProfileInput,
 } from '../types';
-import { apiFetch } from './http';
+import { apiFetch, ApiRequestError } from './http';
 
 const base = () => getApiBaseUrl();
 
@@ -24,15 +25,29 @@ export function updateProfile(token: string, input: UpdateProfileInput): Promise
   });
 }
 
-export async function uploadAvatar(token: string, file: File): Promise<ProfileResponse> {
+export async function uploadAvatar(
+  token: string,
+  file: File
+): Promise<ProfileResponse & { avatar_url?: string }> {
   const form = new FormData();
   form.append('avatar', file);
   const response = await fetch(`${base()}/api/users/avatar`, {
     method: 'POST',
+    credentials: 'include',
     headers: { Authorization: `Bearer ${token}` },
     body: form,
   });
-  return (await response.json()) as ProfileResponse;
+  const body = (await response.json().catch(() => ({}))) as ProfileResponse & {
+    avatar_url?: string;
+  } & ApiErrorBody;
+  if (!response.ok) {
+    throw new ApiRequestError(
+      response.status,
+      body.error ?? body.message ?? `Request failed (${response.status})`,
+      body
+    );
+  }
+  return body;
 }
 
 export function getNotificationPreferences(

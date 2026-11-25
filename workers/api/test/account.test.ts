@@ -261,6 +261,10 @@ describe('account, profile, password, and onboarding routes', () => {
     expect(await response.json()).toEqual({
       message: 'Avatar uploaded successfully',
       avatar_url: 'https://utfs.io/f/avatar-key',
+      user: expect.objectContaining({
+        id: 2,
+        avatar_url: 'https://utfs.io/f/avatar-key',
+      }),
     });
     expect(
       sqlite.prepare('SELECT avatar_url FROM users WHERE id = 2').get() as { avatar_url: string }

@@ -87,7 +87,7 @@ function SettingsPage() {
     mutationFn: (file: File) => uploadAvatar(token!, file),
     onSuccess: data => {
       void queryClient.invalidateQueries({ queryKey: ['profile'] });
-      setStoredAuth(token!, undefined, data.user);
+      if (data.user) setStoredAuth(token!, undefined, data.user);
       push({ tone: 'success', message: 'Avatar updated.' });
     },
     onError: err =>
