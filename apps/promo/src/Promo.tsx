@@ -79,7 +79,13 @@ export const Promo = ({scenes, music}: PromoProps) => {
             <Voice scene={s6} />
           </TransitionSeries.Sequence>
           <TransitionSeries.Transition presentation={fade()} timing={fadeTiming} />
-          <TransitionSeries.Sequence name="7 Call to action" durationInFrames={s7.frames}>
+          <TransitionSeries.Sequence
+            name="7 Call to action"
+            durationInFrames={s7.frames}
+            style={{
+              scale: 1.001
+            }}
+          >
             <Cta lines={s7.lines} />
             <Voice scene={s7} hide={[0, 1, 2]} />
           </TransitionSeries.Sequence>
