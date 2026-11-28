@@ -13,6 +13,7 @@ amendment named in a spec's header before changing behaviour it covers.
 | [`payments-page-regressions-spec`](payments/payments-page-regressions-spec.md)                 | Regression fixes on the payments pages              |
 | [`payments-shell-reverification-spec`](payments/payments-shell-reverification-spec.md)         | Shell/layout re-verification                        |
 | [`payments-shell-two-pages-reverify-spec`](payments/payments-shell-two-pages-reverify-spec.md) | Two-page shell re-verification                      |
+| [`paid-amenities-spec`](payments/paid-amenities-spec.md)                                       | Paid amenities catalog, subscriptions, usage billing |
 
 ## Landlord
 
