@@ -1,7 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { Link } from '@tanstack/react-router';
 import { useEffect, useRef, useState } from 'react';
-import { notificationThreadId } from '../../lib/messages';
+import { notificationThreadId, relativeTime } from '../../lib/messages';
 import {
   deleteNotification,
   getNotifications,
@@ -36,21 +36,6 @@ function notificationRoute(metadata: unknown): '/boarder/tenancy' | null {
   const route = (metadata as Record<string, unknown>).route;
 
   return route === '/boarder/tenancy' ? route : null;
-}
-
-function formatWhen(value: string): string {
-  const date = new Date(value);
-  if (Number.isNaN(date.getTime())) return '';
-  const now = new Date();
-  const diffMs = now.getTime() - date.getTime();
-  const minutes = Math.floor(diffMs / 60_000);
-  if (minutes < 1) return 'just now';
-  if (minutes < 60) return `${minutes}m ago`;
-  const hours = Math.floor(minutes / 60);
-  if (hours < 24) return `${hours}h ago`;
-  const days = Math.floor(hours / 24);
-  if (days < 7) return `${days}d ago`;
-  return date.toLocaleDateString();
 }
 
 export function NotificationBell() {
@@ -263,7 +248,7 @@ export function NotificationBell() {
                         <p className="mt-0.5 text-sm text-gray-ink">{notification.message}</p>
                       ) : null}
                       <p className="mt-0.5 text-xs text-muted">
-                        {formatWhen(notification.created_at)}
+                        {relativeTime(notification.created_at)}
                       </p>
                       {invitationId !== null ? (
                         <div className="mt-2 flex gap-2">

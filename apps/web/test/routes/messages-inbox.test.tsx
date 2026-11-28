@@ -239,6 +239,7 @@ test('the bell deep-links message notifications without bodies (R9)', () => {
   const bell = source('components', 'layout', 'NotificationBell.tsx');
 
   expect(bell).toContain('notificationThreadId');
+  expect(bell).toContain('relativeTime');
   expect(bell).toContain('/landlord/messages/$threadId');
   expect(bell).toContain('/boarder/messages/$threadId');
 });
