@@ -45,23 +45,33 @@ export function LandlordPropertyCards({ token, empty }: { token: string; empty: 
 
   return (
     <PropertyCardList layout="tile">
-      {rows.map(property => (
-        <PropertyCard
-          key={property.id}
-          layout="tile"
-          occupancy={{ occupied: property.occupied_rooms, total: property.total_rooms }}
-          title={property.name}
-          propertyId={property.id}
-          imageUrl={property.photos[0] ?? null}
-          pill={listingPill(property.status, property.listing_moderation_status)}
-          // Occupancy is a fact, not a status: a full property keeps its own
-          // Draft/Published/Unpublished pill and gains this beside it (D16).
-          badge={isFullProperty(property.total_rooms, property.occupied_rooms) ? 'Full' : undefined}
-          address={propertyAddress(property)}
-          facts={landlordFacts(property)}
-          note={property.role === 'shared' ? 'Shared access' : undefined}
-        />
-      ))}
+      {rows.map(property => {
+        const sharedCount = property.shared_landlord_count ?? 0;
+
+        return (
+          <PropertyCard
+            key={property.id}
+            layout="tile"
+            occupancy={{ occupied: property.occupied_rooms, total: property.total_rooms }}
+            title={property.name}
+            propertyId={property.id}
+            imageUrl={property.photos[0] ?? null}
+            pill={listingPill(property.status, property.listing_moderation_status)}
+            // Occupancy is a fact, not a status: a full property keeps its own
+            // Draft/Published/Unpublished pill and gains this beside it (D16).
+            badge={isFullProperty(property.total_rooms, property.occupied_rooms) ? 'Full' : undefined}
+            address={propertyAddress(property)}
+            facts={landlordFacts(property)}
+            note={
+              property.role === 'shared'
+                ? 'Shared access'
+                : sharedCount > 0
+                  ? `Shared with ${sharedCount} landlord${sharedCount === 1 ? '' : 's'}`
+                  : undefined
+            }
+          />
+        );
+      })}
     </PropertyCardList>
   );
 }

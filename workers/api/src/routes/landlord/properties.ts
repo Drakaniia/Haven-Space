@@ -3,8 +3,9 @@ import { Hono, type Context } from 'hono';
 import type { Env } from '../../env';
 import { requireD1 } from '../../lib/d1';
 import { errorResponse, jsonResponse } from '../../lib/http';
+import { readJsonObject } from '../../lib/validation';
 import {
-  findLandlordPropertyIdentity,
+  findLandlordPropertyAccessIdentity,
   getLandlordPropertyDetail,
   listLandlordProperties,
   softDeleteLandlordProperty,
@@ -12,6 +13,14 @@ import {
   type LandlordPropertyDetailResult,
   type LandlordPropertyListRow,
 } from '../../repositories/landlord-properties';
+import {
+  createPropertyAccessRemovedNotification,
+  findActiveAccess,
+  findPropertyForAccess,
+  removePropertyAccess,
+  revokeAllForProperty,
+} from '../../repositories/property-access';
+import { findUserAccountById } from '../../repositories/users';
 import { isPhpEmpty, parsePositiveInt, requireLandlord } from './shared';
 function mapPropertyType(value: string | null | undefined): string {
   const typeMapping: Record<string, string> = {
@@ -68,6 +77,7 @@ function formatLandlordPropertyListItem(
     amenities,
     photos,
     pending_applications: Number(property.pending_applications ?? 0),
+    shared_landlord_count: Number(property.shared_landlord_count ?? 0),
   };
 }
 
@@ -117,7 +127,18 @@ function formatLandlordPropertyDetail(result: LandlordPropertyDetailResult) {
             granted_at: landlord.granted_at,
           })),
         }
-      : {}),
+      : {
+          // Present only on the invitee's view; `role: 'shared'` means another landlord owns
+          // this listing and can remove access at any time.
+          owner: {
+            id: Number(property.landlord_id),
+            name: [property.owner_first_name, property.owner_last_name]
+              .filter(Boolean)
+              .join(' ')
+              .trim(),
+            email: property.owner_email,
+          },
+        }),
   };
 }
 
@@ -184,14 +205,21 @@ async function handleDeleteLandlordProperty(c: Context<{ Bindings: Env }>) {
     return errorResponse(404, 'Property not found or access denied');
   }
 
-  const property = await findLandlordPropertyIdentity(db, propertyId, user.user_id);
+  const property = await findLandlordPropertyAccessIdentity(db, propertyId, user.user_id);
 
   if (!property) {
     return errorResponse(404, 'Property not found or access denied');
   }
 
+  if (property.role === 'shared') {
+    return errorResponse(403, 'Only the property owner can delete this property.', {
+      code: 'owner_only_delete',
+    });
+  }
+
   await softDeleteLandlordProperty(db, propertyId, user.user_id);
   await softDeleteLandlordPropertyRooms(db, propertyId);
+  await revokeAllForProperty(db, propertyId, user.user_id);
 
   return jsonResponse({
     success: true,
@@ -203,9 +231,94 @@ async function handleDeleteLandlordProperty(c: Context<{ Bindings: Env }>) {
   });
 }
 
+async function handleRemoveSharedAccess(c: Context<{ Bindings: Env }>) {
+  const db = requireD1(c.env);
+  const user = await requireLandlord(c);
+
+  if (user instanceof Response) {
+    return user;
+  }
+
+  const propertyId = parsePositiveInt(c.req.param('propertyId'));
+  const landlordId = parsePositiveInt(c.req.param('landlordId'));
+
+  if (!propertyId || !landlordId) {
+    return errorResponse(400, 'Invalid property or landlord ID');
+  }
+
+  const hasContentType = c.req.raw.headers.get('Content-Type') !== null;
+  const body = hasContentType ? await readJsonObject(c.req.raw) : {};
+  const rawReason = body.reason;
+
+  if (rawReason !== undefined && rawReason !== null && typeof rawReason !== 'string') {
+    return errorResponse(400, 'Reason must be a string.');
+  }
+
+  const reason = typeof rawReason === 'string' ? rawReason.trim() : '';
+
+  if (reason.length > 200) {
+    return errorResponse(400, 'Reason must be 200 characters or fewer.');
+  }
+
+  const property = await findPropertyForAccess(db, propertyId);
+
+  if (!property) {
+    return errorResponse(404, 'Property not found');
+  }
+
+  if (Number(property.landlord_id) !== user.user_id) {
+    return errorResponse(403, 'Only the property owner can manage shared access.', {
+      code: 'owner_only',
+    });
+  }
+
+  if (landlordId === user.user_id) {
+    return errorResponse(409, 'You cannot remove your own access.', {
+      code: 'cannot_remove_owner',
+    });
+  }
+
+  const access = await findActiveAccess(db, propertyId, landlordId);
+
+  if (!access) {
+    return errorResponse(409, 'This landlord does not have active access to this property.', {
+      code: 'not_shared',
+    });
+  }
+
+  const changes = await removePropertyAccess(db, propertyId, landlordId, user.user_id);
+
+  if (changes === 0) {
+    return errorResponse(409, 'This landlord does not have active access to this property.', {
+      code: 'not_shared',
+    });
+  }
+
+  const owner = await findUserAccountById(db, user.user_id);
+  const ownerName =
+    [owner?.first_name, owner?.last_name].filter(Boolean).join(' ').trim() || 'The property owner';
+
+  await createPropertyAccessRemovedNotification(db, {
+    landlordId,
+    propertyId,
+    propertyName: property.title,
+    removedByName: ownerName,
+    reason: reason || null,
+  });
+
+  return jsonResponse({
+    message: 'Access removed',
+    data: {
+      property_id: propertyId,
+      landlord_id: landlordId,
+    },
+  });
+}
+
 const propertiesRoutes = new Hono<{ Bindings: Env }>();
 
 propertiesRoutes.get('/properties', handleLandlordProperties);
 propertiesRoutes.delete('/properties', handleDeleteLandlordProperty);
+propertiesRoutes.post('/properties/:propertyId/access/:landlordId/remove', handleRemoveSharedAccess);
 
 export default propertiesRoutes;

@@ -168,6 +168,22 @@ export function deleteProperty(
   );
 }
 
+export function removePropertyAccess(
+  token: string,
+  propertyId: number,
+  landlordId: number,
+  body: { reason?: string } = {}
+): Promise<{ message: string }> {
+  return apiFetch(
+    base(),
+    `/api/landlord/properties/${propertyId}/access/${landlordId}/remove`,
+    jsonOptions(token, {
+      method: 'POST',
+      body: JSON.stringify(body),
+    })
+  );
+}
+
 export function getRooms(token: string, propertyId: number): Promise<LandlordRoomListResponse> {
   return apiFetch<LandlordRoomListResponse>(
     base(),

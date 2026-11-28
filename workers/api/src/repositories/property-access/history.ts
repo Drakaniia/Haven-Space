@@ -213,8 +213,16 @@ export async function createPropertyAccessRemovedNotification(
     landlordId: number;
     propertyId: number;
     propertyName: string;
+    removedByName?: string;
+    reason?: string | null;
   }
 ): Promise<void> {
+  const actor = input.removedByName?.trim() || undefined;
+  const reason = input.reason?.trim() || undefined;
+  const message = actor
+    ? `${actor} removed your access to "${input.propertyName}". Your rooms, tenants and payments stay with the property.${reason ? ` Reason: ${reason}` : ''}`
+    : `Your access to "${input.propertyName}" has been removed.`;
+
   await db
     .prepare(
       `
@@ -224,10 +232,12 @@ export async function createPropertyAccessRemovedNotification(
     )
     .bind(
       input.landlordId,
-      `Your access to "${input.propertyName}" has been removed.`,
+      message,
       JSON.stringify({
         property_id: input.propertyId,
         property_name: input.propertyName,
+        ...(actor ? { removed_by_name: actor } : {}),
+        ...(reason ? { reason } : {}),
       })
     )
     .run();

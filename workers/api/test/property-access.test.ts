@@ -722,11 +722,20 @@ describe('admin property-access routes', () => {
     expect(await findActiveAccess(db, 10, 4)).toBeNull();
 
     const notifications = sqlite
-      .prepare("SELECT user_id, type FROM notifications WHERE type = 'property_access_removed'")
-      .all() as Array<{ user_id: number; type: string }>;
+      .prepare(
+        "SELECT user_id, type, message, metadata FROM notifications WHERE type = 'property_access_removed'"
+      )
+      .all() as Array<{ user_id: number; type: string; message: string; metadata: string }>;
 
     expect(notifications).toHaveLength(1);
     expect(notifications[0].user_id).toBe(4);
+    expect(notifications[0].message).toBe(
+      'Your access to "Haven Space Boarding House" has been removed.'
+    );
+    expect(JSON.parse(notifications[0].metadata)).toEqual({
+      property_id: 10,
+      property_name: 'Haven Space Boarding House',
+    });
     expect(await countLandlordCreatedData(db, 10, 4)).toEqual({
       rooms: 1,
       tenants: 1,
@@ -1044,7 +1053,14 @@ describe('access-aware landlord properties list', () => {
 
     const response = await landlordRequest(sqlite, '/api/landlord/properties');
     const body = (await response.json()) as {
-      data: { properties: Array<{ id: number; name: string; role: string }> };
+      data: {
+        properties: Array<{
+          id: number;
+          name: string;
+          role: string;
+          shared_landlord_count: number;
+        }>;
+      };
     };
 
     expect(response.status).toBe(200);
@@ -1053,7 +1069,49 @@ describe('access-aware landlord properties list', () => {
       id: 10,
       name: 'Haven Space Boarding House',
       role: 'shared',
+      shared_landlord_count: 1,
     });
+  });
+
+  it('counts active shares on the list for owner and shared landlords and returns 0 when none', async () => {
+    const sqlite = dbWithSeed();
+    const db = createSqliteD1(sqlite);
+
+    const noSharesRes = await app.request(
+      'http://localhost/api/landlord/properties',
+      { headers: { 'X-User-ID': '3' } },
+      createEnv(sqlite)
+    );
+    const noSharesBody = (await noSharesRes.json()) as {
+      data: { properties: Array<{ shared_landlord_count: number }> };
+    };
+    expect(noSharesBody.data.properties[0].shared_landlord_count).toBe(0);
+
+    await grantPropertyAccess(db, {
+      propertyId: 10,
+      landlordId: 4,
+      grantedBy: 1,
+      invitationId: null,
+    });
+    await grantPropertyAccess(db, {
+      propertyId: 10,
+      landlordId: 5,
+      grantedBy: 1,
+      invitationId: null,
+    });
+
+    for (const userId of ['3', '4', '5']) {
+      const res = await app.request(
+        'http://localhost/api/landlord/properties',
+        { headers: { 'X-User-ID': userId } },
+        createEnv(sqlite)
+      );
+      const body = (await res.json()) as {
+        data: { properties: Array<{ shared_landlord_count: number }> };
+      };
+      expect(res.status).toBe(200);
+      expect(body.data.properties[0].shared_landlord_count).toBe(2);
+    }
   });
 
   it('shows owned properties with role owner to the primary landlord', async () => {
@@ -1107,12 +1165,14 @@ describe('access-aware landlord property detail', () => {
     const body = (await response.json()) as {
       data: {
         role: string;
+        owner?: unknown;
         authorized_landlords: Array<{ id: number; email: string; granted_at: string }>;
       };
     };
 
     expect(response.status).toBe(200);
     expect(body.data.role).toBe('owner');
+    expect(body.data.owner).toBeUndefined();
     expect(body.data.authorized_landlords).toHaveLength(1);
     expect(body.data.authorized_landlords[0]).toMatchObject({
       id: 4,
@@ -1120,7 +1180,7 @@ describe('access-aware landlord property detail', () => {
     });
   });
 
-  it('lets a shared landlord view the detail without the authorized list', async () => {
+  it('lets a shared landlord view the detail with owner identity and without the authorized list', async () => {
     const sqlite = dbWithSeed();
     const db = createSqliteD1(sqlite);
     await grantPropertyAccess(db, {
@@ -1132,11 +1192,20 @@ describe('access-aware landlord property detail', () => {
 
     const response = await landlordRequest(sqlite, '/api/landlord/properties?id=10');
     const body = (await response.json()) as {
-      data: { role: string; authorized_landlords?: unknown };
+      data: {
+        role: string;
+        owner?: { id: number; name: string; email: string };
+        authorized_landlords?: unknown;
+      };
     };
 
     expect(response.status).toBe(200);
     expect(body.data.role).toBe('shared');
+    expect(body.data.owner).toEqual({
+      id: 3,
+      name: 'Lara Landlord One',
+      email: 'lara@example.com',
+    });
     expect(body.data.authorized_landlords).toBeUndefined();
   });
 
@@ -1150,5 +1219,204 @@ describe('access-aware landlord property detail', () => {
     );
 
     expect(response.status).toBe(404);
+  });
+});
+
+describe('owner-only delete and shared-access removal', () => {
+  it('denies property deletion to a shared landlord with 403 owner_only_delete', async () => {
+    const sqlite = dbWithSeed();
+    const db = createSqliteD1(sqlite);
+    await grantPropertyAccess(db, {
+      propertyId: 10,
+      landlordId: 4,
+      grantedBy: 1,
+      invitationId: null,
+    });
+
+    const delRes = await landlordRequest(sqlite, '/api/landlord/properties?id=10', {
+      method: 'DELETE',
+    });
+
+    expect(delRes.status).toBe(403);
+    expect(await delRes.json()).toEqual({
+      error: 'Only the property owner can delete this property.',
+      code: 'owner_only_delete',
+    });
+
+    const detailRes = await landlordRequest(sqlite, '/api/landlord/properties?id=10');
+    expect(detailRes.status).toBe(200);
+  });
+
+  it('closes active shares and revokes pending invitations when the owner deletes a property', async () => {
+    const sqlite = dbWithSeed();
+    const db = createSqliteD1(sqlite);
+    await grantPropertyAccess(db, {
+      propertyId: 10,
+      landlordId: 4,
+      grantedBy: 1,
+      invitationId: null,
+    });
+    const invitationId = await createPropertyInvitation(db, {
+      propertyId: 10,
+      inviteeId: 5,
+      invitedBy: 1,
+    });
+
+    const delRes = await app.request(
+      'http://localhost/api/landlord/properties?id=10',
+      { method: 'DELETE', headers: { 'X-User-ID': '3' } },
+      createEnv(sqlite)
+    );
+
+    expect(delRes.status).toBe(200);
+    expect(await findActiveAccess(db, 10, 4)).toBeNull();
+
+    const accessRow = sqlite
+      .prepare('SELECT removed_at, removed_by FROM property_access WHERE property_id = 10 AND landlord_id = 4')
+      .get() as { removed_at: string | null; removed_by: number | null };
+    expect(accessRow.removed_at).not.toBeNull();
+    expect(accessRow.removed_by).toBe(3);
+
+    const invRow = sqlite
+      .prepare('SELECT status, revoked_by FROM property_invitations WHERE id = ?')
+      .get(invitationId) as { status: string; revoked_by: number | null };
+    expect(invRow).toEqual({ status: 'revoked', revoked_by: 3 });
+
+    const inviteeList = await landlordRequest(sqlite, '/api/landlord/properties');
+    const listBody = (await inviteeList.json()) as { data: { properties: unknown[] } };
+    expect(listBody.data.properties).toHaveLength(0);
+
+    sqlite.prepare('UPDATE users SET is_verified = 1, email_verified = 1, account_status = ? WHERE id = 5').run('active');
+    const acceptOld = await app.request(
+      `http://localhost/api/landlord/invitations/${invitationId}/accept`,
+      { method: 'POST', headers: { 'X-User-ID': '5' } },
+      createEnv(sqlite)
+    );
+    expect(acceptOld.status).toBe(409);
+  });
+
+  it('allows the owner to remove a shared landlord, notifies with actor and reason, and records history', async () => {
+    const sqlite = dbWithSeed();
+    const db = createSqliteD1(sqlite);
+    await grantPropertyAccess(db, {
+      propertyId: 10,
+      landlordId: 4,
+      grantedBy: 1,
+      invitationId: null,
+    });
+
+    const removeRes = await app.request(
+      'http://localhost/api/landlord/properties/10/access/4/remove',
+      {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'X-User-ID': '3' },
+        body: JSON.stringify({ reason: '  We ended our arrangement.  ' }),
+      },
+      createEnv(sqlite)
+    );
+
+    expect(removeRes.status).toBe(200);
+    expect(await removeRes.json()).toEqual({
+      message: 'Access removed',
+      data: { property_id: 10, landlord_id: 4 },
+    });
+
+    const accessRow = sqlite
+      .prepare('SELECT removed_at, removed_by FROM property_access WHERE property_id = 10 AND landlord_id = 4')
+      .get() as { removed_at: string | null; removed_by: number | null };
+    expect(accessRow.removed_at).not.toBeNull();
+    expect(accessRow.removed_by).toBe(3);
+
+    const inviteeList = await landlordRequest(sqlite, '/api/landlord/properties');
+    const listBody = (await inviteeList.json()) as { data: { properties: unknown[] } };
+    expect(listBody.data.properties).toHaveLength(0);
+
+    const notification = sqlite
+      .prepare(
+        "SELECT message, metadata FROM notifications WHERE user_id = 4 AND type = 'property_access_removed'"
+      )
+      .get() as { message: string; metadata: string };
+    expect(notification.message).toBe(
+      'Lara Landlord One removed your access to "Haven Space Boarding House". Your rooms, tenants and payments stay with the property. Reason: We ended our arrangement.'
+    );
+    expect(JSON.parse(notification.metadata)).toEqual({
+      property_id: 10,
+      property_name: 'Haven Space Boarding House',
+      removed_by_name: 'Lara Landlord One',
+      reason: 'We ended our arrangement.',
+    });
+
+    const historyRes = await adminRequest(sqlite, '/api/admin/property-access/history?propertyId=10');
+    const historyBody = (await historyRes.json()) as {
+      data: { events: Array<{ type: string; actor_id: number; actor_name: string }> };
+    };
+    const removalEvent = historyBody.data.events.find(e => e.type === 'access_removed');
+    expect(removalEvent).toMatchObject({
+      type: 'access_removed',
+      actor_id: 3,
+      actor_name: 'Lara Landlord One',
+    });
+  });
+
+  it('enforces removal guards for non-owner, missing share, self-removal, and double removal', async () => {
+    const sqlite = dbWithSeed();
+    const db = createSqliteD1(sqlite);
+    await grantPropertyAccess(db, {
+      propertyId: 10,
+      landlordId: 4,
+      grantedBy: 1,
+      invitationId: null,
+    });
+
+    const nonOwnerRes = await landlordRequest(
+      sqlite,
+      '/api/landlord/properties/10/access/4/remove',
+      { method: 'POST', body: {} }
+    );
+    expect(nonOwnerRes.status).toBe(403);
+    expect(await nonOwnerRes.json()).toEqual({
+      error: 'Only the property owner can manage shared access.',
+      code: 'owner_only',
+    });
+
+    const selfRes = await app.request(
+      'http://localhost/api/landlord/properties/10/access/3/remove',
+      { method: 'POST', headers: { 'X-User-ID': '3' } },
+      createEnv(sqlite)
+    );
+    expect(selfRes.status).toBe(409);
+    expect(await selfRes.json()).toEqual({
+      error: 'You cannot remove your own access.',
+      code: 'cannot_remove_owner',
+    });
+
+    const notSharedRes = await app.request(
+      'http://localhost/api/landlord/properties/10/access/5/remove',
+      { method: 'POST', headers: { 'X-User-ID': '3' } },
+      createEnv(sqlite)
+    );
+    expect(notSharedRes.status).toBe(409);
+    expect(await notSharedRes.json()).toEqual({
+      error: 'This landlord does not have active access to this property.',
+      code: 'not_shared',
+    });
+
+    const first = await app.request(
+      'http://localhost/api/landlord/properties/10/access/4/remove',
+      { method: 'POST', headers: { 'X-User-ID': '3' } },
+      createEnv(sqlite)
+    );
+    expect(first.status).toBe(200);
+
+    const second = await app.request(
+      'http://localhost/api/landlord/properties/10/access/4/remove',
+      { method: 'POST', headers: { 'X-User-ID': '3' } },
+      createEnv(sqlite)
+    );
+    expect(second.status).toBe(409);
+    expect(await second.json()).toEqual({
+      error: 'This landlord does not have active access to this property.',
+      code: 'not_shared',
+    });
   });
 });

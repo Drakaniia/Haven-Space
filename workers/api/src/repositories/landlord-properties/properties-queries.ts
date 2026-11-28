@@ -8,6 +8,7 @@ import type {
   LandlordPropertyListRow,
   LandlordPropertyDetailRow,
   LandlordPropertyIdentityRow,
+  LandlordPropertyAccessIdentityRow,
   LandlordPropertyUpdateRow,
   LandlordAddressRow,
   LandlordPropertiesResult,
@@ -58,7 +59,13 @@ export async function listLandlordProperties(
               AND app.status = 'pending'
               AND app.deleted_at IS NULL
               AND rm.deleted_at IS NULL
-          ) as pending_applications
+          ) as pending_applications,
+          (
+            SELECT COUNT(*)
+            FROM property_access pa2
+            WHERE pa2.property_id = p.id
+              AND pa2.removed_at IS NULL
+          ) as shared_landlord_count
         FROM properties p
         LEFT JOIN addresses a ON p.address_id = a.id
         LEFT JOIN rooms r ON p.id = r.property_id
@@ -156,25 +163,27 @@ export async function getLandlordAddress(
     .first<LandlordAddressRow>();
 }
 
-export async function findLandlordPropertyIdentity(
+export async function findLandlordPropertyAccessIdentity(
   db: D1Database,
   propertyId: number,
   landlordId: number
-): Promise<LandlordPropertyIdentityRow | null> {
-  // Owner-only: used to guard property deletion, which stays owner-only.
+): Promise<LandlordPropertyAccessIdentityRow | null> {
   return await db
     .prepare(
       `
-        SELECT id, title
+        SELECT
+          id,
+          title,
+          CASE WHEN landlord_id = ? THEN 'owner' ELSE 'shared' END AS role
         FROM properties
         WHERE id = ?
-          AND landlord_id = ?
           AND deleted_at IS NULL
+          AND ${accessiblePropertyClause()}
         LIMIT 1
       `
     )
-    .bind(propertyId, landlordId)
-    .first<LandlordPropertyIdentityRow>();
+    .bind(landlordId, propertyId, landlordId, landlordId)
+    .first<LandlordPropertyAccessIdentityRow>();
 }
 
 export async function findAccessibleLandlordPropertyIdentity(
@@ -225,10 +234,15 @@ export async function getLandlordPropertyDetail(
           p.status,
           p.listing_moderation_status,
           CASE WHEN p.landlord_id = ? THEN 'owner' ELSE 'shared' END as role,
+          p.landlord_id,
+          ou.first_name AS owner_first_name,
+          ou.last_name AS owner_last_name,
+          ou.email AS owner_email,
           p.created_at,
           COUNT(DISTINCT r.id) as rooms_count,
           COALESCE(SUM(CASE WHEN r.status = 'occupied' THEN 1 ELSE 0 END), 0) as occupied_rooms
         FROM properties p
+        JOIN users ou ON p.landlord_id = ou.id
         LEFT JOIN addresses a ON p.address_id = a.id
         LEFT JOIN rooms r ON p.id = r.property_id
           AND r.deleted_at IS NULL
@@ -261,6 +275,10 @@ export async function getLandlordPropertyDetail(
           p.property_rules,
           p.status,
           p.listing_moderation_status,
+          p.landlord_id,
+          ou.first_name,
+          ou.last_name,
+          ou.email,
           p.created_at
         LIMIT 1
       `

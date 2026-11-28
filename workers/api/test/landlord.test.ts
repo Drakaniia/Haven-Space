@@ -85,6 +85,7 @@ const propertyRow: LandlordPropertyListRow = {
   monthly_revenue: 5000,
   property_type: 'Apartment',
   pending_applications: 3,
+  shared_landlord_count: 0,
 };
 
 const detailRow: LandlordPropertyDetailRow = {
@@ -106,6 +107,10 @@ const detailRow: LandlordPropertyDetailRow = {
   status: 'available',
   listing_moderation_status: 'published',
   role: 'owner',
+  landlord_id: 3,
+  owner_first_name: 'Lara',
+  owner_last_name: 'Landlord',
+  owner_email: 'lara@example.com',
   created_at: '2026-05-01 10:00:00',
   rooms_count: 2,
   occupied_rooms: 1,
@@ -938,6 +943,7 @@ describe('landlord property routes', () => {
             amenities: ['WiFi', 'Laundry'],
             photos: ['/storage/properties/10/cover.jpg', '/uploads/side.jpg'],
             pending_applications: 3,
+            shared_landlord_count: 0,
           },
         ],
         total_count: 1,
@@ -1040,9 +1046,11 @@ describe('landlord property routes', () => {
       createSequenceEnv(
         [
           { first: landlordUser },
-          { first: { id: 10, title: 'Pine House' } },
+          { first: { id: 10, title: 'Pine House', role: 'owner' } },
           { run: { success: true, meta: { last_row_id: 0, changes: 1 }, results: [] } },
           { run: { success: true, meta: { last_row_id: 0, changes: 2 }, results: [] } },
+          { run: { success: true, meta: { last_row_id: 0, changes: 0 }, results: [] } },
+          { run: { success: true, meta: { last_row_id: 0, changes: 0 }, results: [] } },
         ],
         capturedBinds
       )
@@ -1057,7 +1065,7 @@ describe('landlord property routes', () => {
         property_name: 'Pine House',
       },
     });
-    expect(capturedBinds).toEqual([[3], [10, 3], [10, 3], [10]]);
+    expect(capturedBinds).toEqual([[3], [3, 10, 3, 3], [10, 3], [10], [3, 10], [3, 10]]);
   });
 
   it('requires a property ID for landlord property deletion', async () => {
@@ -1089,7 +1097,7 @@ describe('landlord property routes', () => {
 
     expect(response.status).toBe(404);
     expect(await response.json()).toEqual({ error: 'Property not found or access denied' });
-    expect(capturedBinds).toEqual([[3], [404, 3]]);
+    expect(capturedBinds).toEqual([[3], [3, 404, 3, 3]]);
   });
 
   it('requires a landlord role for landlord property deletion', async () => {

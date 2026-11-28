@@ -18,6 +18,7 @@ export interface LandlordPropertyListRow {
   monthly_revenue: number;
   property_type: string | null;
   pending_applications: number;
+  shared_landlord_count: number;
 }
 
 export interface LandlordPropertyDetailRow {
@@ -39,6 +40,10 @@ export interface LandlordPropertyDetailRow {
   status: string;
   listing_moderation_status: string;
   role: 'owner' | 'shared';
+  landlord_id: number;
+  owner_first_name: string | null;
+  owner_last_name: string | null;
+  owner_email: string;
   created_at: string | null;
   rooms_count: number;
   occupied_rooms: number;
@@ -47,6 +52,12 @@ export interface LandlordPropertyDetailRow {
 export interface LandlordPropertyIdentityRow {
   id: number;
   title: string;
+}
+
+export interface LandlordPropertyAccessIdentityRow {
+  id: number;
+  title: string;
+  role: 'owner' | 'shared';
 }
 
 export interface LandlordPropertyUpdateRow {
