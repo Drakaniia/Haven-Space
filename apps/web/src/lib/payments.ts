@@ -377,12 +377,16 @@ export function buildTenantTimeline(
   for (const charge of charges) {
     const typeLabel = chargeTypeLabel(charge.charge_type);
 
+    const dueLine = `${formatPeso(charge.amount)} · due ${formatPaymentDate(charge.due_date)}`;
+    const scheduleReason =
+      charge.notes && charge.notes.startsWith('Due date kept') ? charge.notes : null;
+
     events.push({
       id: `charge:${charge.id}:created`,
       kind: 'charge_created',
       at: charge.created_at,
       title: charge.charge_type === 'rent' ? 'Rent charge created' : `${typeLabel} charge created`,
-      detail: `${formatPeso(charge.amount)} · due ${formatPaymentDate(charge.due_date)}`,
+      detail: scheduleReason ? `${dueLine} · ${scheduleReason}` : dueLine,
       tone: 'neutral',
     });
 
@@ -685,4 +689,49 @@ export function pendingReviewCount(charges: PaymentCharge[]): number {
   return charges.filter(
     charge => latestSubmission(charge)?.status === 'pending' && isChargeOpen(charge)
   ).length;
+}
+
+function addOneMonthClamped(date: string): string {
+  const [year, month, day] = date.slice(0, 10).split('-').map(Number);
+
+  if (!Number.isFinite(year) || !Number.isFinite(month) || !Number.isFinite(day)) {
+    return '';
+  }
+
+  const nextMonth = (month % 12) + 1;
+  const nextYear = year + (month === 12 ? 1 : 0);
+  const maxDay = new Date(Date.UTC(nextYear, nextMonth, 0)).getUTCDate();
+  const clampedDay = Math.min(Math.max(day, 1), maxDay);
+
+  return `${nextYear}-${String(nextMonth).padStart(2, '0')}-${String(clampedDay).padStart(2, '0')}`;
+}
+
+/**
+ * Previews the automatic next-month due date when settling rent:
+ * on-time/early keeps `paidDate + 1 month`, late keeps `scheduledDueDate + 1 month`.
+ */
+export function suggestNextRentDueDate(
+  paidDate: string,
+  scheduledDueDate: string | null | undefined
+): { nextDue: string; isLate: boolean } {
+  const paid = paidDate.slice(0, 10);
+  const scheduled = scheduledDueDate ? scheduledDueDate.slice(0, 10) : '';
+
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(paid)) {
+    return { nextDue: '', isLate: false };
+  }
+
+  const isLate = Boolean(/^\d{4}-\d{2}-\d{2}$/.test(scheduled) && paid > scheduled);
+
+  if (isLate) {
+    return { nextDue: addOneMonthClamped(scheduled), isLate: true };
+  }
+
+  const paidNext = addOneMonthClamped(paid);
+
+  if (/^\d{4}-\d{2}-\d{2}$/.test(scheduled) && paidNext <= scheduled) {
+    return { nextDue: addOneMonthClamped(scheduled), isLate: false };
+  }
+
+  return { nextDue: paidNext, isLate: false };
 }

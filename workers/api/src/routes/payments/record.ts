@@ -9,46 +9,19 @@ import { uploadFilesToUploadThing } from '../../lib/uploadthing';
 import { findLandlordBoarderApplication } from '../../repositories/landlord-boarders';
 import { findLandlordRoomProperty } from '../../repositories/landlord-rooms';
 import {
-  buildLedgerResponse,
-  cancelCharge,
-  createManualCharge,
   createSubmission,
-  findChargeForBoarder,
   findChargeForLandlordWrite,
-  findPropertyBillingSettings,
-  findScheduleInput,
-  findSubmissionForLandlord,
-  formatCharge,
-  generateScheduleForApplication,
-  hasPendingSubmission,
-  insertNotification,
-  isChargeType,
   isOpenStatus,
   isPaymentMethod,
-  listChargesForBoarder,
-  listChargesForLandlord,
-  listTenancyPaymentHistory,
-  listTrackerRows,
   manilaToday,
   methodRequiresReceipt,
   methodRequiresReference,
-  monthKey,
   notifyBoarderOfDecision,
-  notifyLandlordOfSubmission,
-  outstandingFor,
   resolveDeposit,
   reanchorNextDue,
   roundMoney,
-  setApplicationAdvanceAmount,
-  setChargeStatus,
-  setTenancyNextDueDate,
   settleCharge,
-  shiftPendingRentCharge,
-  summarizeCharges,
-  trackerToCsv,
-  updateCharge,
-  updatePropertyBillingSettings,
-  updateSubmissionDecision,
+  toDateOnly,
 } from '../../repositories/payments';
 import { requireLandlord } from '../landlord/shared';
 
@@ -194,16 +167,19 @@ export function registerRecordRoutes(router: Hono<{ Bindings: Env }>) {
       });
     }
 
-    // R4: paying rent re-anchors the tenancy's next due date on the payment date,
-    // and the not-yet-due rent row follows it (D33).
-    const settledRent = selected.some(item => String(item.row.charge_type ?? 'rent') === 'rent');
+    // Paying rent settles the current cycle and automatically creates (or shifts)
+    // the next month's rent bill using early/on-time vs late rules.
+    const settledRentCharge = selected.find(
+      item => String(item.row.charge_type ?? 'rent') === 'rent'
+    )?.row;
     const applicationId = Number(charge.application_id ?? 0);
     let nextDueDate: string | null = null;
 
-    if (settledRent && applicationId > 0) {
+    if (settledRentCharge && applicationId > 0) {
       const reanchored = await reanchorNextDue(db, {
         applicationId,
         anchorDate: paidDate,
+        scheduledDueDate: toDateOnly(settledRentCharge.due_date),
         nextDueDate: isoDate(trimmed(body, 'next_due_date')),
         today,
       });

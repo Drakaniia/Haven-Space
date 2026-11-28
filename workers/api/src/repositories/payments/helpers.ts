@@ -40,7 +40,7 @@ export const OPEN_STATUSES: readonly string[] = ['pending', 'awaiting_verificati
 export const DEFAULT_GRACE_DAYS = 3;
 export const DEFAULT_LATE_FEE = 500;
 export const DUE_SOON_DAYS = 3;
-export const DEFAULT_HORIZON_MONTHS = 3;
+export const DEFAULT_HORIZON_MONTHS = 1;
 
 export function isPaymentMethod(value: unknown): value is PaymentMethod {
   return typeof value === 'string' && (PAYMENT_METHODS as readonly string[]).includes(value);
@@ -99,6 +99,48 @@ export function toDateOnly(value: string | null | undefined): string {
   }
 
   return value.trim().replace('T', ' ').slice(0, 10);
+}
+
+/** Resolves a SQL UTC timestamp or date string into an Asia/Manila `YYYY-MM-DD` date. */
+export function manilaDateFromSql(value: string | null | undefined, now: Date = new Date()): string {
+  const raw = (value ?? '').trim();
+
+  if (!raw) {
+    return manilaToday(now);
+  }
+
+  if (/^\d{4}-\d{2}-\d{2}$/.test(raw)) {
+    return raw;
+  }
+
+  const iso = raw.includes('T') ? raw : raw.replace(' ', 'T');
+  const parsed = new Date(iso.endsWith('Z') || /[+-]\d{2}:?\d{2}$/.test(iso) ? iso : `${iso}Z`);
+
+  return Number.isNaN(parsed.getTime()) ? manilaToday(now) : manilaToday(parsed);
+}
+
+/** Derives peso advance amount from property text like "1 month", "2 months", or a number. */
+export function parseAdvanceAmount(
+  rawAdvance: string | null | undefined,
+  monthlyRent: number
+): number {
+  const raw = (rawAdvance ?? '').trim().toLowerCase();
+
+  if (!raw || raw === 'none' || raw === '0') {
+    return 0;
+  }
+
+  const monthMatch = raw.match(/^(\d+(?:\.\d+)?)\s*months?$/);
+
+  if (monthMatch) {
+    return roundMoney(Number(monthMatch[1]) * Math.max(monthlyRent, 0));
+  }
+
+  if (/^\d+(?:\.\d+)?$/.test(raw)) {
+    return roundMoney(Number(raw));
+  }
+
+  return 0;
 }
 
 function parseDateOnly(value: string): [number, number, number] {
@@ -323,4 +365,48 @@ export function csvEscape(value: unknown): string {
 /** Month bucket (`2026-10`) for grouping a ledger. */
 export function monthKey(date: string): string {
   return toDateOnly(date).slice(0, 7);
+}
+
+const MONTH_NAMES = [
+  'January',
+  'February',
+  'March',
+  'April',
+  'May',
+  'June',
+  'July',
+  'August',
+  'September',
+  'October',
+  'November',
+  'December',
+];
+
+const SHORT_MONTH_NAMES = [
+  'Jan',
+  'Feb',
+  'Mar',
+  'Apr',
+  'May',
+  'Jun',
+  'Jul',
+  'Aug',
+  'Sep',
+  'Oct',
+  'Nov',
+  'Dec',
+];
+
+/** Human month label (`December 2026`) for rent charge descriptions. */
+export function monthLabel(date: string): string {
+  const [year, month] = parseDateOnly(date);
+
+  return `${MONTH_NAMES[month - 1] ?? month} ${year}`;
+}
+
+/** Short calendar label (`Dec 30, 2026`) for automated billing explanations. */
+export function shortDisplayDate(date: string): string {
+  const [year, month, day] = parseDateOnly(date);
+
+  return `${SHORT_MONTH_NAMES[month - 1] ?? month} ${day}, ${year}`;
 }

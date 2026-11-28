@@ -9,45 +9,15 @@ import { uploadFilesToUploadThing } from '../../lib/uploadthing';
 import { findLandlordBoarderApplication } from '../../repositories/landlord-boarders';
 import { findLandlordRoomProperty } from '../../repositories/landlord-rooms';
 import {
-  buildLedgerResponse,
-  cancelCharge,
-  createManualCharge,
-  createSubmission,
-  findChargeForBoarder,
-  findChargeForLandlordWrite,
-  findPropertyBillingSettings,
-  findScheduleInput,
   findSubmissionForLandlord,
-  formatCharge,
-  generateScheduleForApplication,
-  hasPendingSubmission,
-  insertNotification,
-  isChargeType,
-  isOpenStatus,
-  isPaymentMethod,
-  listChargesForBoarder,
-  listChargesForLandlord,
-  listTenancyPaymentHistory,
-  listTrackerRows,
+  manilaDateFromSql,
   manilaToday,
-  methodRequiresReceipt,
-  methodRequiresReference,
-  monthKey,
   notifyBoarderOfDecision,
-  notifyLandlordOfSubmission,
-  outstandingFor,
-  resolveDeposit,
   reanchorNextDue,
   roundMoney,
-  setApplicationAdvanceAmount,
   setChargeStatus,
-  setTenancyNextDueDate,
   settleCharge,
-  shiftPendingRentCharge,
-  summarizeCharges,
-  trackerToCsv,
-  updateCharge,
-  updatePropertyBillingSettings,
+  toDateOnly,
   updateSubmissionDecision,
 } from '../../repositories/payments';
 import { requireLandlord } from '../landlord/shared';
@@ -90,14 +60,17 @@ export function registerSubmissionRoutes(router: Hono<{ Bindings: Env }>) {
       return errorResponse(409, 'This payment has already been reviewed');
     }
 
+    const paidDate = manilaDateFromSql(submission.created_at);
+
     await updateSubmissionDecision(db, submissionId, {
       status: 'verified',
       verifiedBy: user.user_id,
     });
     await settleCharge(db, Number(submission.payment_id), {
       paymentMethod: submission.payment_method,
+      methodLabel: submission.payment_method_label ?? null,
       reference: submission.reference_number,
-      paidDate: manilaToday(),
+      paidDate,
     });
     await notifyBoarderOfDecision(db, {
       boarderId: Number(submission.boarder_id),
@@ -106,7 +79,25 @@ export function registerSubmissionRoutes(router: Hono<{ Bindings: Env }>) {
       approved: true,
     });
 
-    return jsonResponse({ success: true, message: 'Payment verified' });
+    let nextDueDate: string | null = null;
+    const applicationId = Number(submission.application_id ?? 0);
+
+    if (submission.charge_type === 'rent' && applicationId > 0) {
+      const reanchored = await reanchorNextDue(db, {
+        applicationId,
+        anchorDate: paidDate,
+        scheduledDueDate: toDateOnly(submission.charge_due_date),
+        today: manilaToday(),
+      });
+
+      nextDueDate = reanchored?.next_due_date ?? null;
+    }
+
+    return jsonResponse({
+      success: true,
+      message: 'Payment verified',
+      data: { next_due_date: nextDueDate },
+    });
   });
 
   router.post('/api/landlord/submissions/:submissionId/reject', async c => {

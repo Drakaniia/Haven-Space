@@ -1,48 +1,104 @@
 import { accessiblePropertyClause } from '../property-access/helpers';
-import { addMonthsClamped, manilaToday, previousDay, toDateOnly } from './helpers';
+import {
+  addMonthsClamped,
+  manilaToday,
+  monthLabel,
+  previousDay,
+  roundMoney,
+  shortDisplayDate,
+  toDateOnly,
+} from './helpers';
 
 /**
- * The tenancy's next due date, and the one row that follows it
- * (spec `payments-tracker-redesign` §3.2/§3.3, D3/D4/D33).
+ * The tenancy's next due date, and the one rent row that follows it
+ * (spec `payments-tracker-redesign` §3.2/§3.3, updated for pay-as-you-go billing).
  *
- * `applications.next_due_date` is the source of truth. The fixed schedule
- * pre-generates rent months ahead, so when a payment re-anchors the date the
- * **next not-yet-due** rent row is shifted onto it (keyed by `generation_key`);
- * settled, cancelled and already-due rows are never rewritten.
+ * When a rent charge settles:
+ * - On or before due date: next due = `paidDate + 1 month` (period `paidDate`..`nextDue`).
+ * - Late (after due date): next due stays anchored = `scheduledDue + 1 month` with a reason note.
+ * If an open future rent row already exists (from older pre-generated data), it is
+ * shifted; otherwise the next month's rent charge is created immediately.
  */
-
-const MONTH_LABELS = [
-  'January',
-  'February',
-  'March',
-  'April',
-  'May',
-  'June',
-  'July',
-  'August',
-  'September',
-  'October',
-  'November',
-  'December',
-];
-
-function monthLabel(date: string): string {
-  const [year, month] = toDateOnly(date).split('-').map(Number);
-
-  return `${MONTH_LABELS[month - 1] ?? month} ${year}`;
-}
 
 export interface ReanchorResult {
   next_due_date: string;
   previous_due_date: string | null;
   /** True when a not-yet-due rent row was moved onto the new date. */
   shifted: boolean;
+  /** True when a new next-month rent charge was created. */
+  created: boolean;
+}
+
+export interface NextRentDueCalculation {
+  nextDue: string;
+  isLate: boolean;
+  reasonNote: string | null;
+  periodStart: string;
+  periodEnd: string;
+}
+
+export function computeNextRentDue(input: {
+  scheduledDueDate?: string | null;
+  paidDate: string;
+}): NextRentDueCalculation {
+  const paid = toDateOnly(input.paidDate);
+  const scheduled = input.scheduledDueDate ? toDateOnly(input.scheduledDueDate) : null;
+  const isLate = Boolean(scheduled && paid > scheduled);
+
+  if (isLate && scheduled) {
+    const nextDue = addMonthsClamped(scheduled, 1);
+
+    return {
+      nextDue,
+      isLate: true,
+      periodStart: scheduled,
+      periodEnd: nextDue,
+      reasonNote: `Due date kept on ${shortDisplayDate(nextDue)} due to late payment on ${shortDisplayDate(
+        paid
+      )} (was due ${shortDisplayDate(scheduled)}).`,
+    };
+  }
+
+  const paidNext = addMonthsClamped(paid, 1);
+
+  // Paying a cycle a month+ early makes paid+1mo land on or before the settled
+  // due date, so advance to scheduled+1mo instead of colliding on the same cycle.
+  if (scheduled && paidNext <= scheduled) {
+    const nextDue = addMonthsClamped(scheduled, 1);
+
+    return {
+      nextDue,
+      isLate: false,
+      periodStart: scheduled,
+      periodEnd: nextDue,
+      reasonNote: null,
+    };
+  }
+
+  return {
+    nextDue: paidNext,
+    isLate: false,
+    periodStart: paid,
+    periodEnd: paidNext,
+    reasonNote: null,
+  };
 }
 
 interface PendingRentRow {
   id: number;
   due_date: string;
   generation_key: string | null;
+}
+
+interface ActiveTenancyBillingRow {
+  id: number;
+  boarder_id: number;
+  landlord_id: number;
+  room_id: number;
+  property_id: number;
+  room_price: number | string;
+  leave_request_status: string | null;
+  intended_leave_date: string | null;
 }
 
 async function writeAnchor(
@@ -108,7 +164,8 @@ export async function shiftPendingRentCharge(
   db: D1Database,
   applicationId: number,
   newDue: string,
-  today: string = manilaToday()
+  today: string = manilaToday(),
+  options: { periodStart?: string; periodEnd?: string; notes?: string | null } = {}
 ): Promise<boolean> {
   const target = toDateOnly(newDue);
   const row = await db
@@ -142,7 +199,8 @@ export async function shiftPendingRentCharge(
     return false;
   }
 
-  const periodEnd = previousDay(addMonthsClamped(target, 1));
+  const periodStart = options.periodStart ?? target;
+  const periodEnd = options.periodEnd ?? previousDay(addMonthsClamped(target, 1));
 
   await db
     .prepare(
@@ -152,40 +210,164 @@ export async function shiftPendingRentCharge(
             period_start = ?,
             period_end = ?,
             description = ?,
+            notes = COALESCE(?, notes),
             generation_key = ?,
             updated_at = CURRENT_TIMESTAMP
         WHERE id = ?
       `
     )
-    .bind(target, target, periodEnd, `Monthly rent — ${monthLabel(target)}`, newKey, Number(row.id))
+    .bind(
+      target,
+      periodStart,
+      periodEnd,
+      `Monthly rent — ${monthLabel(target)}`,
+      options.notes ?? null,
+      newKey,
+      Number(row.id)
+    )
     .run();
 
   return true;
 }
 
 /**
- * The one write path for “the rent cycle moved”: used by a recorded payment (R4)
- * and by the landlord's manual edit (R5), so the anchor and the open row can
- * never drift apart. Access must already be verified by the caller.
+ * Creates the next month's rent charge after a rent settlement when no open
+ * rent row already exists for that target cycle.
+ */
+async function createNextRentCharge(
+  db: D1Database,
+  input: {
+    applicationId: number;
+    dueDate: string;
+    periodStart: string;
+    periodEnd: string;
+    notes: string | null;
+  }
+): Promise<boolean> {
+  const tenancy = await db
+    .prepare(
+      `
+        SELECT
+          app.id,
+          app.boarder_id,
+          app.landlord_id,
+          app.room_id,
+          r.property_id,
+          r.price AS room_price,
+          app.leave_request_status,
+          app.intended_leave_date
+        FROM applications app
+        JOIN rooms r ON app.room_id = r.id
+        WHERE app.id = ?
+          AND app.status = 'confirmed'
+          AND app.deleted_at IS NULL
+      `
+    )
+    .bind(input.applicationId)
+    .first<ActiveTenancyBillingRow>();
+
+  if (!tenancy) {
+    return false;
+  }
+
+  const leaveDate =
+    tenancy.leave_request_status === 'approved' && tenancy.intended_leave_date
+      ? toDateOnly(tenancy.leave_request_status === 'approved' ? tenancy.intended_leave_date : '')
+      : null;
+
+  if (leaveDate && input.dueDate > leaveDate) {
+    return false;
+  }
+
+  const rent = roundMoney(Number(tenancy.room_price));
+
+  if (rent <= 0) {
+    return false;
+  }
+
+  const existingOpen = await db
+    .prepare(
+      `
+        SELECT 1 AS present
+        FROM payments
+        WHERE application_id = ?
+          AND charge_type = 'rent'
+          AND status IN ('pending', 'awaiting_verification', 'overdue')
+          AND due_date >= ?
+        LIMIT 1
+      `
+    )
+    .bind(input.applicationId, input.dueDate)
+    .first<{ present: number }>();
+
+  if (existingOpen) {
+    return false;
+  }
+
+  const result = await db
+    .prepare(
+      `
+        INSERT OR IGNORE INTO payments (
+          boarder_id, landlord_id, room_id, property_id, application_id,
+          charge_type, description, notes, amount, due_date, period_start, period_end,
+          status, generation_key, created_at, updated_at
+        )
+        VALUES (?, ?, ?, ?, ?, 'rent', ?, ?, ?, ?, ?, ?, 'pending', ?, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
+      `
+    )
+    .bind(
+      Number(tenancy.boarder_id),
+      Number(tenancy.landlord_id),
+      Number(tenancy.room_id),
+      Number(tenancy.property_id),
+      input.applicationId,
+      `Monthly rent — ${monthLabel(input.dueDate)}`,
+      input.notes,
+      rent,
+      input.dueDate,
+      input.periodStart,
+      input.periodEnd,
+      `rent:${input.applicationId}:${input.dueDate}`
+    )
+    .run();
+
+  return Number(result.meta.changes ?? 0) > 0;
+}
+
+/**
+ * The one write path for “the rent cycle moved”: used by landlord recording,
+ * proof verification, and manual edits. Access must already be verified.
  */
 export async function reanchorNextDue(
   db: D1Database,
   input: {
     applicationId: number;
-    /** `YYYY-MM-DD` the next date is anchored on — the payment date (R4). */
+    /** `YYYY-MM-DD` the payment occurred — determines early/on-time vs late. */
     anchorDate?: string;
-    /** Explicit next due date (R5); defaults to one month after the anchor date. */
+    /** Scheduled `YYYY-MM-DD` due date of the settled rent charge. */
+    scheduledDueDate?: string | null;
+    /** Explicit next due date override. */
     nextDueDate?: string | null;
     today?: string;
   }
 ): Promise<ReanchorResult | null> {
   const today = input.today ?? manilaToday();
+  const paidDate = toDateOnly(input.anchorDate ?? today);
+  const computed = computeNextRentDue({
+    scheduledDueDate: input.scheduledDueDate,
+    paidDate,
+  });
   const explicit = input.nextDueDate ? toDateOnly(input.nextDueDate) : null;
-  const nextDue = explicit ?? addMonthsClamped(toDateOnly(input.anchorDate ?? today), 1);
+  const nextDue = explicit ?? computed.nextDue;
 
   if (!/^\d{4}-\d{2}-\d{2}$/.test(nextDue)) {
     return null;
   }
+
+  const useComputedDetails = !explicit || explicit === computed.nextDue;
+  const periodStart = useComputedDetails ? computed.periodStart : paidDate;
+  const periodEnd = nextDue;
+  const notes = useComputedDetails ? computed.reasonNote : null;
 
   const existing = await db
     .prepare('SELECT next_due_date FROM applications WHERE id = ?')
@@ -195,7 +377,20 @@ export async function reanchorNextDue(
 
   await writeAnchor(db, input.applicationId, nextDue);
 
-  const shifted = await shiftPendingRentCharge(db, input.applicationId, nextDue, today);
+  const shifted = await shiftPendingRentCharge(db, input.applicationId, nextDue, today, {
+    periodStart,
+    periodEnd,
+    notes,
+  });
+  const created = shifted
+    ? false
+    : await createNextRentCharge(db, {
+        applicationId: input.applicationId,
+        dueDate: nextDue,
+        periodStart,
+        periodEnd,
+        notes,
+      });
 
-  return { next_due_date: nextDue, previous_due_date: previous, shifted };
+  return { next_due_date: nextDue, previous_due_date: previous, shifted, created };
 }

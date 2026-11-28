@@ -13,6 +13,7 @@ import type { ChargeRow, SubmissionRow } from './types';
  */
 
 export interface SubmissionWithChargeRow extends SubmissionRow {
+  application_id: number | null;
   boarder_id: number;
   landlord_id: number;
   charge_amount: number | string;
@@ -145,6 +146,7 @@ export async function settleCharge(
 const SUBMISSION_SELECT = `
   ps.*,
   TRIM(COALESCE(u.first_name, '') || ' ' || COALESCE(u.last_name, '')) AS submitted_by_name,
+  pay.application_id AS application_id,
   pay.boarder_id AS boarder_id,
   pay.landlord_id AS landlord_id,
   pay.amount AS charge_amount,

@@ -7,6 +7,7 @@ import {
   submitBoarderPayment,
 } from '../../src/lib/api/payments';
 import {
+  buildTenantTimeline,
   chargeTypeLabel,
   formatPeso,
   groupChargesByMonth,
@@ -17,6 +18,7 @@ import {
   paymentStatusMeta,
   pendingReviewCount,
   roomOrBedLabel,
+  suggestNextRentDueDate,
 } from '../../src/lib/payments';
 import type { PaymentCharge } from '../../src/lib/types';
 
@@ -177,6 +179,30 @@ describe('payment display helpers', () => {
     expect(latestSubmission(claimed)?.status).toBe('pending');
     expect(latestSubmission(open)).toBeNull();
     expect(pendingReviewCount([paid, open, claimed, rejected])).toBe(1);
+  });
+
+  test('computes next rent due date for early/on-time vs late payments and surfaces reason on timeline', () => {
+    expect(suggestNextRentDueDate('2026-12-24', '2026-12-25')).toEqual({
+      nextDue: '2027-01-24',
+      isLate: false,
+    });
+    expect(suggestNextRentDueDate('2026-11-28', '2026-12-28')).toEqual({
+      nextDue: '2027-01-28',
+      isLate: false,
+    });
+    expect(suggestNextRentDueDate('2026-12-03', '2026-11-30')).toEqual({
+      nextDue: '2026-12-30',
+      isLate: true,
+    });
+
+    const events = buildTenantTimeline([
+      charge({
+        due_date: '2026-12-30',
+        notes: 'Due date kept on Dec 30, 2026 due to late payment on Dec 3, 2026 (was due Nov 30, 2026).',
+      }),
+    ]);
+
+    expect(events[0].detail).toContain('Due date kept on Dec 30, 2026');
   });
 });
 
