@@ -542,48 +542,148 @@ describe('additional bills', () => {
 });
 
 describe('next due date', () => {
-  it('re-anchors one month after the payment date and shifts the not-yet-due rent row (R4/D33)', async () => {
+  it('keeps the original due day with a reason on late payment and creates next month automatically', async () => {
     const { sqlite, env } = setup();
-    // The brief's case: the October cycle is paid late, so the next one lands a
-    // month after the payment date (Oct 15 due, paid Oct 30 → next Nov 30).
-    const overdueId = insertCharge(sqlite, { dueDate: addDays(manilaToday(), -10) });
-    const upComingId = insertCharge(sqlite, { dueDate: addDays(manilaToday(), 20) });
-    const expectedNext = addMonthsClamped(manilaToday(), 1);
+    const due = '2026-11-30';
+    const paidDate = '2026-12-03';
+    const overdueId = insertCharge(sqlite, { dueDate: due });
 
     const response = await app.request(
       `http://localhost/api/landlord/charges/${overdueId}/record`,
       {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', 'X-User-ID': '3' },
-        body: JSON.stringify({ payment_method: 'cash' }),
+        body: JSON.stringify({ payment_method: 'cash', paid_date: paidDate }),
       },
       env
     );
     const body = (await response.json()) as { data: { next_due_date: string } };
 
     expect(response.status).toBe(201);
-    // Paid today, so the next cycle is one month from today, day clamped.
-    expect(body.data.next_due_date).toBe(expectedNext);
+    // Due Nov 30, paid late Dec 3 -> next due stays on Dec 30 (not Jan 3).
+    expect(body.data.next_due_date).toBe('2026-12-30');
 
     const settled = sqlite
       .prepare('SELECT status, due_date FROM payments WHERE id = ?')
       .get(overdueId) as { status: string; due_date: string };
 
     expect(settled.status).toBe('paid');
-    // D4: the settled row is never rewritten.
-    expect(settled.due_date).toBe(addDays(manilaToday(), -10));
+    expect(settled.due_date).toBe(due);
 
-    // The later, still-open rent row followed the anchor onto the new date.
-    const shifted = sqlite
-      .prepare('SELECT due_date, generation_key FROM payments WHERE id = ?')
-      .get(upComingId) as { due_date: string; generation_key: string };
+    const nextRow = sqlite
+      .prepare(
+        `SELECT due_date, period_start, period_end, notes, generation_key FROM payments WHERE application_id = 200 AND status = 'pending'`
+      )
+      .get() as {
+      due_date: string;
+      period_start: string;
+      period_end: string;
+      notes: string | null;
+      generation_key: string;
+    };
 
-    expect(shifted.due_date).toBe(expectedNext);
-    expect(shifted.generation_key).toBe(`rent:200:${expectedNext}`);
+    expect(nextRow.due_date).toBe('2026-12-30');
+    expect(nextRow.generation_key).toBe('rent:200:2026-12-30');
+    expect(nextRow.notes).toContain('late payment');
 
     const trackerResponse = await tracker(env);
 
-    expect(trackerResponse.rows[0].next_due_date).toBe(expectedNext);
+    expect(trackerResponse.rows[0].next_due_date).toBe('2026-12-30');
+  });
+
+  it('anchors next month on the payment date when paid on or before due date', async () => {
+    const { sqlite, env } = setup();
+    const due = '2026-12-25';
+    const paidDate = '2026-12-24';
+    const rentId = insertCharge(sqlite, { dueDate: due });
+
+    const response = await app.request(
+      `http://localhost/api/landlord/charges/${rentId}/record`,
+      {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'X-User-ID': '3' },
+        body: JSON.stringify({ payment_method: 'cash', paid_date: paidDate }),
+      },
+      env
+    );
+    const body = (await response.json()) as { data: { next_due_date: string } };
+
+    expect(response.status).toBe(201);
+    expect(body.data.next_due_date).toBe('2027-01-24');
+
+    const nextRow = sqlite
+      .prepare(
+        `SELECT due_date, period_start, period_end, notes FROM payments WHERE application_id = 200 AND status = 'pending'`
+      )
+      .get() as {
+      due_date: string;
+      period_start: string;
+      period_end: string;
+      notes: string | null;
+    };
+
+    expect(nextRow.due_date).toBe('2027-01-24');
+    expect(nextRow.period_start).toBe('2026-12-24');
+    expect(nextRow.period_end).toBe('2027-01-24');
+    expect(nextRow.notes).toBeNull();
+  });
+
+  it('advances to the following month when paid a full cycle ahead', async () => {
+    const { sqlite, env } = setup();
+    const rentId = insertCharge(sqlite, { dueDate: '2026-12-28' });
+
+    const response = await app.request(
+      `http://localhost/api/landlord/charges/${rentId}/record`,
+      {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'X-User-ID': '3' },
+        body: JSON.stringify({ payment_method: 'cash', paid_date: '2026-11-28' }),
+      },
+      env
+    );
+    const body = (await response.json()) as { data: { next_due_date: string } };
+
+    expect(response.status).toBe(201);
+    expect(body.data.next_due_date).toBe('2027-01-28');
+
+    const nextRow = sqlite
+      .prepare(
+        `SELECT due_date, period_start, period_end FROM payments WHERE application_id = 200 AND status = 'pending'`
+      )
+      .get() as { due_date: string; period_start: string; period_end: string };
+
+    expect(nextRow.due_date).toBe('2027-01-28');
+    expect(nextRow.period_start).toBe('2026-12-28');
+    expect(nextRow.period_end).toBe('2027-01-28');
+  });
+
+  it('does not create a next rent bill past an approved move-out date', async () => {
+    const { sqlite, env } = setup();
+    sqlite
+      .prepare(
+        `UPDATE applications SET leave_request_status = 'approved', intended_leave_date = '2026-12-10' WHERE id = 200`
+      )
+      .run();
+    const rentId = insertCharge(sqlite, { dueDate: '2026-11-30' });
+
+    const response = await app.request(
+      `http://localhost/api/landlord/charges/${rentId}/record`,
+      {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'X-User-ID': '3' },
+        body: JSON.stringify({ payment_method: 'cash', paid_date: '2026-11-30' }),
+      },
+      env
+    );
+
+    expect(response.status).toBe(201);
+    const openCount = (
+      sqlite
+        .prepare(`SELECT COUNT(*) AS count FROM payments WHERE application_id = 200 AND status = 'pending'`)
+        .get() as { count: number }
+    ).count;
+
+    expect(openCount).toBe(0);
   });
 
   it('accepts an explicit next due date and refuses a silent past one (R5)', async () => {

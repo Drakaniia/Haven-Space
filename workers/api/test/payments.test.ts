@@ -209,14 +209,14 @@ describe('payment helpers', () => {
 });
 
 describe('billing schedule generation', () => {
-  it('creates deposit, advance and a rent horizon from the tenancy, idempotently', async () => {
+  it('creates move-in deposit, advance and only the first month of rent, idempotently', async () => {
     const { sqlite, env } = setup();
     const db = env.DB!;
 
     const first = await generateScheduleForApplication(db, 200);
 
     expect(first.first_due_date).toBe('2026-02-15');
-    expect(first.created).toBe(5);
+    expect(first.created).toBe(3);
 
     const rentRows = sqlite
       .prepare(
@@ -224,21 +224,40 @@ describe('billing schedule generation', () => {
       )
       .all() as Array<{ due_date: string; amount: number; generation_key: string }>;
 
-    expect(rentRows.map(row => row.due_date)).toEqual(['2026-02-15', '2026-03-15', '2026-04-15']);
+    expect(rentRows.map(row => row.due_date)).toEqual(['2026-02-15']);
     expect(rentRows[0].amount).toBe(6500);
     expect(rentRows[0].generation_key).toBe('rent:200:2026-02-15');
     expect(chargeRow(sqlite, 'deposit')?.generation_key).toBe('deposit:200');
+    expect(chargeRow(sqlite, 'deposit')?.due_date).toBe('2026-01-15');
     expect(chargeRow(sqlite, 'advance')?.generation_key).toBe('advance:200');
+    expect(chargeRow(sqlite, 'advance')?.due_date).toBe('2026-01-15');
 
     const second = await generateScheduleForApplication(db, 200);
 
     expect(second.created).toBe(0);
     expect(
       (sqlite.prepare('SELECT COUNT(*) AS count FROM payments').get() as { count: number }).count
-    ).toBe(5);
+    ).toBe(3);
   });
 
-  it('skips the advance charge when no amount was captured', async () => {
+  it('derives advance from property advance policy when application advance_amount is zero', async () => {
+    const { sqlite, env } = setup();
+    sqlite.exec(`UPDATE properties SET advance = '2 months' WHERE id = 11`);
+
+    const result = await generateScheduleForApplication(env.DB!, 201);
+
+    expect(result.first_due_date).toBe('2026-02-15');
+    expect(result.created).toBe(3);
+
+    const advance = sqlite
+      .prepare(`SELECT amount, due_date FROM payments WHERE application_id = 201 AND charge_type = 'advance'`)
+      .get() as { amount: number; due_date: string };
+
+    expect(advance.amount).toBe(10000);
+    expect(advance.due_date).toBe('2026-01-15');
+  });
+
+  it('skips the advance charge when property advance is None and no amount was captured', async () => {
     const { sqlite, env } = setup();
 
     const result = await generateScheduleForApplication(env.DB!, 201);
@@ -286,17 +305,14 @@ describe('confirm-booking integration', () => {
       };
     };
 
-    // deposit + advance + the 3-month rent horizon, all anchored on the
-    // confirmation date rather than the original application date.
-    expect(body.data.charges).toHaveLength(5);
+    // deposit + advance (on move-in) + 1st month rent (next month).
+    expect(body.data.charges).toHaveLength(3);
     expect(body.data.charges.map(charge => charge.charge_type).sort()).toEqual([
       'advance',
       'deposit',
       'rent',
-      'rent',
-      'rent',
     ]);
-    expect(body.data.summary.total_due).toBe(1500 + 6500 + 6500 * 3);
+    expect(body.data.summary.total_due).toBe(1500 + 6500 + 6500);
   });
 });
 
@@ -318,12 +334,12 @@ describe('boarder ledger routes', () => {
     };
 
     expect(response.status).toBe(200);
-    expect(body.data.charges).toHaveLength(5);
+    expect(body.data.charges).toHaveLength(3);
     expect(body.data.charges.map(charge => charge.charge_type)).toContain('deposit');
     expect(body.data.charges.every(charge => charge.is_overdue)).toBe(true);
-    expect(body.data.summary.overdue_count).toBe(5);
-    // deposit 1500 + advance 6500 + three months of 6500 rent.
-    expect(body.data.summary.total_due).toBe(1500 + 6500 + 6500 * 3);
+    expect(body.data.summary.overdue_count).toBe(3);
+    // deposit 1500 + advance 6500 + first month 6500 rent.
+    expect(body.data.summary.total_due).toBe(1500 + 6500 + 6500);
 
     const otherBoarder = await app.request(
       'http://localhost/api/boarder/payments',
@@ -434,6 +450,41 @@ describe('submission and verification', () => {
     );
 
     expect(again.status).toBe(409);
+  });
+
+  it('auto-creates the next rent charge on verification using submission date', async () => {
+    const { sqlite, env } = setup();
+    await generateScheduleForApplication(env.DB!, 200);
+    const rentId = chargeRow(sqlite, 'rent', '2026-02-15')!.id;
+
+    // Boarder paid late on 2026-02-20 (due was 2026-02-15): next due stays on 15th (2026-03-15).
+    const subInsert = sqlite
+      .prepare(
+        `
+          INSERT INTO payment_submissions (
+            payment_id, submitted_by, amount, payment_method, reference_number, status, created_at, updated_at
+          )
+          VALUES (?, 2, 6500, 'gcash', 'LATE-1', 'pending', '2026-02-20 02:00:00', '2026-02-20 02:00:00')
+        `
+      )
+      .run(rentId);
+
+    const verified = await app.request(
+      `http://localhost/api/landlord/submissions/${Number(subInsert.lastInsertRowid)}/verify`,
+      { method: 'POST', headers: { 'X-User-ID': '3' } },
+      env
+    );
+
+    expect(verified.status).toBe(200);
+
+    const nextRent = sqlite
+      .prepare(
+        `SELECT due_date, notes, status FROM payments WHERE application_id = 200 AND charge_type = 'rent' AND status = 'pending'`
+      )
+      .get() as { due_date: string; notes: string | null; status: string };
+
+    expect(nextRent.due_date).toBe('2026-03-15');
+    expect(nextRent.notes).toContain('late payment');
   });
 
   it('requires a reference number and a valid method', async () => {
@@ -650,9 +701,9 @@ describe('billing run', () => {
     sqlite.exec(`UPDATE applications SET status = 'ended' WHERE id = 201`);
     await generateScheduleForApplication(db, 200);
 
-    const early = await runBillingJob(db, new Date('2026-02-13T00:00:00Z'));
+    const early = await runBillingJob(db, new Date('2026-01-16T00:00:00Z'));
 
-    // Nothing is due yet, and the run no longer nudges boarders at all (D17).
+    // Deposit/advance are still inside their 3-day grace window and rent is not due yet.
     expect(early.marked_overdue).toBe(0);
     expect(early.late_fees_applied).toBe(0);
     expect(early.overdue_notices).toBe(0);
@@ -735,10 +786,10 @@ describe('landlord ledger routes', () => {
     };
 
     expect(mine.status).toBe(200);
-    expect(mineBody.data.charges).toHaveLength(5);
+    expect(mineBody.data.charges).toHaveLength(3);
     expect(mineBody.data.charges[0].boarder_name).toBe('Benny Boarder');
-    expect(mineBody.data.summary.total_due).toBe(1500 + 6500 + 6500 * 3);
-    expect(mineBody.data.aging.total_outstanding).toBe(1500 + 6500 + 6500 * 3);
+    expect(mineBody.data.summary.total_due).toBe(1500 + 6500 + 6500);
+    expect(mineBody.data.aging.total_outstanding).toBe(1500 + 6500 + 6500);
 
     const otherProperty = await app.request(
       'http://localhost/api/landlord/payments?propertyId=11',
@@ -790,10 +841,10 @@ describe('landlord ledger routes', () => {
     expect(csv).toContain('Benny Boarder');
 
     // The charge section is its title, the header row, then one row per charge
-    // (deposit + advance + the three-month rent horizon).
+    // (deposit + advance + 1st month rent).
     const chargeSection = (csv.split('# Charges —')[1] ?? '').trim().split('\n').slice(1);
 
-    expect(chargeSection).toHaveLength(6);
+    expect(chargeSection).toHaveLength(4);
   });
 
   it('creates utility charges for a tenant and refuses rent or late fees', async () => {
