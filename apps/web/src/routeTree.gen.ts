@@ -69,6 +69,7 @@ import { Route as BoarderFindARoomIdRouteImport } from './routes/boarder/find-a-
 import { Route as BoarderMessagesIndexRouteImport } from './routes/boarder/messages/index'
 import { Route as BoarderMessagesThreadIdRouteImport } from './routes/boarder/messages/$threadId'
 import { Route as BoarderPaymentsIndexRouteImport } from './routes/boarder/payments/index'
+import { Route as BoarderPaymentsAmenitiesRouteImport } from './routes/boarder/payments/amenities'
 import { Route as BoarderPaymentsPayRouteImport } from './routes/boarder/payments/pay'
 import { Route as BoarderRoomsIdRouteImport } from './routes/boarder/rooms/$id'
 import { Route as LandlordListingsIndexRouteImport } from './routes/landlord/listings/index'
@@ -76,6 +77,7 @@ import { Route as LandlordListingsCreateRouteImport } from './routes/landlord/li
 import { Route as LandlordMessagesIndexRouteImport } from './routes/landlord/messages/index'
 import { Route as LandlordMessagesThreadIdRouteImport } from './routes/landlord/messages/$threadId'
 import { Route as LandlordPaymentsIndexRouteImport } from './routes/landlord/payments/index'
+import { Route as LandlordPaymentsAmenitiesRouteImport } from './routes/landlord/payments/amenities'
 import { Route as LandlordPaymentsRecordRouteImport } from './routes/landlord/payments/record'
 import { Route as LandlordPropertiesIndexRouteImport } from './routes/landlord/properties/index'
 import { Route as BoarderFindARoomIdIndexRouteImport } from './routes/boarder/find-a-room/$id/index'
@@ -389,6 +391,12 @@ const BoarderPaymentsIndexRoute = BoarderPaymentsIndexRouteImport.update({
   path: '/',
   getParentRoute: () => BoarderPaymentsRoute,
 } as any)
+const BoarderPaymentsAmenitiesRoute =
+  BoarderPaymentsAmenitiesRouteImport.update({
+    id: '/amenities',
+    path: '/amenities',
+    getParentRoute: () => BoarderPaymentsRoute,
+  } as any)
 const BoarderPaymentsPayRoute = BoarderPaymentsPayRouteImport.update({
   id: '/pay',
   path: '/pay',
@@ -425,6 +433,12 @@ const LandlordPaymentsIndexRoute = LandlordPaymentsIndexRouteImport.update({
   path: '/',
   getParentRoute: () => LandlordPaymentsRoute,
 } as any)
+const LandlordPaymentsAmenitiesRoute =
+  LandlordPaymentsAmenitiesRouteImport.update({
+    id: '/amenities',
+    path: '/amenities',
+    getParentRoute: () => LandlordPaymentsRoute,
+  } as any)
 const LandlordPaymentsRecordRoute = LandlordPaymentsRecordRouteImport.update({
   id: '/record',
   path: '/record',
@@ -530,10 +544,12 @@ export interface FileRoutesByFullPath {
   '/boarder/applications/settings': typeof BoarderApplicationsSettingsRoute
   '/boarder/find-a-room/$id': typeof BoarderFindARoomIdRouteWithChildren
   '/boarder/messages/$threadId': typeof BoarderMessagesThreadIdRoute
+  '/boarder/payments/amenities': typeof BoarderPaymentsAmenitiesRoute
   '/boarder/payments/pay': typeof BoarderPaymentsPayRoute
   '/boarder/rooms/$id': typeof BoarderRoomsIdRoute
   '/landlord/listings/create': typeof LandlordListingsCreateRoute
   '/landlord/messages/$threadId': typeof LandlordMessagesThreadIdRoute
+  '/landlord/payments/amenities': typeof LandlordPaymentsAmenitiesRoute
   '/landlord/payments/record': typeof LandlordPaymentsRecordRoute
   '/auth/signup/': typeof AuthSignupIndexRoute
   '/boarder/applications/': typeof BoarderApplicationsIndexRoute
@@ -598,10 +614,12 @@ export interface FileRoutesByTo {
   '/boarder/applications/$id': typeof BoarderApplicationsIdRoute
   '/boarder/applications/settings': typeof BoarderApplicationsSettingsRoute
   '/boarder/messages/$threadId': typeof BoarderMessagesThreadIdRoute
+  '/boarder/payments/amenities': typeof BoarderPaymentsAmenitiesRoute
   '/boarder/payments/pay': typeof BoarderPaymentsPayRoute
   '/boarder/rooms/$id': typeof BoarderRoomsIdRoute
   '/landlord/listings/create': typeof LandlordListingsCreateRoute
   '/landlord/messages/$threadId': typeof LandlordMessagesThreadIdRoute
+  '/landlord/payments/amenities': typeof LandlordPaymentsAmenitiesRoute
   '/landlord/payments/record': typeof LandlordPaymentsRecordRoute
   '/auth/signup': typeof AuthSignupIndexRoute
   '/boarder/applications': typeof BoarderApplicationsIndexRoute
@@ -677,10 +695,12 @@ export interface FileRoutesById {
   '/boarder/applications/settings': typeof BoarderApplicationsSettingsRoute
   '/boarder/find-a-room/$id': typeof BoarderFindARoomIdRouteWithChildren
   '/boarder/messages/$threadId': typeof BoarderMessagesThreadIdRoute
+  '/boarder/payments/amenities': typeof BoarderPaymentsAmenitiesRoute
   '/boarder/payments/pay': typeof BoarderPaymentsPayRoute
   '/boarder/rooms/$id': typeof BoarderRoomsIdRoute
   '/landlord/listings/create': typeof LandlordListingsCreateRoute
   '/landlord/messages/$threadId': typeof LandlordMessagesThreadIdRoute
+  '/landlord/payments/amenities': typeof LandlordPaymentsAmenitiesRoute
   '/landlord/payments/record': typeof LandlordPaymentsRecordRoute
   '/auth/signup/': typeof AuthSignupIndexRoute
   '/boarder/applications/': typeof BoarderApplicationsIndexRoute
@@ -757,10 +777,12 @@ export interface FileRouteTypes {
     | '/boarder/applications/settings'
     | '/boarder/find-a-room/$id'
     | '/boarder/messages/$threadId'
+    | '/boarder/payments/amenities'
     | '/boarder/payments/pay'
     | '/boarder/rooms/$id'
     | '/landlord/listings/create'
     | '/landlord/messages/$threadId'
+    | '/landlord/payments/amenities'
     | '/landlord/payments/record'
     | '/auth/signup/'
     | '/boarder/applications/'
@@ -825,10 +847,12 @@ export interface FileRouteTypes {
     | '/boarder/applications/$id'
     | '/boarder/applications/settings'
     | '/boarder/messages/$threadId'
+    | '/boarder/payments/amenities'
     | '/boarder/payments/pay'
     | '/boarder/rooms/$id'
     | '/landlord/listings/create'
     | '/landlord/messages/$threadId'
+    | '/landlord/payments/amenities'
     | '/landlord/payments/record'
     | '/auth/signup'
     | '/boarder/applications'
@@ -903,10 +927,12 @@ export interface FileRouteTypes {
     | '/boarder/applications/settings'
     | '/boarder/find-a-room/$id'
     | '/boarder/messages/$threadId'
+    | '/boarder/payments/amenities'
     | '/boarder/payments/pay'
     | '/boarder/rooms/$id'
     | '/landlord/listings/create'
     | '/landlord/messages/$threadId'
+    | '/landlord/payments/amenities'
     | '/landlord/payments/record'
     | '/auth/signup/'
     | '/boarder/applications/'
@@ -1402,6 +1428,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof BoarderPaymentsIndexRouteImport
       parentRoute: typeof BoarderPaymentsRoute
     }
+    '/boarder/payments/amenities': {
+      id: '/boarder/payments/amenities'
+      path: '/amenities'
+      fullPath: '/boarder/payments/amenities'
+      preLoaderRoute: typeof BoarderPaymentsAmenitiesRouteImport
+      parentRoute: typeof BoarderPaymentsRoute
+    }
     '/boarder/payments/pay': {
       id: '/boarder/payments/pay'
       path: '/pay'
@@ -1449,6 +1482,13 @@ declare module '@tanstack/react-router' {
       path: '/'
       fullPath: '/landlord/payments/'
       preLoaderRoute: typeof LandlordPaymentsIndexRouteImport
+      parentRoute: typeof LandlordPaymentsRoute
+    }
+    '/landlord/payments/amenities': {
+      id: '/landlord/payments/amenities'
+      path: '/amenities'
+      fullPath: '/landlord/payments/amenities'
+      preLoaderRoute: typeof LandlordPaymentsAmenitiesRouteImport
       parentRoute: typeof LandlordPaymentsRoute
     }
     '/landlord/payments/record': {
@@ -1589,11 +1629,13 @@ const BoarderMessagesRouteWithChildren = BoarderMessagesRoute._addFileChildren(
 )
 
 interface BoarderPaymentsRouteChildren {
+  BoarderPaymentsAmenitiesRoute: typeof BoarderPaymentsAmenitiesRoute
   BoarderPaymentsPayRoute: typeof BoarderPaymentsPayRoute
   BoarderPaymentsIndexRoute: typeof BoarderPaymentsIndexRoute
 }
 
 const BoarderPaymentsRouteChildren: BoarderPaymentsRouteChildren = {
+  BoarderPaymentsAmenitiesRoute: BoarderPaymentsAmenitiesRoute,
   BoarderPaymentsPayRoute: BoarderPaymentsPayRoute,
   BoarderPaymentsIndexRoute: BoarderPaymentsIndexRoute,
 }
@@ -1633,11 +1675,13 @@ const LandlordMessagesRouteWithChildren =
   LandlordMessagesRoute._addFileChildren(LandlordMessagesRouteChildren)
 
 interface LandlordPaymentsRouteChildren {
+  LandlordPaymentsAmenitiesRoute: typeof LandlordPaymentsAmenitiesRoute
   LandlordPaymentsRecordRoute: typeof LandlordPaymentsRecordRoute
   LandlordPaymentsIndexRoute: typeof LandlordPaymentsIndexRoute
 }
 
 const LandlordPaymentsRouteChildren: LandlordPaymentsRouteChildren = {
+  LandlordPaymentsAmenitiesRoute: LandlordPaymentsAmenitiesRoute,
   LandlordPaymentsRecordRoute: LandlordPaymentsRecordRoute,
   LandlordPaymentsIndexRoute: LandlordPaymentsIndexRoute,
 }

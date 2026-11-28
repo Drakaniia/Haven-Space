@@ -36,6 +36,7 @@ export const CHARGE_TYPE_LABELS: Record<string, string> = {
   deposit: 'Security deposit',
   advance: 'Advance payment',
   utility: 'Utilities',
+  amenity: 'Amenity',
   late_fee: 'Late fee',
   other: 'Other charge',
 };

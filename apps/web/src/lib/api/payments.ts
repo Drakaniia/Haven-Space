@@ -1,14 +1,20 @@
 import { getApiBaseUrl } from '../config';
 import type {
+  AmenityBillingModel,
+  AmenityUsageLog,
   BillingSettingsResponse,
+  BoarderAmenitiesResponse,
   BoarderChargeResponse,
   BoarderPaymentsResponse,
+  LandlordAmenitiesResponse,
   LandlordPaymentsResponse,
+  PaidAmenity,
   PaymentHistoryResponse,
   PaymentProofResponse,
   PaymentSubmissionResponse,
   PaymentTrackerResponse,
   PropertyBillingSettings,
+  TenancyAmenity,
 } from '../types';
 import { ApiRequestError, apiFetch, jsonOptions } from './http';
 
@@ -392,4 +398,200 @@ export async function fetchLandlordPaymentsCsv(
   }
 
   return await response.text();
+}
+
+/* ----------------------------------------------------------- paid amenities */
+
+export interface CreatePaidAmenityPayload {
+  name: string;
+  description?: string | null;
+  icon?: string;
+  billing_model: AmenityBillingModel;
+  price: number;
+  unit_label?: string;
+  is_metered?: boolean;
+  is_included?: boolean;
+  max_slots?: number | null;
+  allow_boarder_request?: boolean;
+}
+
+export function getLandlordAmenities(
+  token: string,
+  propertyId: number
+): Promise<LandlordAmenitiesResponse> {
+  return apiFetch<LandlordAmenitiesResponse>(
+    base(),
+    `/api/landlord/payments/amenities?propertyId=${propertyId}`,
+    { headers: { Authorization: `Bearer ${token}` } }
+  );
+}
+
+export function createLandlordAmenities(
+  token: string,
+  propertyId: number,
+  items: CreatePaidAmenityPayload[]
+): Promise<{ success: true; data: PaidAmenity[] }> {
+  return apiFetch(
+    base(),
+    `/api/landlord/properties/${propertyId}/amenities`,
+    jsonOptions(token, { method: 'POST', body: JSON.stringify({ items }) })
+  );
+}
+
+export function updateLandlordAmenity(
+  token: string,
+  amenityId: number,
+  patch: Partial<CreatePaidAmenityPayload> & { is_active?: boolean }
+): Promise<{ success: true; data: PaidAmenity }> {
+  return apiFetch(
+    base(),
+    `/api/landlord/payments/amenities/${amenityId}`,
+    jsonOptions(token, { method: 'PATCH', body: JSON.stringify(patch) })
+  );
+}
+
+export function assignLandlordAmenity(
+  token: string,
+  propertyId: number,
+  amenityId: number,
+  input: { application_id: number; quantity?: number; due_date?: string | null; notes?: string | null }
+): Promise<{ success: true; data: TenancyAmenity }> {
+  return apiFetch(
+    base(),
+    `/api/landlord/properties/${propertyId}/amenities/${amenityId}/assign`,
+    jsonOptions(token, { method: 'POST', body: JSON.stringify(input) })
+  );
+}
+
+export function approveAmenityRequest(
+  token: string,
+  subscriptionId: number,
+  dueDate?: string | null
+): Promise<{ success: true; data: TenancyAmenity }> {
+  return apiFetch(
+    base(),
+    `/api/landlord/payments/amenities/requests/${subscriptionId}/approve`,
+    jsonOptions(token, { method: 'POST', body: JSON.stringify(dueDate ? { due_date: dueDate } : {}) })
+  );
+}
+
+export function rejectAmenityRequest(
+  token: string,
+  subscriptionId: number,
+  reason?: string | null
+): Promise<{ success: true; data: TenancyAmenity }> {
+  return apiFetch(
+    base(),
+    `/api/landlord/payments/amenities/requests/${subscriptionId}/reject`,
+    jsonOptions(token, { method: 'POST', body: JSON.stringify({ reason: reason ?? '' }) })
+  );
+}
+
+export function updateAmenitySubscription(
+  token: string,
+  subscriptionId: number,
+  patch: { unit_price_snapshot?: number; quantity?: number }
+): Promise<{ success: true; data: TenancyAmenity }> {
+  return apiFetch(
+    base(),
+    `/api/landlord/payments/amenities/subscriptions/${subscriptionId}`,
+    jsonOptions(token, { method: 'PATCH', body: JSON.stringify(patch) })
+  );
+}
+
+export function cancelLandlordAmenitySubscription(
+  token: string,
+  subscriptionId: number
+): Promise<{ success: true; data: TenancyAmenity }> {
+  return apiFetch(
+    base(),
+    `/api/landlord/payments/amenities/subscriptions/${subscriptionId}/cancel`,
+    jsonOptions(token, { method: 'POST', body: JSON.stringify({}) })
+  );
+}
+
+export function logLandlordAmenityUsage(
+  token: string,
+  propertyId: number,
+  amenityId: number,
+  input: {
+    application_ids: number[];
+    quantity?: number | null;
+    previous_reading?: number | null;
+    current_reading?: number | null;
+    due_date?: string | null;
+    usage_date?: string | null;
+    notes?: string | null;
+  }
+): Promise<{ success: true; data: AmenityUsageLog[] }> {
+  return apiFetch(
+    base(),
+    `/api/landlord/properties/${propertyId}/amenities/${amenityId}/usage`,
+    jsonOptions(token, { method: 'POST', body: JSON.stringify(input) })
+  );
+}
+
+export function approveAmenityUsage(
+  token: string,
+  logId: number,
+  dueDate?: string | null
+): Promise<{ success: true; data: AmenityUsageLog }> {
+  return apiFetch(
+    base(),
+    `/api/landlord/payments/amenities/usage/${logId}/approve`,
+    jsonOptions(token, { method: 'POST', body: JSON.stringify(dueDate ? { due_date: dueDate } : {}) })
+  );
+}
+
+export function rejectAmenityUsage(
+  token: string,
+  logId: number,
+  reason?: string | null
+): Promise<{ success: true; data: AmenityUsageLog }> {
+  return apiFetch(
+    base(),
+    `/api/landlord/payments/amenities/usage/${logId}/reject`,
+    jsonOptions(token, { method: 'POST', body: JSON.stringify({ reason: reason ?? '' }) })
+  );
+}
+
+export function getBoarderAmenities(token: string): Promise<BoarderAmenitiesResponse> {
+  return apiFetch<BoarderAmenitiesResponse>(base(), '/api/boarder/payments/amenities', {
+    headers: { Authorization: `Bearer ${token}` },
+  });
+}
+
+export function requestBoarderAmenity(
+  token: string,
+  amenityId: number,
+  input: { quantity?: number; notes?: string | null }
+): Promise<{ success: true; data: TenancyAmenity }> {
+  return apiFetch(
+    base(),
+    `/api/boarder/payments/amenities/${amenityId}/request`,
+    jsonOptions(token, { method: 'POST', body: JSON.stringify(input) })
+  );
+}
+
+export function requestBoarderAmenityUsage(
+  token: string,
+  amenityId: number,
+  input: { quantity: number; usage_date?: string | null; notes?: string | null }
+): Promise<{ success: true; data: AmenityUsageLog }> {
+  return apiFetch(
+    base(),
+    `/api/boarder/payments/amenities/${amenityId}/usage-request`,
+    jsonOptions(token, { method: 'POST', body: JSON.stringify(input) })
+  );
+}
+
+export function cancelBoarderAmenitySubscription(
+  token: string,
+  subscriptionId: number
+): Promise<{ success: true; data: TenancyAmenity }> {
+  return apiFetch(
+    base(),
+    `/api/boarder/payments/amenities/subscriptions/${subscriptionId}/cancel`,
+    jsonOptions(token, { method: 'POST', body: JSON.stringify({}) })
+  );
 }

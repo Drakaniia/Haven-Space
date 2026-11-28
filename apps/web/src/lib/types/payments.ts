@@ -1,6 +1,13 @@
 /* ------------------------------------------------------------------ payments */
 
-export type PaymentChargeType = 'rent' | 'deposit' | 'advance' | 'utility' | 'late_fee' | 'other';
+export type PaymentChargeType =
+  | 'rent'
+  | 'deposit'
+  | 'advance'
+  | 'utility'
+  | 'amenity'
+  | 'late_fee'
+  | 'other';
 
 export type PaymentStatus = 'pending' | 'awaiting_verification' | 'overdue' | 'paid' | 'cancelled';
 
@@ -224,4 +231,128 @@ export interface PaymentHistoryResponse {
 export interface BillingSettingsResponse {
   success: true;
   data: PropertyBillingSettings;
+}
+
+/* ----------------------------------------------------------- paid amenities */
+
+export type AmenityBillingModel = 'monthly' | 'per_use' | 'one_time';
+
+export interface PaidAmenity {
+  id: number;
+  property_id: number;
+  name: string;
+  description: string | null;
+  icon: string;
+  billing_model: AmenityBillingModel;
+  price: number;
+  unit_label: string;
+  is_metered: boolean;
+  is_included: boolean;
+  max_slots: number | null;
+  active_slots: number;
+  allow_boarder_request: boolean;
+  is_active: boolean;
+  created_at: string;
+}
+
+export interface TenancyAmenity {
+  id: number;
+  paid_amenity_id: number;
+  amenity_name: string;
+  amenity_icon: string;
+  unit_label: string;
+  application_id: number;
+  property_id: number;
+  boarder_id: number;
+  boarder_name: string;
+  room_id: number;
+  room_title: string;
+  status: string;
+  quantity: number;
+  unit_price_snapshot: number;
+  billing_model_snapshot: AmenityBillingModel;
+  next_bill_date: string | null;
+  last_billed_date: string | null;
+  notes: string | null;
+  rejection_reason: string | null;
+  created_at: string;
+}
+
+export interface AmenityUsageLog {
+  id: number;
+  paid_amenity_id: number;
+  amenity_name: string;
+  unit_label: string;
+  is_metered: boolean;
+  application_id: number;
+  property_id: number;
+  boarder_id: number;
+  boarder_name: string;
+  room_title: string;
+  payment_id: number | null;
+  payment_status: string | null;
+  status: string;
+  quantity: number;
+  unit_price_snapshot: number;
+  previous_reading: number | null;
+  current_reading: number | null;
+  total_amount: number;
+  usage_date: string;
+  notes: string | null;
+  rejection_reason: string | null;
+  created_at: string;
+}
+
+export interface AmenityBoarderOption {
+  application_id: number;
+  boarder_id: number;
+  boarder_name: string;
+  room_id: number;
+  room_title: string;
+}
+
+export interface LandlordAmenitiesResponse {
+  success: true;
+  data: {
+    property: { id: number; title: string };
+    catalog: PaidAmenity[];
+    subscriptions: TenancyAmenity[];
+    pending_requests: {
+      subscriptions: TenancyAmenity[];
+      usage: AmenityUsageLog[];
+    };
+    usage_logs: AmenityUsageLog[];
+    boarders: AmenityBoarderOption[];
+    summary: {
+      active_catalog_count: number;
+      monthly_recurring_revenue: number;
+      pending_requests_count: number;
+      month_billed: number;
+      month_collected: number;
+    };
+  };
+}
+
+export interface BoarderAmenitiesResponse {
+  success: true;
+  data: {
+    tenancy: {
+      application_id: number;
+      property_id: number;
+      property_title: string;
+      room_title: string;
+    };
+    active_monthly_total: number;
+    catalog: PaidAmenity[];
+    subscriptions: TenancyAmenity[];
+    usage_logs: AmenityUsageLog[];
+    charges: Array<{
+      id: number;
+      description: string;
+      amount: number;
+      due_date: string;
+      paid_date: string | null;
+      status: PaymentStatus;
+    }>;
+  };
 }
