@@ -1,6 +1,5 @@
 import {
   DEFAULT_GRACE_DAYS,
-  DEFAULT_HORIZON_MONTHS,
   addDays,
   lateFeeFor,
   manilaToday,
@@ -8,7 +7,6 @@ import {
   toDateOnly,
 } from './helpers';
 import { insertNotification } from './notify';
-import { extendSchedulesForActiveTenancies } from './schedule';
 import type { ChargeRow } from './types';
 
 /**
@@ -260,11 +258,8 @@ export async function runBillingJob(
 ): Promise<BillingRunResult> {
   const today = manilaToday(now);
 
-  const schedulesExtended = await extendSchedulesForActiveTenancies(
-    db,
-    DEFAULT_HORIZON_MONTHS,
-    today
-  );
+  // Rent cycles are issued one month at a time upon settlement rather than pre-generated ahead.
+  const schedulesExtended = 0;
   const markedOverdue = await markOverdue(db, today);
   const lateFeesApplied = await applyLateFees(db, today);
   const overdueNotices = await emitLandlordOverdueNotices(db, today);

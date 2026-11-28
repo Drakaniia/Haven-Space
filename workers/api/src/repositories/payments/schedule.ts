@@ -1,19 +1,19 @@
 import {
   DEFAULT_HORIZON_MONTHS,
   addMonthsClamped,
+  monthLabel,
   nextDueAfter,
-  previousDay,
+  parseAdvanceAmount,
   roundMoney,
   toDateOnly,
 } from './helpers';
 
 /**
- * Schedule generation (spec `payments-feature` §6.1).
+ * Schedule generation (spec `payments-feature` §6.1, updated for single-cycle billing).
  *
- * On (or after) booking confirmation a tenancy gets its charges: one deposit,
- * one advance (only when the landlord captured an amount), and `horizonMonths`
- * months of rent. Every insert carries a `generation_key`, and the partial
- * unique index on that column makes re-running any part of this a no-op.
+ * On booking confirmation a tenancy gets its move-in charges (deposit and
+ * advance, due on move-in) plus its first monthly rent charge (due one month
+ * later). Subsequent rent cycles are created one at a time upon settlement.
  */
 
 export interface ScheduleInputRow {
@@ -24,6 +24,7 @@ export interface ScheduleInputRow {
   property_id: number;
   room_price: number | string;
   room_deposit: number | string;
+  property_advance: string | null;
   advance_amount: number | string;
   start_date: string;
 }
@@ -47,27 +48,6 @@ interface InsertChargeInput {
   periodStart?: string | null;
   periodEnd?: string | null;
   createdBy?: number | null;
-}
-
-const MONTH_LABELS = [
-  'January',
-  'February',
-  'March',
-  'April',
-  'May',
-  'June',
-  'July',
-  'August',
-  'September',
-  'October',
-  'November',
-  'December',
-];
-
-function monthLabel(date: string): string {
-  const [year, month] = toDateOnly(date).split('-').map(Number);
-
-  return `${MONTH_LABELS[month - 1] ?? month} ${year}`;
 }
 
 async function insertCharge(db: D1Database, input: InsertChargeInput): Promise<number> {
@@ -117,10 +97,12 @@ export async function findScheduleInput(
           r.property_id,
           r.price AS room_price,
           r.deposit AS room_deposit,
+          p.advance AS property_advance,
           COALESCE(app.advance_amount, 0) AS advance_amount,
           COALESCE(app.confirmed_at, app.created_at) AS start_date
         FROM applications app
         JOIN rooms r ON app.room_id = r.id
+        JOIN properties p ON r.property_id = p.id
         WHERE app.id = ?
           AND app.status = 'confirmed'
           AND app.deleted_at IS NULL
@@ -161,34 +143,48 @@ export async function generateScheduleForApplication(
       ...base,
       chargeType: 'deposit',
       amount: deposit,
-      dueDate: firstDue,
+      dueDate: anchor,
       description: 'Security deposit',
       generationKey: `deposit:${base.applicationId}`,
     });
   }
 
-  const advance = roundMoney(Number(input.advance_amount));
+  const rent = roundMoney(Number(input.room_price));
+  const explicitAdvance = roundMoney(Number(input.advance_amount));
+  const advance =
+    explicitAdvance > 0 ? explicitAdvance : parseAdvanceAmount(input.property_advance, rent);
+
   if (advance > 0) {
     created += await insertCharge(db, {
       ...base,
       chargeType: 'advance',
       amount: advance,
-      dueDate: firstDue,
+      dueDate: anchor,
       description: 'Advance payment',
       generationKey: `advance:${base.applicationId}`,
     });
   }
 
-  const rent = roundMoney(Number(input.room_price));
   if (rent > 0) {
     created += await insertRentMonths(db, {
-      input,
+      anchor,
       dueDay,
       firstDue,
       months: horizonMonths,
       amount: rent,
       base,
     });
+
+    await db
+      .prepare(
+        `
+          UPDATE applications
+          SET next_due_date = COALESCE(next_due_date, ?), updated_at = CURRENT_TIMESTAMP
+          WHERE id = ? AND status = 'confirmed' AND deleted_at IS NULL
+        `
+      )
+      .bind(firstDue, base.applicationId)
+      .run();
   }
 
   return { created, first_due_date: firstDue };
@@ -197,7 +193,7 @@ export async function generateScheduleForApplication(
 async function insertRentMonths(
   db: D1Database,
   data: {
-    input: ScheduleInputRow;
+    anchor: string;
     dueDay: number;
     firstDue: string;
     months: number;
@@ -216,7 +212,8 @@ async function insertRentMonths(
   for (let index = 0; index < data.months; index += 1) {
     const dueDate =
       index === 0 ? data.firstDue : addMonthsClamped(data.firstDue, index, data.dueDay);
-    const nextDue = addMonthsClamped(data.firstDue, index + 1, data.dueDay);
+    const periodStart =
+      index === 0 ? data.anchor : addMonthsClamped(data.firstDue, index - 1, data.dueDay);
 
     created += await insertCharge(db, {
       ...data.base,
@@ -224,103 +221,10 @@ async function insertRentMonths(
       amount: data.amount,
       dueDate,
       description: `Monthly rent — ${monthLabel(dueDate)}`,
-      periodStart: dueDate,
-      periodEnd: previousDay(nextDue),
+      periodStart,
+      periodEnd: dueDate,
       generationKey: `rent:${data.base.applicationId}:${dueDate}`,
     });
-  }
-
-  return created;
-}
-
-interface ExtensionRow {
-  application_id: number;
-  last_due: string | null;
-  /** Set once a leave is approved: no rent is billed past it. */
-  leave_date: string | null;
-}
-
-/**
- * Keeps every confirmed tenancy billed out to the rolling horizon. Called by the
- * nightly job so a ledger is never empty after the initial 3 months.
- */
-export async function extendSchedulesForActiveTenancies(
-  db: D1Database,
-  horizonMonths: number = DEFAULT_HORIZON_MONTHS,
-  today: string
-): Promise<number> {
-  const rows = await db
-    .prepare(
-      `
-        SELECT
-          app.id AS application_id,
-          (
-            SELECT MAX(p.due_date)
-            FROM payments p
-            WHERE p.application_id = app.id
-              AND p.charge_type = 'rent'
-              AND p.generation_key IS NOT NULL
-          ) AS last_due,
-          CASE WHEN app.leave_request_status = 'approved' THEN app.intended_leave_date END
-            AS leave_date
-        FROM applications app
-        WHERE app.status = 'confirmed'
-          AND app.deleted_at IS NULL
-      `
-    )
-    .bind()
-    .all<ExtensionRow>();
-
-  const horizonEnd = addMonthsClamped(today, horizonMonths);
-  let created = 0;
-
-  for (const row of rows.results ?? []) {
-    const applicationId = Number(row.application_id);
-
-    if (!row.last_due) {
-      const result = await generateScheduleForApplication(db, applicationId, { horizonMonths });
-      created += result.created;
-      continue;
-    }
-
-    const input = await findScheduleInput(db, applicationId);
-
-    if (!input) {
-      continue;
-    }
-
-    const dueDay = Number(toDateOnly(input.start_date).slice(8, 10));
-    const rent = roundMoney(Number(input.room_price));
-    let lastDue = toDateOnly(row.last_due);
-    let guard = 0;
-
-    const leaveDate = row.leave_date ? toDateOnly(row.leave_date) : null;
-
-    while (lastDue < horizonEnd && guard < 24) {
-      lastDue = addMonthsClamped(lastDue, 1, dueDay);
-
-      if (leaveDate && lastDue > leaveDate) {
-        break;
-      }
-
-      const nextDue = addMonthsClamped(lastDue, 1, dueDay);
-
-      created += await insertCharge(db, {
-        applicationId,
-        boarderId: Number(input.boarder_id),
-        landlordId: Number(input.landlord_id),
-        roomId: Number(input.room_id),
-        propertyId: Number(input.property_id),
-        chargeType: 'rent',
-        amount: rent,
-        dueDate: lastDue,
-        description: `Monthly rent — ${monthLabel(lastDue)}`,
-        periodStart: lastDue,
-        periodEnd: previousDay(nextDue),
-        generationKey: `rent:${applicationId}:${lastDue}`,
-      });
-      guard += 1;
-    }
   }
 
   return created;
