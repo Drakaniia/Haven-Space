@@ -22,7 +22,7 @@
   "vars": {
     "APP_ENV": "production",
     "APP_ORIGIN": "https://haven-space.pages.dev,http://localhost:3000,http://localhost:4173",
-    "BOOTSTRAP_ADMIN_EMAILS": ""
+    "BOOTSTRAP_ADMIN_EMAILS": "andrewdelector@buksu.edu.ph"
   },
   "env": {
     "staging": {
@@ -30,7 +30,7 @@
       "vars": {
         "APP_ENV": "staging",
         "APP_ORIGIN": "https://haven-space.pages.dev,http://localhost:3000,http://localhost:4173",
-        "BOOTSTRAP_ADMIN_EMAILS": ""
+        "BOOTSTRAP_ADMIN_EMAILS": "andrewdelector@buksu.edu.ph"
       },
       "triggers": {
         "crons": ["0 17 * * *"]
