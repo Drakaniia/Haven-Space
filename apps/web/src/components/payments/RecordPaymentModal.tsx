@@ -16,8 +16,10 @@ import {
   formatPaymentDate,
   formatPeso,
   isChargeOpen,
+  manilaToday,
   methodNeedsReceipt,
   methodNeedsReference,
+  suggestNextRentDueDate,
 } from '../../lib/payments';
 import type { PaymentCharge } from '../../lib/types';
 
@@ -53,6 +55,7 @@ export function RecordPaymentModal({
   const [reference, setReference] = useState('');
   const [notes, setNotes] = useState('');
   const [nextDue, setNextDue] = useState('');
+  const [nextDueEdited, setNextDueEdited] = useState(false);
   const [file, setFile] = useState<File | null>(null);
   const [busy, setBusy] = useState(false);
 
@@ -63,12 +66,13 @@ export function RecordPaymentModal({
 
     setApplicationId(initialApplicationId ?? boarders[0]?.application_id ?? null);
     setSelected([]);
-    setPaidDate(new Date().toISOString().slice(0, 10));
+    setPaidDate(manilaToday());
     setMethod('cash');
     setMethodLabel('');
     setReference('');
     setNotes('');
     setNextDue('');
+    setNextDueEdited(false);
     setFile(null);
   }, [open, initialApplicationId, boarders]);
 
@@ -79,11 +83,24 @@ export function RecordPaymentModal({
   });
 
   const charges: PaymentCharge[] = (history.data?.data.charges ?? []).filter(isChargeOpen);
+  const selectedRent = charges.find(
+    charge => selected.includes(charge.id) && charge.charge_type === 'rent'
+  );
+  const suggestedNext = suggestNextRentDueDate(
+    paidDate,
+    selectedRent?.due_date ?? history.data?.data.tenancy.next_due_date
+  );
 
   useEffect(() => {
     setSelected(charges.map(charge => charge.id));
-    setNextDue(history.data?.data.tenancy.next_due_date ?? '');
+    setNextDueEdited(false);
   }, [history.data]);
+
+  useEffect(() => {
+    if (!nextDueEdited && suggestedNext.nextDue) {
+      setNextDue(suggestedNext.nextDue);
+    }
+  }, [nextDueEdited, suggestedNext.nextDue]);
 
   const total = charges
     .filter(charge => selected.includes(charge.id))
@@ -155,7 +172,7 @@ export function RecordPaymentModal({
         paid_date: paidDate || undefined,
         notes: notes.trim() || undefined,
         charge_ids: selected,
-        next_due_date: nextDue || undefined,
+        next_due_date: nextDueEdited && nextDue ? nextDue : undefined,
         amount: total,
       });
 
@@ -291,8 +308,16 @@ export function RecordPaymentModal({
               id="record-next-due"
               type="date"
               value={nextDue}
-              onChange={event => setNextDue(event.target.value)}
+              onChange={event => {
+                setNextDueEdited(true);
+                setNextDue(event.target.value);
+              }}
             />
+            {selectedRent && suggestedNext.isLate && !nextDueEdited ? (
+              <span className="mt-1 block text-xs text-gray-ink">
+                Kept on original due day due to late payment.
+              </span>
+            ) : null}
           </Field>
         </div>
 

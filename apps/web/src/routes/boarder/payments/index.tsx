@@ -178,6 +178,7 @@ function ChargeRow({ charge }: { charge: PaymentCharge }) {
           {charge.room_title ? ` · ${charge.room_title}` : ''}
           {charge.property_title ? ` · ${charge.property_title}` : ''}
         </p>
+        {charge.notes ? <p className="mt-1 text-xs text-gray-ink">{charge.notes}</p> : null}
         {charge.stored_status === 'paid' ? (
           <p className="mt-1 text-sm text-success-ink">
             Paid {formatPaymentDate(charge.paid_date)} via{' '}
