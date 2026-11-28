@@ -9,3 +9,4 @@ export * from './submissions';
 export * from './charges';
 export * from './reporting';
 export * from './billing-run';
+export * from './amenities';

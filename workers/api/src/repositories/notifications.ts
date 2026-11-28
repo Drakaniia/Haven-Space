@@ -79,6 +79,9 @@ function roleVisibleTypes(role: string): string[] | null {
       // A boarder's payment claim needs the landlord's decision (spec
       // `payments-feature` §8.1).
       'payment_submitted',
+      // Paid amenities requests from boarders (spec `paid-amenities` §2).
+      'amenity_request',
+      'amenity_usage_request',
       // An approved tenant left before the agreed date (spec `leave-now` §4.5).
       'boarder_left_early',
     ];
@@ -97,6 +100,11 @@ function roleVisibleTypes(role: string): string[] | null {
       'payment_verified',
       'payment_rejected',
       'payment_recorded',
+      'bill_added',
+      // Paid amenities decisions & assignments (spec `paid-amenities` §2).
+      'amenity_approved',
+      'amenity_assigned',
+      'amenity_rejected',
     ];
   }
 

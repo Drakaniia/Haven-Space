@@ -1,6 +1,7 @@
 import {
   DEFAULT_GRACE_DAYS,
   addDays,
+  addMonthsClamped,
   lateFeeFor,
   manilaToday,
   roundMoney,
@@ -26,6 +27,7 @@ export interface BillingRunResult {
   today: string;
   ran_at: string;
   schedules_extended: number;
+  amenities_billed: number;
   marked_overdue: number;
   late_fees_applied: number;
   /** Charges that crossed their grace period and notified their landlord once. */
@@ -127,7 +129,7 @@ async function applyLateFees(db: D1Database, today: string): Promise<number> {
         FROM payments pay
         LEFT JOIN properties pr ON pay.property_id = pr.id
         WHERE pay.status = 'overdue'
-          AND pay.charge_type <> 'late_fee'
+          AND pay.charge_type NOT IN ('late_fee', 'amenity')
       `
     )
     .bind()
@@ -252,6 +254,119 @@ async function emitLandlordOverdueNotices(db: D1Database, today: string): Promis
   return count;
 }
 
+interface DueAmenityRow {
+  id: number;
+  paid_amenity_id: number;
+  application_id: number;
+  property_id: number;
+  boarder_id: number;
+  room_id: number;
+  landlord_id: number;
+  amenity_name: string;
+  quantity: number;
+  unit_price_snapshot: number | string;
+  anchor_day: number | null;
+  next_bill_date: string;
+}
+
+async function generateAmenityRenewals(db: D1Database, today: string): Promise<number> {
+  const horizon = addDays(today, 3);
+  const rows = await db
+    .prepare(
+      `
+        SELECT
+          ta.id, ta.paid_amenity_id, ta.application_id, ta.property_id,
+          ta.boarder_id, ta.room_id, p.landlord_id, pa.name AS amenity_name,
+          ta.quantity, ta.unit_price_snapshot, ta.anchor_day, ta.next_bill_date
+        FROM tenancy_amenities ta
+        JOIN applications app ON ta.application_id = app.id
+        JOIN paid_amenities pa ON ta.paid_amenity_id = pa.id
+        JOIN properties p ON ta.property_id = p.id
+        WHERE ta.status = 'active'
+          AND ta.billing_model_snapshot = 'monthly'
+          AND ta.unit_price_snapshot > 0
+          AND ta.next_bill_date IS NOT NULL
+          AND ta.next_bill_date <= ?
+          AND app.status = 'confirmed'
+          AND app.deleted_at IS NULL
+      `
+    )
+    .bind(horizon)
+    .all<DueAmenityRow>();
+
+  let count = 0;
+
+  for (const row of rows.results ?? []) {
+    const dueDate = toDateOnly(row.next_bill_date);
+    const amount = roundMoney(Number(row.unit_price_snapshot) * Number(row.quantity));
+
+    if (!dueDate || amount <= 0) {
+      continue;
+    }
+
+    const qtySuffix = Number(row.quantity) > 1 ? ` (×${row.quantity})` : '';
+    const description = `${row.amenity_name}${qtySuffix}`;
+    const generationKey = `amenity:${row.id}:${dueDate}`;
+
+    const insert = await db
+      .prepare(
+        `
+          INSERT OR IGNORE INTO payments (
+            boarder_id, landlord_id, room_id, property_id, application_id,
+            charge_type, description, amount, due_date, status, generation_key,
+            paid_amenity_id, tenancy_amenity_id, created_at, updated_at
+          )
+          VALUES (?, ?, ?, ?, ?, 'amenity', ?, ?, ?, 'pending', ?, ?, ?, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
+        `
+      )
+      .bind(
+        Number(row.boarder_id),
+        Number(row.landlord_id),
+        Number(row.room_id),
+        Number(row.property_id),
+        Number(row.application_id),
+        description,
+        amount,
+        dueDate,
+        generationKey,
+        Number(row.paid_amenity_id),
+        Number(row.id)
+      )
+      .run();
+
+    const anchorDay = Number(row.anchor_day ?? dueDate.split('-')[2]) || 1;
+    const nextBill = addMonthsClamped(dueDate, 1, anchorDay);
+
+    await db
+      .prepare(
+        `
+          UPDATE tenancy_amenities
+          SET next_bill_date = ?, last_billed_date = ?, updated_at = CURRENT_TIMESTAMP
+          WHERE id = ?
+        `
+      )
+      .bind(nextBill, dueDate, Number(row.id))
+      .run();
+
+    if (Number(insert.meta.changes ?? 0) > 0) {
+      await insertNotification(db, {
+        userId: Number(row.boarder_id),
+        type: 'bill_added',
+        title: `Amenity renewal: ${row.amenity_name}`,
+        message: `${description} of ₱${amount.toLocaleString()} is due ${dueDate}.`,
+        metadata: {
+          tenancy_amenity_id: Number(row.id),
+          due_date: dueDate,
+          amount,
+        },
+      });
+      count += 1;
+    }
+  }
+
+  return count;
+}
+
 export async function runBillingJob(
   db: D1Database,
   now: Date = new Date()
@@ -260,6 +375,7 @@ export async function runBillingJob(
 
   // Rent cycles are issued one month at a time upon settlement rather than pre-generated ahead.
   const schedulesExtended = 0;
+  const amenitiesBilled = await generateAmenityRenewals(db, today);
   const markedOverdue = await markOverdue(db, today);
   const lateFeesApplied = await applyLateFees(db, today);
   const overdueNotices = await emitLandlordOverdueNotices(db, today);
@@ -268,6 +384,7 @@ export async function runBillingJob(
     today,
     ran_at: now.toISOString(),
     schedules_extended: schedulesExtended,
+    amenities_billed: amenitiesBilled,
     marked_overdue: markedOverdue,
     late_fees_applied: lateFeesApplied,
     overdue_notices: overdueNotices,

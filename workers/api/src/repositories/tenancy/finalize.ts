@@ -1,3 +1,4 @@
+import { cancelTenancyAmenitiesForApplications } from '../payments/amenities';
 import { accessiblePropertyClause } from '../property-access';
 
 /**
@@ -84,6 +85,8 @@ export async function finalizeDueLeaveRequests(
     )
     .bind(...boarderIds)
     .run();
+
+  await cancelTenancyAmenitiesForApplications(db, applicationIds);
 
   return applicationIds.length;
 }
