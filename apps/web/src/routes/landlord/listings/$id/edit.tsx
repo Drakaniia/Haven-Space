@@ -5,6 +5,7 @@ import { VerificationNotice } from '../../../../components/landlord/Verification
 import { LocationPicker } from '../../../../components/rooms/LocationPicker';
 import { Button, buttonClasses } from '../../../../components/ui/Button';
 import { Card } from '../../../../components/ui/Card';
+import { ConfirmDialog } from '../../../../components/ui/ConfirmDialog';
 import { ErrorState } from '../../../../components/ui/ErrorState';
 import { Icon } from '../../../../components/ui/Icon';
 import { Field, SelectInput, TextArea, TextInput } from '../../../../components/ui/Field';
@@ -14,6 +15,7 @@ import { ApiRequestError } from '../../../../lib/api/http';
 import {
   getProperty,
   getRooms,
+  removePropertyAccess,
   updateListing,
   uploadPropertyPhotos,
 } from '../../../../lib/api/landlord';
@@ -117,6 +119,9 @@ function EditListingPage() {
   const { toasts, push, dismiss } = useToasts();
   const [uploading, setUploading] = useState(false);
   const [photosToDelete, setPhotosToDelete] = useState<string[]>([]);
+  const [removeTarget, setRemoveTarget] = useState<{ id: number; name: string } | null>(null);
+  const [removeReason, setRemoveReason] = useState('');
+  const [removeError, setRemoveError] = useState<string | null>(null);
 
   const propertyId = Number(id);
 
@@ -249,6 +254,40 @@ function EditListingPage() {
     },
     onError: err =>
       setError(err instanceof ApiRequestError ? err.message : 'Failed to update listing.'),
+  });
+
+  const removeAccess = useMutation({
+    mutationFn: ({ landlordId, reason }: { landlordId: number; reason: string }) => {
+      const trimmed = reason.trim();
+      return removePropertyAccess(
+        token!,
+        propertyId,
+        landlordId,
+        trimmed ? { reason: trimmed } : {}
+      );
+    },
+    onSuccess: () => {
+      void queryClient.invalidateQueries({ queryKey: ['landlord-property', propertyId] });
+      void queryClient.invalidateQueries({ queryKey: ['landlord-properties'] });
+      setRemoveTarget(null);
+      setRemoveReason('');
+      setRemoveError(null);
+      push({ tone: 'success', message: 'Access removed.' });
+    },
+    onError: err => {
+      const code =
+        err instanceof ApiRequestError &&
+        typeof err.body === 'object' &&
+        err.body !== null &&
+        'code' in err.body
+          ? (err.body as { code?: unknown }).code
+          : undefined;
+      if (err instanceof ApiRequestError && err.status === 409 && code === 'not_shared') {
+        void queryClient.invalidateQueries({ queryKey: ['landlord-property', propertyId] });
+        void queryClient.invalidateQueries({ queryKey: ['landlord-properties'] });
+      }
+      setRemoveError(err instanceof ApiRequestError ? err.message : 'Failed to remove access.');
+    },
   });
 
   function set<K extends keyof typeof form>(key: K, value: (typeof form)[K]) {
@@ -628,8 +667,8 @@ function EditListingPage() {
             <div>
               <h2 className="font-semibold tracking-tight text-ink">Authorized landlords</h2>
               <p className="text-sm text-gray-ink">
-                Landlords who can also manage this property. Only the Haven Space Admin can change
-                who has access.
+                Landlords who can also manage this property. You can remove access at any time. Only
+                the Haven Space Admin can invite new landlords.
               </p>
             </div>
           </div>
@@ -638,7 +677,7 @@ function EditListingPage() {
               {authorizedLandlords.map(landlord => (
                 <li
                   key={landlord.id}
-                  className="flex flex-wrap items-center justify-between gap-2 py-2"
+                  className="flex flex-wrap items-center justify-between gap-2 px-3 py-2.5"
                 >
                   <div>
                     <p className="text-sm font-medium text-ink">{landlord.name}</p>
@@ -646,6 +685,19 @@ function EditListingPage() {
                       {landlord.email} · granted {formatWhen(landlord.granted_at)}
                     </p>
                   </div>
+                  <Button
+                    type="button"
+                    variant="danger"
+                    size="sm"
+                    className="text-xs"
+                    onClick={() => {
+                      setRemoveTarget({ id: landlord.id, name: landlord.name });
+                      setRemoveReason('');
+                      setRemoveError(null);
+                    }}
+                  >
+                    Remove access
+                  </Button>
                 </li>
               ))}
             </ul>
@@ -655,6 +707,49 @@ function EditListingPage() {
             </p>
           )}
         </Card>
+      ) : null}
+
+      {authorizedLandlords !== null ? (
+        <ConfirmDialog
+          open={removeTarget !== null}
+          title="Remove access"
+          message={
+            <div className="space-y-3">
+              <p>
+                Remove <strong className="font-medium text-ink">{removeTarget?.name}</strong> from{' '}
+                <strong className="font-medium text-ink">
+                  {String(detail.name ?? 'this property')}
+                </strong>
+                ? They will lose access immediately. Rooms, tenants, payments and announcements they
+                created stay with this property.
+              </p>
+              {removeError ? <ErrorState message={removeError} /> : null}
+              <Field label="Reason (optional)" htmlFor="remove-access-reason">
+                <TextArea
+                  id="remove-access-reason"
+                  rows={3}
+                  maxLength={200}
+                  placeholder="Why are you removing access?"
+                  disabled={removeAccess.isPending}
+                  value={removeReason}
+                  onChange={e => setRemoveReason(e.target.value)}
+                />
+              </Field>
+            </div>
+          }
+          confirmLabel="Remove access"
+          busy={removeAccess.isPending}
+          onConfirm={() => {
+            if (!removeTarget) return;
+            removeAccess.mutate({ landlordId: removeTarget.id, reason: removeReason });
+          }}
+          onCancel={() => {
+            if (removeAccess.isPending) return;
+            setRemoveTarget(null);
+            setRemoveReason('');
+            setRemoveError(null);
+          }}
+        />
       ) : null}
     </div>
   );

@@ -47,6 +47,7 @@ export interface LandlordProperty {
   /** The admin axis, returned so a rejected listing reads as Unpublished (D12). */
   listing_moderation_status: string;
   role?: 'owner' | 'shared';
+  shared_landlord_count?: number;
   total_rooms: number;
   occupied_rooms: number;
   monthly_revenue: number;
@@ -109,7 +110,8 @@ export interface LandlordPropertyDetail {
   availability: string;
   status: string;
   listing_moderation_status: string;
-  role: string;
+  role: 'owner' | 'shared';
+  owner?: { id: number; name: string; email: string };
   total_rooms: number;
   rooms: number;
   occupied_rooms: number;

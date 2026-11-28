@@ -126,6 +126,9 @@ function PropertyDetailPage() {
               {isFullProperty(detail.total_rooms, detail.occupied_rooms) ? (
                 <StatusBadge status="full" label="Full" />
               ) : null}
+              {detail.role === 'shared' ? (
+                <StatusBadge status="shared" label="Shared access" />
+              ) : null}
             </span>
             <span className="inline-flex min-w-0 items-center gap-1">
               <Icon name="pin" size={14} className="shrink-0 text-muted" />
@@ -158,6 +161,23 @@ function PropertyDetailPage() {
         }
       />
 
+      {detail.role === 'shared' ? (
+        <Card className="mb-6">
+          <div className="flex items-start gap-3">
+            <Icon name="users" size={22} className="mt-0.5 shrink-0" />
+            <div>
+              <h2 className="font-semibold tracking-tight text-ink">Shared with you</h2>
+              <p className="mt-1 text-sm text-gray-ink">
+                Owned by {detail.owner?.name?.trim() || 'the property owner'}. You can edit this
+                property&apos;s details, rooms, photos and pricing. Only{' '}
+                {detail.owner?.name?.trim() || 'the property owner'} can delete it or remove your
+                access.
+              </p>
+            </div>
+          </div>
+        </Card>
+      ) : null}
+
       <PropertyTabs propertyId={detail.id} active={tab} />
 
       {redirectingToRooms ? null : (
@@ -182,39 +202,43 @@ function PropertyDetailPage() {
 
       {/*
         Destructive zone (D18/R14): the only place a property can be deleted now
-        that the card list no longer carries an overflow menu.
+        that the card list no longer carries an overflow menu. Owner-only.
       */}
-      <section
-        aria-labelledby="danger-zone"
-        className="mt-12 flex flex-wrap items-center justify-between gap-4 rounded-2xl border border-error-border bg-surface px-5 py-4"
-      >
-        <div className="min-w-0 max-w-xl">
-          <h2 id="danger-zone" className="text-sm font-semibold text-error-ink">
-            Danger zone
-          </h2>
-          <p className="mt-1 text-sm text-gray-ink">
-            Deleting removes <strong className="font-medium text-ink">{detail.name}</strong> and
-            all of its rooms from Haven Space. This cannot be undone.
-          </p>
-        </div>
-        <Button variant="danger" onClick={() => setConfirmDelete(true)}>
-          Delete property
-        </Button>
-      </section>
+      {detail.role === 'owner' ? (
+        <>
+          <section
+            aria-labelledby="danger-zone"
+            className="mt-12 flex flex-wrap items-center justify-between gap-4 rounded-2xl border border-error-border bg-surface px-5 py-4"
+          >
+            <div className="min-w-0 max-w-xl">
+              <h2 id="danger-zone" className="text-sm font-semibold text-error-ink">
+                Danger zone
+              </h2>
+              <p className="mt-1 text-sm text-gray-ink">
+                Deleting removes <strong className="font-medium text-ink">{detail.name}</strong> and
+                all of its rooms from Haven Space. This cannot be undone.
+              </p>
+            </div>
+            <Button variant="danger" onClick={() => setConfirmDelete(true)}>
+              Delete property
+            </Button>
+          </section>
 
-      <ConfirmDialog
-        open={confirmDelete}
-        title="Delete property"
-        message={
-          <>
-            Delete <strong>{detail.name}</strong> and its rooms? This cannot be undone.
-          </>
-        }
-        confirmLabel="Delete property"
-        busy={removeProperty.isPending}
-        onConfirm={() => removeProperty.mutate()}
-        onCancel={() => setConfirmDelete(false)}
-      />
+          <ConfirmDialog
+            open={confirmDelete}
+            title="Delete property"
+            message={
+              <>
+                Delete <strong>{detail.name}</strong> and its rooms? This cannot be undone.
+              </>
+            }
+            confirmLabel="Delete property"
+            busy={removeProperty.isPending}
+            onConfirm={() => removeProperty.mutate()}
+            onCancel={() => setConfirmDelete(false)}
+          />
+        </>
+      ) : null}
     </div>
   );
 }
