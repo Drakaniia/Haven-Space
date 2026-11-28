@@ -1,4 +1,5 @@
 import { freeRoom } from '../applications';
+import { cancelTenancyAmenitiesForApplications } from '../payments/amenities';
 import { formatLongDate } from './helpers';
 import {
   createLeaveConversation,
@@ -92,6 +93,8 @@ export async function endApprovedLeaveNow(
     )
     .bind(boarderId)
     .run();
+
+  await cancelTenancyAmenitiesForApplications(db, [applicationId]);
 
   return true;
 }

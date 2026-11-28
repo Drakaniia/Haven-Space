@@ -19,7 +19,15 @@ export const METHOD_WITHOUT_REFERENCE: readonly string[] = ['cash', 'other'];
 /** Methods that must attach a receipt — everything except cash (D13). */
 export const METHOD_WITHOUT_RECEIPT: readonly string[] = ['cash'];
 
-export const CHARGE_TYPES = ['rent', 'deposit', 'advance', 'utility', 'late_fee', 'other'] as const;
+export const CHARGE_TYPES = [
+  'rent',
+  'deposit',
+  'advance',
+  'utility',
+  'amenity',
+  'late_fee',
+  'other',
+] as const;
 
 export type ChargeType = (typeof CHARGE_TYPES)[number];
 

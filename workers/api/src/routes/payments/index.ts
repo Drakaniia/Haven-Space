@@ -1,6 +1,7 @@
 import { Hono } from 'hono';
 
 import type { Env } from '../../env';
+import { registerAmenityRoutes } from './amenities';
 import { registerBillingRoutes } from './billing';
 import { registerBoarderRoutes } from './boarder';
 import { registerChargeRoutes } from './charges';
@@ -22,6 +23,8 @@ import { registerTrackerRoutes } from './tracker';
  */
 const paymentsRoutes = new Hono<{ Bindings: Env }>();
 
+// Register amenities before boarder `:chargeId` so `/api/boarder/payments/amenities` resolves cleanly.
+registerAmenityRoutes(paymentsRoutes);
 registerBoarderRoutes(paymentsRoutes);
 registerLedgerRoutes(paymentsRoutes);
 registerBillingRoutes(paymentsRoutes);

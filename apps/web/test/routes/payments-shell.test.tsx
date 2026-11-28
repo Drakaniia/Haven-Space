@@ -41,8 +41,10 @@ const { BOARDER_NAV, LANDLORD_NAV } = await import('../../src/lib/nav');
 
 const landlordLedger = await import('../../src/routes/landlord/payments/index');
 const landlordRecord = await import('../../src/routes/landlord/payments/record');
+const landlordAmenities = await import('../../src/routes/landlord/payments/amenities');
 const boarderLedger = await import('../../src/routes/boarder/payments/index');
 const boarderPay = await import('../../src/routes/boarder/payments/pay');
+const boarderAmenities = await import('../../src/routes/boarder/payments/amenities');
 
 /** The component the router would render for that route file. */
 function componentOf(route: unknown): ComponentType {
@@ -78,8 +80,20 @@ const PAGES: Array<[string, ComponentType, typeof LANDLORD_NAV, string]> = [
     LANDLORD_NAV,
     'Record a payment',
   ],
+  [
+    '/landlord/payments/amenities',
+    componentOf(landlordAmenities.Route),
+    LANDLORD_NAV,
+    'Amenities',
+  ],
   ['/boarder/payments', componentOf(boarderLedger.Route), BOARDER_NAV, 'Payments'],
   ['/boarder/payments/pay', componentOf(boarderPay.Route), BOARDER_NAV, 'Submit a payment'],
+  [
+    '/boarder/payments/amenities',
+    componentOf(boarderAmenities.Route),
+    BOARDER_NAV,
+    'Amenities',
+  ],
 ];
 
 for (const [path, Page, nav, heading] of PAGES) {

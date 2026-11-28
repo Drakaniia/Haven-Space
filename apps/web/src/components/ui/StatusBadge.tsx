@@ -21,6 +21,8 @@ const TONES: Record<string, string> = {
   owned: 'bg-mint text-primary-dark',
   // waiting
   pending: 'bg-warning-tint text-warning-ink',
+  pending_approval: 'bg-warning-tint text-warning-ink',
+  posted: 'bg-info-tint text-info-ink',
   // at capacity — the landlord list's `full` status had no tone and fell through
   // to the neutral fallback (`landlord-properties-card-layout` R7).
   full: 'bg-warning-tint text-warning-ink',

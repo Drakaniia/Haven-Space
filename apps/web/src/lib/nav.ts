@@ -30,6 +30,12 @@ export const BOARDER_NAV: NavItem[] = [
     group: 'Communication',
   },
   { to: '/boarder/payments', label: 'Payments', icon: 'payment', group: 'Payments' },
+  {
+    to: '/boarder/payments/amenities',
+    label: 'Amenities',
+    icon: 'sparkles',
+    group: 'Payments',
+  },
   { to: '/boarder/house-rules', label: 'House Rules', icon: 'book', group: 'Info' },
   { to: '/boarder/settings', label: 'Settings', icon: 'settings', group: 'Account' },
 ];
@@ -72,6 +78,12 @@ export const LANDLORD_NAV: NavItem[] = [
   { to: '/landlord/boarders', label: 'Tenants', icon: 'users', group: 'Main' },
   { to: '/landlord/messages', label: 'Messages', icon: 'chat', group: 'Communication' },
   { to: '/landlord/payments', label: 'Payments', icon: 'payment', group: 'Payments' },
+  {
+    to: '/landlord/payments/amenities',
+    label: 'Amenities',
+    icon: 'sparkles',
+    group: 'Payments',
+  },
   {
     to: '/landlord/announcements',
     label: 'Announcements',
